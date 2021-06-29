@@ -389,11 +389,10 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
       // Normalization constants
-      const float Cq = 1./(normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma));
-      const float Cp = 1./(normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma));
-        
-      logpCurPolicy += std::log(Cq/curSigma)-(action[i]-curMu)*(action[i]-curMu)/(2.*curSigma*curSigma);
-      logpOldPolicy += std::log(Cp/oldSigma)-(action[i]-oldMu)*(action[i]-oldMu)/(2.*oldSigma*oldSigma);
+      const float invCq = normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma);
+      const float invCp = normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma);
+      logpCurPolicy += -std::log(curSigma)-std::log(invCq)-(action[i]-curMu)*(action[i]-curMu)/(2.*curSigma*curSigma);
+      logpOldPolicy += -std::log(oldSigma)-std::log(invCp)-(action[i]-oldMu)*(action[i]-oldMu)/(2.*oldSigma*oldSigma);
     }
   }
 
@@ -603,10 +602,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       importanceWeightGradients[i] *= importanceWeight;
-
-      //const float p1 = oldPolicy.distributionParameters[i];
-      //const float p2 = curPolicy.distributionParameters[i];
-      //printf("iwgrad[%zu]: %f (%f %f)\n", i, importanceWeightGradients[i], p1, p2);
   }
 
   if (_policyDistribution == "Truncated Normal")
@@ -622,6 +617,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float curMu = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
+      const float oldInvSig = 1./oldSigma;
       const float curInvSig = 1./curSigma;
       const float curInvSig3 = curInvSig * curInvSig * curInvSig;
       const float curVar = curSigma*curSigma;
@@ -631,16 +627,26 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float curActionDif = action[i] - curMu;
 
       // Normalization constants
-      const float Cq = 1./(normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma));
-      const float Cp = 1./(normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma));
+      const float invCq = normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma);
+      const float invCp = normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma);
  
       // Constants involving exp expressions
       const float normalUpper = std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
       const float normalLower = std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
  
       // Normalized gradients of constants
-      const float dCqMu = Cq*(normalUpper-normalLower);
-      const float dCqSig = Cq*curInvSig*((_actionUpperBounds[i]-curMu)*normalUpper-(_actionLowerBounds[i]-curMu)*normalLower);
+      float dCqMu, dCqSig;
+      if(invCq<1e-9)
+      {
+        dCqMu = 0.f;
+        dCqSig = 0.f;
+      }
+      else
+      {
+        const float Cq = 1./invCq;
+        dCqMu = Cq*(normalUpper-normalLower);
+        dCqSig = Cq*curInvSig*((_actionUpperBounds[i]-curMu)*normalUpper-(_actionLowerBounds[i]-curMu)*normalLower);
+      }
       
       // Gradient with respect to Mean
       importanceWeightGradients[i] = (curActionDif/curVar+dCqMu);
@@ -650,9 +656,13 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvSig3 - curInvSig + dCqSig;
 	  assert(isfinite(importanceWeightGradients[_problem->_actionVectorSize+i]));
 
+      const float Cq = 1./invCq;
+      const float Cp = 1./invCp;
+      assert(isfinite(Cp));
+      assert(isfinite(Cq));
       // Calculate Importance Weight
       logpCurPolicy += std::log(Cq*curInvSig)-0.5f*(action[i]-curMu)*(action[i]-curMu)/curVar;
-      logpOldPolicy += std::log(Cp/oldSigma)-0.5f*(action[i]-oldMu)*(action[i]-oldMu)/oldVar;
+      logpOldPolicy += std::log(Cp*oldInvSig)-0.5f*(action[i]-oldMu)*(action[i]-oldMu)/oldVar;
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
@@ -734,7 +744,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
 {
   // Storage for KL Divergence Gradients
   std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
-  //std::vector<float> KLDg(2.0 * _problem->_actionVectorSize, 0.0);
 
   //if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
@@ -866,54 +875,54 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       const float normalUpper = std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
       const float normalLower = std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
 
-      // Tests in log space
-      const float lCq = -safeLogMinus(normalLogCDF(_actionUpperBounds[i], curMu, curSigma), normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
-      const float ldCqMu = lCq + safeLogMinus(normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
-      const float dCqMu2 = std::exp(ldCqMu);
-      
-      const float ldCqSig = lCq + safeLogMinus(std::log(_actionUpperBounds[i]-curMu) + normalLogDensity(_actionUpperBounds[i], curMu, curSigma), std::log(_actionLowerBounds[i]-curMu) + normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
-      const float dCqSig2 = std::exp(ldCqSig);
- 
-      // Normalization constants of truncated normal
+      // Inverse normalization constants of truncated normal
       const float invCq = normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma);
-
-      if(invCq < 1e-9) 
+      const float invCp = normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma);
+      
+      if(invCq < 1e-9 || invCp < 1e-9) 
       {
           printf("ndif: %f\n", normalUpper-normalLower);
           printf("nadif: %f\n", curAdjustedUb*normalUpper-curAdjustedLb*normalLower);
-          printf("dCqMu2: %f %f %f %f %f\n", dCqMu2, ldCqMu, lCq, normalLogCDF(_actionUpperBounds[i], curMu, curSigma), normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
-          printf("dCqSig2: %f %f %f\n", dCqSig2, ldCqSig, lCq);
+          printf("eub: %f\n", expUb);
+          printf("elb: %f\n", expLb);
           printf("c: %f %f \n", normalCDF(_actionUpperBounds[i], curMu, curSigma), normalCDF(_actionLowerBounds[i], curMu, curSigma));
           printf("dp: %f %f %f %f\n", oldMu, oldSigma, curMu, curSigma);
       }
-      const float Cp = 1./(normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma));
-	  assert(isfinite(Cp));
   
+      float dCqMu, dCqSig;
       if(invCq < 1e-9)
       {
-        // KL grad wrt. mu
-        KLDivergenceGradients[i] = -muDif*curInvVar+Cp*invSqrt2Pi*oldSigma*curInvVar*(expUb-expLb);
-        // KL grad wrt. sigma
-        KLDivergenceGradients[_problem->_actionVectorSize + i] = curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3;
-
+        dCqMu = 0.0;
+        dCqSig = 0.0;
       }
       else
       {
-        // Normalized gradients of constants
-        const float dCqMu = (normalUpper-normalLower)/invCq;
-        const float dCqSig = (curAdjustedUb*normalUpper-curAdjustedLb*normalLower)/invCq;
-        KLDivergenceGradients[i] = -dCqMu-muDif*curInvVar+Cp*invSqrt2Pi*oldSigma*curInvVar*(expUb-expLb);
-        KLDivergenceGradients[_problem->_actionVectorSize + i] = curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3-dCqSig;
+        const float Cq = 1.f/invCq;
+        dCqMu = Cq*(normalUpper-normalLower);
+        dCqSig = Cq*(curAdjustedUb*normalUpper-curAdjustedLb*normalLower);
       }
-	  assert(isfinite(KLDivergenceGradients[i]));
-	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
 
-      // KL grad wrt. sigma
+      // init KL grad wrt. mu
+      KLDivergenceGradients[i] = -dCqMu-muDif*curInvVar;
+	  assert(isfinite(KLDivergenceGradients[i]));
+        
+      // init KL grad wrt. sigma
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = -dCqSig+curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedUb+2.f*oldSigma*muDif)*expUb;
-	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedLb+2.f*oldSigma*muDif)*expLb;
-	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
+      
+      if(invCp > 1e-9)
+      {
+        const float Cp = 1.f/invCq;
+        
+        // KL grad wrt. mu
+        KLDivergenceGradients[i] += Cp*invSqrt2Pi*oldSigma*curInvVar*(expUb-expLb);
+        
+        // KL grad wrt. sigma
+        KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedUb+2.f*oldSigma*muDif)*expUb;
+	    assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
+        KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedLb+2.f*oldSigma*muDif)*expLb;
+	    assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
+      }
     }
   }
 

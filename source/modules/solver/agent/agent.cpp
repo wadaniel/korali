@@ -4,6 +4,7 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
+// Enable continuous rescaling (experimental)
 #define CSCALE
 
 namespace korali

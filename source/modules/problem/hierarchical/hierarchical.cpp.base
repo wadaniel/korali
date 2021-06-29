@@ -1,9 +1,9 @@
 #include "modules/problem/hierarchical/hierarchical.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::initialize()
+void __className__::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -21,7 +21,7 @@ void @className::initialize()
   }
 }
 
-void @className::evaluateLogPrior(Sample &sample)
+void __className__::evaluateLogPrior(Sample &sample)
 {
   double logPrior = 0.0;
 
@@ -31,7 +31,7 @@ void @className::evaluateLogPrior(Sample &sample)
   sample["logPrior"] = logPrior;
 }
 
-void @className::evaluateLogPosterior(Sample &sample)
+void __className__::evaluateLogPosterior(Sample &sample)
 {
   int sampleId = sample["Sample Id"];
   evaluateLogPrior(sample);
@@ -54,7 +54,7 @@ void @className::evaluateLogPosterior(Sample &sample)
   }
 }
 
-bool @className::isSampleFeasible(Sample &sample)
+bool __className__::isSampleFeasible(Sample &sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
     if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false)
@@ -66,13 +66,13 @@ bool @className::isSampleFeasible(Sample &sample)
   return true;
 }
 
-void @className::evaluate(Sample &sample)
+void __className__::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);
   sample["P(x)"] = sample["logPosterior"];
   sample["F(x)"] = sample["logPosterior"];
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

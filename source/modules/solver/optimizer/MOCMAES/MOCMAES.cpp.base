@@ -5,9 +5,9 @@
 
 #include <gsl/gsl_linalg.h> // Cholesky
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -139,7 +139,7 @@ void @className::setInitialConfiguration()
   _currentBestVariableDifferences.resize(_numObjectives, Inf);
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -169,7 +169,7 @@ void @className::runGeneration()
   updateStatistics();
 }
 
-void @className::prepareGeneration()
+void __className__::prepareGeneration()
 {
   for (size_t i = 0; i < _populationSize; ++i)
   {
@@ -183,7 +183,7 @@ void @className::prepareGeneration()
   }
 }
 
-void @className::sampleSingle(size_t sampleIdx)
+void __className__::sampleSingle(size_t sampleIdx)
 {
   size_t parentIdx;
   if (_muValue == _populationSize)
@@ -227,7 +227,7 @@ void @className::sampleSingle(size_t sampleIdx)
   _currentSuccessProbabilities[sampleIdx] = _parentSuccessProbabilities[parentIdx];
 }
 
-std::vector<int> @className::sortSampleIndices(const std::vector<std::vector<double>> &values) const
+std::vector<int> __className__::sortSampleIndices(const std::vector<std::vector<double>> &values) const
 {
   const size_t numValues = values.size();
 
@@ -331,7 +331,7 @@ std::vector<int> @className::sortSampleIndices(const std::vector<std::vector<dou
   return sortedIndeces;
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   auto values = _currentValues;
   values.insert(std::end(values), std::begin(_previousValues), std::end(_previousValues));
@@ -407,7 +407,7 @@ void @className::updateDistribution()
     }
 }
 
-void @className::updateStatistics()
+void __className__::updateStatistics()
 {
   _previousBestValues = _currentBestValues;
   for (size_t k = 0; k < _numObjectives; ++k)
@@ -519,9 +519,9 @@ void @className::updateStatistics()
     }
 }
 
-void @className::printGenerationBefore() { return; }
+void __className__::printGenerationBefore() { return; }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Current Function Values = (Max, Best):\n");
   for (size_t k = 0; k < _numObjectives; ++k) _k->_logger->logData("Normal", "                              = (%+6.3e, %+6.3e)\n", _currentBestValues[k], _bestEverValues[k]);
@@ -534,7 +534,7 @@ void @className::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Pareto Optimal Samples"]["F(x)"] = _sampleValueCollection;
@@ -548,6 +548,6 @@ void @className::finalize()
   */
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

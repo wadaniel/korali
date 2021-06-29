@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/solver/solver.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   void setInitialConfiguration() override;
@@ -14,6 +14,6 @@ class @className : public @parentClassName
   void finalize() override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /********************************************************
@@ -30,7 +30,6 @@ class @className : public @parentClassName
 * @brief Contains the gradients of the bias
 */
   float *_biasGradient;
-
 
 #ifdef _KORALI_USE_ONEDNN
   /**
@@ -149,6 +148,6 @@ class @className : public @parentClassName
   void backwardHyperparameters(const size_t t) override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

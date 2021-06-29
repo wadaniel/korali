@@ -15,7 +15,7 @@ namespace korali
 {
 namespace conduit
 {
-
+;
 
 /**
 * @brief Temporary storage to hold the pointer to the current conduit
@@ -149,8 +149,8 @@ void Sequential::applyVariableDefaults()
  Conduit::applyVariableDefaults();
 } 
 
-
+;
 
 } //conduit
 } //korali
-
+;

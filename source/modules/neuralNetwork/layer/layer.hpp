@@ -28,11 +28,11 @@
   #include <cudnn.h>
 #endif
 
-namespace korali
+  namespace korali
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Layer.
 */
 class NeuralNetwork;
@@ -42,7 +42,7 @@ namespace neuralNetwork
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Layer.
 */
 class Layer : public Module
@@ -131,7 +131,6 @@ class Layer : public Module
  */
   float *_outputGradient;
 
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Stores the propagation kind (inference/training)
@@ -174,10 +173,10 @@ class Layer : public Module
 
 #endif
 
-    /**
+  /**
   * @brief Default constructor
   */
-   Layer() = default;
+  Layer() = default;
 
   /**
   * @brief Default destructor
@@ -256,7 +255,7 @@ class Layer : public Module
 
 } /* neuralNetwork */ 
 
-} /* korali */ 
+  } /* korali */ 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_
+    #endif // _KORALI_NEURALNETWORK_LAYER_
 

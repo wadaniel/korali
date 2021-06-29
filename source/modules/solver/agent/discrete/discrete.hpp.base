@@ -1,11 +1,11 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -33,9 +33,9 @@ class @className : public @parentClassName
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
 
   void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent();
+  virtual void initializeAgent() override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

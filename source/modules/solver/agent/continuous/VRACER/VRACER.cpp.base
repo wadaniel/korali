@@ -5,10 +5,9 @@
 
 #include <gsl/gsl_sf_psi.h>
 
+__startNamespace__;
 
-@startNamespace
-
-void @className::initializeAgent()
+void __className__::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -63,7 +62,7 @@ void @className::initializeAgent()
   _minMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
 }
 
-void @className::trainPolicy()
+void __className__::trainPolicy()
 {
   // Obtaining Minibatch experience ids
   const auto miniBatch = generateMiniBatch(_miniBatchSize);
@@ -87,7 +86,7 @@ void @className::trainPolicy()
   _criticPolicyLearner->runGeneration();
 }
 
-void @className::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
+void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 {
   // Resetting statistics
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
@@ -171,6 +170,9 @@ void @className::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     }
 
     // Set Gradient of Loss as Solution
+    for (size_t i = 0; i < gradientLoss.size(); i++)
+      if (std::isfinite(gradientLoss[i]) == false)
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 
@@ -178,7 +180,7 @@ void @className::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-std::vector<policy_t> @className::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+std::vector<policy_t> __className__::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
@@ -202,24 +204,24 @@ std::vector<policy_t> @className::runPolicy(const std::vector<std::vector<std::v
   return policyVector;
 }
 
-knlohmann::json @className::getAgentPolicy()
+knlohmann::json __className__::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
-void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
+void __className__::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void @className::resetAgentOptimizers()
+void __className__::resetAgentOptimizers()
 {
   _criticPolicyLearner->resetOptimizer();
 }
 
-void @className::printAgentInformation()
+void __className__::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");
@@ -231,6 +233,6 @@ void @className::printAgentInformation()
 
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

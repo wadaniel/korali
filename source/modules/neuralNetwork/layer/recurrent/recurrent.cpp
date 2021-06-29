@@ -10,10 +10,8 @@
 using namespace dnnl;
 #endif
 
-
 #include <Eigen/Dense>
 using namespace Eigen;
-
 
 namespace korali
 {
@@ -21,7 +19,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 void Recurrent::initialize()
 {
@@ -35,6 +33,9 @@ void Recurrent::initialize()
   // If using depth > 1, the input layer channels must be consistent
   if (_depth != 1)
     if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
+
+  if (_nn->_engine == "Korali")
+    KORALI_LOG_ERROR("Recurrent layers are not yet supported by the Korali NN backend, use OneDNN or CuDNN.\n");
 }
 
 void Recurrent::createHyperparameterMemory()
@@ -385,9 +386,9 @@ void Recurrent::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
-
+;
 
 } //layer
 } //neuralNetwork
 } //korali
-
+;

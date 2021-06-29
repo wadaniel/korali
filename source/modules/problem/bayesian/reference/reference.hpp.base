@@ -1,16 +1,14 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   const double _log2pi = 1.83787706640934533908193770912476;
-
-  size_t statisticalVariableIndex;
 
   /**
   * @brief Precomputes the square distance between two vectors (f and y) of the same size normalized by a third vector (g)
@@ -125,6 +123,6 @@ class @className : public @parentClassName
   void evaluateFisherInformation(korali::Sample &sample) override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

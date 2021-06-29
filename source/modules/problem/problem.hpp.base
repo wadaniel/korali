@@ -1,11 +1,11 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -15,6 +15,6 @@ class @className : public @parentClassName
   */
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

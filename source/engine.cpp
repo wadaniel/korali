@@ -168,6 +168,19 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
+#ifdef _KORALI_USE_MPI
+#ifdef _KORALI_USE_MPI4PY
+#ifndef _KORALI_NO_MPI4PY
+
+mpi4py_comm getMPI4PyComm()
+{
+ return __koraliWorkerMPIComm;
+}
+
+#endif
+#endif
+#endif
+
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -182,6 +195,21 @@ using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
+   #ifdef _KORALI_USE_MPI
+   #ifdef _KORALI_USE_MPI4PY
+   #ifndef _KORALI_NO_MPI4PY
+
+  // import the mpi4py API
+   if (import_mpi4py() < 0) {
+     throw std::runtime_error("Could not load mpi4py API.");
+   }
+
+   m.def("getMPI4PyComm", &getMPI4PyComm);
+
+   #endif
+   #endif
+   #endif
+
   pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
     .def("run", [](Engine &k, Experiment &e) {
@@ -196,8 +224,6 @@ PYBIND11_MODULE(libkorali, m)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);
 
   pybind11::class_<KoraliJson>(m, "koraliJson")
-    .def("get", &KoraliJson::get)
-    .def("set", &KoraliJson::set)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&KoraliJson::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&KoraliJson::setItem), pybind11::return_value_policy::reference);
 

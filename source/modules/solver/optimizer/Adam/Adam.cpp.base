@@ -2,9 +2,9 @@
 #include "modules/solver/optimizer/Adam/Adam.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -29,7 +29,7 @@ void @className::setInitialConfiguration()
   _gradientNorm = 0.0;
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -57,7 +57,7 @@ void @className::runGeneration()
   processResult(evaluation, gradient);
 }
 
-void @className::processResult(double evaluation, std::vector<double> &gradient)
+void __className__::processResult(double evaluation, std::vector<double> &gradient)
 {
   _modelEvaluationCount++;
   _previousBestValue = _currentBestValue;
@@ -91,12 +91,12 @@ void @className::processResult(double evaluation, std::vector<double> &gradient)
   }
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
   _k->_logger->logInfo("Normal", "Starting generation %lu...\n", _k->_currentGeneration);
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "x = [ ");
   for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentVariable[k]);
@@ -111,7 +111,7 @@ void @className::printGenerationAfter()
   _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
@@ -119,6 +119,6 @@ void @className::finalize()
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

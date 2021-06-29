@@ -5,7 +5,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 void Bayesian::initialize()
 {
@@ -233,8 +233,8 @@ bool Bayesian::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
-
+;
 
 } //problem
 } //korali
-
+;

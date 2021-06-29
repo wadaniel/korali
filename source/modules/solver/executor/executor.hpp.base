@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/solver/solver.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -24,6 +24,6 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

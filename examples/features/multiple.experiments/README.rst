@@ -41,6 +41,10 @@ We can runn all experiments in one Korali application
 Running
 ---------------------------
 
-We are now ready to run our example: `./c3-multiple-jobs`
+We are now ready to run our example: `python3 ./run-cmaes`
 
+Resuming Previous Run
+---------------------------
+
+Runs with multiple Korali experiments can also be resumed from a previous execution. For more information, see :ref:`Checkpoint / Resume <checkpoints>`. 
 

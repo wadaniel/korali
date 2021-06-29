@@ -1,6 +1,6 @@
 option('test',
   type : 'boolean',
-  value : true,
+  value : false,
   description : 'Run test suite',
   yield: true
 )
@@ -9,6 +9,13 @@ option('mpi',
   type : 'boolean',
   value : false,
   description : 'MPI support',
+  yield: true
+)
+
+option('mpi4py',
+  type : 'boolean',
+  value : false,
+  description : 'MPI4Py support',
   yield: true
 )
 

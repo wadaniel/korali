@@ -2,16 +2,16 @@
 Truncated Normal Distribution
 *******************************
 
-Truncated Normal
+Truncated normal
 ----------------
 
-The probability density of the truncated Normal distribution is
+The truncated normal distribution has the probability density function:
 
 .. math::
-    f(x\mid \mu ,\sigma ^{2})={\frac {1}{\sqrt {2\pi \sigma ^{2}}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}
+    f(x\mid \mu ,\sigma ^{2})=
+    \begin{cases}
+      \left( 2\pi \sigma^2\right)^{-1/2} \exp\left( - \frac{1}{2} \left(\frac{x-\mu}{\sigma} \right)^2 \right) \,,&  x\in [a,b], \\
+      0 \,, & \text{otherwise} \,,
+    \end{cases}
 
-for :math:`x\in [a,b]` and 0 otherwise.
-
-
-Here :math:`\mu` is the mean of the distribution and :math:`\sigma` is a scale parameter (related to the standard deviation of the Normal distribution).
-
+where :math:`\mu` and :math:`\sigma>0` are the parameter associated with the normal distribution.

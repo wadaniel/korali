@@ -7,7 +7,7 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-plotSamples = False
+plotSamples = True
 
 #Plot scatter plot in upper triangle of figure
 def plot_upper_triangle(ax, theta, f=None):

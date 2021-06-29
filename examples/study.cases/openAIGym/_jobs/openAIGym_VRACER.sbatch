@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name="openAIGym_VRACER"
 #SBATCH --output=openAIGym_VRACER_%j.out
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
@@ -11,7 +11,7 @@
 #SBATCH --constraint=gpu
 
 # Choose Environment
-#env=Ant-v2
+env=Ant-v2
 #env=HalfCheetah-v2
 #env=Hopper-v2
 #env=Humanoid-v2
@@ -29,13 +29,13 @@
 #env=Walker2DBulletEnv-v0
 
 # Choose Policy Distribution
-#dis="Normal"
-dis="Squashed Normal"
+dis="Normal"
+#dis="Squashed Normal"
 #dis="Clipped Normal"
 #dis="Truncated Normal"
 
 # l2 regularization
-l2=0.01
+l2=0.0
 
 # off policy target
 opt=0.1
@@ -58,6 +58,7 @@ pushd $expDir
 
 OMP_NUM_THREADS=12 python3 run-vracer.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lr $lr
 resdir=$(ls _result_vracer_*)
+
 python3 -m korali.rlview --dir $resdir --output vracer.png
 
 popd

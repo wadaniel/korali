@@ -1,11 +1,15 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 from scipy.stats import vonmises
+from scipy.stats import truncnorm
 
 from plotter import *
 
+# parameters for truncated gaussians (https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.truncnorm.html), taken from https://www.sciencedirect.com/science/article/pii/0304380094900132 
+observedA = [ -0.7/0.3, -1./0.4, -1.3/0.5]
+
 class fish:
-    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Lennard-Jones" ):
+    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Observed" ):
         self.location = location
         self.curDirection = self.randUnitDirection()
         self.wishedDirection = self.curDirection
@@ -29,7 +33,7 @@ class fish:
         mag = np.linalg.norm(vec)
         return vec/mag
 
-    ''' according to https://doi.org/10.1006/jtbi.2002.3065 '''
+    ''' according to https://doi.org/10.1006/jtbi.2002.3065 / https://hal.archives-ouvertes.fr/hal-00167590 '''
     def computeDirection(self, repellTargets, orientTargets, attractTargets):
         newWishedDirection = np.zeros(3)
         # zone of repulsion - highest priority
@@ -89,6 +93,7 @@ class fish:
             self.curDirection = self.wishedDirection
         else:
             rotVector = np.cross(self.curDirection, self.wishedDirection)
+            assert np.linalg.norm(rotVector) > 0, print("Rotation vector {} invalid, computed from {} and {}".format(rotVector, self.curDirection, self.wishedDirection))
             rotVector /= np.linalg.norm(rotVector)
             rotVector *= self.maxAngle
             r = Rotation.from_rotvec(rotVector)
@@ -104,7 +109,7 @@ class fish:
     ''' reward assumes pair-wise potentials ''' 
     def computeReward(self, nearestNeighbourDistance ):
         reward = 0.0
-        for r in nearestNeighbourDistance:
+        for i,r in enumerate(nearestNeighbourDistance):
             # Lennard-Jones potential
             if self.potential == "Lennard-Jones":
                 x = self.sigmaPotential / r
@@ -112,6 +117,11 @@ class fish:
             # Harmonic potential
             elif self.potential == "Harmonic":
                 reward += self.epsilon - 4*self.epsilon/self.sigmaPotential**2*(156/2**(7/3)-42/2**(4/3))*(r-2**(1/6)*self.sigmaPotential)**2
+            # Observations (https://www.sciencedirect.com/science/article/pii/0304380094900132)
+            elif self.potential == "Observed":
+                if i>2:
+                    assert 0, print("The 'Observed' reward only supports up to 3 nearest Neighbours")
+                reward += truncnorm.pdf(r, observedA[i], np.inf)
             else:
                 assert 0, print("Please chose a pair-potential that is implemented")
         return reward
@@ -128,6 +138,8 @@ class fish:
             # Harmonic potential
             elif self.potential == "Harmonic":
                 action += 4*self.epsilon/self.sigmaPotential**2*(156/2**(7/3)-42/2**(4/3))*(r-2**(1/6)*self.sigmaPotential)*direction/r
+            elif self.potential == "Observed":
+                assert 0, print("please do first implement the policy for the 'Observed' reward")
             else:
                 assert 0, print("Please chose a pair-potential that is implemented")
         action = action / np.linalg.norm(action)

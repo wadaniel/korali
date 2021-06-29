@@ -8,7 +8,6 @@ from environment import *
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--visualize', help='whether to plot the swarm or not', required=True, type=int)
 parser.add_argument('--numIndividuals', help='number of fish', required=True, type=int)
 parser.add_argument('--numTimesteps', help='number of timesteps to simulate', required=True, type=int)
 parser.add_argument('--numNearestNeighbours', help='number of nearest neighbours used for state/reward', required=True, type=int)
@@ -84,8 +83,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
+# e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+# e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
 e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
   

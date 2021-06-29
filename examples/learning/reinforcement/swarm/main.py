@@ -42,10 +42,10 @@ if __name__ == '__main__':
             print("agent {}/{}".format(i+1, sim.N))
             # for Newton policy state is the directions to the nearest neighbours
             state  = sim.getState(i)
-            print("state:", state)
+            # print("state:", state)
             # set action
             action = sim.fishes[i].newtonPolicy( state )
-            print("action:", action)
+            # print("action:", action)
             if math.isclose( np.linalg.norm(action),  1.0 ):
                 sim.fishes[i].wishedDirection = action
             # get reward (Careful: assumes sim.state(i) was called before)

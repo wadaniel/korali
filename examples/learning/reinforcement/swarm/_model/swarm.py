@@ -119,7 +119,6 @@ class swarm:
         # return if any two fish are closer then the cutOff
         return ( self.distancesMat < cutOff[:,np.newaxis] ).any()
 
-
     def getState( self, i ):
         # get array for agent i
         distances = self.distancesMat[i,:]
@@ -135,7 +134,7 @@ class swarm:
         return np.array([ self.distancesNearestNeighbours, self.anglesNearestNeighbours ]).flatten().tolist() # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
 
     def getReward( self, i ):
-        # Careful: assumes sim.state(i) was called before
+        # Careful: assumes sim.getState(i) was called before
         return self.fishes[i].computeReward( self.distancesNearestNeighbours )
 
     ''' according to https://doi.org/10.1006/jtbi.2002.3065 '''

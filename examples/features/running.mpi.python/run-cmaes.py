@@ -45,5 +45,6 @@ e["File Output"]["Frequency"] = 1
 
 # Running Korali
 k["Conduit"]["Type"] = "Distributed"
-k.setMPIComm(MPI.COMM_WORLD)
+k["Conduit"]["Ranks Per Worker"] = 4
+korali.setMPIComm(MPI.COMM_WORLD)
 k.run(e)

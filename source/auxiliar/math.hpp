@@ -133,17 +133,31 @@ T safeLogPlus(T x, T y)
 
 /**
 * @brief Safely computes log(exp(x)-exp(y)) and avoids overflows
-* @param x a variable
+* @param x a variable, x > y
 * @param y a variable
 * @return The result of log(exp(x)-exp(y))
 */
 template <typename T>
 T safeLogMinus(T x, T y)
 {
-  if (x > y)
-     return y + std::log(std::exp(x - y) - 1.);
+  if (y+1e-20>x)
+  {
+    return -20.;
+  }
+  if (x-y>20.)
+  {
+    // prevent overflows when exponentiating x-y
+    return x;
+  }
+  else if(x>y)
+  {
+    return y + std::log(std::exp(x - y) - 1.);
+  }
   else
-     return x + std::log(1. - std::exp(y - x));
+  {
+    KORALI_LOG_ERROR("Invalid input to mathematical function, x (%f) must be larger than y (%f)\n", x,y);
+    return 0.;
+  }
 }
 
 /**

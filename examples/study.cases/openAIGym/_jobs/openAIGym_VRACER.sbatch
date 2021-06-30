@@ -11,7 +11,7 @@
 #SBATCH --constraint=gpu
 
 # Choose Environment
-env=Ant-v2
+#env=Ant-v2
 #env=HalfCheetah-v2
 #env=Hopper-v2
 #env=Humanoid-v2
@@ -20,7 +20,7 @@ env=Ant-v2
 #env=InvertedPendulum-v2
 #env=Reacher-v2
 #env=Swimmer-v2
-#env=Walker2d-v2
+env=Walker2d-v2
 
 #env=AntBulletEnv-v0
 #env=HalfCheetahBulletEnv-v0
@@ -29,10 +29,10 @@ env=Ant-v2
 #env=Walker2DBulletEnv-v0
 
 # Choose Policy Distribution
-dis="Normal"
+#dis="Normal"
 #dis="Squashed Normal"
 #dis="Clipped Normal"
-#dis="Truncated Normal"
+dis="Truncated Normal"
 
 # l2 regularization
 l2=0.0
@@ -57,7 +57,7 @@ popd
 pushd $expDir
 
 OMP_NUM_THREADS=12 python3 run-vracer.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lr $lr
-resdir=$(ls _result_vracer_*)
+resdir=$(ls -d _result_vracer_*)
 
 python3 -m korali.rlview --dir $resdir --output vracer.png
 

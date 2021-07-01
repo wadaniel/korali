@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-//#define NOISY
+#define NOISY
 namespace korali
 {
 namespace solver
@@ -661,15 +661,18 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
       const float curBeta2 = curBeta*curBeta;
       const float curAlpha2 = curAlpha*curAlpha;
+      const float eps = 1e-7;
+
 #ifdef NOISY
-      printf("cb2 %f ca2 %f\n", curBeta2, curAlpha2);
+      printf("cb1 %f ca1 %f\n", -curBeta2, -curAlpha2);
 #endif
-      if (curBeta2 > curAlpha2)
+
+      if (definitelyLessThan(-curBeta2,-curAlpha2, eps))
       {
         ldCqMu += safeLogMinus(-curAlpha2,-curBeta2);
         dCqMu = -std::exp(ldCqMu);
       }
-      else if(curAlpha2 > curBeta2)
+      else if (definitelyLessThan(-curAlpha2,-curBeta2, eps))
       {
         ldCqMu += safeLogMinus(-curBeta2,-curAlpha2);
         dCqMu = std::exp(ldCqMu);
@@ -948,8 +951,13 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       
       const float curBeta2 = curBeta*curBeta;
       const float curAlpha2 = curAlpha*curAlpha;
-    
-      if (curBeta2 > curAlpha2)
+      const float eps = 1e-6;
+
+#ifdef NOISY
+      printf("cb2 %f ca2 %f\n", -curBeta2, -curAlpha2);
+#endif
+
+      if (definitelyLessThan(-curBeta2,-curAlpha2, eps))
       {
         const float logDif = safeLogMinus(-curAlpha2,-curBeta2);
         ldCqMu += logDif;
@@ -957,7 +965,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
         lCps += logDif;
         Cps = -std::exp(lCps);
       }
-      else if(curAlpha2 > curBeta2)
+      else if (definitelyLessThan(-curAlpha2,-curBeta2, eps))
       {
         const float logDif = safeLogMinus(-curBeta2,-curAlpha2);
         ldCqMu += logDif;

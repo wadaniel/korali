@@ -1,5 +1,5 @@
-Study Case: Swarm of Artificial Swimmers behind Obstacle
-========================================================
+Study Case: Swarm of Artificial Swimmers
+========================================
 
 Environment for artificial swimmers, described by the StefanFish class (see _deps/CUP2D/Obstacles/Stefanfish{.cpp,.h}).
 

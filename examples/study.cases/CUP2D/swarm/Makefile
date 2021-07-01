@@ -1,4 +1,4 @@
-SWIMMER = run-vracer-swarm
+SWARM = run-vracer-swarm
 KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -10,9 +10,9 @@ CUBISMLIBS= ${CUPFOLDER}/makefiles/libcup.a $(shell cat ${CUPFOLDER}/makefiles/c
 .PHONY: all
 all: swarm
 
-swarm: $(SWIMMER)
+swarm: $(SWARM)
 
-$(SWIMMER): %: %.o swarmEnvironment.o ${CUPFOLDER}/makefiles/libcup.a
+$(SWARM): %: %.o swarmEnvironment.o ${CUPFOLDER}/makefiles/libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp
@@ -23,4 +23,4 @@ swarmEnvironment.o: _model/swarmEnvironment.cpp
 
 .PHONY: clean
 clean:
-	$(RM) $(SWIMMER) *.txt *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(SWARM) *.txt *.o *.ti *.optrpt *.h5 *.dat *.xmf

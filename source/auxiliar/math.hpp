@@ -140,9 +140,9 @@ T safeLogPlus(T x, T y)
 template <typename T>
 T safeLogMinus(T x, T y)
 {
-  if (y+1e-20>x)
+  if (y+1e-20>=x)
   {
-    return -20.;
+    return -32.;
   }
   if (x-y>20.)
   {

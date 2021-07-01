@@ -82,18 +82,16 @@ class fish:
     def updateDirection(self):
         u = self.curDirection
         v = self.wishedDirection
-        assert np.linalg.norm(u) > 1e-12, print(u)
-        assert np.linalg.norm(v) > 1e-12, print(v)
-        assert np.linalg.norm(u) < 1e12, print(u)
-        assert np.linalg.norm(v) < 1e12, print(v)
+        assert np.isclose( np.linalg.norm(u), 1.0 ), print("Current direction {} not normalized".format(u))
+        assert np.isclose( np.linalg.norm(v), 1.0 ), print("Wished direction {} not normalized".format(v))
 
         cosAngle = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
-        angle = np.arccos(cosAngle)
+        angle    = np.arccos(cosAngle)
         if angle < self.maxAngle:
             self.curDirection = self.wishedDirection
         else:
             rotVector = np.cross(self.curDirection, self.wishedDirection)
-            assert np.linalg.norm(rotVector) > 0, print("Rotation vector {} invalid, computed from {} and {}".format(rotVector, self.curDirection, self.wishedDirection))
+            assert np.linalg.norm(rotVector) > 0, print("Rotation vector {} zero".format(rotVector))
             rotVector /= np.linalg.norm(rotVector)
             rotVector *= self.maxAngle
             r = Rotation.from_rotvec(rotVector)

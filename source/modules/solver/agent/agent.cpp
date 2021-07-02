@@ -500,8 +500,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     }
 
 #ifdef CSCALE
-    if(_rewardVector.size() >= _experienceReplayMaximumSize)
-        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    //if(_rewardVector.size() >= _experienceReplayMaximumSize)
+    //    _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
     _rewardRescalingSumSquaredRewards += reward*reward;
 #endif
     _rewardVector.add(reward);
@@ -614,7 +614,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   }
 
 #ifdef CSCALE
-  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+  //_rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_experienceCount + 1e-9);
 #endif
 }
 

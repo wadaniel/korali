@@ -396,7 +396,17 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
-     
+
+#ifdef NOISY
+      printf("bcbc: %f %f\n", gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
+      printf("bcbco: %f %f\n", gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
+      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
+          KORALI_LOG_ERROR("XX");
+      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
+          KORALI_LOG_ERROR("YY");
+#endif
+
+
       // log of normalization constants
       const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
       const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
@@ -642,7 +652,17 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
-     
+
+#ifdef NOISY
+      printf("xbcbc: %f %f\n", -curBeta, -curAlpha);
+      printf("xbcbco: %f %f\n", -oldBeta, -oldAlpha);
+      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
+          KORALI_LOG_ERROR("XX");
+      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
+          KORALI_LOG_ERROR("YY");
+#endif
+
+
       // log of normalization constantsa
       const float lCq = M_LN2-safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
       assert(isfinite(lCq));
@@ -929,7 +949,16 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       // current scaled upper and lower bound distances from mu
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
-  
+
+#ifdef NOISY
+      printf("ycbco: %f %f\n", gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
+      printf("ybcbco: %f %f\n", gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
+      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
+          KORALI_LOG_ERROR("XX");
+      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
+          KORALI_LOG_ERROR("YY");
+#endif
+
       // log of normalization constantsa
       const float lCq = M_LN2-safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
       assert(isfinite(lCq));

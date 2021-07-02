@@ -190,7 +190,7 @@ T safeLogMinus(T x, T y)
   }
   else
   {
-    KORALI_LOG_ERROR("Invalid input to mathematical function 'safeLogMinus, x (%f) must be larger than y (%f)\n", x,y);
+    KORALI_LOG_ERROR("Invalid input to mathematical function 'safeLogMinus, x (%.*e) must be larger than y (%.*e)\n", x, y);
     return 0.;
   }
 }

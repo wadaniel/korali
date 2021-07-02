@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-#define NOISY
+//#define NOISY
 namespace korali
 {
 namespace solver

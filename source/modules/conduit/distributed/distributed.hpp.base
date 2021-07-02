@@ -1,16 +1,15 @@
 __startIncludeGuard__;
 
-#include "config.hpp"
 #include "auxiliar/MPIUtils.hpp"
+#include "config.hpp"
 #include "modules/conduit/conduit.hpp"
 #include <map>
 #include <queue>
 #include <vector>
 
-
 __startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /**

@@ -5,6 +5,6 @@ do
     do 
         export ENV=$E; DIS=$D; 
         #./sbatch-vracer-openAI.sh test${E}_$D; 
-        ./sbatch-vracer-openAI.sh OpenAIR_csacle2; 
+        ./sbatch-vracer-openAI.sh OpenAI_csacle2; 
     done; 
 done

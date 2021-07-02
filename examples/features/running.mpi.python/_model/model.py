@@ -6,7 +6,7 @@ from mpi4py import MPI
 # This toy model has no other purpose rather than showing how to use MPI4py in Korali
 # It evaluates different x (one per worker) and returns its average as team evaluation.
 def model(p):
-  comm = korali.getMPIComm()
+  comm = korali.getWorkerMPIComm()
   rank = comm.Get_rank()
   size = comm.Get_size()
   

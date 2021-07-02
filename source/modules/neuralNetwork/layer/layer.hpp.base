@@ -13,16 +13,17 @@ __startIncludeGuard__;
   #include <cudnn.h>
 #endif
 
-__startNamespace__;
-0
+namespace korali
+{
 
-  class NeuralNetwork;
+class NeuralNetwork;
 struct layerPipeline_t;
 
-__startNamespace__;
-1
+}
 
-  class __className__ : public __parentClassName__
+__startNamespace__;
+
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -200,9 +201,5 @@ __startNamespace__;
 };
 
 __endNamespace__;
-1
 
-  __endNamespace__;
-0
-
-  __endIncludeGuard__;
+__endIncludeGuard__;

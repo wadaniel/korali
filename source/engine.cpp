@@ -3,82 +3,13 @@
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/conduit/distributed/distributed.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
 #include <omp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#ifdef _KORALI_USE_MPI
-
-#include <mpi.h>
-
-#ifdef _KORALI_USE_MPI4PY
-#ifndef _KORALI_NO_MPI4PY
-
-#include <mpi4py/mpi4py.h>
-
-// MPI Communicator handler for pybind11
-// Credits to H. Tittich
-// https://stackoverflow.com/questions/49259704/pybind11-possible-to-use-mpi4py
-
-struct mpi4py_comm {
-  mpi4py_comm() = default;
-  mpi4py_comm(MPI_Comm value) : value(value) {}
-  operator MPI_Comm () { return value; }
-
-  MPI_Comm value;
-};
-
-namespace pybind11 { namespace detail {
-  template <> struct type_caster<mpi4py_comm> {
-    public:
-      PYBIND11_TYPE_CASTER(mpi4py_comm, _("mpi4py_comm"));
-
-      // Python -> C++
-      bool load(handle src, bool) {
-        PyObject *py_src = src.ptr();
-
-        // Check that we have been passed an mpi4py communicator
-        if (PyObject_TypeCheck(py_src, &PyMPIComm_Type)) {
-          // Convert to regular MPI communicator
-          value.value = *PyMPIComm_Get(py_src);
-        } else {
-          return false;
-        }
-
-        return !PyErr_Occurred();
-      }
-
-      // C++ -> Python
-      static handle cast(mpi4py_comm src,
-                         return_value_policy /* policy */,
-                         handle /* parent */)
-      {
-        // Create an mpi4py handle
-        return PyMPIComm_New(src.value);
-      }
-  };
-}} // namespace pybind11::detail
-
-namespace korali
-{
- mpi4py_comm getMPI4PyComm()
- {
-  return __koraliWorkerMPIComm;
- }
-
- void setMPI4PyComm(mpi4py_comm comm)
- {
-  setKoraliMPIComm(comm);
- }
-}
-
-
-#endif
-#endif
-#endif
 
 namespace korali
 {
@@ -87,6 +18,10 @@ bool isPythonActive = 0;
 
 Engine::Engine()
 {
+  #ifdef _KORALI_USE_MPI
+  __isMPICommGiven = false;
+  #endif
+
   _cumulativeTime = 0.0;
   _thread = co_active();
   _conduit = NULL;
@@ -246,6 +181,18 @@ knlohmann::json &Engine::operator[](const unsigned long int &key) { return _js[k
 pybind11::object Engine::getItem(const pybind11::object key) { return _js.getItem(key); }
 void Engine::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
+
+#ifdef _KORALI_USE_MPI4PY
+#ifndef _KORALI_NO_MPI4PY
+
+void Engine::setMPI4PyComm(mpi4py_comm comm)
+{
+ korali::setMPI4PyComm(comm);
+}
+
+#endif
+#endif
+
 } // namespace korali
 
 using namespace korali;
@@ -258,8 +205,7 @@ PYBIND11_MODULE(libkorali, m)
 
   // import the mpi4py API
   if (import_mpi4py() < 0) { throw std::runtime_error("Could not load mpi4py API."); }
-  m.def("getWorkerMPIComm", &getMPI4PyComm);
-  m.def("setMPIComm", &setMPI4PyComm);
+  m.def("getWorkerMPI4PyComm", &getMPI4PyComm);
 
   #endif
   #endif
@@ -276,8 +222,18 @@ PYBIND11_MODULE(libkorali, m)
       isPythonActive = true;
       k.run(e);
     })
+
+    #ifdef _KORALI_USE_MPI
+    #ifdef _KORALI_USE_MPI4PY
+    #ifndef _KORALI_NO_MPI4PY
+     .def("setMPIComm", &Engine::setMPI4PyComm)
+    #endif
+    #endif
+    #endif
+
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Engine::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);
+
 
   pybind11::class_<KoraliJson>(m, "koraliJson")
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&KoraliJson::getItem), pybind11::return_value_policy::reference)

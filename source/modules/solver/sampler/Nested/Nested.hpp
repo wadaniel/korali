@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Nested.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_NESTED_
-#define _KORALI_SOLVER_SAMPLER_NESTED_
-;
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -561,5 +558,4 @@ class Nested : public Sampler
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_SAMPLER_NESTED_
-;
+

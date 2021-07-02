@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Rprop.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_RPROP_
-#define _KORALI_SOLVER_OPTIMIZER_RPROP_
-;
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
@@ -145,5 +142,4 @@ class Rprop : public Optimizer
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_OPTIMIZER_RPROP_
-;
+

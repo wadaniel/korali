@@ -1,5 +1,4 @@
-#ifndef _KORALI_ENGINE_HPP_
-#define _KORALI_ENGINE_HPP_
+#pragma once
 
 /** \file
 * @brief Include header for the Korali Engine
@@ -182,4 +181,3 @@ extern bool isPythonActive;
 extern std::stack<Engine *> _engineStack;
 } // namespace korali
 
-#endif

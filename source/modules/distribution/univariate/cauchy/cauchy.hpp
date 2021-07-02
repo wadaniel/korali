@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Cauchy.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -122,5 +119,4 @@ class Cauchy : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_
-;
+

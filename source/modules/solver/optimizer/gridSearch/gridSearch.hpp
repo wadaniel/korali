@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: GridSearch.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-#define _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-;
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -83,5 +80,4 @@ class GridSearch : public Optimizer
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-;
+

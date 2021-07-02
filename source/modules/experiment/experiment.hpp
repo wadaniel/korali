@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Experiment.
 */
 
-
-#ifndef _KORALI_EXPERIMENT_
-#define _KORALI_EXPERIMENT_
-;
+#pragma once
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
@@ -245,5 +242,4 @@ class Experiment : public Module
 } //korali
 ;
 
-#endif // _KORALI_EXPERIMENT_
-;
+

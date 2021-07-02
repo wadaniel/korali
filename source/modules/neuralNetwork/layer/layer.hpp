@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Layer.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_
-#define _KORALI_NEURALNETWORK_LAYER_
-;
+#pragma once
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -259,5 +256,4 @@ class Layer : public Module
 } //korali
 ;
 
-#endif // _KORALI_NEURALNETWORK_LAYER_
-;
+

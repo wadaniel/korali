@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Distributed.
 */
 
-
-#ifndef _KORALI_CONDUIT_DISTRIBUTED_
-#define _KORALI_CONDUIT_DISTRIBUTED_
-;
+#pragma once
 
 #include "auxiliar/MPIUtils.hpp"
 #include "config.hpp"
@@ -126,5 +123,4 @@ class Distributed : public Conduit
 } //korali
 ;
 
-#endif // _KORALI_CONDUIT_DISTRIBUTED_
-;
+

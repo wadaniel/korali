@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: DEA.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_DEA_
-#define _KORALI_SOLVER_OPTIMIZER_DEA_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -218,5 +215,4 @@ class DEA : public Optimizer
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_OPTIMIZER_DEA_
-;
+

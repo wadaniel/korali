@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Output.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-#define _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-;
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -124,5 +121,4 @@ class Output : public Layer
 } //korali
 ;
 
-#endif // _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-;
+

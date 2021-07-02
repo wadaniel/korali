@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Linear.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_LINEAR_
-#define _KORALI_NEURALNETWORK_LAYER_LINEAR_
-;
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -200,5 +197,4 @@ class Linear : public Layer
 } //korali
 ;
 
-#endif // _KORALI_NEURALNETWORK_LAYER_LINEAR_
-;
+

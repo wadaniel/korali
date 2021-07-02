@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Optimizer.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_
-#define _KORALI_SOLVER_OPTIMIZER_
-;
+#pragma once
 
 #include "modules/solver/solver.hpp"
 
@@ -93,5 +90,3 @@ class Optimizer : public Solver
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_OPTIMIZER_
-;

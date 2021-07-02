@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "auxiliar/MPIUtils.hpp"
 #include "config.hpp"
@@ -75,4 +75,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: ThetaNew.
 */
 
-
-#ifndef _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
-#define _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
-;
+#pragma once
 
 #include "modules/problem/hierarchical/hierarchical.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
@@ -100,5 +97,3 @@ class ThetaNew : public Hierarchical
 } //korali
 ;
 
-#endif // _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
-;

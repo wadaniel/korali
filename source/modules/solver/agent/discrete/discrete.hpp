@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Discrete.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_DISCRETE_
-#define _KORALI_SOLVER_AGENT_DISCRETE_
-;
+#pragma once
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
@@ -97,5 +94,4 @@ class Discrete : public Agent
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_AGENT_DISCRETE_
-;
+

@@ -2,8 +2,8 @@
 * @brief Contains functions to manage file and console output, verbosity levels, and error reporting.
 ******************************************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_LOGGER_HPP_
-#define _KORALI_AUXILIARS_LOGGER_HPP_
+#pragma once
+
 
 #include <string>
 
@@ -87,4 +87,3 @@ class Logger
 };
 
 } // namespace korali
-#endif

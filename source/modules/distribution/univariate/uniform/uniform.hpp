@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Uniform.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_UNIFORM_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_UNIFORM_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -122,5 +119,4 @@ class Uniform : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_UNIFORM_
-;
+

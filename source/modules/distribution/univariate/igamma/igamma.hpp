@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Igamma.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -124,5 +121,4 @@ class Igamma : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
-;
+

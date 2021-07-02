@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Normal.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
-#define _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
-;
+#pragma once
 
 #include "modules/distribution/multivariate/multivariate.hpp"
 #include <gsl/gsl_matrix.h>
@@ -125,5 +122,4 @@ class Normal : public Multivariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
-;
+

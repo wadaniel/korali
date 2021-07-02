@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Adam.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_ADAM_
-#define _KORALI_SOLVER_OPTIMIZER_ADAM_
-;
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -138,5 +135,3 @@ class Adam : public Optimizer
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_OPTIMIZER_ADAM_
-;

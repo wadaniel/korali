@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: GaussianProcess.
 */
 
-
-#ifndef _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-#define _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-;
+#pragma once
 
 #include "engine.hpp"
 
@@ -128,5 +125,4 @@ class GaussianProcess : public Learner
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-;
+

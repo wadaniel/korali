@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Recurrent.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-#define _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-;
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -232,5 +229,4 @@ class Recurrent : public Layer
 } //korali
 ;
 
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-;
+

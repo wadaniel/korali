@@ -105,8 +105,8 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
   if (os.path.isfile(filePath)):
    with open(filePath, 'r') as file:
     prevString = file.read()
-  if (prevString == codeString):
-   doSave = False
+   if (prevString == codeString):
+    doSave = False
   
   if (doSave): filePath.write_text(codeString)
 
@@ -155,8 +155,8 @@ def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
   if (os.path.isfile(filePath)):
    with open(filePath, 'r') as file:
     prevString = file.read()
-  if (prevString == variableHeaderString):
-   doSave = False
+   if (prevString == variableHeaderString):
+    doSave = False
   
   if (doSave): filePath.write_text(variableHeaderString)
 

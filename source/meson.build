@@ -27,7 +27,6 @@ korali_source = files([
 ])
 korali_source += korali_header
 
-
 korali_source_config = [] # collection of .config files used in code generation
 subdir('auxiliar')
 subdir('modules')

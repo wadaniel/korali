@@ -79,5 +79,3 @@ class GridSearch : public Optimizer
 } //solver
 } //korali
 ;
-
-

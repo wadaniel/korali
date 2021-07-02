@@ -148,5 +148,3 @@ class Solver : public Module
 
 } //korali
 ;
-
-

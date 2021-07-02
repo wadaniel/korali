@@ -118,5 +118,3 @@ class Gamma : public Univariate
 } //distribution
 } //korali
 ;
-
-

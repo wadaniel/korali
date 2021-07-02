@@ -135,5 +135,3 @@ class Continuous : public Agent
 } //solver
 } //korali
 ;
-
-

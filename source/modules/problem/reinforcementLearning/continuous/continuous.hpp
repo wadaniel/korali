@@ -66,4 +66,3 @@ class Continuous : public ReinforcementLearning
 } //problem
 } //korali
 ;
-

@@ -87,5 +87,3 @@ class Univariate : public Distribution
 } //distribution
 } //korali
 ;
-
-

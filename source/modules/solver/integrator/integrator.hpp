@@ -75,5 +75,3 @@ class Integrator : public Solver
 } //solver
 } //korali
 ;
-
-

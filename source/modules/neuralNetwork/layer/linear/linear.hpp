@@ -196,5 +196,3 @@ class Linear : public Layer
 } //neuralNetwork
 } //korali
 ;
-
-

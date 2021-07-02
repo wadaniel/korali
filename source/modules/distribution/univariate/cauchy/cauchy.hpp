@@ -118,5 +118,3 @@ class Cauchy : public Univariate
 } //distribution
 } //korali
 ;
-
-

@@ -118,5 +118,3 @@ class Uniform : public Univariate
 } //distribution
 } //korali
 ;
-
-

@@ -228,5 +228,3 @@ class Recurrent : public Layer
 } //neuralNetwork
 } //korali
 ;
-
-

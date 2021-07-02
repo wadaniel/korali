@@ -94,4 +94,3 @@ class Hierarchical : public Problem
 } //problem
 } //korali
 ;
-

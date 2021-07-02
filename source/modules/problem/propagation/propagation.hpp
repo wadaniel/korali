@@ -76,4 +76,3 @@ class Propagation : public Problem
 } //problem
 } //korali
 ;
-

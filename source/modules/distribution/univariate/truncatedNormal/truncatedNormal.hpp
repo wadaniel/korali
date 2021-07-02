@@ -137,5 +137,3 @@ class TruncatedNormal : public Univariate
 } //distribution
 } //korali
 ;
-
-

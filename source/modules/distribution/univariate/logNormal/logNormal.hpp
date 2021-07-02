@@ -118,5 +118,3 @@ class LogNormal : public Univariate
 } //distribution
 } //korali
 ;
-
-

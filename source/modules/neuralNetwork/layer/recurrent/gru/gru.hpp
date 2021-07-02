@@ -89,5 +89,3 @@ class GRU : public Recurrent
 } //neuralNetwork
 } //korali
 ;
-
-

@@ -118,5 +118,3 @@ class Weibull : public Univariate
 } //distribution
 } //korali
 ;
-
-

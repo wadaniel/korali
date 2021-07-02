@@ -557,5 +557,3 @@ class Nested : public Sampler
 } //solver
 } //korali
 ;
-
-

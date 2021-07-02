@@ -183,5 +183,3 @@ class Reference : public Bayesian
 } //problem
 } //korali
 ;
-
-

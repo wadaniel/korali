@@ -122,5 +122,3 @@ class Distributed : public Conduit
 } //conduit
 } //korali
 ;
-
-

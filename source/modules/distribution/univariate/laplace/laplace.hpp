@@ -118,5 +118,3 @@ class Laplace : public Univariate
 } //distribution
 } //korali
 ;
-
-

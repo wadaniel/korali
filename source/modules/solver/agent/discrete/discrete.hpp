@@ -93,5 +93,3 @@ class Discrete : public Agent
 } //solver
 } //korali
 ;
-
-

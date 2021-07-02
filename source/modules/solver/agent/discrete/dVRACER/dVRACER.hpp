@@ -106,5 +106,3 @@ class dVRACER : public Discrete
 } //solver
 } //korali
 ;
-
-

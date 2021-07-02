@@ -141,5 +141,3 @@ class Rprop : public Optimizer
 } //solver
 } //korali
 ;
-
-

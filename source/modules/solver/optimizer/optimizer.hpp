@@ -89,4 +89,3 @@ class Optimizer : public Solver
 } //solver
 } //korali
 ;
-

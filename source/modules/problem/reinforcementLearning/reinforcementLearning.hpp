@@ -174,5 +174,3 @@ class ReinforcementLearning : public Problem
 } //problem
 } //korali
 ;
-
-

@@ -126,5 +126,3 @@ class MADGRAD : public Optimizer
 } //solver
 } //korali
 ;
-
-

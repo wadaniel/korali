@@ -120,5 +120,3 @@ class Output : public Layer
 } //neuralNetwork
 } //korali
 ;
-
-

@@ -129,5 +129,3 @@ class Bayesian : public Problem
 } //problem
 } //korali
 ;
-
-

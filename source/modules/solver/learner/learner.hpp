@@ -77,5 +77,3 @@ class Learner : public Solver
 } //solver
 } //korali
 ;
-
-

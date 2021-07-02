@@ -255,5 +255,3 @@ class Layer : public Module
 } //neuralNetwork
 } //korali
 ;
-
-

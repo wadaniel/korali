@@ -71,5 +71,3 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
-
-

@@ -134,4 +134,3 @@ class Adam : public Optimizer
 } //solver
 } //korali
 ;
-

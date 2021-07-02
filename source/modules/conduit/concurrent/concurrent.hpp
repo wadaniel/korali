@@ -100,5 +100,3 @@ class Concurrent : public Conduit
 } //conduit
 } //korali
 ;
-
-

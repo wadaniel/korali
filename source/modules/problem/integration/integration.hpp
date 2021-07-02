@@ -75,4 +75,3 @@ class Integration : public Problem
 } //problem
 } //korali
 ;
-

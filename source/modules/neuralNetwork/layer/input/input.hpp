@@ -60,5 +60,3 @@ class Input : public Layer
 } //neuralNetwork
 } //korali
 ;
-
-

@@ -121,5 +121,3 @@ class Normal : public Multivariate
 } //distribution
 } //korali
 ;
-
-

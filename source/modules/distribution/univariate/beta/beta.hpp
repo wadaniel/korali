@@ -118,5 +118,3 @@ class Beta : public Univariate
 } //distribution
 } //korali
 ;
-
-

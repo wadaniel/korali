@@ -118,5 +118,3 @@ class Exponential : public Univariate
 } //distribution
 } //korali
 ;
-
-

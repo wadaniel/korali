@@ -176,5 +176,3 @@ class DeepSupervisor : public Learner
 } //solver
 } //korali
 ;
-
-

@@ -552,5 +552,3 @@ class CMAES : public Optimizer
 } //solver
 } //korali
 ;
-
-

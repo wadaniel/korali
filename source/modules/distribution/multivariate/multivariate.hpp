@@ -83,4 +83,3 @@ class Multivariate : public Distribution
 } //distribution
 } //korali
 ;
-

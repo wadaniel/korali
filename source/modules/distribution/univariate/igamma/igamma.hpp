@@ -120,5 +120,3 @@ class Igamma : public Univariate
 } //distribution
 } //korali
 ;
-
-

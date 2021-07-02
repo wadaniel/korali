@@ -103,4 +103,3 @@ class Optimization : public Problem
 } //problem
 } //korali
 ;
-

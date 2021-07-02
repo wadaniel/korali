@@ -118,5 +118,3 @@ class LSTM : public Recurrent
 } //neuralNetwork
 } //korali
 ;
-
-

@@ -380,5 +380,3 @@ class HMC : public Sampler
 } //solver
 } //korali
 ;
-
-

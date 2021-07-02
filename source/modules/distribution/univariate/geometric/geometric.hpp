@@ -110,5 +110,3 @@ class Geometric : public Univariate
 } //distribution
 } //korali
 ;
-
-

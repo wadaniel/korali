@@ -64,4 +64,3 @@ class Multinomial : public Specific
 } //distribution
 } //korali
 ;
-

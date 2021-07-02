@@ -142,5 +142,3 @@ class Activation : public Layer
 } //neuralNetwork
 } //korali
 ;
-
-

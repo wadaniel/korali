@@ -69,4 +69,3 @@ class Discrete : public ReinforcementLearning
 } //problem
 } //korali
 ;
-

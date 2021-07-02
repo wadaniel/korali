@@ -803,5 +803,3 @@ class Agent : public Solver
 } //solver
 } //korali
 ;
-
-

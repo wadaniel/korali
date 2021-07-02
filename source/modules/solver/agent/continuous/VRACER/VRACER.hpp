@@ -116,5 +116,3 @@ class VRACER : public Continuous
 } //solver
 } //korali
 ;
-
-

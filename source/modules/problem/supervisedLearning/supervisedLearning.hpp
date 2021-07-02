@@ -88,4 +88,3 @@ class SupervisedLearning : public Problem
 } //problem
 } //korali
 ;
-

@@ -246,5 +246,3 @@ class NeuralNetwork : public Module
 
 } //korali
 ;
-
-

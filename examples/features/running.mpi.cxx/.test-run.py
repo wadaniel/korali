@@ -5,11 +5,11 @@ r = call(["make", "-j4"])
 if r!=0:
   exit(r)
 
-r = call(["mpirun", "-n", "4", "./run-cmaes"])
+r = call(["mpirun", "-n", "9", "./run-cmaes", "4"])
 if r!=0:
   exit(r)
 
-r = call(["mpirun", "-n", "4", "./run-tmcmc"])
+r = call(["mpirun", "-n", "9", "./run-tmcmc", "4"])
 if r!=0:
   exit(r)
 

@@ -59,5 +59,3 @@ class Sampler : public Solver
 } //solver
 } //korali
 ;
-
-

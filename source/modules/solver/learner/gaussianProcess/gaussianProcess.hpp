@@ -124,5 +124,3 @@ class GaussianProcess : public Learner
 } //solver
 } //korali
 ;
-
-

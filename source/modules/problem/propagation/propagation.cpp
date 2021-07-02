@@ -1,11 +1,7 @@
 #include "modules/problem/propagation/propagation.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 void Propagation::initialize()
 {
@@ -181,6 +177,4 @@ bool Propagation::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-} //problem
-} //korali
-;
+__endNamespace__;

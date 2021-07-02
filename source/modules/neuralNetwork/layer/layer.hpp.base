@@ -14,13 +14,9 @@ __startIncludeGuard__;
 #endif
 
 __startNamespace__;
-0
 
   class NeuralNetwork;
 struct layerPipeline_t;
-
-__startNamespace__;
-1
 
   class __className__ : public __parentClassName__
 {
@@ -200,9 +196,4 @@ __startNamespace__;
 };
 
 __endNamespace__;
-1
 
-  __endNamespace__;
-0
-
-  __endIncludeGuard__;

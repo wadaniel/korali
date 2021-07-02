@@ -1,11 +1,7 @@
 #include "modules/distribution/multivariate/multivariate.hpp"
 #include "modules/experiment/experiment.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-;
+__startNamespace__;
 
 void Multivariate::setConfiguration(knlohmann::json& js) 
 {
@@ -38,6 +34,4 @@ void Multivariate::applyVariableDefaults()
 
 ;
 
-} //distribution
-} //korali
-;
+__endNamespace__;

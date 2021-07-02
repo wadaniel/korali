@@ -13,15 +13,11 @@
 
 #ifndef _KORALI_SOLVER_INTEGRATOR_
 #define _KORALI_SOLVER_INTEGRATOR_
-;
+
 
 #include "modules/solver/solver.hpp"
 
-namespace korali
-{
-namespace solver
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Integrator.
@@ -75,9 +71,7 @@ class Integrator : public Solver
   void finalize() override;
 };
 
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_INTEGRATOR_
-;
+

@@ -2,13 +2,7 @@
 #include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 void ThetaNew::initialize()
 {
@@ -99,7 +93,4 @@ void ThetaNew::applyVariableDefaults()
 
 ;
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;

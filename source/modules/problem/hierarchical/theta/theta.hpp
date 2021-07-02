@@ -13,18 +13,12 @@
 
 #ifndef _KORALI_PROBLEM_HIERARCHICAL_THETA_
 #define _KORALI_PROBLEM_HIERARCHICAL_THETA_
-;
+
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Theta.
@@ -138,10 +132,6 @@ class Theta : public Hierarchical
   void initialize() override;
 };
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_THETA_
-;

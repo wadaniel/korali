@@ -1,11 +1,7 @@
 #include "modules/problem/integration/integration.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 void Integration::initialize()
 {
@@ -252,6 +248,4 @@ bool Integration::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-} //problem
-} //korali
-;
+__endNamespace__;

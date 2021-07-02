@@ -13,18 +13,12 @@
 
 #ifndef _KORALI_PROBLEM_HIERARCHICAL_PSI_
 #define _KORALI_PROBLEM_HIERARCHICAL_PSI_
-;
+
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/problem/hierarchical/hierarchical.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Psi.
@@ -124,10 +118,6 @@ class Psi : public Hierarchical
   void initialize() override;
 };
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_PSI_
-;

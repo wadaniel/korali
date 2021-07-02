@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_ADAM_
 #define _KORALI_SOLVER_OPTIMIZER_ADAM_
-;
+
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Adam.
@@ -133,10 +127,6 @@ class Adam : public Optimizer
   void printGenerationAfter() override;
 };
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_ADAM_
-;

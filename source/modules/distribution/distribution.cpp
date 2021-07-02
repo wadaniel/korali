@@ -5,9 +5,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf.h>
 
-namespace korali
-{
-;
+__startNamespace__;
 
 std::string
 Distribution::getRange(gsl_rng *range) const
@@ -127,5 +125,4 @@ void Distribution::applyVariableDefaults()
 
 ;
 
-} //korali
-;
+__endNamespace__;

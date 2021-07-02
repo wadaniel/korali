@@ -13,20 +13,14 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_CMAES_
 #define _KORALI_SOLVER_OPTIMIZER_CMAES_
-;
+
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: CMAES.
@@ -551,10 +545,7 @@ class CMAES : public Optimizer
   void finalize() override;
 };
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_CMAES_
-;
+

@@ -60,9 +60,6 @@ def checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate):
 
 
 def replaceKeys( moduleConfig, codeString ):
-  codeString = codeString.replace( '__startIncludeGuard__', hb.startIncludeGuard(moduleConfig) )
-  codeString = codeString.replace( '__endIncludeGuard__', hb.endIncludeGuard(moduleConfig) )
-
   codeString = codeString.replace( '__className__', moduleConfig['Class Name'] )
   codeString = codeString.replace( '__parentClassName__', moduleConfig['Parent Class Name'] )
 

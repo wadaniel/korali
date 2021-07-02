@@ -6,9 +6,7 @@
 
 using namespace std;
 
-namespace korali
-{
-;
+__startNamespace__;
 
 /**
 * @brief Temporary storage to hold the pointer to the current sample to process
@@ -312,5 +310,4 @@ void Conduit::applyVariableDefaults()
 
 ;
 
-} //korali
-;
+__endNamespace__;

@@ -13,18 +13,12 @@
 
 #ifndef _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
 #define _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
-;
+
 
 #include "modules/problem/hierarchical/hierarchical.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: ThetaNew.
@@ -95,10 +89,6 @@ class ThetaNew : public Hierarchical
   void initialize() override;
 };
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_THETANEW_
-;

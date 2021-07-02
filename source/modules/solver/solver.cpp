@@ -1,8 +1,6 @@
 #include "modules/solver/solver.hpp"
 
-namespace korali
-{
-;
+__startNamespace__;
 
 /**
 * @brief Prints solver information before the execution of the current generation.
@@ -111,5 +109,4 @@ bool Solver::checkTermination()
 
 ;
 
-} //korali
-;
+__endNamespace__;

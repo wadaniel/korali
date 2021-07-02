@@ -1,10 +1,6 @@
 #include "modules/solver/sampler/sampler.hpp"
 
-namespace korali
-{
-namespace solver
-{
-;
+__startNamespace__;
 
 void Sampler::setConfiguration(knlohmann::json& js) 
 {
@@ -88,6 +84,4 @@ bool Sampler::checkTermination()
 
 ;
 
-} //solver
-} //korali
-;
+__endNamespace__;

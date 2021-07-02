@@ -13,11 +13,7 @@
 
 using namespace std;
 
-namespace korali
-{
-namespace conduit
-{
-;
+__startNamespace__;
 
 void Concurrent::initialize()
 {
@@ -278,6 +274,4 @@ void Concurrent::applyVariableDefaults()
 
 ;
 
-} //conduit
-} //korali
-;
+__endNamespace__;

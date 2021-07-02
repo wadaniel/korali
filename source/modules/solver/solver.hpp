@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_
 #define _KORALI_SOLVER_
-;
+
 
 #include "auxiliar/libco/libco.h"
 #include "modules/experiment/experiment.hpp"
@@ -25,9 +25,7 @@
 /*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
 */
-namespace korali
-{
-;
+__startNamespace__;
 
 /**
  * @brief Macro to start the processing of a sample.
@@ -149,8 +147,7 @@ class Solver : public Module
   std::vector<std::string> _terminationCriteria;
 };
 
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_
-;
+

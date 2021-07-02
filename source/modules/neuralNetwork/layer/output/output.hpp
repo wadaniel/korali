@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_OUTPUT_
 #define _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-;
+
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-;
+__startNamespace__;
 
 /**
 * @brief This enumerator details all possible transformations. It is used in lieu of string comparison to accelerate the application of this layer
@@ -119,10 +113,7 @@ class Output : public Layer
   void backwardData(const size_t t) override;
 };
 
-} //layer
-} //neuralNetwork
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-;
+

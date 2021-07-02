@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
 #define _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-;
+
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -26,13 +26,7 @@
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace learner
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: DeepSupervisor.
@@ -175,10 +169,7 @@ class DeepSupervisor : public Learner
   void printGenerationAfter() override;
 };
 
-} //learner
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-;
+

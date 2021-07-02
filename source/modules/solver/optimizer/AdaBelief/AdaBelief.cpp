@@ -2,13 +2,7 @@
 #include "modules/solver/optimizer/AdaBelief/AdaBelief.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 void AdaBelief::setInitialConfiguration()
 {
@@ -309,7 +303,4 @@ bool AdaBelief::checkTermination()
 
 ;
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;

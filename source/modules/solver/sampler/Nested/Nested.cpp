@@ -17,13 +17,7 @@
 #include <numeric>
 #include <random> // std::default_random_engine
 
-namespace korali
-{
-namespace solver
-{
-namespace sampler
-{
-;
+__startNamespace__;
 
 void ellipse_t::initSphere()
 {
@@ -1593,7 +1587,4 @@ bool Nested::checkTermination()
 
 ;
 
-} //sampler
-} //solver
-} //korali
-;
+__endNamespace__;

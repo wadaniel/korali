@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_LINEAR_
 #define _KORALI_NEURALNETWORK_LAYER_LINEAR_
-;
+
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Linear.
@@ -195,10 +189,7 @@ class Linear : public Layer
   void backwardHyperparameters(const size_t t) override;
 };
 
-} //layer
-} //neuralNetwork
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_NEURALNETWORK_LAYER_LINEAR_
-;
+

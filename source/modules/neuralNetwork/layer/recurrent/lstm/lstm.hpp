@@ -13,19 +13,11 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
 #define _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
-;
+
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-namespace recurrent
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: LSTM.
@@ -116,11 +108,7 @@ class LSTM : public Recurrent
   void backwardData(const size_t t) override;
 };
 
-} //recurrent
-} //layer
-} //neuralNetwork
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
-;
+

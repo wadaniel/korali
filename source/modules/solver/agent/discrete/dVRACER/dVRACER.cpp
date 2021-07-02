@@ -3,15 +3,7 @@
 #include "omp.h"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace discrete
-{
-;
+__startNamespace__;
 
 void dVRACER::initializeAgent()
 {
@@ -307,8 +299,4 @@ bool dVRACER::checkTermination()
 
 ;
 
-} //discrete
-} //agent
-} //solver
-} //korali
-;
+__endNamespace__;

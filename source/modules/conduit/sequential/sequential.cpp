@@ -11,11 +11,7 @@
 
 using namespace std;
 
-namespace korali
-{
-namespace conduit
-{
-;
+__startNamespace__;
 
 /**
 * @brief Temporary storage to hold the pointer to the current conduit
@@ -151,6 +147,4 @@ void Sequential::applyVariableDefaults()
 
 ;
 
-} //conduit
-} //korali
-;
+__endNamespace__;

@@ -2,13 +2,7 @@
 #include "modules/problem/hierarchical/theta/theta.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 void Theta::initialize()
 {
@@ -159,7 +153,4 @@ void Theta::applyVariableDefaults()
 
 ;
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;

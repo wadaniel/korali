@@ -13,18 +13,12 @@
 
 #ifndef _KORALI_SOLVER_AGENT_DISCRETE_
 #define _KORALI_SOLVER_AGENT_DISCRETE_
-;
+
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Discrete.
@@ -92,10 +86,7 @@ class Discrete : public Agent
   virtual void initializeAgent() override;
 };
 
-} //agent
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_AGENT_DISCRETE_
-;
+

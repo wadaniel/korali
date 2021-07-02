@@ -64,7 +64,8 @@ void __className__::setInitialConfiguration()
 
   // Allocating Memory
   _samplePopulation.resize(s_max);
-  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_variableCount);
+  for (size_t i = 0; i < s_max; i++)
+   _samplePopulation[i].resize(_variableCount);
 
   _evolutionPath.resize(_variableCount);
   _conjugateEvolutionPath.resize(_variableCount);

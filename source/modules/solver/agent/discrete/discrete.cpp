@@ -2,13 +2,7 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-;
+__startNamespace__;
 
 void Discrete::initializeAgent()
 {
@@ -212,7 +206,4 @@ bool Discrete::checkTermination()
 
 ;
 
-} //agent
-} //solver
-} //korali
-;
+__endNamespace__;

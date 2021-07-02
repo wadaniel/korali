@@ -4,13 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-;
+__startNamespace__;
 
 void Continuous::initializeAgent()
 {
@@ -979,7 +973,4 @@ bool Continuous::checkTermination()
 
 ;
 
-} //agent
-} //solver
-} //korali
-;
+__endNamespace__;

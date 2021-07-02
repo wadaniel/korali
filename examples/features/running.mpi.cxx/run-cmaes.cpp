@@ -102,12 +102,14 @@ int main(int argc, char *argv[])
 
   auto k = korali::Engine();
 
+  // Setting MPI conduit configuration and communicator
+  k.setMPIComm(MPI_COMM_WORLD);
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
+
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;
 
-  korali::setKoraliMPIComm(MPI_COMM_WORLD);
   k.run(e);
 
   MPI_Finalize();

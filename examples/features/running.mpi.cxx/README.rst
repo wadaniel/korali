@@ -1,7 +1,7 @@
-Running MPI Applications
+Running C++ MPI Applications
 =====================================================
 
-In this tutorial we show how an MPI model can be executed with Korali.
+In this tutorial we show how a C++ MPI model can be executed with Korali.
 
 For more information on running Korali applications in parallel, see :ref:`Parallel Execution <parallel-execution>`. 
 For more information on running Korali on MPI, see :ref:`Distributed Conduit <module-conduit-distributed>`. 
@@ -23,7 +23,7 @@ Note that we set `Ranks Per Worker` to assign a team of MPI processes to the mod
 
 .. code-block:: cpp
 
-    korali::setKoraliMPIComm(MPI_COMM_WORLD);
+    k.setMPIComm(MPI_COMM_WORLD);
     k["Conduit"]["Type"] = "Distributed";
     k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
     k["Profiling"]["Detail"] = "Full";

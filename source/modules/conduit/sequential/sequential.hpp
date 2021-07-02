@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_CONDUIT_SEQUENTIAL_
 #define _KORALI_CONDUIT_SEQUENTIAL_
-;
+
 
 #include "auxiliar/libco/libco.h"
 #include "modules/conduit/conduit.hpp"
@@ -22,11 +22,7 @@
 #include <queue>
 #include <vector>
 
-namespace korali
-{
-namespace conduit
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Sequential.
@@ -83,9 +79,7 @@ class Sequential : public Conduit
   size_t getProcessId() override;
 };
 
-} //conduit
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_CONDUIT_SEQUENTIAL_
-;
+

@@ -5,13 +5,7 @@
 
 #include <gsl/gsl_linalg.h> // Cholesky
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 void MOCMAES::setInitialConfiguration()
 {
@@ -1066,7 +1060,4 @@ bool MOCMAES::checkTermination()
 
 ;
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;

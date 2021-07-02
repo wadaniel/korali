@@ -13,14 +13,12 @@
 
 #ifndef _KORALI_PROBLEM_
 #define _KORALI_PROBLEM_
-;
+
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 
-namespace korali
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Problem.
@@ -58,8 +56,6 @@ class Problem : public Module
   */
 };
 
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_
-;

@@ -7,13 +7,7 @@
 
 #include <stdio.h>
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 void Rprop::setInitialConfiguration()
 {
@@ -369,7 +363,4 @@ bool Rprop::checkTermination()
 
 ;
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;

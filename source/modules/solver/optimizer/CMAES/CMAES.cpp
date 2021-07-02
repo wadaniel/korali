@@ -12,13 +12,7 @@
 //#include <gsl/gsl_matrix.h>
 //#include <gsl/gsl_blas.h>
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 void CMAES::setInitialConfiguration()
 {
@@ -70,7 +64,8 @@ void CMAES::setInitialConfiguration()
 
   // Allocating Memory
   _samplePopulation.resize(s_max);
-  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_variableCount);
+  for (size_t i = 0; i < s_max; i++)
+   _samplePopulation[i].resize(_variableCount);
 
   _evolutionPath.resize(_variableCount);
   _conjugateEvolutionPath.resize(_variableCount);
@@ -1942,7 +1937,4 @@ bool CMAES::checkTermination()
 
 ;
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;

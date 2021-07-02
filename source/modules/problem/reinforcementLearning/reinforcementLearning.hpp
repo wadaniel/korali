@@ -13,17 +13,13 @@
 
 #ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_
 #define _KORALI_PROBLEM_REINFORCEMENTLEARNING_
-;
+
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: ReinforcementLearning.
@@ -174,9 +170,7 @@ class ReinforcementLearning : public Problem
   double _agentCommunicationTime;
 };
 
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_
-;
+

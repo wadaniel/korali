@@ -13,14 +13,9 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-namespace korali
-{
-namespace neuralNetwork
-{
+__startNamespace__;
 
-
-  void
-  Layer::createForwardPipeline()
+void Layer::createForwardPipeline()
 {
   // Obtaining batch size
   ssize_t N = _batchSize;
@@ -212,8 +207,6 @@ void Layer::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //neuralNetwork
-} //korali
-
+__endNamespace__;

@@ -5,13 +5,7 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_vector.h>
 
-namespace korali
-{
-namespace distribution
-{
-namespace multivariate
-{
-;
+__startNamespace__;
 
 void Normal::getDensity(double *x, double *result, const size_t n)
 {
@@ -137,7 +131,4 @@ void Normal::applyVariableDefaults()
 
 ;
 
-} //multivariate
-} //distribution
-} //korali
-;
+__endNamespace__;

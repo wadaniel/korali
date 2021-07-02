@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_AGENT_
 #define _KORALI_SOLVER_AGENT_
-;
+
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -23,11 +23,7 @@
 #include <algorithm> // std::shuffle
 #include <random>
 
-namespace korali
-{
-namespace solver
-{
-;
+__startNamespace__;
 
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
@@ -803,9 +799,7 @@ class Agent : public Solver
   void finalize() override;
 };
 
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_AGENT_
-;
+

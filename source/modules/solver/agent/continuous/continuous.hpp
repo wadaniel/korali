@@ -13,19 +13,13 @@
 
 #ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_
 #define _KORALI_SOLVER_AGENT_CONTINUOUS_
-;
+
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Continuous.
@@ -134,10 +128,7 @@ class Continuous : public Agent
   virtual void initializeAgent() override;
 };
 
-} //agent
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_AGENT_CONTINUOUS_
-;
+

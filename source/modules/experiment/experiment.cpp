@@ -14,9 +14,7 @@
 #include <map>
 #include <stdlib.h>
 
-namespace korali
-{
-;
+__startNamespace__;
 /**
   * @brief Pointer to the current experiment in execution
  */
@@ -442,5 +440,4 @@ void Experiment::applyVariableDefaults()
 
 ;
 
-} //korali
-;
+__endNamespace__;

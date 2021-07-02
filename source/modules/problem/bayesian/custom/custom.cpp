@@ -3,13 +3,7 @@
 #include "modules/problem/bayesian/custom/custom.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace bayesian
-{
-;
+__startNamespace__;
 
 void Custom::initialize()
 {
@@ -89,7 +83,4 @@ void Custom::applyVariableDefaults()
 
 ;
 
-} //bayesian
-} //problem
-} //korali
-;
+__endNamespace__;

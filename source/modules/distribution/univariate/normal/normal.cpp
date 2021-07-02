@@ -4,13 +4,7 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-;
+__startNamespace__;
 
 double
 Normal::getDensity(const double x) const
@@ -100,7 +94,4 @@ double* Normal::getPropertyPointer(const std::string& property)
 
 ;
 
-} //univariate
-} //distribution
-} //korali
-;
+__endNamespace__;

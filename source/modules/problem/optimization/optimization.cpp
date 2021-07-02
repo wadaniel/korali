@@ -1,11 +1,7 @@
 #include "modules/problem/optimization/optimization.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 void Optimization::initialize()
 {
@@ -208,6 +204,4 @@ bool Optimization::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-} //problem
-} //korali
-;
+__endNamespace__;

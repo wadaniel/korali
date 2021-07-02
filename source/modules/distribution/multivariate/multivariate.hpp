@@ -13,15 +13,11 @@
 
 #ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_
-;
+
 
 #include "modules/distribution/distribution.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Multivariate.
@@ -83,9 +79,6 @@ class Multivariate : public Distribution
   virtual void getRandomVector(double *x, const size_t n) = 0;
 };
 
-} //distribution
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_
-;

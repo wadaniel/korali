@@ -1,11 +1,7 @@
 #include "modules/problem/hierarchical/hierarchical.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 void Hierarchical::initialize()
 {
@@ -189,6 +185,4 @@ bool Hierarchical::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-} //problem
-} //korali
-;
+__endNamespace__;

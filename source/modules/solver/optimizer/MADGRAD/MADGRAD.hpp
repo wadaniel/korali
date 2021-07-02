@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_MADGRAD_
 #define _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-;
+
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: MADGRAD.
@@ -125,10 +119,7 @@ class MADGRAD : public Optimizer
   void printGenerationAfter() override;
 };
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-;
+

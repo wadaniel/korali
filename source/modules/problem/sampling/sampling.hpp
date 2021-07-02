@@ -13,15 +13,11 @@
 
 #ifndef _KORALI_PROBLEM_SAMPLING_
 #define _KORALI_PROBLEM_SAMPLING_
-;
+
 
 #include "modules/problem/problem.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Sampling.
@@ -85,9 +81,7 @@ class Sampling : public Problem
   virtual void evaluateHessian(korali::Sample &sample);
 };
 
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_SAMPLING_
-;
+

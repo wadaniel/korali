@@ -1,10 +1,6 @@
 #include "modules/solver/learner/learner.hpp"
 
-namespace korali
-{
-namespace solver
-{
-;
+__startNamespace__;
 
 std::vector<std::vector<float>> &
 Learner::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
@@ -59,6 +55,4 @@ bool Learner::checkTermination()
 
 ;
 
-} //solver
-} //korali
-;
+__endNamespace__;

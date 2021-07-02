@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_NESTED_
 #define _KORALI_SOLVER_SAMPLER_NESTED_
-;
+
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -21,13 +21,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-namespace korali
-{
-namespace solver
-{
-namespace sampler
-{
-;
+__startNamespace__;
 
 /**
  * @brief Ellipse object to generate bounds.
@@ -556,10 +550,7 @@ class Nested : public Sampler
   void finalize() override;
 };
 
-} //sampler
-} //solver
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_SOLVER_SAMPLER_NESTED_
-;
+

@@ -4,13 +4,7 @@
 #include "modules/problem/hierarchical/psi/psi.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace hierarchical
-{
-;
+__startNamespace__;
 
 void Psi::initialize()
 {
@@ -196,7 +190,4 @@ void Psi::applyVariableDefaults()
 
 ;
 
-} //hierarchical
-} //problem
-} //korali
-;
+__endNamespace__;

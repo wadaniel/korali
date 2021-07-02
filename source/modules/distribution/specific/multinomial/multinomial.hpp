@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
 #define _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
-;
+
 
 #include "modules/distribution/specific/specific.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace specific
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Multinomial.
@@ -63,10 +57,6 @@ class Multinomial : public Specific
   void getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N);
 };
 
-} //specific
-} //distribution
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
-;

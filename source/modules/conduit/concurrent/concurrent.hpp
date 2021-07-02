@@ -13,18 +13,14 @@
 
 #ifndef _KORALI_CONDUIT_CONCURRENT_
 #define _KORALI_CONDUIT_CONCURRENT_
-;
+
 
 #include "modules/conduit/conduit.hpp"
 #include <chrono>
 #include <map>
 #include <vector>
 
-namespace korali
-{
-namespace conduit
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Concurrent.
@@ -100,9 +96,7 @@ class Concurrent : public Conduit
   size_t getProcessId() override;
 };
 
-} //conduit
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_CONDUIT_CONCURRENT_
-;
+

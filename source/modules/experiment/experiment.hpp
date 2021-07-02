@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_EXPERIMENT_
 #define _KORALI_EXPERIMENT_
-;
+
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
@@ -24,9 +24,7 @@
 #include <functional>
 #include <vector>
 
-namespace korali
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Experiment.
@@ -242,8 +240,7 @@ class Experiment : public Module
   void setSeed(knlohmann::json &js);
 };
 
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_EXPERIMENT_
-;
+

@@ -5,13 +5,7 @@
 
 #include <Eigen/Dense>
 
-namespace korali
-{
-namespace solver
-{
-namespace learner
-{
-;
+__startNamespace__;
 
 /**
   * @brief Converts a vector of floats to Eigen format
@@ -271,7 +265,4 @@ bool GaussianProcess::checkTermination()
 
 ;
 
-} //learner
-} //solver
-} //korali
-;
+__endNamespace__;

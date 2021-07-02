@@ -2,13 +2,7 @@
 #include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace optimizer
-{
-;
+__startNamespace__;
 
 void GridSearch::setInitialConfiguration()
 {
@@ -189,7 +183,4 @@ bool GridSearch::checkTermination()
 
 ;
 
-} //optimizer
-} //solver
-} //korali
-;
+__endNamespace__;

@@ -13,17 +13,11 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
-;
+
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Exponential.
@@ -117,10 +111,7 @@ class Exponential : public Univariate
   double getRandomNumber() override;
 };
 
-} //univariate
-} //distribution
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
-;
+

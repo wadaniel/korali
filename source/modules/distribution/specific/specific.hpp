@@ -13,15 +13,11 @@
 
 #ifndef _KORALI_DISTRIBUTION_SPECIFIC_
 #define _KORALI_DISTRIBUTION_SPECIFIC_
-;
+
 
 #include "modules/distribution/distribution.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Specific.
@@ -54,9 +50,6 @@ class Specific : public Distribution
 
 };
 
-} //distribution
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_DISTRIBUTION_SPECIFIC_
-;

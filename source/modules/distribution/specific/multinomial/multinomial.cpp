@@ -2,13 +2,7 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-namespace korali
-{
-namespace distribution
-{
-namespace specific
-{
-;
+__startNamespace__;
 
 void Multinomial::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
 {
@@ -46,7 +40,4 @@ void Multinomial::applyVariableDefaults()
 
 ;
 
-} //specific
-} //distribution
-} //korali
-;
+__endNamespace__;

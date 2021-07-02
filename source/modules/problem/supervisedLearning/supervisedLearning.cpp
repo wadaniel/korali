@@ -1,10 +1,6 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 void SupervisedLearning::initialize()
 {
@@ -167,6 +163,4 @@ void SupervisedLearning::applyVariableDefaults()
 
 ;
 
-} //problem
-} //korali
-;
+__endNamespace__;

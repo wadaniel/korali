@@ -13,15 +13,11 @@
 
 #ifndef _KORALI_PROBLEM_INTEGRATION_
 #define _KORALI_PROBLEM_INTEGRATION_
-;
+
 
 #include "modules/problem/problem.hpp"
 
-namespace korali
-{
-namespace problem
-{
-;
+__startNamespace__;
 
 /**
 * @brief Class declaration for module: Integration.
@@ -75,9 +71,6 @@ class Integration : public Problem
   void execute(korali::Sample &sample);
 };
 
-} //problem
-} //korali
-;
+__endNamespace__;
 
 #endif // _KORALI_PROBLEM_INTEGRATION_
-;

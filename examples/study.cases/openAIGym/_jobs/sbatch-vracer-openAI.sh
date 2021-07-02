@@ -4,9 +4,9 @@ source ../settings.sh
 
 cat > run.sh <<EOF
 #!/bin/bash -l
-#SBATCH --job-name="OpenAI_csacle2"
-#SBATCH --output=OpenAI_csacle2_out_%j.txt
-#SBATCH --error=OpenAI_csacle2_err_%j.txt
+#SBATCH --job-name="OpenAI_VRACER_$ENV"
+#SBATCH --output=OpenAI_$ENV_%j.txt
+#SBATCH --error=OpenAI_$ENV_err_%j.txt
 #SBATCH --time=01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -31,7 +31,7 @@ popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-vracer.py --env $ENV --dis $DIS --l2 $L2 --opt $OPT --lr $LR
+OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR
 
 resdir=\$(ls -d _result_vracer_*)
 python3 -m korali.rlview --dir \$resdir --output vracer.png

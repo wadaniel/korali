@@ -3,7 +3,13 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 double
 Cauchy::getDensity(const double x) const
@@ -93,4 +99,7 @@ double* Cauchy::getPropertyPointer(const std::string& property)
 
 ;
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;

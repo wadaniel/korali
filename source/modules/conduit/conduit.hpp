@@ -13,13 +13,15 @@
 
 #ifndef _KORALI_CONDUIT_
 #define _KORALI_CONDUIT_
-
+;
 
 #include "modules/module.hpp"
 #include <queue>
 #include <vector>
 
-__startNamespace__;
+namespace korali
+{
+;
 
 /**
 * @brief Class declaration for module: Conduit.
@@ -194,7 +196,8 @@ class Conduit : public Module
   virtual size_t getProcessId() = 0;
 };
 
-__endNamespace__;
+} //korali
+;
 
 #endif // _KORALI_CONDUIT_
-
+;

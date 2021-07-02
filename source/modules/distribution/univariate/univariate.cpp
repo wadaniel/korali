@@ -1,7 +1,11 @@
 #include "modules/distribution/univariate/univariate.hpp"
 #include "modules/experiment/experiment.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+;
 
 void Univariate::setConfiguration(knlohmann::json& js) 
 {
@@ -34,4 +38,6 @@ void Univariate::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //distribution
+} //korali
+;

@@ -7,9 +7,10 @@
 
 using namespace std;
 
-
 namespace korali
 {
+
+
   /**
 * @brief Remembers whether the MPI was given by the used. Otherwise use MPI_COMM_WORLD
 */
@@ -25,22 +26,23 @@ int setKoraliMPIComm(const MPI_Comm &comm)
   __isMPICommGiven = true;
   return MPI_Comm_dup(comm, &__KoraliGlobalMPIComm);
 }
-void *getWorkerMPIComm() { return &__koraliWorkerMPIComm; }
+void *getKoraliWorkerMPIComm() { return &__koraliWorkerMPIComm; }
 #else
 int setKoraliMPIComm(...)
 {
   KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n");
   return -1;
 }
-void *getWorkerMPIComm()
+void *getKoraliWorkerMPIComm()
 {
   KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n");
   return NULL;
 }
 #endif
-}
 
-__startNamespace__;
+namespace conduit
+{
+
 
   void
   Distributed::initialize()
@@ -343,6 +345,8 @@ void Distributed::applyVariableDefaults()
  Conduit::applyVariableDefaults();
 } 
 
-;
 
-__endNamespace__;
+
+  } /* conduit */ 
+
+    } /* korali */ 

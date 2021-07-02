@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_
 #define _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-
+;
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+;
 
 /**
 * @brief Class declaration for module: Recurrent.
@@ -221,7 +227,10 @@ class Recurrent : public Layer
   void getHyperparameterGradients(float *gradient) override;
 };
 
-__endNamespace__;
+} //layer
+} //neuralNetwork
+} //korali
+;
 
 #endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-
+;

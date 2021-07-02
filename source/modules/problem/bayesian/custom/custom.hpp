@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_PROBLEM_BAYESIAN_CUSTOM_
 #define _KORALI_PROBLEM_BAYESIAN_CUSTOM_
-
+;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
+;
 
 /**
 * @brief Class declaration for module: Custom.
@@ -59,6 +65,10 @@ class Custom : public Bayesian
   void initialize() override;
 };
 
-__endNamespace__;
+} //bayesian
+} //problem
+} //korali
+;
 
 #endif // _KORALI_PROBLEM_BAYESIAN_CUSTOM_
+;

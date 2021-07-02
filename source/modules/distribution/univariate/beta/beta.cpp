@@ -2,7 +2,13 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 double
 Beta::getDensity(const double x) const
@@ -96,4 +102,7 @@ double* Beta::getPropertyPointer(const std::string& property)
 
 ;
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;

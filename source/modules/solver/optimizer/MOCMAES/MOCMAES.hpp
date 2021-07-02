@@ -13,14 +13,20 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_MOCMAES_
 #define _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-
+;
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+;
 
 /**
 * @brief Class declaration for module: MOCMAES.
@@ -298,7 +304,10 @@ class MOCMAES : public Optimizer
   void finalize() override;
 };
 
-__endNamespace__;
+} //optimizer
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-
+;

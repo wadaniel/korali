@@ -1,7 +1,11 @@
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+;
 
 void Bayesian::initialize()
 {
@@ -231,4 +235,6 @@ bool Bayesian::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-__endNamespace__;
+} //problem
+} //korali
+;

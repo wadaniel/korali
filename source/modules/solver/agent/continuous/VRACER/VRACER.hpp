@@ -13,13 +13,21 @@
 
 #ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
 #define _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+;
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+;
 
 /**
 * @brief Class declaration for module: VRACER.
@@ -106,7 +114,11 @@ class VRACER : public Continuous
   void initializeAgent() override;
 };
 
-__endNamespace__;
+} //continuous
+} //agent
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+;

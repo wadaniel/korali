@@ -2,7 +2,13 @@
 #include "modules/solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+;
 
 void MADGRAD::setInitialConfiguration()
 {
@@ -297,4 +303,7 @@ bool MADGRAD::checkTermination()
 
 ;
 
-__endNamespace__;
+} //optimizer
+} //solver
+} //korali
+;

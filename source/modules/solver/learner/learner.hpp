@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_SOLVER_LEARNER_
 #define _KORALI_SOLVER_LEARNER_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 /**
 * @brief Class declaration for module: Learner.
@@ -73,7 +77,9 @@ class Learner : public Solver
   virtual void setHyperparameters(const std::vector<float> &hyperparameters) = 0;
 };
 
-__endNamespace__;
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_LEARNER_
-
+;

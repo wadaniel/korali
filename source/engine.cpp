@@ -11,12 +11,10 @@
 #include <sys/types.h>
 
 #ifdef _KORALI_USE_MPI
-
-#include <mpi.h>
-
 #ifdef _KORALI_USE_MPI4PY
 #ifndef _KORALI_NO_MPI4PY
 
+#include <mpi.h>
 #include <mpi4py/mpi4py.h>
 
 // MPI Communicator handler for pybind11
@@ -238,6 +236,8 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
+
+
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -258,7 +258,7 @@ PYBIND11_MODULE(libkorali, m)
 
   // import the mpi4py API
   if (import_mpi4py() < 0) { throw std::runtime_error("Could not load mpi4py API."); }
-  m.def("getWorkerMPIComm", &getMPI4PyComm);
+  m.def("getMPIComm", &getMPI4PyComm);
   m.def("setMPIComm", &setMPI4PyComm);
 
   #endif

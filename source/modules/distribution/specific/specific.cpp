@@ -1,7 +1,11 @@
 #include "modules/distribution/specific/specific.hpp"
 #include "modules/experiment/experiment.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+;
 
 void Specific::setConfiguration(knlohmann::json& js) 
 {
@@ -34,4 +38,6 @@ void Specific::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //distribution
+} //korali
+;

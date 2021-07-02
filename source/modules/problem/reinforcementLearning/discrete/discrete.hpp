@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
 #define _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
-
+;
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+;
 
 /**
 * @brief Class declaration for module: Discrete.
@@ -62,6 +68,10 @@ class Discrete : public ReinforcementLearning
   void initialize() override;
 };
 
-__endNamespace__;
+} //reinforcementLearning
+} //problem
+} //korali
+;
 
 #endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
+;

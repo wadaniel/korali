@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
 #define _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
-
+;
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+;
 
 /**
 * @brief Class declaration for module: AdaBelief.
@@ -123,6 +129,10 @@ class AdaBelief : public Optimizer
   void printGenerationAfter() override;
 };
 
-__endNamespace__;
+} //optimizer
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
+;

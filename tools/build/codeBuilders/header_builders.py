@@ -7,11 +7,29 @@ import re
 def checkHeaderTemplateString( moduleConfig, templateFilePath, moduleTemplate ):
   """These keywords shouls appear only once"""
 
-  substrings = ['__className__',
+  substrings = ['__startIncludeGuard__',
+                '__endIncludeGuard__',
+                '__className__',
                 '__parentClassName__']
 
   aux.checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate)
 
+
+def startIncludeGuard(moduleConfig):
+  """String for the start the header include guard"""
+
+  string = '\n'
+  string += '#ifndef ' + moduleConfig['Include Guard'] + '\n'
+  string += '#define ' + moduleConfig['Include Guard'] + '\n'
+  return string
+
+
+def endIncludeGuard(moduleConfig):
+  """String for the end the header include guard"""
+
+  string = ''
+  string += '#endif // ' + moduleConfig['Include Guard'] + '\n'
+  return string
 
 
 def startNamespace(moduleConfig):

@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_
 #define _KORALI_SOLVER_OPTIMIZER_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 /**
 * @brief Class declaration for module: Optimizer.
@@ -85,6 +89,9 @@ class Optimizer : public Solver
   bool isSampleFeasible(const std::vector<double> &sample);
 };
 
-__endNamespace__;
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_
+;

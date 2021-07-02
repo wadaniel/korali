@@ -2,7 +2,13 @@
 #include "modules/solver/optimizer/Adam/Adam.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+;
 
 void Adam::setInitialConfiguration()
 {
@@ -319,4 +325,7 @@ bool Adam::checkTermination()
 
 ;
 
-__endNamespace__;
+} //optimizer
+} //solver
+} //korali
+;

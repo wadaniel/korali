@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_TMCMC_
 #define _KORALI_SOLVER_SAMPLER_TMCMC_
-
+;
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -22,7 +22,13 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace sampler
+{
+;
 
 /**
   * @brief Struct for TMCMC optimization operations
@@ -437,7 +443,10 @@ class TMCMC : public Sampler
   void finalize() override;
 };
 
-__endNamespace__;
+} //sampler
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_SAMPLER_TMCMC_
-
+;

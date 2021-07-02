@@ -1,6 +1,10 @@
 #include "modules/solver/optimizer/optimizer.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 bool Optimizer::isSampleFeasible(const std::vector<double> &sample)
 {
@@ -203,4 +207,6 @@ bool Optimizer::checkTermination()
 
 ;
 
-__endNamespace__;
+} //solver
+} //korali
+;

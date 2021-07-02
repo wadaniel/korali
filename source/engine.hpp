@@ -149,17 +149,6 @@ class Engine
    * @return The Korali Engine
    */
   static Engine *deserialize(const knlohmann::json &js);
-
-  #ifdef _KORALI_USE_MPI
-
-  /**
-    * @brief Sets global MPI communicator
-    * @param comm The MPI communicator to use
-    * @return The return code of MPI_Comm_Dup
-    */
-  int setMPIComm(const MPI_Comm &comm){return setKoraliMPIComm(comm);};
-
-  #endif
 };
 
 /**

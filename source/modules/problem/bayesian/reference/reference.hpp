@@ -13,12 +13,18 @@
 
 #ifndef _KORALI_PROBLEM_BAYESIAN_REFERENCE_
 #define _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-
+;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
+;
 
 /**
 * @brief Class declaration for module: Reference.
@@ -176,7 +182,10 @@ class Reference : public Bayesian
   void evaluateFisherInformation(korali::Sample &sample) override;
 };
 
-__endNamespace__;
+} //bayesian
+} //problem
+} //korali
+;
 
 #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-
+;

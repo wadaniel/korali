@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 /**
 * @brief Class declaration for module: Igamma.
@@ -113,7 +119,10 @@ class Igamma : public Univariate
   double getRandomNumber() override;
 };
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
-
+;

@@ -2,7 +2,13 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+;
 
 void Discrete::initialize()
 {
@@ -92,4 +98,7 @@ bool Discrete::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-__endNamespace__;
+} //reinforcementLearning
+} //problem
+} //korali
+;

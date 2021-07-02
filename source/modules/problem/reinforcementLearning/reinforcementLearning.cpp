@@ -3,7 +3,11 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+;
 
 /**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
@@ -610,4 +614,6 @@ bool ReinforcementLearning::runOperation(std::string operation, korali::Sample& 
 
 ;
 
-__endNamespace__;
+} //problem
+} //korali
+;

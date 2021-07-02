@@ -2,7 +2,11 @@
 #include "modules/solver/integrator/integrator.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 void Integrator::setInitialConfiguration()
 {
@@ -166,4 +170,6 @@ void Integrator::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //solver
+} //korali
+;

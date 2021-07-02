@@ -25,8 +25,10 @@
   #include "mpi.h"
 #endif
 
-namespace korali
+  namespace korali
 {
+
+
 // Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
 #ifndef _KORALI_USE_MPI
 
@@ -60,10 +62,9 @@ int setKoraliMPIComm(const MPI_Comm &comm);
    * @brief Returns MPI communicator for the current Korali Worker
    * @return A pointer to the MPI Communicator
    */
-extern void *getWorkerMPIComm();
+extern void *getKoraliWorkerMPIComm();
 
 #else
-}
 
 /**
    * @brief Error handler for when MPI is not defined
@@ -76,13 +77,15 @@ int setKoraliMPIComm(...);
   * @brief Error handler for when MPI is not defined
   * @return A NULL pointer
   */
-extern void *getWorkerMPIComm();
+extern void *getKoraliWorkerMPIComm();
 
 #endif
 
-__startNamespace__;
+namespace conduit
+{
 
-/**
+
+  /**
 * @brief Class declaration for module: Distributed.
 */
 class Distributed : public Conduit
@@ -176,7 +179,9 @@ class Distributed : public Conduit
   bool isRoot() override;
 };
 
-__endNamespace__;
+} /* conduit */ 
 
-  #endif // _KORALI_CONDUIT_DISTRIBUTED_
+  } /* korali */ 
+
+    #endif // _KORALI_CONDUIT_DISTRIBUTED_
 

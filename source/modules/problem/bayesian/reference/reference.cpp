@@ -12,7 +12,13 @@
 
 #define STDEV_EPSILON 0.00000000001
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
+;
 
 void Reference::initialize()
 {
@@ -707,4 +713,7 @@ void Reference::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //bayesian
+} //problem
+} //korali
+;

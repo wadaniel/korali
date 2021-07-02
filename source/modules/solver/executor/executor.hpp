@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_SOLVER_EXECUTOR_
 #define _KORALI_SOLVER_EXECUTOR_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 /**
 * @brief Class declaration for module: Executor.
@@ -73,6 +77,9 @@ class Executor : public Solver
   void printGenerationAfter() override;
 };
 
-__endNamespace__;
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_EXECUTOR_
+;

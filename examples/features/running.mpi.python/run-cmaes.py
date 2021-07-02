@@ -43,8 +43,14 @@ e["File Output"]["Enabled"] = True
 e["File Output"]["Path"] = '_korali_result_cmaes'
 e["File Output"]["Frequency"] = 1
 
-# Running Korali
+# Configuring the distributed conduit
+k.setMPIComm(MPI.COMM_WORLD)
 k["Conduit"]["Type"] = "Distributed"
 k["Conduit"]["Ranks Per Worker"] = 4
-korali.setMPIComm(MPI.COMM_WORLD)
+
+# Enabling profiling to analyze efficiency
+k["Profiling"]["Detail"] = "Full";
+k["Profiling"]["Frequency"] = 0.5;
+
+# Running Korali
 k.run(e)

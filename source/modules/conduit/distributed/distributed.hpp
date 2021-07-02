@@ -13,77 +13,21 @@
 
 #ifndef _KORALI_CONDUIT_DISTRIBUTED_
 #define _KORALI_CONDUIT_DISTRIBUTED_
-
+;
 
 #include "config.hpp"
+#include "auxiliar/MPIUtils.hpp"
 #include "modules/conduit/conduit.hpp"
 #include <map>
 #include <queue>
 #include <vector>
 
-#ifdef _KORALI_USE_MPI
-  #include "mpi.h"
-#endif
 
-  namespace korali
+namespace korali
 {
-
-
-// Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
-#ifndef _KORALI_USE_MPI
-
-  /**
- * @brief Dummy communicator storage for the current Korali Worker
- */
-  typedef long int MPI_Comm;
-
-#endif
-
-/**
-* @brief Communicator storage for the current Korali Worker
-*/
-extern MPI_Comm __KoraliGlobalMPIComm;
-
-/**
-* @brief Communicator storage for the current Korali Worker
-*/
-extern MPI_Comm __koraliWorkerMPIComm;
-
-#ifdef _KORALI_USE_MPI
-
-/**
-  * @brief Sets global MPI communicator
-  * @param comm The MPI communicator to use
-  * @return The return code of MPI_Comm_Dup
-  */
-int setKoraliMPIComm(const MPI_Comm &comm);
-
-/**
-   * @brief Returns MPI communicator for the current Korali Worker
-   * @return A pointer to the MPI Communicator
-   */
-extern void *getKoraliWorkerMPIComm();
-
-#else
-
-/**
-   * @brief Error handler for when MPI is not defined
-   * @param ... accepts any parameters since it will fail anyway
-   * @return Error code -1
-   */
-int setKoraliMPIComm(...);
-
-/**
-  * @brief Error handler for when MPI is not defined
-  * @return A NULL pointer
-  */
-extern void *getKoraliWorkerMPIComm();
-
-#endif
-
 namespace conduit
 {
-
+;
 
   /**
 * @brief Class declaration for module: Distributed.
@@ -179,9 +123,9 @@ class Distributed : public Conduit
   bool isRoot() override;
 };
 
-} /* conduit */ 
+} //conduit
+} //korali
+;
 
-  } /* korali */ 
-
-    #endif // _KORALI_CONDUIT_DISTRIBUTED_
-
+#endif // _KORALI_CONDUIT_DISTRIBUTED_
+;

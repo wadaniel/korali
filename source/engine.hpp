@@ -6,6 +6,7 @@
 */
 
 #include "config.hpp"
+#include "auxiliar/MPIUtils.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -158,6 +159,14 @@ class Engine
     * @return The return code of MPI_Comm_Dup
     */
   int setMPIComm(const MPI_Comm &comm){return setKoraliMPIComm(comm);};
+
+  #ifdef _KORALI_USE_MPI4PY
+  #ifndef _KORALI_NO_MPI4PY
+
+  void setMPI4PyComm(mpi4py_comm comm);
+
+  #endif
+  #endif
 
   #endif
 };

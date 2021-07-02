@@ -1,5 +1,6 @@
 auxiliar_header = files([
   'cbuffer.hpp',
+  'MPIUtils.hpp',
   'cudaUtils.hpp',
   'dnnUtils.hpp',
   'fs.hpp',
@@ -18,6 +19,7 @@ install_headers(auxiliar_header,
 
 auxiliar_source = files([
   'fs.cpp',
+  'MPIUtils.cpp',
   'jsonInterface.cpp',
   'koraliJson.cpp',
   'kstring.cpp',

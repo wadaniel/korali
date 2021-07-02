@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_
 #define _KORALI_NEURALNETWORK_LAYER_
-
+;
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -28,21 +28,24 @@
   #include <cudnn.h>
 #endif
 
-  namespace korali
+namespace korali
 {
 
-
-  /**
+/**
 * @brief Class declaration for module: Layer.
 */
 class NeuralNetwork;
 struct layerPipeline_t;
 
+}
+
+namespace korali
+{
 namespace neuralNetwork
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Layer.
 */
 class Layer : public Module
@@ -253,9 +256,9 @@ class Layer : public Module
   virtual void backwardHyperparameters(const size_t t);
 };
 
-} /* neuralNetwork */ 
+} //neuralNetwork
+} //korali
+;
 
-  } /* korali */ 
-
-    #endif // _KORALI_NEURALNETWORK_LAYER_
-
+#endif // _KORALI_NEURALNETWORK_LAYER_
+;

@@ -15,11 +15,10 @@ __startIncludeGuard__;
 
 namespace korali
 {
-
 class NeuralNetwork;
 struct layerPipeline_t;
 
-}
+} // namespace korali
 
 __startNamespace__;
 

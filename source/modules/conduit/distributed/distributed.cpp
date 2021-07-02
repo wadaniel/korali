@@ -36,7 +36,7 @@ void Distributed::initialize()
   int curWorker = 0;
   _workerCount = (_rankCount - 1) / _ranksPerWorker;
   size_t workerRemainder = (_rankCount - 1) % _ranksPerWorker;
-  if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus one for the engine), divided into %lu workers. \nThis setup does not provide a perfectly divisible distribution, and %lu ranks remain.\n", _workerCount, _ranksPerWorker, workerRemainder);
+  if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus one for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _ranksPerWorker, workerRemainder);
 
   _localRankId = 0;
   _workerIdSet = false;

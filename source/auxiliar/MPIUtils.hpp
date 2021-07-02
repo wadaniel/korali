@@ -126,7 +126,7 @@ namespace korali
     * @param ... accepts any parameters since it will fail anyway
     * @return Error code -1
     */
- extern int setKoraliMPIComm(...)
+ extern int setKoraliMPIComm(...);
 
  /**
    * @brief Error handler for when MPI is not defined

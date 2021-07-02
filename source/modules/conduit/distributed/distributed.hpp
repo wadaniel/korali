@@ -15,13 +15,12 @@
 #define _KORALI_CONDUIT_DISTRIBUTED_
 ;
 
-#include "config.hpp"
 #include "auxiliar/MPIUtils.hpp"
+#include "config.hpp"
 #include "modules/conduit/conduit.hpp"
 #include <map>
 #include <queue>
 #include <vector>
-
 
 namespace korali
 {
@@ -29,7 +28,7 @@ namespace conduit
 {
 ;
 
-  /**
+/**
 * @brief Class declaration for module: Distributed.
 */
 class Distributed : public Conduit

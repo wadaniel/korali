@@ -30,14 +30,13 @@
 
 namespace korali
 {
-
 /**
 * @brief Class declaration for module: Layer.
 */
 class NeuralNetwork;
 struct layerPipeline_t;
 
-}
+} // namespace korali
 
 namespace korali
 {

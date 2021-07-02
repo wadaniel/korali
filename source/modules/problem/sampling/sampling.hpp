@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Sampling.
 */
 
-
-#ifndef _KORALI_PROBLEM_SAMPLING_
-#define _KORALI_PROBLEM_SAMPLING_
-;
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -89,5 +86,4 @@ class Sampling : public Problem
 } //korali
 ;
 
-#endif // _KORALI_PROBLEM_SAMPLING_
-;
+

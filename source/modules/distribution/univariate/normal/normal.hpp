@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Normal.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -128,5 +125,4 @@ class Normal : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
-;
+

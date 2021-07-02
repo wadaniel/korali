@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Multivariate.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_
-#define _KORALI_DISTRIBUTION_MULTIVARIATE_
-;
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 
@@ -87,5 +84,3 @@ class Multivariate : public Distribution
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_
-;

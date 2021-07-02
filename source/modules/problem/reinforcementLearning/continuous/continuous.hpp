@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Continuous.
 */
 
-
-#ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
-#define _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -70,5 +67,3 @@ class Continuous : public ReinforcementLearning
 } //korali
 ;
 
-#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
-;

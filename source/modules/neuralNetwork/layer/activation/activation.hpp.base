@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -84,4 +84,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

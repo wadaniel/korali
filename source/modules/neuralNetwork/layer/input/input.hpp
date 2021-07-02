@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Input.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_INPUT_
-#define _KORALI_NEURALNETWORK_LAYER_INPUT_
-;
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -64,5 +61,4 @@ class Input : public Layer
 } //korali
 ;
 
-#endif // _KORALI_NEURALNETWORK_LAYER_INPUT_
-;
+

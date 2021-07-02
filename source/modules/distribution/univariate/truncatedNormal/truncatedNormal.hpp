@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: TruncatedNormal.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_TRUNCATEDNORMAL_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_TRUNCATEDNORMAL_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -141,5 +138,4 @@ class TruncatedNormal : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_TRUNCATEDNORMAL_
-;
+

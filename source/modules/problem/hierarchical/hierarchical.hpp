@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Hierarchical.
 */
 
-
-#ifndef _KORALI_PROBLEM_HIERARCHICAL_
-#define _KORALI_PROBLEM_HIERARCHICAL_
-;
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -98,5 +95,3 @@ class Hierarchical : public Problem
 } //korali
 ;
 
-#endif // _KORALI_PROBLEM_HIERARCHICAL_
-;

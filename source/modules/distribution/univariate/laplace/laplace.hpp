@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Laplace.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -122,5 +119,4 @@ class Laplace : public Univariate
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-;
+

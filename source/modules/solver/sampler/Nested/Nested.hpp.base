@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -290,4 +290,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

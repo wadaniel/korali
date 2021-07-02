@@ -2,8 +2,7 @@
 * @brief Contains the helper definitions for MPI
 ******************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_MPIUTILS_HPP_
-#define _KORALI_AUXILIARS_MPIUTILS_HPP_
+#pragma once
 
 #include <config.hpp>
 #include <pybind11/functional.h>
@@ -138,4 +137,3 @@ namespace korali
 }
 
 #endif // #ifdef _KORALI_USE_MPI
-#endif // _KORALI_AUXILIARS_MPIUTILS_HPP_

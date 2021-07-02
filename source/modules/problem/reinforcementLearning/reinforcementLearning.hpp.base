@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -80,4 +80,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: dVRACER.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-#define _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
@@ -110,5 +107,4 @@ class dVRACER : public Discrete
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-;
+

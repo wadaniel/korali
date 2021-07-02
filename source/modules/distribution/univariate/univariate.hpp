@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Univariate.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_
-;
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 
@@ -91,5 +88,4 @@ class Univariate : public Distribution
 } //korali
 ;
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_
-;
+

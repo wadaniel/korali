@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "auxiliar/libco/libco.h"
 #include "modules/conduit/conduit.hpp"
@@ -40,4 +40,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

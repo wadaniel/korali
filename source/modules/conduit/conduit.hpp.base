@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/module.hpp"
 #include <queue>
@@ -152,4 +152,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

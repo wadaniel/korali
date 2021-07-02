@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Conduit.
 */
 
-
-#ifndef _KORALI_CONDUIT_
-#define _KORALI_CONDUIT_
-;
+#pragma once
 
 #include "modules/module.hpp"
 #include <queue>
@@ -199,5 +196,4 @@ class Conduit : public Module
 } //korali
 ;
 
-#endif // _KORALI_CONDUIT_
-;
+

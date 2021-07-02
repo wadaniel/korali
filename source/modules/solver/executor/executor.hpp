@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Executor.
 */
 
-
-#ifndef _KORALI_SOLVER_EXECUTOR_
-#define _KORALI_SOLVER_EXECUTOR_
-;
+#pragma once
 
 #include "modules/solver/solver.hpp"
 
@@ -81,5 +78,3 @@ class Executor : public Solver
 } //korali
 ;
 
-#endif // _KORALI_SOLVER_EXECUTOR_
-;

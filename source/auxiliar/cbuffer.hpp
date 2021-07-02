@@ -1,5 +1,5 @@
-#ifndef _KORALI_CIRCULAR_BUFFER_HPP_
-#define _KORALI_CIRCULAR_BUFFER_HPP_
+#pragma once
+
 
 /** \file
 * @brief Implements a circular buffer with automatic overwrite on full
@@ -144,4 +144,3 @@ class cBuffer
 
 } // namespace korali
 
-#endif

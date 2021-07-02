@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Concurrent.
 */
 
-
-#ifndef _KORALI_CONDUIT_CONCURRENT_
-#define _KORALI_CONDUIT_CONCURRENT_
-;
+#pragma once
 
 #include "modules/conduit/conduit.hpp"
 #include <chrono>
@@ -104,5 +101,4 @@ class Concurrent : public Conduit
 } //korali
 ;
 
-#endif // _KORALI_CONDUIT_CONCURRENT_
-;
+

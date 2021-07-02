@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -52,4 +52,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

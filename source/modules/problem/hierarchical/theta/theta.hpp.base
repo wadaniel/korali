@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
@@ -85,4 +85,3 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;

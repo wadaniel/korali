@@ -122,7 +122,7 @@ def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
     moduleConfig = json.loads( p.read_text() )
     string = ''
 
-    if 'Variables Configuration' in moduleConfig:
+    if 'Variables Configuration' in moduleConfig: 
       for v in moduleConfig["Variables Configuration"]:
         varName = vr.getCXXVariableName(v["Name"])
         if (not varName in variableDeclarationSet):

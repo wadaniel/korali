@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -133,4 +133,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-__endIncludeGuard__;
+

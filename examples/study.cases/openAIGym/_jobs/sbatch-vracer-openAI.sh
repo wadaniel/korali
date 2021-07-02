@@ -9,10 +9,10 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of agents
-NNODES=64
+NNODES=1
 
 # setup run directory and copy necessary files
-RUNPATH="${SCRATCH}/korali/${RUNNAME}"
+RUNPATH=$SCRATCH/$RUNNAME/$env/$SLURM_JOB_ID
 mkdir -p ${RUNPATH}
 cp ../run-vracer.py ${RUNPATH}
 cp ../settings.sh ${RUNPATH}
@@ -36,6 +36,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --account=s929
 
 srun python run-vracer.py --env $ENV --dis $DIS --l2 $L2 --opt $OPT --lr $LR
+OMP_NUM_THREADS=12 python3 run-vracer.py --env $ENV --dis $DIS --l2 $L2 --opt $OPT --lr $LR
 EOF
 
 chmod 755 daint_sbatch

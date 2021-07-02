@@ -2,7 +2,11 @@
 #include "modules/solver/executor/executor.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 void Executor::runGeneration()
 {
@@ -102,4 +106,6 @@ void Executor::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //solver
+} //korali
+;

@@ -5,7 +5,15 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+;
 
 void VRACER::initializeAgent()
 {
@@ -294,4 +302,8 @@ bool VRACER::checkTermination()
 
 ;
 
-__endNamespace__;
+} //continuous
+} //agent
+} //solver
+} //korali
+;

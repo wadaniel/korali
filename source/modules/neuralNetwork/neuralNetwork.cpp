@@ -4,7 +4,9 @@
   #include <omp.h>
 #endif
 
-__startNamespace__;
+namespace korali
+{
+;
 
 NeuralNetwork::NeuralNetwork()
 {
@@ -541,4 +543,5 @@ void NeuralNetwork::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //korali
+;

@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 /**
 * @brief Class declaration for module: Laplace.
@@ -111,7 +117,10 @@ class Laplace : public Univariate
   double getRandomNumber() override;
 };
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-
+;

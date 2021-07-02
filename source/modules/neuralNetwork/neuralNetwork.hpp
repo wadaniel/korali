@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_NEURALNETWORK_
 #define _KORALI_NEURALNETWORK_
-
+;
 
 #include "config.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -30,7 +30,9 @@
   #include <cudnn.h>
 #endif
 
-__startNamespace__;
+namespace korali
+{
+;
 
 /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
@@ -245,7 +247,8 @@ class NeuralNetwork : public Module
   void initialize() override;
 };
 
-__endNamespace__;
+} //korali
+;
 
 #endif // _KORALI_NEURALNETWORK_
-
+;

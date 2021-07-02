@@ -28,13 +28,19 @@
   #include <cudnn.h>
 #endif
 
-__startNamespace__;
+  namespace korali
+{
+
 
   /**
 * @brief Class declaration for module: Layer.
 */
 class NeuralNetwork;
 struct layerPipeline_t;
+
+namespace neuralNetwork
+{
+
 
   /**
 * @brief Class declaration for module: Layer.
@@ -247,6 +253,9 @@ class Layer : public Module
   virtual void backwardHyperparameters(const size_t t);
 };
 
-__endNamespace__;
-#endif // _KORALI_NEURALNETWORK_LAYER_
+} /* neuralNetwork */ 
+
+  } /* korali */ 
+
+    #endif // _KORALI_NEURALNETWORK_LAYER_
 

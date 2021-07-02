@@ -1,6 +1,8 @@
 #include "modules/problem/problem.hpp"
 
-__startNamespace__;
+namespace korali
+{
+;
 
 void Problem::setConfiguration(knlohmann::json& js) 
 {
@@ -48,4 +50,5 @@ void Problem::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //korali
+;

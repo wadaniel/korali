@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_PROBLEM_HIERARCHICAL_
 #define _KORALI_PROBLEM_HIERARCHICAL_
-
+;
 
 #include "modules/problem/problem.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+;
 
 /**
 * @brief Class declaration for module: Hierarchical.
@@ -90,6 +94,9 @@ class Hierarchical : public Problem
   void evaluateLogPosterior(korali::Sample &sample);
 };
 
-__endNamespace__;
+} //problem
+} //korali
+;
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_
+;

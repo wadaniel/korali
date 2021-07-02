@@ -1,7 +1,11 @@
 #include "modules/problem/sampling/sampling.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+;
 
 void Sampling::initialize()
 {
@@ -129,4 +133,6 @@ bool Sampling::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-__endNamespace__;
+} //problem
+} //korali
+;

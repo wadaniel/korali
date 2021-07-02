@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_WEIBULL_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_WEIBULL_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 /**
 * @brief Class declaration for module: Weibull.
@@ -111,7 +117,10 @@ class Weibull : public Univariate
   double getRandomNumber() override;
 };
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_WEIBULL_
-
+;

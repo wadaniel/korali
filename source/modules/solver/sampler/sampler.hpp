@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_
 #define _KORALI_SOLVER_SAMPLER_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 /**
 * @brief Class declaration for module: Sampler.
@@ -55,7 +59,9 @@ class Sampler : public Solver
 
 };
 
-__endNamespace__;
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_SAMPLER_
-
+;

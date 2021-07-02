@@ -13,7 +13,15 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-__startNamespace__;
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+namespace recurrent
+{
+;
 
 void GRU::initialize()
 {
@@ -424,4 +432,8 @@ void GRU::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //recurrent
+} //layer
+} //neuralNetwork
+} //korali
+;

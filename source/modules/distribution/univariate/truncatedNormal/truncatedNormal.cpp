@@ -7,7 +7,13 @@
 
 using namespace Rtnorm;
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 double
 TruncatedNormal::getDensity(const double x) const
@@ -119,4 +125,7 @@ double* TruncatedNormal::getPropertyPointer(const std::string& property)
 
 ;
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;

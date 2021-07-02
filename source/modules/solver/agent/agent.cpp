@@ -4,7 +4,11 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+;
 
 void Agent::initialize()
 {
@@ -1811,4 +1815,6 @@ bool Agent::checkTermination()
 
 ;
 
-__endNamespace__;
+} //solver
+} //korali
+;

@@ -13,11 +13,17 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
 /**
 * @brief Class declaration for module: LogNormal.
@@ -111,7 +117,10 @@ class LogNormal : public Univariate
   double getRandomNumber() override;
 };
 
-__endNamespace__;
+} //univariate
+} //distribution
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
-
+;

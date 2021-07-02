@@ -4,7 +4,13 @@
 #include "sample/sample.hpp"
 #include <omp.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace learner
+{
+;
 
 void DeepSupervisor::initialize()
 {
@@ -433,4 +439,7 @@ bool DeepSupervisor::checkTermination()
 
 ;
 
-__endNamespace__;
+} //learner
+} //solver
+} //korali
+;

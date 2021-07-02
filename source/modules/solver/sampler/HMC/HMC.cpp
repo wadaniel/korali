@@ -14,7 +14,13 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace sampler
+{
+;
 
 void HMC::setInitialConfiguration()
 {
@@ -1294,4 +1300,7 @@ bool HMC::checkTermination()
 
 ;
 
-__endNamespace__;
+} //sampler
+} //solver
+} //korali
+;

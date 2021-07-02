@@ -128,4 +128,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__;
 
-
+__endIncludeGuard__;

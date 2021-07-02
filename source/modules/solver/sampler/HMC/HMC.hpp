@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_HMC_
 #define _KORALI_SOLVER_SAMPLER_HMC_
-
+;
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -33,7 +33,13 @@
 #include "modules/solver/sampler/HMC/helpers/tree_helper_euclidean.hpp"
 #include "modules/solver/sampler/HMC/helpers/tree_helper_riemannian.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace sampler
+{
+;
 
 /**
   * @brief Enum to set metric type.
@@ -373,7 +379,10 @@ class HMC : public Sampler
   void printGenerationAfter() override;
 };
 
-__endNamespace__;
+} //sampler
+} //solver
+} //korali
+;
 
 #endif // _KORALI_SOLVER_SAMPLER_HMC_
-
+;

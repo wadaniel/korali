@@ -13,13 +13,15 @@
 
 #ifndef _KORALI_DISTRIBUTION_
 #define _KORALI_DISTRIBUTION_
-
+;
 
 #include "modules/module.hpp"
 #include <gsl/gsl_rng.h>
 #include <map>
 
-__startNamespace__;
+namespace korali
+{
+;
 
 /**
 * @brief Class declaration for module: Distribution.
@@ -104,7 +106,8 @@ class Distribution : public Module
   virtual double *getPropertyPointer(const std::string &property) { return NULL; };
 };
 
-__endNamespace__;
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_
-
+;

@@ -10,8 +10,9 @@ __startIncludeGuard__;
   #include "mpi.h"
 #endif
 
-namespace korali
-{
+__startNamespace__;
+0
+
 // Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
 #ifndef _KORALI_USE_MPI
 
@@ -45,10 +46,9 @@ int setKoraliMPIComm(const MPI_Comm &comm);
    * @brief Returns MPI communicator for the current Korali Worker
    * @return A pointer to the MPI Communicator
    */
-extern void *getWorkerMPIComm();
+extern void *getKoraliWorkerMPIComm();
 
 #else
-}
 
 /**
    * @brief Error handler for when MPI is not defined
@@ -61,13 +61,14 @@ int setKoraliMPIComm(...);
   * @brief Error handler for when MPI is not defined
   * @return A NULL pointer
   */
-extern void *getWorkerMPIComm();
+extern void *getKoraliWorkerMPIComm();
 
 #endif
 
 __startNamespace__;
+1
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -132,5 +133,9 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
+1
 
-  
+  __endNamespace__;
+0
+
+  __endIncludeGuard__;

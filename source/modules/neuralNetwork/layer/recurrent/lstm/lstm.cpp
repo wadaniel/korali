@@ -15,7 +15,15 @@ using namespace Eigen;
 
 #define LSTM_LINEAR_LAYERS 8
 
-__startNamespace__;
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+namespace recurrent
+{
+;
 
 void LSTM::initialize()
 {
@@ -458,4 +466,8 @@ void LSTM::applyVariableDefaults()
 
 ;
 
-__endNamespace__;
+} //recurrent
+} //layer
+} //neuralNetwork
+} //korali
+;

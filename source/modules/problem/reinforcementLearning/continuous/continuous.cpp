@@ -2,7 +2,13 @@
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+;
 
 void Continuous::initialize()
 {
@@ -81,4 +87,7 @@ bool Continuous::runOperation(std::string operation, korali::Sample& sample)
 
 ;
 
-__endNamespace__;
+} //reinforcementLearning
+} //problem
+} //korali
+;

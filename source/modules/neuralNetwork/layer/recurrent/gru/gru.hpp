@@ -13,11 +13,19 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
 #define _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
-
+;
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+namespace recurrent
+{
+;
 
 /**
 * @brief Class declaration for module: GRU.
@@ -79,7 +87,11 @@ class GRU : public Recurrent
   void backwardData(const size_t t) override;
 };
 
-__endNamespace__;
+} //recurrent
+} //layer
+} //neuralNetwork
+} //korali
+;
 
 #endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
-
+;

@@ -10,7 +10,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+;
 
 void DEA::setInitialConfiguration()
 {
@@ -623,4 +629,7 @@ bool DEA::checkTermination()
 
 ;
 
-__endNamespace__;
+} //optimizer
+} //solver
+} //korali
+;

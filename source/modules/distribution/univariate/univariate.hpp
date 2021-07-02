@@ -13,11 +13,15 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_
-
+;
 
 #include "modules/distribution/distribution.hpp"
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+;
 
 /**
 * @brief Class declaration for module: Univariate.
@@ -83,7 +87,9 @@ class Univariate : public Distribution
   virtual double getRandomNumber() = 0;
 };
 
-__endNamespace__;
+} //distribution
+} //korali
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_
-
+;

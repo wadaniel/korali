@@ -16,7 +16,13 @@
 #include <gsl/gsl_statistics.h>
 #include <math.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace solver
+{
+namespace sampler
+{
+;
 
 void TMCMC::setInitialConfiguration()
 {
@@ -1442,4 +1448,7 @@ bool TMCMC::checkTermination()
 
 ;
 
-__endNamespace__;
+} //sampler
+} //solver
+} //korali
+;

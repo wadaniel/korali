@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Sequential.
 */
 
-
-#ifndef _KORALI_CONDUIT_SEQUENTIAL_
-#define _KORALI_CONDUIT_SEQUENTIAL_
-;
+#pragma once
 
 #include "auxiliar/libco/libco.h"
 #include "modules/conduit/conduit.hpp"
@@ -85,7 +82,4 @@ class Sequential : public Conduit
 
 } //conduit
 } //korali
-;
-
-#endif // _KORALI_CONDUIT_SEQUENTIAL_
 ;

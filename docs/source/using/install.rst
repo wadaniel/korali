@@ -4,20 +4,27 @@
 Installation
 *********************
 
-Quick Installation
-==================
+System Requirements
+==========================
 
-The simplest way to install Korali is via it's Python module. To obtain it, simply run:
+  - **C++ Compiler**
+      Korali requires a C++ compiler that supports the C++17 standard (`-std=c++17`) to build.
+      **Hint:** Check the following `link <https://en.cppreference.com/w/cpp/compiler_support#C.2B.2B14_core_language_features>`_ to verify whether your compiler supports C++17.
+      Korali's installer will check the **$CXX** environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
 
-.. code-block:: bash
+  - **Git Client**
+      You need Git to clone (download) our code before installation.
 
-     python3 -m pip install korali 
-    
+  - **meson**
+      To generate the installation configuration.
 
-This variant of Korali is compiled with no support for C++ linking, MPI, OneDNN or CUDNN frameworks. To enable them, see the manual installation option below.
+  - **ninja**
+      To build Korali.
 
+  - **Python >=3.8**
+      Korali requires a version of Python higher than 3.8 to be installed in the system. Korali's installer will check the *python3* command. The path to this command should be present in the $PATH environment variable. *Hint:* Make sure Python3 is correctly installed or its module loaded before configuring Korali.
 
-Manual Installation
+Installation Steps
 ===================
 
 1. Download Korali
@@ -28,7 +35,7 @@ Manual Installation
 
      git clone https://github.com/cselab/korali.git
 
-2. Setup Korali
+2. Setup Installation
 
   To set up the compilation and installation, run:
 
@@ -46,17 +53,17 @@ Optionally you can install Korali with support for MPI, OneDNN, and CUDNN, using
    cd korali
    meson setup build --buildtype=release --prefix=PREFIX -Dmpi=true -Donednn=true -Dcudnn
 
-For more information on these optional support, see *Optional Requirements* below.
+A full list of installation options can be found in `meson_options.txt <https://github.com/cselab/korali/blob/master/meson_options.txt>`_. For more information, see *Optional Requirements* below.
 
-3. Compile Korali
+3. Build
 
-  To compile Korali, run:
+  To build Korali, run:
 
   .. code-block:: bash
 
    meson compile -C build
 
-4. Install Korali
+4. Install
 
   To install Korali, run:
 
@@ -75,7 +82,6 @@ To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the 
   
      source tools/env/set_env.sh PREFIX
      
-
 Troubleshooting
 ====================
 
@@ -118,44 +124,8 @@ Cray systems use a propietary build system that may cause conflicts with the def
     # Reinstall mpi4py locally and reinstall korali.
     python3 -m pip install --user mpi4py --ignore-installed -v
     
-
-System Requirements
-====================
-
-Mandatory Requirements
----------------------------
-
-  - **C++ Compiler**
-      Korali requires a C++ compiler that supports the C++17 standard (`-std=c++17`) to build.
-      **Hint:** Check the following `link <https://en.cppreference.com/w/cpp/compiler_support#C.2B.2B14_core_language_features>`_ to verify whether your compiler supports C++17.
-      Korali's installer will check the **$CXX** environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
-
-  - **Git Client**
-      You need Git to clone (download) our code before installation.
-
-  - **meson**
-      To generate the installation configuration.
-
-  - **ninja**
-      To build Korali.
-
-  - **Python3**
-      Korali requires a version of Python higher than 3.0 to be installed in the system. Korali's installer will check the *python3* command. The path to this command should be present in the $PATH environment variable. *Hint:* Make sure Python3 is correctly installed or its module loaded before configuring Korali.
-
-  - **python3-config**
-      Korali requires the command *python3-config* to be available during installation. This command is typically included in standard installations of python3 that include developer tools. *Hint:*  If *python3-config* is missing, you can get it by installing/loading the **python3-dev** package/module in your system.
-
-  - **Pip3 Installer**
-      Korali requires the *pip3* command to install it's engine and tools. This command is typically included in standard installations of python. *Hint:*  If *pip3* is missing, you can get it by installing pip3, with e.g, ``brew install pip3``
-
-  - **PyBind11**
-      Korali requires *pybind11* to enable Python/C++ interaction. If not found, it will try to install it automatically using *pip3*.
-
-  - **GNU Scientific Library**
-      Korali requires that the `GSL-2.6 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, Korali will try to install it automatically.
-
 Optional Requirements
----------------------------------
+=============================
 
  - **oneDNN**
       Korali uses the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ for deep learning modules, and is disabled by default. You can enable it by adding the ``-Donednn=true`` option on the meson configuration line. To recommended configuration for oneDNN is:

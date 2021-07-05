@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Continuous.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_
-#define _KORALI_SOLVER_AGENT_CONTINUOUS_
-;
+#pragma once
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -137,7 +134,4 @@ class Continuous : public Agent
 } //agent
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_AGENT_CONTINUOUS_
 ;

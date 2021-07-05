@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Learner.
 */
 
-
-#ifndef _KORALI_SOLVER_LEARNER_
-#define _KORALI_SOLVER_LEARNER_
-;
+#pragma once
 
 #include "modules/solver/solver.hpp"
 
@@ -79,7 +76,4 @@ class Learner : public Solver
 
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_LEARNER_
 ;

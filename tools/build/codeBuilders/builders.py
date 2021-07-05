@@ -1,5 +1,6 @@
 import sys
 import json
+import os
 from pathlib import Path
 
 from . import header_builders as hb
@@ -93,13 +94,21 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
     filePath = Path(outputFile)
 
   filePath = filePath.resolve()
-  # if does not exist create  the path of filePath
+  # if does not exist create the path of filePath
   try:
       filePath.parents[0].mkdir(parents=True, exist_ok=False)
   except FileExistsError:
       pass
 
-  filePath.write_text(codeString)
+  # Check if the new version will produce a different result 
+  doSave = True
+  if (os.path.isfile(filePath)):
+   with open(filePath, 'r') as file:
+    prevString = file.read()
+   if (prevString == codeString):
+    doSave = False
+  
+  if (doSave): filePath.write_text(codeString)
 
 
 def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
@@ -113,7 +122,7 @@ def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
     moduleConfig = json.loads( p.read_text() )
     string = ''
 
-    if 'Variables Configuration' in moduleConfig:
+    if 'Variables Configuration' in moduleConfig: 
       for v in moduleConfig["Variables Configuration"]:
         varName = vr.getCXXVariableName(v["Name"])
         if (not varName in variableDeclarationSet):
@@ -141,4 +150,15 @@ def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
   except FileExistsError:
       pass
 
-  filePath.write_text(variableHeaderString)
+  # Check if the new version will produce a different result 
+  doSave = True
+  if (os.path.isfile(filePath)):
+   with open(filePath, 'r') as file:
+    prevString = file.read()
+   if (prevString == variableHeaderString):
+    doSave = False
+  
+  if (doSave): filePath.write_text(variableHeaderString)
+
+  
+  

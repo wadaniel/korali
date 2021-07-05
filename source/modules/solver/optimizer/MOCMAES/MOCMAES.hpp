@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: MOCMAES.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-#define _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-;
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -307,7 +304,4 @@ class MOCMAES : public Optimizer
 } //optimizer
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_OPTIMIZER_MOCMAES_
 ;

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Multinomial.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
-#define _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
-;
+#pragma once
 
 #include "modules/distribution/specific/specific.hpp"
 
@@ -66,7 +63,4 @@ class Multinomial : public Specific
 } //specific
 } //distribution
 } //korali
-;
-
-#endif // _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
 ;

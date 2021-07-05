@@ -17,10 +17,9 @@ namespace korali
 {
 namespace neuralNetwork
 {
+;
 
-
-  void
-  Layer::createForwardPipeline()
+void Layer::createForwardPipeline()
 {
   // Obtaining batch size
   ssize_t N = _batchSize;
@@ -212,8 +211,8 @@ void Layer::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //neuralNetwork
+} //neuralNetwork
 } //korali
-
+;

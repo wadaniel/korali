@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Distribution.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_
-#define _KORALI_DISTRIBUTION_
-;
+#pragma once
 
 #include "modules/module.hpp"
 #include <gsl/gsl_rng.h>
@@ -107,7 +104,4 @@ class Distribution : public Module
 };
 
 } //korali
-;
-
-#endif // _KORALI_DISTRIBUTION_
 ;

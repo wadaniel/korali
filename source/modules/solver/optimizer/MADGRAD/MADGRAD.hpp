@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: MADGRAD.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-#define _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-;
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -128,7 +125,4 @@ class MADGRAD : public Optimizer
 } //optimizer
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_OPTIMIZER_MADGRAD_
 ;

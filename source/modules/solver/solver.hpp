@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Solver.
 */
 
-
-#ifndef _KORALI_SOLVER_
-#define _KORALI_SOLVER_
-;
+#pragma once
 
 #include "auxiliar/libco/libco.h"
 #include "modules/experiment/experiment.hpp"
@@ -150,7 +147,4 @@ class Solver : public Module
 };
 
 } //korali
-;
-
-#endif // _KORALI_SOLVER_
 ;

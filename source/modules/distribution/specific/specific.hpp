@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Specific.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_SPECIFIC_
-#define _KORALI_DISTRIBUTION_SPECIFIC_
-;
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 
@@ -56,7 +53,4 @@ class Specific : public Distribution
 
 } //distribution
 } //korali
-;
-
-#endif // _KORALI_DISTRIBUTION_SPECIFIC_
 ;

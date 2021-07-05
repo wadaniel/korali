@@ -2,8 +2,8 @@
 * @brief Contains auxiliar code for file system (files and folders) manipulation.
 ******************************************************************************/
 
-#ifndef _AUXILIAR_FS_HPP_
-#define _AUXILIAR_FS_HPP_
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -26,4 +26,3 @@ bool dirExists(const std::string dirPath);
 
 } // namespace korali
 
-#endif // _AUXILIAR_FS_HPP_

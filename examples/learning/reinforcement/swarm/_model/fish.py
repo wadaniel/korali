@@ -15,7 +15,7 @@ observedB = (upperBound-observedMean)/observedSigma
 
 
 class fish:
-    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Observed" ):
+    def __init__(self, location, individualStd=0.05, speed=1, maxAngle=30./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Observed" ):
         self.location = location
         self.curDirection = self.randUnitDirection()
         self.wishedDirection = self.curDirection
@@ -73,7 +73,7 @@ class fish:
         # get random unit direction orthogonal to newWishedDirection
         randVector = self.randUnitDirection()
         rotVector = np.cross(newWishedDirection,randVector)
-        while np.linalg.norm(rotVector) < 1e-12:
+        while np.isclose(np.linalg.norm(rotVector), 0.0):
             randVector = self.randUnitDirection()
             rotVector = np.cross(newWishedDirection,randVector)
         rotVector /= np.linalg.norm(rotVector)
@@ -90,16 +90,29 @@ class fish:
     def updateDirection(self):
         u = self.curDirection
         v = self.wishedDirection
-        assert np.isclose( np.linalg.norm(u), 1.0 ), print("Current direction {} not normalized".format(u))
-        assert np.isclose( np.linalg.norm(v), 1.0 ), print("Wished direction {} not normalized".format(v))
+        assert np.isclose( np.linalg.norm(u), 1.0 ), "Current direction {} not normalized".format(u)
+        assert np.isclose( np.linalg.norm(v), 1.0 ), "Wished direction {} not normalized".format(v)
 
+        # numerical safe computation of cos and angle
         cosAngle = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
+        cosAngle = np.clip(cosAngle, -1, 1)
         angle    = np.arccos(cosAngle)
         if angle < self.maxAngle:
             self.curDirection = self.wishedDirection
+        # handle antiparallel case
+        elif np.isclose(angle, np.pi):
+            randVector = self.randUnitDirection()
+            rotVector = np.cross(self.curDirection,randVector)
+            while np.isclose(np.linalg.norm(rotVector), 0.0):
+                randVector = self.randUnitDirection()
+                rotVector = np.cross(self.curDirection,randVector)
+            rotVector /= np.linalg.norm(rotVector)
+            rotVector *= self.maxAngle
+            r = Rotation.from_rotvec(rotVector)
+            self.curDirection = r.apply(self.curDirection)
         else:
             rotVector = np.cross(self.curDirection, self.wishedDirection)
-            assert np.linalg.norm(rotVector) > 0, print("Rotation vector {} zero".format(rotVector))
+            assert np.linalg.norm(rotVector) > 0, "Rotation vector {} from current {} and wished direction {} with angle {} is zero".format(rotVector, self.curDirection, self.wishedDirection, cosAngle)
             rotVector /= np.linalg.norm(rotVector)
             rotVector *= self.maxAngle
             r = Rotation.from_rotvec(rotVector)
@@ -133,7 +146,7 @@ class fish:
             else:
                 assert 0, print("Please chose a pair-potential that is implemented")
         # plt.show()
-        print(nearestNeighbourDistance, reward)
+        # print(nearestNeighbourDistance, reward)
         return reward
 
     ''' newton policy computes direction as gradient of potential ''' 

@@ -6,21 +6,11 @@ import time
 from fish import *
 
 class swarm:
-    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., seed=42):
-        assert alpha > 0., "wrong alpha"
-        assert alpha <= 360., "wrong alpha"
-        assert turningRate > 0., "wrong turningRate"
-        assert turningRate <= 360., "wrong turningRate"
+    def __init__(self, N, numNN, seed=42):
         # number of fish
         self.N = N
         # number of nearest neighbours
         self.numNearestNeighbours = numNN
-        # field of perception
-        self.alpha = alpha / 180. * np.pi
-        # swimming speed 
-        self.speed = speed
-        # turning rate
-        self.turningRate = turningRate / 180. * np.pi
         # create fish at random locations
         self.fishes = self.randomPlacementNoOverlap( seed )
 
@@ -30,7 +20,7 @@ class swarm:
         M = int( pow( self.N, 1/3 ) )
         V = M+1
         # grid spacing ~ min distance between fish
-        dl = 0.1
+        dl = 0.7
         # maximal extent
         L = V*dl
         
@@ -43,7 +33,7 @@ class swarm:
         fishes = np.empty(shape=(self.N,), dtype=fish)
         for i in range(self.N):
           location = np.array([perm[i][0]*dl, perm[i][1]*dl, perm[i][2]*dl]) - L/2
-          fishes[i] = fish(location, self.speed, self.turningRate)
+          fishes[i] = fish(location)
         
         # return array of fish
         return fishes
@@ -137,7 +127,7 @@ class swarm:
         # Careful: assumes sim.getState(i) was called before
         return self.fishes[i].computeReward( self.distancesNearestNeighbours )
 
-    ''' according to https://doi.org/10.1006/jtbi.2002.3065 '''
+    ''' according to https://doi.org/10.1006/jtbi.2002.3065 and/or https://hal.archives-ouvertes.fr/hal-00167590 '''
     def move(self):
         anglesMat, distancesMat = self.computeStates()
         for i in np.arange(self.N):

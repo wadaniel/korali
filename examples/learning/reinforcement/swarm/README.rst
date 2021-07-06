@@ -25,4 +25,10 @@ The Reinforcement Learning can be ran using
 
 .. code-block:: bash
 
-	srun python run-vracer.py --numIndividuals 100 --numTimesteps 100 --numNearestNeighbours 3
+	python run-vracer.py --numIndividuals 100 --numTimesteps 100 --numNearestNeighbours 3
+
+In order to run the evaluation use
+
+.. code-block:: bash
+
+	python eval-vracer.py --visualize 1 --numIndividuals 10 --numTimesteps 100 --numNearestNeighbours 3

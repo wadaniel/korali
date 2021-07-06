@@ -6,7 +6,13 @@ from scipy.stats import truncnorm
 from plotter import *
 
 # parameters for truncated gaussians (https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.truncnorm.html), taken from https://www.sciencedirect.com/science/article/pii/0304380094900132 
-observedA = [ -0.7/0.3, -1./0.4, -1.3/0.5]
+observedMean  = np.array([ 0.7, 1.0, 1.3 ])
+observedSigma = np.array([ 0.3, 0.4, 0.5 ])
+lowerBound = 0
+upperBound = np.inf
+observedA = (lowerBound-observedMean)/observedSigma
+observedB = (upperBound-observedMean)/observedSigma
+
 
 class fish:
     def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Observed" ):
@@ -24,8 +30,10 @@ class fish:
         # potential
         self.potential = potential
         ## parameters for potentials
-        self.epsilon        = potentialStrength * ( 1 + individualNoise[2] ) # max value of reward
-        self.sigmaPotential = eqDistance        * ( 1 + individualNoise[3] ) # distance below which reward becomes penality
+        # max value of reward
+        self.epsilon        = potentialStrength * ( 1 + individualNoise[2] )
+        # distance below which reward becomes penality
+        self.sigmaPotential = eqDistance        * ( 1 + individualNoise[3] )
 
     ''' get uniform random unit vector on sphere '''      
     def randUnitDirection(self):
@@ -33,7 +41,7 @@ class fish:
         mag = np.linalg.norm(vec)
         return vec/mag
 
-    ''' according to https://doi.org/10.1006/jtbi.2002.3065 / https://hal.archives-ouvertes.fr/hal-00167590 '''
+    ''' according to https://doi.org/10.1006/jtbi.2002.3065 and/or https://hal.archives-ouvertes.fr/hal-00167590 '''
     def computeDirection(self, repellTargets, orientTargets, attractTargets):
         newWishedDirection = np.zeros(3)
         # zone of repulsion - highest priority
@@ -119,9 +127,13 @@ class fish:
             elif self.potential == "Observed":
                 if i>2:
                     assert 0, print("The 'Observed' reward only supports up to 3 nearest Neighbours")
-                reward += truncnorm.pdf(r, observedA[i], np.inf)
+                # rTest = np.linspace(-10,10,1001)
+                # plt.plot(rTest, truncnorm.pdf(rTest, a=observedA[i], b=observedB[i], loc=observedMean[i], scale=observedSigma[i]))
+                reward += truncnorm.pdf(r, a=observedA[i], b=observedB[i], loc=observedMean[i], scale=observedSigma[i])
             else:
                 assert 0, print("Please chose a pair-potential that is implemented")
+        # plt.show()
+        print(nearestNeighbourDistance, reward)
         return reward
 
     ''' newton policy computes direction as gradient of potential ''' 

@@ -1,33 +1,14 @@
-#! /usr/bin/env bash
-
-if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-vracer-openAI.sh RUNNAME"
-	exit 1
-fi
-if [ $# -gt 0 ] ; then
-	RUNNAME=$1
-fi
-
-# number of agents
-NNODES=64
-
-# setup run directory and copy necessary files
-RUNPATH="${SCRATCH}/korali/${RUNNAME}"
-mkdir -p ${RUNPATH}
-cp ../run-vracer.py ${RUNPATH}
-cp ../settings.sh ${RUNPATH}
-cp -r ../_model/ ${RUNPATH}
-cd ${RUNPATH}
-
-source settings.sh
-
-cat <<EOF >daint_sbatch
 #!/bin/bash -l
-#SBATCH --job-name="${RUNNAME}"
-#SBATCH --output=${RUNNAME}_out_%j.txt
-#SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=24:00:00
-#SBATCH --nodes=$((NNODES+1))
+
+source ../settings.sh
+
+cat > run.sh <<EOF
+#!/bin/bash -l
+#SBATCH --job-name="OpenAI_csacle2"
+#SBATCH --output=OpenAI_csacle2_out_%j.txt
+#SBATCH --error=OpenAI_csacle2_err_%j.txt
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1
@@ -35,8 +16,29 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-srun python run-vracer.py --env $ENV --dis $DIS --l2 $L2 --opt $OPT --lr $LR
+RUNPATH=$SCRATCH/OpenAI_cscale/$ENV/\$SLURM_JOB_ID
+mkdir -p \$RUNPATH
+
+pushd ..
+
+cat run-vracer.py
+
+cp run-vracer.py \$RUNPATH
+cp settings.sh \$RUNPATH
+cp -r _model/ \$RUNPATH
+
+popd
+
+pushd \$RUNPATH
+
+OMP_NUM_THREADS=12 python3 run-vracer.py --env $ENV --dis $DIS --l2 $L2 --opt $OPT --lr $LR
+
+resdir=\$(ls -d _result_vracer_*)
+python3 -m korali.rlview --dir \$resdir --output vracer.png
+
+popd
+
+date
 EOF
 
-chmod 755 daint_sbatch
-sbatch daint_sbatch
+sbatch run.sh

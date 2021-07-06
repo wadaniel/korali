@@ -46,7 +46,7 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-7
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
@@ -77,7 +77,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

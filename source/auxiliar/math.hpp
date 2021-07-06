@@ -95,6 +95,45 @@ const double Min = std::numeric_limits<double>::min();
 const double Eps = std::numeric_limits<double>::epsilon();
 
 /**
+* @brief Check if both arguments are approximately equal up to given precision
+* @param a Value a
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool approximatelyEqual(T a, T b, T epsilon)
+{
+        return fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
+* @brief Check if the first argument is surely greater than the second argument up to given precision
+* @param a First argument, to be checked if greater than b
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool definitelyGreaterThan(T a, T b, T epsilon)
+{
+        return (a - b) > ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
+* @brief Check if the first argument is surely smaller than the second argument up to given precision
+* @param a First argument, to be checked if smaller than b
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool definitelyLessThan(T a, T b, T epsilon)
+{
+        return (b - a) > ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
 * @brief Approximates the inverse of the error function
 * @param x Argument to the inverse error function
 * @return The inverse of the error function
@@ -140,11 +179,7 @@ T safeLogPlus(T x, T y)
 template <typename T>
 T safeLogMinus(T x, T y)
 {
-  if (y+1e-20>=x)
-  {
-    return -32.;
-  }
-  if (x-y>20.)
+  if (x-y>12.0)
   {
     // prevent overflows when exponentiating x-y
     return x;
@@ -155,7 +190,7 @@ T safeLogMinus(T x, T y)
   }
   else
   {
-    KORALI_LOG_ERROR("Invalid input to mathematical function, x (%f) must be larger than y (%f)\n", x,y);
+    KORALI_LOG_ERROR("Invalid input to mathematical function 'safeLogMinus, x (%.*e) must be larger than y (%.*e)\n", x, y);
     return 0.;
   }
 }

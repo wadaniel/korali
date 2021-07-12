@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Integration.
 */
 
-
-#ifndef _KORALI_PROBLEM_INTEGRATION_
-#define _KORALI_PROBLEM_INTEGRATION_
-;
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -77,7 +74,4 @@ class Integration : public Problem
 
 } //problem
 } //korali
-;
-
-#endif // _KORALI_PROBLEM_INTEGRATION_
 ;

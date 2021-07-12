@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Custom.
 */
 
-
-#ifndef _KORALI_PROBLEM_BAYESIAN_CUSTOM_
-#define _KORALI_PROBLEM_BAYESIAN_CUSTOM_
-;
+#pragma once
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
@@ -68,7 +65,4 @@ class Custom : public Bayesian
 } //bayesian
 } //problem
 } //korali
-;
-
-#endif // _KORALI_PROBLEM_BAYESIAN_CUSTOM_
 ;

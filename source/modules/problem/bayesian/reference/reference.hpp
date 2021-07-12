@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Reference.
 */
 
-
-#ifndef _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-#define _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-;
+#pragma once
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
@@ -185,7 +182,4 @@ class Reference : public Bayesian
 } //bayesian
 } //problem
 } //korali
-;
-
-#endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_
 ;

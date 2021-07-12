@@ -2,8 +2,7 @@
 * @brief Contains the koraliJson class, which supports JSON objects within Korali classes
 ******************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_KORALIJSON_HPP_
-#define _KORALI_AUXILIARS_KORALIJSON_HPP_
+#pragma once
 
 #include "auxiliar/jsonInterface.hpp"
 #include <pybind11/functional.h>
@@ -100,4 +99,3 @@ class KoraliJson
 };
 
 } // namespace korali
-#endif // _KORALI_AUXILIARS_KORALIJSON_HPP_

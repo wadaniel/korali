@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: MCMC.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_MCMC_
-#define _KORALI_SOLVER_SAMPLER_MCMC_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -225,7 +222,4 @@ class MCMC : public Sampler
 } //sampler
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_SAMPLER_MCMC_
 ;

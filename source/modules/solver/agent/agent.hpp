@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Agent.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_
-#define _KORALI_SOLVER_AGENT_
-;
+#pragma once
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -809,7 +806,4 @@ class Agent : public Solver
 
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_AGENT_
 ;

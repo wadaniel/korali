@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -51,5 +51,3 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
-
-__endIncludeGuard__;

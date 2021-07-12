@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: DeepSupervisor.
 */
 
-
-#ifndef _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-#define _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-;
+#pragma once
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -178,7 +175,4 @@ class DeepSupervisor : public Learner
 } //learner
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
 ;

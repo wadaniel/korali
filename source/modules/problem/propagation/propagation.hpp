@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Propagation.
 */
 
-
-#ifndef _KORALI_PROBLEM_PROPAGATION_
-#define _KORALI_PROBLEM_PROPAGATION_
-;
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -78,7 +75,4 @@ class Propagation : public Problem
 
 } //problem
 } //korali
-;
-
-#endif // _KORALI_PROBLEM_PROPAGATION_
 ;

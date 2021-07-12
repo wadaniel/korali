@@ -4,8 +4,8 @@
 
 #pragma GCC diagnostic ignored "-Wparentheses"
 
-#ifndef _KORALI_AUXILIARS_JSONINTERFACE_HPP_
-#define _KORALI_AUXILIARS_JSONINTERFACE_HPP_
+#pragma once
+
 
 #include "auxiliar/json.hpp"
 #include "auxiliar/logger.hpp"
@@ -147,4 +147,3 @@ bool loadJsonFromFile(knlohmann::json &dst, const char *fileName);
 int saveJsonToFile(const char *fileName, const knlohmann::json &js);
 
 } // namespace korali
-#endif // _KORALI_AUXILIARS_JSONINTERFACE_HPP_

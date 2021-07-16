@@ -62,14 +62,14 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -1.0;
   e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Swimming Period";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -0.25;
   e["Variables"][curVariable]["Upper Bound"] = +0.25;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;

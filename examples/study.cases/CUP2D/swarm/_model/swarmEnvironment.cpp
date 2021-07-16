@@ -110,7 +110,7 @@ void runEnvironment(korali::Sample &s)
 
       // Check termination because leaving margins
       for( size_t i = 0; i<NAGENTS; i++ )
-        done = isTerminal(agents[i]);
+        done = ( done || isTerminal(agents[i]) );
     }
 
     // Get state and action
@@ -188,9 +188,9 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   }
 
   printf("[Korali] Initial Condition Agent %ld:\n", agentId);
-  printf("[Korali] SA: %f\n", initialAngle);
-  printf("[Korali] SX: %f\n", initialPosition[0]);
-  printf("[Korali] SY: %f\n", initialPosition[1]);
+  printf("[Korali] angle: %f\n", initialAngle);
+  printf("[Korali] x: %f\n", initialPosition[0]);
+  printf("[Korali] y: %f\n", initialPosition[1]);
 
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());

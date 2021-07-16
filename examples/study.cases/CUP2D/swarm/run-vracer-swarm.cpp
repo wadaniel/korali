@@ -137,21 +137,4 @@ int main(int argc, char *argv[])
 
   // ..and run
   k.run(e);
-
-  ////// Now testing policy, dumping trajectory results
-  printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
-
-  // Adding custom setting to run the environment dumping the state files during testing
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
-
-  e["File Output"]["Path"] = testingResultsPath;
-  k["Profiling"]["Path"] = testingResultsPath + std::string("/profiling.json");
-  e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparamters"];
-  e["Solver"]["Mode"] = "Testing";
-  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
-
-  k.run(e);
-
-  printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
 }

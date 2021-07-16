@@ -15,6 +15,7 @@ extern char **_argv;
 
 void initializeEnvironment();
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
+bool isTerminal(StefanFish *agent);
 
 // Global variables for the simulation (ideal if this would be a class instead)
 extern std::mt19937 _randomGenerator;

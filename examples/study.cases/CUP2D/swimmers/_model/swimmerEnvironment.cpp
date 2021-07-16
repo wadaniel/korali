@@ -153,9 +153,9 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   }
 
   printf("[Korali] Initial Condition:\n");
-  printf("[Korali] SA: %f\n", initialAngle);
-  printf("[Korali] SX: %f\n", initialPosition[0]);
-  printf("[Korali] SY: %f\n", initialPosition[1]);
+  printf("[Korali] angle: %f\n", initialAngle);
+  printf("[Korali] x: %f\n", initialPosition[0]);
+  printf("[Korali] y: %f\n", initialPosition[1]);
 
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());

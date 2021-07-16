@@ -81,7 +81,7 @@ void runEnvironment(korali::Sample &s)
     // Run the simulation until next action is required
     dtAct = agent->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
-    while ( t < tNextAct )
+    while ( t < tNextAct && done == false )
     {
       // Compute timestep
       const double dt = std::min(_environment->calcMaxTimestep(), dtAct);
@@ -137,31 +137,29 @@ void runEnvironment(korali::Sample &s)
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
   // Initial fixed conditions
-  double SA = 0.0;
-  double SX = 0.3;
-  double SY = 0.0;
+  double initialAngle = 0.0;
+  std::vector<double> initialPosition{0.9,1.0};
 
-  // or with noise
-  //if (isTraining)
-  //{
-  // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  // std::uniform_real_distribution<double> disX(0.45, 0.55);
-  // std::uniform_real_distribution<double> disY(-0.05, 0.05);
+  // with noise
+  if (isTraining)
+  {
+    std::uniform_real_distribution<double> disA(-10. / 180. * M_PI, 10. / 180. * M_PI);
+    std::uniform_real_distribution<double> disX(-0.1, 0.1);
+    std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
-  // SA = disA(_randomGenerator);
-  // SX = disX(_randomGenerator);
-  // SY = disY(_randomGenerator);
-  //}
+    initialAngle = disA(_randomGenerator);
+    initialPosition[0] = initialPosition[0] + disX(_randomGenerator);
+    initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
+  }
 
-  printf("[Korali] Initial Conditions:\n");
-  printf("[Korali] SA: %f\n", SA);
-  printf("[Korali] SX: %f\n", SX);
-  printf("[Korali] SY: %f\n", SY);
+  printf("[Korali] Initial Condition:\n");
+  printf("[Korali] SA: %f\n", initialAngle);
+  printf("[Korali] SX: %f\n", initialPosition[0]);
+  printf("[Korali] SY: %f\n", initialPosition[1]);
 
   // Setting initial position and orientation for the fish
-  double C[2] = {object->center[0] + SX, object->center[1] + SY};
-  agent->setCenterOfMass(C);
-  agent->setOrientation(SA);
+  agent->setCenterOfMass(initialPosition.data());
+  agent->setOrientation(initialAngle);
 
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();

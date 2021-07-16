@@ -55,6 +55,8 @@ void runEnvironment(korali::Sample &s)
   _environment->resetRL();
   for( size_t i = 0; i<NAGENTS; i++ )
     setInitialConditions(agents[i], i, s["Mode"] == "Training");
+  // After moving the agent, the obstacles have to be restarted
+  _environment->startObstacles();
 
   // Setting initial state
   std::vector<std::vector<double>> states(NAGENTS);
@@ -73,7 +75,7 @@ void runEnvironment(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
-  while (done == false && curStep < maxSteps)
+  while ( curStep < maxSteps && done == false )
   {
     // Getting new actions
     s.update();
@@ -94,7 +96,7 @@ void runEnvironment(korali::Sample &s)
       if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
         dtAct = agents[i]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
-    while ( t < tNextAct )
+    while ( t < tNextAct && done == false )
     {
       // Compute timestep
       const double dt = std::min(_environment->calcMaxTimestep(), dtAct);
@@ -105,6 +107,10 @@ void runEnvironment(korali::Sample &s)
 
       // Check if there was a collision -> termination.
       done = _environment->sim.bCollision;
+
+      // Check termination because leaving margins
+      for( size_t i = 0; i<NAGENTS; i++ )
+        done = isTerminal(agents[i]);
     }
 
     // Get state and action
@@ -153,15 +159,15 @@ void runEnvironment(korali::Sample &s)
 }
 
 std::vector<std::vector<double>> initialPositions{
-    {0.20, 1.00},
-    {0.50, 0.90},
-    {0.50, 1.10},
-    {0.80, 0.80},
-    {0.80, 1.00},
-    {0.80, 1.20},
-    {1.10, 0.90},
-    {1.10, 1.10},
-    {1.40, 1.00} };
+    {0.60, 1.00},
+    {0.90, 0.90},
+    {0.90, 1.10},
+    {1.20, 0.80},
+    {1.20, 1.00},
+    {1.20, 1.20},
+    {1.50, 0.90},
+    {1.50, 1.10},
+    {1.80, 1.00} };
 
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
 {
@@ -169,19 +175,19 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   double initialAngle = 0.0;
   auto initialPosition = initialPositions[agentId];
 
-  // or with noise
-  //if (isTraining)
-  //{
-  // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  // std::uniform_real_distribution<double> disX(-0.25, 0.25);
-  // std::uniform_real_distribution<double> disY(-0.125, 0.125);
+  // with noise
+  if (isTraining)
+  {
+    std::uniform_real_distribution<double> disA(-10. / 180. * M_PI, 10. / 180. * M_PI);
+    std::uniform_real_distribution<double> disX(-0.05, 0.05);
+    std::uniform_real_distribution<double> disY(-0.075, 0.075);
 
-  // initialAngle = disA(_randomGenerator);
-  // initialPosition[0] = initialPosition[0] + disX(_randomGenerator);
-  // initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
-  //}
+    initialAngle = disA(_randomGenerator);
+    initialPosition[0] = initialPosition[0] + disX(_randomGenerator);
+    initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
+  }
 
-  printf("[Korali] Initial Conditions:\n");
+  printf("[Korali] Initial Condition Agent %ld:\n", agentId);
   printf("[Korali] SA: %f\n", initialAngle);
   printf("[Korali] SX: %f\n", initialPosition[0]);
   printf("[Korali] SY: %f\n", initialPosition[1]);
@@ -189,7 +195,18 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());
   agent->setOrientation(initialAngle);
+}
 
-  // After moving the agent, the obstacles have to be restarted
-  _environment->startObstacles();
+bool isTerminal(StefanFish *agent)
+{
+  const double X = agent->center[0];
+  const double Y = agent->center[1];
+
+  bool terminal = false;
+  if (X < 0.4) terminal = true;
+  if (X > 2.0) terminal = true;
+  if (Y < 0.6) terminal = true;
+  if (Y > 1.4) terminal = true;
+
+  return terminal;
 }

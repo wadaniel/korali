@@ -12,6 +12,7 @@ extern char **_argv;
 
 #include "Obstacles/StefanFish.h"
 #include "Simulation.h"
+#include "Utils/BufferedLogger.h"
 
 void initializeEnvironment();
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining);

@@ -25,7 +25,7 @@ void runEnvironment(korali::Sample &s)
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( not std::filesystem::create_directories(resDir) )
   {
-    fprintf(stderr, "Error creating results directory for environment\n");
+    fprintf(stderr, "[Korali] Error creating results directory for environment\n");
     exit(-1);
   };
 
@@ -35,7 +35,7 @@ void runEnvironment(korali::Sample &s)
   auto logFile = freopen(logFilePath, "a", stdout);
   if (logFile == NULL)
   {
-    printf("Error creating log file: %s.\n", logFilePath);
+    printf("[Korali] Error creating log file: %s.\n", logFilePath);
     exit(-1);
   }
 
@@ -126,6 +126,7 @@ void runEnvironment(korali::Sample &s)
     s["Reward"] = rewards;
     
     // Printing Information:
+    printf("[Korali] -------------------------------------------------------\n");
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     for( size_t i = 0; i<NAGENTS; i++ )
     {
@@ -144,6 +145,9 @@ void runEnvironment(korali::Sample &s)
     // Advancing to next step
     curStep++;
   }
+
+  // Flush CUP logger
+  logger.flush();
 
   // Setting finalization status
   if (done == true)

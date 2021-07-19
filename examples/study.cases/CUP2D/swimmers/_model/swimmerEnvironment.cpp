@@ -107,6 +107,7 @@ void runEnvironment(korali::Sample &s)
     s["State"] = state;
 
     // Printing Information:
+    printf("[Korali] -------------------------------------------------------\n");
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     printf("[Korali] State: [ %.3f", state[0]);
     for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
@@ -120,6 +121,9 @@ void runEnvironment(korali::Sample &s)
     // Advancing to next step
     curStep++;
   }
+
+  // Flush CUP logger
+  logger.flush();
 
   // Setting finalization status
   if (done == true)

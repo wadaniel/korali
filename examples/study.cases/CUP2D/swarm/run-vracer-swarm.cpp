@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
+  e["Problem"]["Agents Per Environment"] = 9;
   e["Problem"]["Training Reward Threshold"] = 200.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
-  e["Problem"]["Agents Per Environment"] = 9;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training

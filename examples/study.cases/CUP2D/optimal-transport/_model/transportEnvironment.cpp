@@ -45,7 +45,7 @@ void runEnvironmentVracer(korali::Sample &s)
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  _environment->resetRL();
+  _environment->reset();
   std::vector<double> start{1., 2.};
   setInitialConditions(agent, start, s["Mode"] == "Training");
 
@@ -265,7 +265,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
   SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
 
   // Resetting environment and setting initial conditions
-  _environment->resetRL();
+  _environment->reset();
   std::vector<double> start{startX, height};
   setInitialConditions(agent, start, false);
 
@@ -420,7 +420,7 @@ void runEnvironmentCmaes(korali::Sample& s)
   SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
 
   // Reseting environment and setting initial conditions
-  _environment->resetRL();
+  _environment->reset();
   std::vector<double> start{startX, height};
   setInitialConditions(agent, start, false);
 

@@ -23,7 +23,7 @@ void runEnvironment(korali::Sample &s)
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( not std::filesystem::create_directories(resDir) )
   {
-    fprintf(stderr, "Error creating results directory for environment\n");
+    fprintf(stderr, "[Korali] Error creating results directory for environment\n");
     exit(-1);
   };
 
@@ -33,7 +33,7 @@ void runEnvironment(korali::Sample &s)
   auto logFile = freopen(logFilePath, "a", stdout);
   if (logFile == NULL)
   {
-    printf("Error creating log file: %s.\n", logFilePath);
+    printf("[Korali] Error creating log file: %s.\n", logFilePath);
     exit(-1);
   }
 
@@ -49,8 +49,10 @@ void runEnvironment(korali::Sample &s)
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  _environment->resetRL();
-  setInitialConditions(agent, object, s["Mode"] == "Training");
+  _environment->reset();
+  setInitialConditions(agent, object, s["Mode"] == "Training"); 
+  // After moving the agent, the obstacles have to be restarted
+  _environment->startObstacles();
 
   // Setting initial state
   auto state = agent->state(object);
@@ -118,6 +120,18 @@ void runEnvironment(korali::Sample &s)
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
 
+    // Write action to file
+    ofstream myfile ("actions.txt", ios::out | ios::app );
+    if (myfile.is_open())
+    {
+      myfile << action[0] << " " << action[1] << std::endl;
+      myfile.close();
+    }
+    else{
+      fprintf(stderr, "Unable to open actions.txt file\n");
+      exit(-1);
+    }
+
     // Advancing to next step
     curStep++;
   }
@@ -161,12 +175,21 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   printf("[Korali] x: %f\n", initialPosition[0]);
   printf("[Korali] y: %f\n", initialPosition[1]);
 
+  // Write initial condition to file
+  ofstream myfile ("initialCondition.txt");
+  if (myfile.is_open())
+  {
+    myfile << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
+    myfile.close();
+  }
+  else{
+    fprintf(stderr, "Unable to open initialCondition.txt file\n");
+    exit(-1);
+  }
+
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());
   agent->setOrientation(initialAngle);
-
-  // After moving the agent, the obstacles have to be restarted
-  _environment->startObstacles();
 }
 
 bool isTerminal(StefanFish *agent, Shape *object)

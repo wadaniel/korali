@@ -73,4 +73,7 @@ int main(int argc, char *argv[])
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   k.run(e);
+
+  // delete simulation
+  delete _environment;
 }

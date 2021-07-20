@@ -116,52 +116,29 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
-
   e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
 
   ////// Setting Korali output configuration
-
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
   e["File Output"]["Path"] = trainingResultsPath;
 
   ////// Running Experiment
-
   auto k = korali::Engine();
 
   // Configuring profiler output
-
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
+  // set conduit and MPI communicator
   k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
+  // run korali
   k.run(e);
 
-  ////// Now testing policy, dumping trajectory results
-
-  printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
-
-  //// ELIMINATE EVERYTHING ABOVE
-  // Adding custom setting to run the environment dumping the state files during testing
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
-
-  e["File Output"]["Path"] = testingResultsPath;
-  k["Profiling"]["Path"] = testingResultsPath + std::string("/profiling.json");
-  e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparamters"];
-  e["Solver"]["Mode"] = "Testing";
-  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
-
-  k.run(e);
+  // delete simulation
+  delete _environment;
 }
-
-// plot policy (state vs action), do this per agent
-// action agent took over time and energy consumption it corresponds to, plot mean and std of action and energy consumption
-// state over time, mean and std over time (over the 54 diffferent tries)
-// policy histogram, how the actions are distributed
-// velocity at target over time, mean and std as well over time
-// movie of sim

@@ -57,4 +57,7 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
+
+  // delete simulation
+  delete _environment;
 }

@@ -137,4 +137,7 @@ int main(int argc, char *argv[])
 
   // ..and run
   k.run(e);
+
+  // delete simulation
+  delete _environment;
 }

@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
     _argv_[i] = argv[i];
   }
 
-  
-
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
@@ -73,6 +71,9 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
+
+  // delete simulation
+  delete _environment;
 }
 
 // plot policy (state vs action), do this per agent

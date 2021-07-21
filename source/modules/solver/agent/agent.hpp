@@ -314,6 +314,10 @@ class Agent : public Solver
   */
    float _rewardRescalingSigma;
   /**
+  * @brief [Internal Use] Sum of rewards in experience replay.
+  */
+   float _rewardRescalingSumRewards;
+  /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
    float _rewardRescalingSumSquaredRewards;

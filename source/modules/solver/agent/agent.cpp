@@ -5,7 +5,10 @@
 #include <chrono>
 
 // Enable continuous rescaling (experimental)
-#define CSCALE
+//#define CSCALE
+//#define CMUSCALE
+
+//#define ALPHAOFFP
 
 namespace korali
 {
@@ -109,6 +112,8 @@ void Agent::initialize()
 
     _rewardRescalingMean = 0.0f;
     _rewardRescalingSigma = 1.0f;
+    _rewardRescalingSumRewards = 0.0f;
+    _rewardRescalingSumSquaredRewards = 0.0f;
     _rewardRescalingCount = 0;
     _rewardOutboundPenalizationCount = 0;
   }
@@ -500,8 +505,12 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     }
 
 #ifdef CSCALE
-    //if(_rewardVector.size() >= _experienceReplayMaximumSize)
-    //    _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    if(_rewardVector.size() >= _experienceReplayMaximumSize)
+    {
+        _rewardRescalingSumRewards -= _rewardVector[0];
+        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    }
+    _rewardRescalingSumRewards += reward;
     _rewardRescalingSumSquaredRewards += reward*reward;
 #endif
     _rewardVector.add(reward);
@@ -614,8 +623,11 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   }
 
 #ifdef CSCALE
-  //_rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
-  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_experienceCount + 1e-9);
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+#ifdef CMUSCALE
+  _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardVector.size();
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() - _rewardRescalingMean*_rewardRescalingMean + 1e-9);
+#endif
 #endif
 }
 
@@ -655,7 +667,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-#pragma omp parallel for
+  // Calculate offpolicy count difference in minibatch
+  int offPolicyCountDelta = 0;
+
+#pragma omp parallel for reduction(+: offPolicyCountDelta)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -684,14 +699,17 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
+#ifdef ALPHAOFFP
+    if (isOnPolicy == false)
+        offPolicyCountDelta++;
+#else
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-#pragma omp atomic
-      _experienceReplayOffPolicyCount++;
+      offPolicyCountDelta++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-#pragma omp atomic
-      _experienceReplayOffPolicyCount--;
+      offPolicyCountDelta--;
+#endif
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
@@ -716,7 +734,12 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   }
 
   // Updating the off policy Ratio
+#ifdef ALPHAOFFP
+  _experienceReplayOffPolicyRatio = 0.1*_experienceReplayOffPolicyRatio+0.9*offPolicyCountDelta/(float)updateBatch.size();
+#else
+  _experienceReplayOffPolicyCount += offPolicyCountDelta;
   _experienceReplayOffPolicyRatio = (float)_experienceReplayOffPolicyCount / (float)_isOnPolicyVector.size();
+#endif
 
   // Updating the off policy Cutoff
   _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
@@ -1338,6 +1361,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Reward", "Rescaling", "Sigma");
  }
 
+ if (isDefined(js, "Reward", "Rescaling", "Sum Rewards"))
+ {
+ try { _rewardRescalingSumRewards = js["Reward"]["Rescaling"]["Sum Rewards"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sum Rewards']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Sum Rewards");
+ }
+
  if (isDefined(js, "Reward", "Rescaling", "Sum Squared Rewards"))
  {
  try { _rewardRescalingSumSquaredRewards = js["Reward"]["Rescaling"]["Sum Squared Rewards"].get<float>();
@@ -1768,6 +1799,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experience Count"] = _experienceCount;
    js["Reward"]["Rescaling"]["Mean"] = _rewardRescalingMean;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
+   js["Reward"]["Rescaling"]["Sum Rewards"] = _rewardRescalingSumRewards;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Reward"]["Rescaling"]["Count"] = _rewardRescalingCount;
    js["Reward"]["Outbound Penalization"]["Count"] = _rewardOutboundPenalizationCount;

@@ -2,12 +2,18 @@
 
 source ../settings.sh
 
+echo $ENV
+echo $DIS
+echo $L2
+echo $OPT
+echo $LR
+
 cat > run.sh <<EOF
 #!/bin/bash -l
 #SBATCH --job-name="OpenAI_VRACER_$ENV"
-#SBATCH --output=OpenAI_$ENV_%j.txt
-#SBATCH --error=OpenAI_$ENV_err_%j.txt
-#SBATCH --time=01:00:00
+#SBATCH --output=OpenAI_$ENV_%j.out
+#SBATCH --error=OpenAI_$ENV_err_%j.out
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
@@ -16,7 +22,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/OpenAI_cscale/$ENV/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/OpenAI_VRACER3_fixsoftplus/$ENV/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 pushd ..

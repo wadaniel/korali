@@ -153,13 +153,13 @@ void Output::forwardData(const size_t t)
       // Apply selected transformation now
       if (_transformationVector[j] == t_absolute) x = std::fabs(x);
       if (_transformationVector[j] == t_sigmoid) x = 1. / (1. + std::exp(-x));
-      if (_transformationVector[j] == t_softplus) x = 0.5 * (x + std::sqrt(1. + x * x));
+      if (_transformationVector[j] == t_softplus) x = 0.5 * (x + std::sqrt(1. + x * x)); 
       if (_transformationVector[j] == t_tanh) x = std::tanh(x);
 
       // If we  use scaling, then apply the scaling factors now
       if (_scale.size() > 0) x *= _scale[j];
 
-      // If we  use shifting, then apply the scaling factors now
+      // If we  use shifting, then apply the shifting now
       if (_shift.size() > 0) x += _shift[j];
 
       // Saving result to NN's output directly
@@ -207,8 +207,8 @@ void Output::backwardData(const size_t t)
 
       if (_transformationVector[j] == t_softplus)
       {
-        float nnx = x - 0.25 / x; // Approximation NN output
-        g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+        float nnx = (4.*x*x - 1.)/(4.*x); 
+        g = g * 0.5 * (1. + nnx / std::sqrt(nnx * nnx + 1));
       }
 
       if (_transformationVector[j] == t_sigmoid)

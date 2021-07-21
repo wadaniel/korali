@@ -23,7 +23,7 @@ fAdam::fAdam(size_t nVars)
   // Defaults
   _beta1 = 0.9f;
   _beta2 = 0.999f;
-  _eta = 0.001;
+  _eta = 0.0001f;
   _epsilon = 1e-08f;
 
   // Termination Criteria

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Defaults for Options
-BPDX=${BPDX:-2}
-BPDY=${BPDY:-1}
-LEVELS=${LEVELS:-8}
+BPDX=${BPDX:-4}
+BPDY=${BPDY:-2}
+LEVELS=${LEVELS:-7}
 RTOL=${RTOL-2}
 CTOL=${CTOL-1}
 EXTENT=${EXTENT:-4}
@@ -64,6 +64,6 @@ fi
 
 echo "----------------------------"
 echo "setting simulation options"
-OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 5  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 0 -verbose 0"
+OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 0 -verbose 0"
 echo $OPTIONS
 echo "###############################"

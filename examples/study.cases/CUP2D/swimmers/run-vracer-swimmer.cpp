@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // Storing parameters
+  // Storing command-line arguments
   _argc = argc;
   _argv = argv;
 

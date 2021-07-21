@@ -15,10 +15,12 @@ int main(int argc, char *argv[])
 
   // Storing parameters
   _argc = argc-1;
+  char *_argv_[_argc];
   for(int i = 0; i < _argc; ++i)
   {
-    _argv[i] = argv[i];
+    _argv_[i] = argv[i];
   }
+  _argv = _argv_;
 
   // Getting number of workers
   int N = 1;

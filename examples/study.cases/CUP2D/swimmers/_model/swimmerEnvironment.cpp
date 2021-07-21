@@ -41,6 +41,10 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
+  // Creating simulation environment
+  // Simulation *_environment = new Simulation(_argc, _argv);
+  // _environment->init();
+
   // Obtaining environment objects and agent
   Shape *object = _environment->getShapes()[0];
   StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
@@ -76,6 +80,18 @@ void runEnvironment(korali::Sample &s)
 
     // Reading new action
     std::vector<double> action = s["Action"];
+
+    // Write action to file
+    ofstream myfile ("actions.txt", ios::out | ios::app );
+    if (myfile.is_open())
+    {
+      myfile << action[0] << " " << action[1] << std::endl;
+      myfile.close();
+    }
+    else{
+      fprintf(stderr, "Unable to open actions.txt file\n");
+      exit(-1);
+    }
 
     // Setting action
     agent->act(t, action);
@@ -120,24 +136,15 @@ void runEnvironment(korali::Sample &s)
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
 
-    // Write action to file
-    ofstream myfile ("actions.txt", ios::out | ios::app );
-    if (myfile.is_open())
-    {
-      myfile << action[0] << " " << action[1] << std::endl;
-      myfile.close();
-    }
-    else{
-      fprintf(stderr, "Unable to open actions.txt file\n");
-      exit(-1);
-    }
-
     // Advancing to next step
     curStep++;
   }
 
   // Flush CUP logger
   logger.flush();
+
+  // delete simulation class
+  // delete _environment;
 
   // Setting finalization status
   if (done == true)

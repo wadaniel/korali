@@ -5,14 +5,14 @@
 #ifndef _KORALI_FAST_ADAGRAD_HPP_
 #define _KORALI_FAST_ADAGRAD_HPP_
 
-#include "fGradientBasedOptimizer.hpp"
+#include "fAdam.hpp"
 
 namespace korali
 {
 /**
 * @brief Class declaration for module: MADGRAD.
 */
-class fAdagrad : public fGradientBasedOptimizer
+class fAdagrad : public fAdam
 {
   public:
   /**

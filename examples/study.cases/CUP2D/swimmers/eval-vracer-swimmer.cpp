@@ -2,8 +2,6 @@
 #include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 
-std::string _resultsPath;
-
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI

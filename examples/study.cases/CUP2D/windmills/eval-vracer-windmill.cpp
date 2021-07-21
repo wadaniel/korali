@@ -2,8 +2,6 @@
 #include "_model/windmillEnvironment.hpp"
 #include "korali.hpp"
 
-std::string _resultsPath;
-
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
@@ -16,17 +14,10 @@ int main(int argc, char *argv[])
   }
 
   // Storing parameters
-  // _argc = argc
-  // _argv = argv;
-
-  // this enables to pass the folder as an argument to exe
-
   _argc = argc-1;
-
-  char *_argv_[argc-1];
-  for(int i = 0; i < argc-1; ++i)
+  for(int i = 0; i < _argc; ++i)
   {
-    _argv_[i] = argv[i];
+    _argv[i] = argv[i];
   }
 
   // Getting number of workers
@@ -34,11 +25,7 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initialize CUP2D
-  _environment = new Simulation(_argc, _argv_);
-  _environment->init();
-
-  std::string folder = std::string(argv[argc-1]);
+  std::string folder = std::string(argv[_argc]);
 
   // Set results path
   std::string trainingResultsPath = "_results_windmill_training/" + folder;
@@ -71,9 +58,6 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
-
-  // delete simulation
-  delete _environment;
 }
 
 // plot policy (state vs action), do this per agent

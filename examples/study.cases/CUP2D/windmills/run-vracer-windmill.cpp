@@ -2,8 +2,6 @@
 #include "_model/windmillEnvironment.hpp"
 #include "korali.hpp"
 
-std::string _resultsPath;
-
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
@@ -23,10 +21,6 @@ int main(int argc, char *argv[])
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-
-  // Initialize CUP2D
-  _environment = new Simulation(_argc, _argv);
-  _environment->init();
 
   // Set results path
   std::string trainingResultsPath = "_results_windmill_training/";
@@ -50,7 +44,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   const size_t numStates = 4;
-  for (int curVariable = 0; curVariable < numStates; curVariable++)
+  for (size_t curVariable = 0; curVariable < numStates; curVariable++)
   {
     if(curVariable%2==0){
       e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
@@ -138,7 +132,4 @@ int main(int argc, char *argv[])
 
   // run korali
   k.run(e);
-
-  // delete simulation
-  delete _environment;
 }

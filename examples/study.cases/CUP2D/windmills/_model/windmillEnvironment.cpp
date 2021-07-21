@@ -4,8 +4,6 @@
 
 int _argc;
 char **_argv;
-
-Simulation *_environment;
 std::mt19937 _randomGenerator;
 
 // 4 windmills with variable torque applied to them
@@ -34,8 +32,11 @@ void runEnvironment(korali::Sample &s)
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
-  ////////////////////////////////////////// setup stuff 
 
+  // Creating simulation environment
+  Simulation *_environment = new Simulation(_argc, _argv);
+  _environment->init();
+  ////////////////////////////////////////// setup stuff 
 
   ////////////////////////////////////////// Initialize agents and objective
   // Obtaining agent, 4 windmills 
@@ -50,12 +51,9 @@ void runEnvironment(korali::Sample &s)
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Reseting environment and setting initial conditions
-  _environment->reset();
-  //bool random_init = (s["Mode"] == "Training" || s["Mode"] == "Testing" );
-  bool random_init = true;
-  setInitialConditions(agent1, 0.0, random_init);
-  setInitialConditions(agent2, 0.0, random_init);
+  // Setting initial conditions
+  setInitialConditions(agent1, 0.0, s["Mode"] == "Training");
+  setInitialConditions(agent2, 0.0, s["Mode"] == "Training");
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
@@ -81,27 +79,15 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   size_t maxSteps = 2000; // 2000 for training
 
-  // Starting main environment loop
-  // bool done = false;
-
   while (curStep < maxSteps)
   {
-
- // Getting initial time
-    auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
     // Getting new action
     s.update();
 
     // Reading new action
     std::vector<double> action = s["Action"];
 
-    // double max_torque = 1e-4;
-
-    // // Setting action
-    // agent1->act( max_torque * action[0] );
-    // agent2->act( max_torque * action[1] );
-
+    // Setting action for 
     agent1->act( action[0] );
     agent2->act( action[1] );
 
@@ -109,41 +95,29 @@ void runEnvironment(korali::Sample &s)
     tNextAct += 0.01;
     while ( t < tNextAct )
     {
-      // Advance simulation
-      const double dt = _environment->calcMaxTimestep();
+      // Calculate simulation timestep
+      const double dt = std::min(_environment->calcMaxTimestep(), 0.01);
       t += dt;
 
-      // Advance simulation and check whether it is correct
-      if (_environment->advance(dt))
-      {
-        fprintf(stderr, "Error during environment\n");
-        exit(-1);
-      }
+      // Advance simulation
+      _environment->advance(dt);
     }
 
-    // reward( std::vector<double> target_vel, double C, double D
-
-    // used for both run
+    // used for "both" run
     // Real en = 5.0e4;
     // Real flow = 2.5;
 
-    // used for energy_zero run
+    // used for "energy_zero" run
     // Real en = 5.0e4;
     // Real flow = 0.0;
 
-    // used for flow_zero run
+    // used for "flow_zero" run
     Real en = 0.0;
     Real flow = 2.5;
 
     double r1 = agent1->reward( target_vel,  en, flow);
     double r2 = agent2->reward( target_vel,  en, flow);
     double reward = (r1 + r2);
-	
-    printf("r1 : %.8f \n", r1);
-    printf("r2 : %.8f \n", r2);
-    // Getting ending time
-    auto endTime = std::chrono::steady_clock::now(); // Profiling
-    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
 
     // Obtaining new agent state
     state1 = agent1->state();
@@ -161,11 +135,8 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
-    printf("[Korali] Factors (en, flow): [ %.8f, %.8f ] \n", en, flow);
-    printf("[Korali] Target pos: [ %.8f, %.8f ] \n", target_pos[0], target_pos[1]);
-    printf("[Korali] Previous Torque: [ %.8f, %.8f ]\n", action[0], action[1]);
-    printf("[Korali] Reward: %.3f\n", reward);
-    printf("[Korali] Time: %.3fs\n", actionTime);
+    printf("[Korali] Action: [ %.8f, %.8f ]\n", action[0], action[1]);
+    printf("[Korali] Reward: %.3f+%.3f=%.3f\n", r1, r2, reward);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
 
@@ -179,11 +150,13 @@ void runEnvironment(korali::Sample &s)
     curStep++;
   }
 
+  // Flush CUP logger
+  logger.flush();
+
+  // delete simulation class
+  delete _environment;
+
   // Setting finalization status
-  // if (done == true)
-  //   s["Termination"] = "Terminal";
-  // else
-  //   s["Termination"] = "Truncated";
   s["Termination"] = "Truncated";
 
   // Switching back to experiment directory

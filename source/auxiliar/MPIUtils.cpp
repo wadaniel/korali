@@ -3,6 +3,7 @@
 ******************************************************************************/
 
 #include <auxiliar/MPIUtils.hpp>
+#include <auxiliar/logger.hpp>
 
 namespace korali
 {
@@ -24,13 +25,8 @@ void *getWorkerMPIComm()
  return &__koraliWorkerMPIComm;
 }
 
-}
-
 #ifdef _KORALI_USE_MPI4PY
 #ifndef _KORALI_NO_MPI4PY
-
-namespace korali
-{
 
 mpi4py_comm getMPI4PyComm()
 {
@@ -42,15 +38,10 @@ void setMPI4PyComm(mpi4py_comm comm)
  setKoraliMPIComm(comm);
 }
 
-}
-
 #endif
 #endif
 
 #else
-
-namespace korali
-{
 
 int setKoraliMPIComm(...)
 {
@@ -64,9 +55,6 @@ void *getWorkerMPIComm()
   return NULL;
 }
 
-}
-
 #endif
 
-
-
+}

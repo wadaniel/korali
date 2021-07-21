@@ -9,9 +9,7 @@
 
 int _argc;
 char **_argv;
-
 std::mt19937 _randomGenerator;
-Simulation *_environment;
 
 // Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
@@ -42,6 +40,10 @@ void runEnvironment(korali::Sample &s)
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
+
+  // Creating simulation environment
+  Simulation *_environment = new Simulation(_argc, _argv);
+  _environment->init();
 
   // Obtaining agents
   std::vector<StefanFish *> agents(NAGENTS);
@@ -148,6 +150,9 @@ void runEnvironment(korali::Sample &s)
 
   // Flush CUP logger
   logger.flush();
+
+  // delete simulation class
+  delete _environment;
 
   // Setting finalization status
   if (done == true)

@@ -31,10 +31,10 @@ cat <<EOF >daint_sbatch
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1
 #SBATCH --partition=normal
-#SBATCH --constraint=mc
-#SBATCH --account=eth2
+#SBATCH --constraint=gpu
+#SBATCH --account=s929
 
-export OMP_NUM_THREADS=36
+export OMP_NUM_THREADS=12
 
 srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}"
 EOF

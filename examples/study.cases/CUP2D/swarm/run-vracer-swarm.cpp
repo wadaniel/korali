@@ -24,10 +24,6 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initializing CUP
-  _environment = new Simulation(_argc, _argv);
-  _environment->init();
-
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
   std::string testingResultsPath = "_testingResults/";
@@ -137,7 +133,4 @@ int main(int argc, char *argv[])
 
   // ..and run
   k.run(e);
-
-  // delete simulation
-  delete _environment;
 }

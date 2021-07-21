@@ -4,20 +4,14 @@
 #include "korali.hpp"
 #include <algorithm>
 #include <random>
-
-void runEnvironment(korali::Sample &s);
-extern std::string _resultsPath;
-extern int _argc;
-extern char **_argv;
-
 #include "Obstacles/StefanFish.h"
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
-void initializeEnvironment();
+// command line arguments are read in Korali application
+extern int _argc;
+extern char **_argv;
+
+void runEnvironment(korali::Sample &s);
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
 bool isTerminal(StefanFish *agent);
-
-// Global variables for the simulation (ideal if this would be a class instead)
-extern std::mt19937 _randomGenerator;
-extern Simulation *_environment;

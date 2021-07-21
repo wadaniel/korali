@@ -2,8 +2,6 @@
 #include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 
-std::string _resultsPath;
-
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
@@ -24,10 +22,6 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initializing CUP
-  _environment = new Simulation(_argc, _argv);
-  _environment->init();
-
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
   std::string testingResultsPath = "_testingResults/";
@@ -46,7 +40,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  // Adding custom setting to run the environment without dumping the state files during training
+  // Setting results path an dumping frequency in CUP
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
@@ -135,7 +129,4 @@ int main(int argc, char *argv[])
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   k.run(e);
-
-  // delete simulation
-  delete _environment;
 }

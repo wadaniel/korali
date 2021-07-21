@@ -7,9 +7,7 @@
 
 int _argc;
 char **_argv;
-
 std::mt19937 _randomGenerator;
-Simulation *_environment;
 
 // Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
@@ -42,8 +40,8 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Creating simulation environment
-  // Simulation *_environment = new Simulation(_argc, _argv);
-  // _environment->init();
+  Simulation *_environment = new Simulation(_argc, _argv);
+  _environment->init();
 
   // Obtaining environment objects and agent
   Shape *object = _environment->getShapes()[0];
@@ -144,7 +142,7 @@ void runEnvironment(korali::Sample &s)
   logger.flush();
 
   // delete simulation class
-  // delete _environment;
+  delete _environment;
 
   // Setting finalization status
   if (done == true)

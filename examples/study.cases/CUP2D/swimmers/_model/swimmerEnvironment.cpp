@@ -51,7 +51,6 @@ void runEnvironment(korali::Sample &s)
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  _environment->reset();
   setInitialConditions(agent, object, s["Mode"] == "Training"); 
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();

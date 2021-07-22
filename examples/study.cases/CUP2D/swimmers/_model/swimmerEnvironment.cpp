@@ -44,19 +44,19 @@ void runEnvironment(korali::Sample &s)
   _environment->init();
 
   // Obtaining environment objects and agent
-  Shape *object = _environment->getShapes()[0];
+  // Shape *object = _environment->getShapes()[0];
   StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  setInitialConditions(agent, object, s["Mode"] == "Training"); 
+  setInitialConditions(agent, s["Mode"] == "Training");
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
   // Setting initial state
-  auto state = agent->state(object);
+  auto state = agent->state();
   s["State"] = state;
 
   // Variables for time and step conditions
@@ -106,14 +106,14 @@ void runEnvironment(korali::Sample &s)
       _environment->advance(dt);
 
       // Check for terminal state.
-      done = isTerminal(agent, object);
+      done = isTerminal(agent);
     }
 
     // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
     double reward = done ? -10.0 : agent->EffPDefBnd;
 
     // Obtaining new agent state
-    state = agent->state(object);
+    state = agent->state();
 
     // Storing reward
     s["Reward"] = reward;
@@ -156,7 +156,7 @@ void runEnvironment(korali::Sample &s)
   fclose(logFile);
 }
 
-void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
+void setInitialConditions(StefanFish *agent, const bool isTraining)
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
@@ -196,16 +196,16 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   agent->setOrientation(initialAngle);
 }
 
-bool isTerminal(StefanFish *agent, Shape *object)
+bool isTerminal(StefanFish *agent)
 {
-  const double X = (agent->center[0] - object->center[0]);
-  const double Y = (agent->center[1] - object->center[1]);
+  const double X = agent->center[0];
+  const double Y = agent->center[1];
 
   bool terminal = false;
-  if (X < +0.15) terminal = true;
-  if (X > +0.55) terminal = true;
-  if (Y < -0.1) terminal = true;
-  if (Y > +0.1) terminal = true;
+  if (X < 0.4) terminal = true;
+  if (X > 2.0) terminal = true;
+  if (Y < 0.6) terminal = true;
+  if (Y > 1.4) terminal = true;
 
   return terminal;
 }

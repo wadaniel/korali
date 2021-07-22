@@ -13,5 +13,5 @@ extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
-void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining);
-bool isTerminal(StefanFish *agent, Shape *object);
+void setInitialConditions(StefanFish *agent, const bool isTraining);
+bool isTerminal(StefanFish *agent);

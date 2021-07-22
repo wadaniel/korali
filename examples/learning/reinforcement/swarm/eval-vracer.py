@@ -37,13 +37,12 @@ else:
 ### Define Configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lambda x : environment( args, x )
-e["Solver"]["Mode"] = "Training"
+e["Solver"]["Mode"] = "Testing"
 e["Solver"]["Testing"]["Sample Ids"] = [ 42 ] 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
 e["File Output"]["Path"] = resultFolder
-
 
 ### Run Experiment
 k.run(e)

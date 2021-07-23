@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["File Output"]["Path"] = trainingResultsPath;
   e["Solver"]["Mode"] = "Testing";
-  e["Solver"]["Testing"]["Best Policy"] = e["Solver"]["Training"]["Best Policy"];
+  // e["Solver"]["Testing"]["Best Policy"] = e["Solver"]["Training"]["Best Policy"];
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);

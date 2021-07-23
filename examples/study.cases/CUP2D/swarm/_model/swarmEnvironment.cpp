@@ -88,6 +88,22 @@ void runEnvironment(korali::Sample &s)
     for( size_t i = 0; i<NAGENTS; i++ )
     {
       std::vector<double> action = actions[i];
+
+      // Write action to file
+      std::stringstream filename;
+      filename<<"actions_"<<i<<".txt";
+      ofstream myfile(filename.str().c_str());
+      if (myfile.is_open())
+      {
+        myfile << action[0] << " " << action[1] << std::endl;
+        myfile.close();
+      }
+      else{
+        fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+        exit(-1);
+      }
+
+      // Apply action
       agents[i]->act(t, action);
     }
 
@@ -166,22 +182,11 @@ void runEnvironment(korali::Sample &s)
   fclose(logFile);
 }
 
-std::vector<std::vector<double>> initialPositions{
-    {0.60, 1.00},
-    {0.90, 0.90},
-    {0.90, 1.10},
-    {1.20, 0.80},
-    {1.20, 1.00},
-    {1.20, 1.20},
-    {1.50, 0.90},
-    {1.50, 1.10},
-    {1.80, 1.00} };
-
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
-  auto initialPosition = initialPositions[agentId];
+  std::vector<double> initialPosition{ agent->origC[0], agent->origC[1] };
 
   // with noise
   if (isTraining)
@@ -199,6 +204,20 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   printf("[Korali] angle: %f\n", initialAngle);
   printf("[Korali] x: %f\n", initialPosition[0]);
   printf("[Korali] y: %f\n", initialPosition[1]);
+
+  // Write initial condition to file
+  std::stringstream filename;
+  filename<<"initialCondition_"<<agentId<<".txt";
+  ofstream myfile(filename.str().c_str());
+  if (myfile.is_open())
+  {
+    myfile << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
+    myfile.close();
+  }
+  else{
+    fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+    exit(-1);
+  }
 
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());

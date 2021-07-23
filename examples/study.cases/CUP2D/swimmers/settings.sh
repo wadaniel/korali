@@ -34,7 +34,9 @@ then
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
 	echo $OBJECTS
 	# halfDisk Re=1'000 <-> NU=0.000018
-	NU=${NU:-0.000018}
+	# NU=${NU:-0.000018}
+	# stefanfish Re=1'000 <-> NU=0.00001125
+	NU=${NU:-0.00004}
 elif [ "$OBSTACLE" = "NACA" ]
 then
 	echo "###############################"
@@ -49,13 +51,15 @@ then
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
 	echo $OBJECTS
 	# NACA Re=1'000 <-> NU=0.000018
-	NU=${NU:-0.000018}
+	# NU=${NU:-0.000018}
+	# stefanfish Re=1'000 <-> NU=0.00001125
+	NU=${NU:-0.00004}
 elif [ "$OBSTACLE" = "stefanfish" ]
 then
 	echo "###############################"
 	echo "setting options for stefanfish"
 	# set object string
-	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSLEADER bFixed=1 
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSLEADER bFixed=1 pid=1
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
 	echo $OBJECTS
 	# stefanfish Re=1'000 <-> NU=0.00001125

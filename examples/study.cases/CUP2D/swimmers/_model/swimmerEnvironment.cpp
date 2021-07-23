@@ -160,7 +160,7 @@ void setInitialConditions(StefanFish *agent, const bool isTraining)
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
-  std::vector<double> initialPosition{0.9,1.0};
+  std::vector<double> initialPosition{ agent->origC[0], agent->origC[1] };
 
   // with noise
   if (isTraining)

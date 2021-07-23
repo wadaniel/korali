@@ -56,9 +56,9 @@ stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
 # "
 
 ### for L=0.2 and extentx=extenty=2, 25 swimmers
@@ -77,14 +77,14 @@ stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
 # stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.40 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=0.70 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.00 ypos=1.30 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.20 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.20 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
-# stefanfish L=$LENGTH T=$PERIOD xpos=2.60 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.70 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.30 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.70 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=2.70 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+# stefanfish L=$LENGTH T=$PERIOD xpos=3.00 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
 # "

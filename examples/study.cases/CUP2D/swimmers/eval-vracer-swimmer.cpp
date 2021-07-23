@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
   // Check if there is log files to continue training
   auto found = e.loadState(trainingResultsPath+"/latest");
-  if (found == true) printf("[Korali] Continuing execution from previous run...\n");
+  if (found == true) printf("[Korali] Evaluation results found...\n");
   else { fprintf(stderr, "[Korali] Error: cannot find previous results\n"); exit(0); } 
 
   // Creating Korali engine
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["File Output"]["Path"] = trainingResultsPath;
-  e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparameters"];
   e["Solver"]["Mode"] = "Testing";
+  // e["Solver"]["Testing"]["Best Policy"] = e["Solver"]["Training"]["Best Policy"];
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);

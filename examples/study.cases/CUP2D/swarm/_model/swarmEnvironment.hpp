@@ -8,6 +8,9 @@
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
+// Number of Agents
+#define NAGENTS 16
+
 // command line arguments are read in Korali application
 extern int _argc;
 extern char **_argv;

@@ -5,8 +5,6 @@
 #include <chrono>
 #include <filesystem>
 
-#define NAGENTS 9
-
 int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;

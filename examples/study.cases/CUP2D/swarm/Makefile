@@ -1,4 +1,4 @@
-SWARM = run-vracer-swarm
+SWARM = run-vracer-swarm eval-vracer-swarm
 KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

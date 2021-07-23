@@ -136,7 +136,7 @@ void runEnvironment(korali::Sample &s)
       printf("[Korali] State: [ %.3f", state[0]);
       for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
       printf("]\n");
-      printf("[Korali] Action: [ %.3f, %.3f ]\n", actions[i][0], actions[i][1]);
+      printf("[Korali] Action: [ %.3f, %.3f ]\n", actions[i][0].get<float>(), actions[i][1].get<float>());
       printf("[Korali] Reward: %.3f\n", rewards[i]);
       printf("[Korali] Terminal?: %d\n", done);
       printf("[Korali] -------------------------------------------------------\n");

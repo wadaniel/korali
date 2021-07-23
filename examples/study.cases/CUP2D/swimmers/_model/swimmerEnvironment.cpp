@@ -202,10 +202,10 @@ bool isTerminal(StefanFish *agent)
   const double Y = agent->center[1];
 
   bool terminal = false;
-  if (X < 0.4) terminal = true;
-  if (X > 2.0) terminal = true;
-  if (Y < 0.6) terminal = true;
-  if (Y > 1.4) terminal = true;
+  if (X < 0.8) terminal = true;
+  if (X > 1.4) terminal = true;
+  if (Y < 0.8) terminal = true;
+  if (Y > 1.2) terminal = true;
 
   return terminal;
 }

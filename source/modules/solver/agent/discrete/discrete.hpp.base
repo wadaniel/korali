@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
@@ -37,5 +37,3 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
-
-__endIncludeGuard__;

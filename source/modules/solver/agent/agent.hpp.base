@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -490,5 +490,3 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
-
-__endIncludeGuard__;

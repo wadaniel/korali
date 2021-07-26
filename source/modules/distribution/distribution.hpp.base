@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "modules/module.hpp"
 #include <gsl/gsl_rng.h>
@@ -52,5 +52,3 @@ class __className__ : public __parentClassName__
 };
 
 __endNamespace__;
-
-__endIncludeGuard__;

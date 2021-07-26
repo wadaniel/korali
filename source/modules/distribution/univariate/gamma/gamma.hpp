@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Gamma.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_
-;
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -120,7 +117,4 @@ class Gamma : public Univariate
 } //univariate
 } //distribution
 } //korali
-;
-
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_
 ;

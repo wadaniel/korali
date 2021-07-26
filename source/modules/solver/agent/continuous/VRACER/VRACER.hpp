@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: VRACER.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-#define _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -128,7 +125,4 @@ class VRACER : public Continuous
 } //agent
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
 ;

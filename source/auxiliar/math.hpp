@@ -2,8 +2,8 @@
 * @brief Auxiliary library for Korali's essential math and time manipulation operations.
 **************************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_MATH_HPP_
-#define _KORALI_AUXILIARS_MATH_HPP_
+#pragma once
+
 
 /**
 * @brief This definition enables the use of M_PI
@@ -582,4 +582,3 @@ void byteToHexPair(char *dst, const uint8_t byte);
 size_t checksum(void *buffer, size_t len, unsigned int seed);
 } // namespace korali
 
-#endif // _KORALI_AUXILIARS_MATH_HPP_

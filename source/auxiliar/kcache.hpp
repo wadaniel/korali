@@ -1,5 +1,5 @@
-#ifndef _KORALI_CACHE_HPP_
-#define _KORALI_CACHE_HPP_
+#pragma once
+
 
 /** \file
 * @brief Implements an LRU cache that returns a pre-calculated value if it is not
@@ -236,4 +236,3 @@ class kCache
 
 } // namespace korali
 
-#endif

@@ -19,8 +19,7 @@
 * with user code.
 *******************************************************************************/
 
-#ifndef ONEDNN_UTILS_HPP
-#define ONEDNN_UTILS_HPP
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -213,4 +212,3 @@ inline void write_to_dnnl_memory(void *handle, dnnl::memory &mem)
 
 } // namespace dnnl
 
-#endif

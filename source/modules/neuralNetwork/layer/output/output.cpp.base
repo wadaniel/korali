@@ -201,7 +201,7 @@ void __className__::backwardData(const size_t t)
 
       if (_transformationVector[j] == t_softplus)
       {
-        float nnx = (4.*x*x - 1.)/(4.*x); 
+        float nnx = x - 0.25 / x;
         g = g * 0.5 * (1. + nnx / std::sqrt(nnx * nnx + 1));
       }
 

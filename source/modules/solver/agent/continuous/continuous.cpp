@@ -4,7 +4,6 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-//#define NOISY
 namespace korali
 {
 namespace solver
@@ -143,9 +142,6 @@ void Continuous::getAction(korali::Sample &sample)
 
 std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
 {
-#ifdef NOISY
-  static size_t outsideCount = 0;
-#endif
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Creating the action based on the selected policy
@@ -156,9 +152,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float mean = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       action[i] = mean + sigma * _normalGenerator->getRandomNumber();
-#ifdef NOISY
-      if(action[i] >= _actionUpperBounds[i] || action[i] <= _actionLowerBounds[i]) printf("oc: %zu\n", ++outsideCount); 
-#endif
     }
   }
 
@@ -178,11 +171,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
-
-      // Keep this for the moment, also catches infs and nans (D.W.)
-      assert(action[i] <= _actionUpperBounds[i]);
-      assert(action[i] >= _actionLowerBounds[i]);
-
     }
     curPolicy.unboundedAction = unboundedAction;
   }
@@ -195,9 +183,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       action[i] = mu + sigma * _normalGenerator->getRandomNumber();
 
-#ifdef NOISY
-      if(action[i] >= _actionUpperBounds[i] || action[i] <= _actionLowerBounds[i]) printf("oc: %zu\n", ++outsideCount); 
-#endif
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -221,14 +206,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
-
-      /* Naive accept/reject method
-      do
-      {
-        action[i] = mu + sigma * _normalGenerator->getRandomNumber();
-      }
-      while( (action[i] < _actionLowerBounds[i]) || (action[i] > _actionUpperBounds[i]) );
-      */ 
     }
   }
 
@@ -242,16 +219,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
     }
   }
  
-#ifdef NOISY
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-      const float mu = curPolicy.distributionParameters[i];
-      const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      printf("a %f %f %f\n", action[i], mu, sigma);
-  }
-#endif
-
-
   return action;
 }
 
@@ -397,16 +364,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
 
-#ifdef NOISY
-      printf("bcbc: %f %f\n", gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-      printf("bcbco: %f %f\n", gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
-          KORALI_LOG_ERROR("XX");
-      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
-          KORALI_LOG_ERROR("YY");
-#endif
-
-
       // log of normalization constants
       const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
       const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
@@ -434,20 +391,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   // Calculating log importance weight
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
 
-  #ifdef NOISY
-  //float logIw = logpc - logpo;
-  for (size_t i = 0; i < action.size(); i++)
-  {
-      // Getting parameters from the new and old policies
-      const float oldMu = oldPolicy.distributionParameters[i];
-      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      const float curMu = curPolicy.distributionParameters[i];
-      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      printf("dp: %f %f %f %f\n", oldMu, oldSigma, curMu, curSigma);
-      printf("lIW: %f %f %f %f\n", logImportanceWeight, action[i], logpCurPolicy, logpOldPolicy);
-  }
-  #endif
-
   // Normalizing extreme values to prevent loss of precision
   if (logImportanceWeight > +7.f) logImportanceWeight = +7.f;
   if (logImportanceWeight < -7.f) logImportanceWeight = -7.f;
@@ -462,7 +405,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   // Storage for importance weight gradients
-  //std::vector<float> importanceWg(2 * _problem->_actionVectorSize, 0.);
   std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.);
 
   if (_policyDistribution == "Normal")
@@ -653,21 +595,9 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
 
-#ifdef NOISY
-      printf("xbcbc: %f %f\n", -curBeta, -curAlpha);
-      printf("xbcbco: %f %f\n", -oldBeta, -oldAlpha);
-      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
-          KORALI_LOG_ERROR("XX");
-      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
-          KORALI_LOG_ERROR("YY");
-#endif
-
-
       // log of normalization constantsa
       const float lCq = M_LN2-safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-      assert(isfinite(lCq));
       const float lCp = M_LN2-safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-      assert(isfinite(lCp));
 
       // precomputing log values
       const float lPi2 = 0.5*std::log(2.*M_PI);
@@ -677,15 +607,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       // log of normalized gradients of normalization constants
       float ldCqMu = lCq-lPi2-lCurSig;
       float dCqMu;
-      assert(isfinite(ldCqMu));
 
       const float curBeta2 = curBeta*curBeta;
       const float curAlpha2 = curAlpha*curAlpha;
       const float eps = 1e-7;
-
-#ifdef NOISY
-      printf("cb1 %f ca1 %f\n", -curBeta2, -curAlpha2);
-#endif
 
       if (definitelyLessThan(-curBeta2,-curAlpha2, eps))
       {
@@ -703,9 +628,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         dCqMu = 0.;
       }
 
-      assert(isfinite(ldCqMu));
-      assert(isfinite(dCqMu));
-      
       float dCqSig;
       if(curBeta < 0.f)
       {
@@ -728,7 +650,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         const float laMu = std::log(curMu-_actionLowerBounds[i])-curAlpha2;
         dCqSig = (std::exp(lCq-lPi2-2.*lCurSig+laMu)+std::exp(lCq-lPi2-2.*lCurSig+lbMu));
       }
-      assert(isfinite(dCqSig));
       
       // Gradient with respect to Mean
       importanceWeightGradients[i] = (curActionDif*curInvVar+dCqMu);
@@ -803,20 +724,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
   }
 
-#ifdef NOISY
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      const float oldMu = oldPolicy.distributionParameters[i];
-      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      const float curMu = curPolicy.distributionParameters[i];
-      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      printf("a: %f\n", action[i]);
-      printf("dp: %f %f %f %f\n", oldMu, oldSigma, curMu, curSigma);
-      //printf("iwgn: %f %f\n", importanceWg[i], importanceWg[_problem->_actionVectorSize + i] );
-      printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[_problem->_actionVectorSize + i] );
-    }
-#endif
-
   return importanceWeightGradients;
 }
 
@@ -825,7 +732,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   // Storage for KL Divergence Gradients
   std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
 
-  //if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
+  if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
@@ -892,34 +799,18 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       const float cdfRatiosA = std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma) + normalLogDensity(_actionLowerBounds[i], curMu, curSigma) - normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
       const float ccdfRatiosB = std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma) + normalLogDensity(_actionUpperBounds[i], curMu, curSigma)-normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
 
-#ifdef NOISY
-      printf("ratios %f %f\n", cdfRatiosA, ccdfRatiosB);
-      printf("erf %f %f\n", erfLb, erfUb);
-      printf("g %f %f %f\n", normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma), normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
-      fflush(stdout);
-#endif
- 
       // KL-Gradient with respect to Mean
       KLDivergenceGradients[i] = cdfRatiosA;
-      assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] -= 0.5f*muDif*curInvVar*(erfUb-erfLb);
-      assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] += invSqrt2Pi*oldSigma*curInvVar*(expUb-expLb);
-      assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] -= ccdfRatiosB;
-      assert(isfinite(KLDivergenceGradients[i]));
 
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = curAdjustedLb*cdfRatiosA;
-	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5f*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3)*(erfUb-erfLb);
-      assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedUb+2.f*oldSigma*muDif)*expUb;
-      assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] -= invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedLb+2.f*oldSigma*muDif)*expLb;
-      assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] -= curAdjustedUb*ccdfRatiosB;
-      assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
     }
   }
 
@@ -950,20 +841,9 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       const float curAlpha = (_actionLowerBounds[i]-curMu)*curInvSig*M_SQRT1_2;
       const float curBeta = (_actionUpperBounds[i]-curMu)*curInvSig*M_SQRT1_2;
 
-#ifdef NOISY
-      printf("ycbco: %f %f\n", gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-      printf("ybcbco: %f %f\n", gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-      if(gsl_sf_log_erfc(-curBeta)<gsl_sf_log_erfc(-curAlpha))
-          KORALI_LOG_ERROR("XX");
-      if(gsl_sf_log_erfc(-oldBeta)<gsl_sf_log_erfc(-oldAlpha))
-          KORALI_LOG_ERROR("YY");
-#endif
-
       // log of normalization constantsa
       const float lCq = M_LN2-safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-      assert(isfinite(lCq));
       const float lCp = M_LN2-safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-      assert(isfinite(lCp));
 
       // precomputing log values
       const float lPi2 = 0.5*std::log(2.*M_PI);
@@ -973,7 +853,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       // log of normalized gradients of normalization constants
       float ldCqMu = lCq-lPi2-lCurSig;
       float dCqMu;
-      assert(isfinite(ldCqMu));
 
       float lCps = lCp-0.5*lPi2+lOldSig-lCurSig;
       float Cps;
@@ -981,10 +860,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       const float curBeta2 = curBeta*curBeta;
       const float curAlpha2 = curAlpha*curAlpha;
       const float eps = 1e-6;
-
-#ifdef NOISY
-      printf("cb2 %f ca2 %f\n", -curBeta2, -curAlpha2);
-#endif
 
       if (definitelyLessThan(-curBeta2,-curAlpha2, eps))
       {
@@ -1008,8 +883,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
         dCqMu = 0.;
         Cps = 0.;
       }
-      assert(isfinite(ldCqMu));
-      assert(isfinite(dCqMu));
       
       float dCqSig;
       if(curBeta < 0.f)
@@ -1033,11 +906,9 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
         const float laMu = std::log(curMu-_actionLowerBounds[i])-curAlpha2;
         dCqSig = (std::exp(lCq-lPi2-2.*lCurSig+laMu)+std::exp(lCq-lPi2-2.*lCurSig+lbMu));
       }
-      assert(isfinite(dCqSig));
      
       // KL-Gradient with respect to Mu
       KLDivergenceGradients[i] = -dCqMu-muDif*curInvVar+Cps;
-      assert(isfinite(KLDivergenceGradients[i]));
 
       // Precompute some terms
       const float sb = oldSigma*curInvSig3*(_actionUpperBounds[i]+oldMu-2.*curMu);
@@ -1051,7 +922,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize+i] = -muDif*muDif*curInvSig3+curInvSig-dCqSig-oldVar*curInvSig3+Cpb*sb-Cpa*sa;
-      assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
     }
   }
 
@@ -1094,19 +964,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       KLDivergenceGradients[_problem->_actionVectorSize + i] = dklda * dadvarc + dkldb * dbdvarc;
     }
   }
-
-#ifdef NOISY
-    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
-    {
-      const float oldMu = oldPolicy.distributionParameters[i];
-      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      const float curMu = curPolicy.distributionParameters[i];
-      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-
-      printf("dp: %f %f %f %f\n", oldMu, oldSigma, curMu, curSigma);
-      printf("KLg: %f %f\n", KLDivergenceGradients[i], KLDivergenceGradients[_problem->_actionVectorSize + i] );
-    }
-#endif
 
   return KLDivergenceGradients;
 }

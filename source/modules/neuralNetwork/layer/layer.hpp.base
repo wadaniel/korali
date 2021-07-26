@@ -1,4 +1,4 @@
-__startIncludeGuard__;
+#pragma once
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -13,16 +13,16 @@ __startIncludeGuard__;
   #include <cudnn.h>
 #endif
 
-__startNamespace__;
-0
-
-  class NeuralNetwork;
+namespace korali
+{
+class NeuralNetwork;
 struct layerPipeline_t;
 
-__startNamespace__;
-1
+} // namespace korali
 
-  class __className__ : public __parentClassName__
+__startNamespace__;
+
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -200,9 +200,3 @@ __startNamespace__;
 };
 
 __endNamespace__;
-1
-
-  __endNamespace__;
-0
-
-  __endIncludeGuard__;

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: CMAES.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_CMAES_
-#define _KORALI_SOLVER_OPTIMIZER_CMAES_
-;
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -554,7 +551,4 @@ class CMAES : public Optimizer
 } //optimizer
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_OPTIMIZER_CMAES_
 ;

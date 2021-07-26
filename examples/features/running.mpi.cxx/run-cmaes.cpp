@@ -1,16 +1,15 @@
 #include "_model/jacobi.h"
 #include <korali.hpp>
-#include <stdlib.h>
 #include <unistd.h>
 
 int main(int argc, char *argv[])
 {
-  int workersPerTeam = 1;
+  int n = 1;
 
   if (argc == 2)
   {
-    workersPerTeam = atoi(argv[1]);
-    if (64 % workersPerTeam != 0)
+    n = atoi(argv[1]);
+    if (64 % n != 0)
     {
       fprintf(stderr, "Command Line Argument (Ranks Per Worker) must be divisor of 64! exit..)\n");
       exit(-1);
@@ -20,8 +19,6 @@ int main(int argc, char *argv[])
   MPI_Init(&argc, &argv);
 
   auto e = korali::Experiment();
-
-  e["Random Seed"] = 0xC0FFEE;
 
   e["Problem"]["Type"] = "Bayesian/Reference";
   e["Problem"]["Likelihood Model"] = "Normal";
@@ -65,37 +62,54 @@ int main(int argc, char *argv[])
 
   e["Variables"][0]["Name"] = "X0";
   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
+  e["Variables"][0]["Initial Value"] = +2.0;
+  e["Variables"][0]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][1]["Name"] = "X1";
   e["Variables"][1]["Prior Distribution"] = "Uniform 1";
+  e["Variables"][1]["Initial Value"] = -2.0;
+  e["Variables"][1]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][2]["Name"] = "Y0";
   e["Variables"][2]["Prior Distribution"] = "Uniform 2";
+  e["Variables"][2]["Initial Value"] = +4.0;
+  e["Variables"][2]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][3]["Name"] = "Y1";
   e["Variables"][3]["Prior Distribution"] = "Uniform 3";
+  e["Variables"][3]["Initial Value"] = -2.0;
+  e["Variables"][3]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][4]["Name"] = "Z0";
   e["Variables"][4]["Prior Distribution"] = "Uniform 4";
+  e["Variables"][4]["Initial Value"] = +5.0;
+  e["Variables"][4]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][5]["Name"] = "Z1";
   e["Variables"][5]["Prior Distribution"] = "Uniform 5";
+  e["Variables"][5]["Initial Value"] = +0.0;
+  e["Variables"][5]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][6]["Name"] = "[Sigma]";
   e["Variables"][6]["Prior Distribution"] = "Uniform 6";
+  e["Variables"][6]["Initial Value"] = +10.0;
+  e["Variables"][6]["Initial Standard Deviation"] = +1.0;
 
-  e["Solver"]["Type"] = "Sampler/TMCMC";
-  e["Solver"]["Covariance Scaling"] = 0.02;
-  e["Solver"]["Population Size"] = 200;
+  e["Solver"]["Type"] = "Optimizer/CMAES";
+  e["Solver"]["Population Size"] = 16;
+  e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 10;
 
   auto k = korali::Engine();
 
+  // Setting MPI conduit configuration and communicator
+  k.setMPIComm(MPI_COMM_WORLD);
   k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
+  k["Conduit"]["Ranks Per Worker"] = n;
+
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;
 
-  korali::setKoraliMPIComm(MPI_COMM_WORLD);
   k.run(e);
 
   MPI_Finalize();

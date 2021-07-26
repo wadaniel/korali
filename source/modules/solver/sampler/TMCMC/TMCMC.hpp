@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: TMCMC.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_TMCMC_
-#define _KORALI_SOLVER_SAMPLER_TMCMC_
-;
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -446,7 +443,4 @@ class TMCMC : public Sampler
 } //sampler
 } //solver
 } //korali
-;
-
-#endif // _KORALI_SOLVER_SAMPLER_TMCMC_
 ;

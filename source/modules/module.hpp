@@ -2,8 +2,8 @@
 * @brief Header file for the base Korali Module class.
 *********************************************************************************************/
 
-#ifndef _KORALI_MODULE_HPP_
-#define _KORALI_MODULE_HPP_
+#pragma once
+
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/kstring.hpp"
@@ -121,4 +121,3 @@ extern double _cumulativeTime;
 
 } // namespace korali
 
-#endif // _KORALI_MODULE_HPP_

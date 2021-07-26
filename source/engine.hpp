@@ -1,11 +1,11 @@
-#ifndef _KORALI_ENGINE_HPP_
-#define _KORALI_ENGINE_HPP_
+#pragma once
 
 /** \file
 * @brief Include header for the Korali Engine
 */
 
 #include "config.hpp"
+#include "auxiliar/MPIUtils.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -149,6 +149,25 @@ class Engine
    * @return The Korali Engine
    */
   static Engine *deserialize(const knlohmann::json &js);
+
+  #ifdef _KORALI_USE_MPI
+
+  /**
+    * @brief Sets global MPI communicator
+    * @param comm The MPI communicator to use
+    * @return The return code of MPI_Comm_Dup
+    */
+  int setMPIComm(const MPI_Comm &comm){return setKoraliMPIComm(comm);};
+
+  #ifdef _KORALI_USE_MPI4PY
+  #ifndef _KORALI_NO_MPI4PY
+
+  void setMPI4PyComm(mpi4py_comm comm);
+
+  #endif
+  #endif
+
+  #endif
 };
 
 /**
@@ -162,4 +181,3 @@ extern bool isPythonActive;
 extern std::stack<Engine *> _engineStack;
 } // namespace korali
 
-#endif

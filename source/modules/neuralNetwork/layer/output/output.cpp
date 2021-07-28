@@ -1,6 +1,8 @@
 #include "modules/neuralNetwork/layer/output/output.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
+#include <cmath>
+
 #ifdef _KORALI_USE_CUDNN
   #include "auxiliar/cudaUtils.hpp"
 #endif
@@ -177,7 +179,7 @@ void Output::backwardData(const size_t t)
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
 // Performing gradient pre-processing
-#pragma omp parallel for simd
+#pragma omp parallel for
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {

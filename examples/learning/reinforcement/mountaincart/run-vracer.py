@@ -64,7 +64,7 @@ e["Variables"][1]["Type"] = "State"
 e["Variables"][2]["Name"] = "Cart Velocity X"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Cart Velocity Y"
+e["Variables"][3]["Name"] = "Cart Velocity Y"
 e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Force"

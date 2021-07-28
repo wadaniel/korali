@@ -26,16 +26,6 @@ parser.add_argument(
     help='Learning rate for the selected optimizer',
     default=1e-3,
     required=False)
-parser.add_argument(
-    '--concurrentEnvironments',
-    help='Number of environments to run concurrently',
-    default=1,
-    required=False)
-parser.add_argument(
-    '--testRewardThreshold',
-    help='Threshold for the testing MSE, under which the run will report an error',
-    default=150,
-    required=False)
 args = parser.parse_args()
 
 print("Running Cartpole example with arguments:")
@@ -69,9 +59,9 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -5.0
-e["Variables"][4]["Upper Bound"] = +5.0
-e["Variables"][4]["Initial Exploration Noise"] = 1.0
+e["Variables"][4]["Lower Bound"] = -1.0
+e["Variables"][4]["Upper Bound"] = +1.0
+e["Variables"][4]["Initial Exploration Noise"] = 0.3
 
 ### Defining Agent Configuration 
 
@@ -115,7 +105,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1e6
 
 ### Setting file output configuration

@@ -15,13 +15,15 @@ class MountainCart:
   def __init__(self):
     self.dt = 0.1
     self.ddt = 0.01
-    self.step = 0
-    self.t = 0
-    self.u = np.asarray([0, 0, 0, 0, 0, 0]) # location x, location y, velocity x, velocity y, acceleration x, acceleration y
-    self.maxForce = 5.0 # max absolute force
-    self.F = 0.0 # force in cart direction (facing right)
     self.m = 1.0 # mass
     self.g = 9.81 # gravitaty
+    self.maxForce = 1.0 # max absolute force
+    
+    self.step = 0
+    self.t = 0
+    
+    self.F = 0.0 # force in cart direction (facing right)
+    self.u = np.asarray([0, 0, 0, 0, 0, 0]) # location x, location y, velocity x, velocity y, acceleration x, acceleration y
     self.highest = 0
 
     assert(self.g > self.maxForce/self.m) # avoid weird configuration
@@ -30,10 +32,11 @@ class MountainCart:
     np.random.seed(seed)
     
     self.step = 0
-    self.F = 0
     self.t = 0
  
+    self.F = 0
     self.u = np.random.uniform(-0.05, 0.05, 6)
+    self.highest = 0
     
     slope = 2.*self.u[0] # track is x^2
     theta = np.arctan(slope)

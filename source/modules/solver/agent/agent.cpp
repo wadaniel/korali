@@ -5,7 +5,7 @@
 #include <chrono>
 
 // Enable continuous rescaling (experimental)
-#define CSCALE
+//#define CSCALE
 //#define CMUSCALE
 
 //#define ALPHAOFFP

@@ -14,7 +14,7 @@ from scipy.integrate import ode
 class MountainCart:
   def __init__(self):
     self.dt = 0.1 # step size
-    self.ddt = 0.01 # integrator discretization
+    self.ddt = 0.02 # integrator discretization
     self.m = 1.0 # mass
     self.g = 9.81 # gravitaty
     self.r = 0.1 # friction
@@ -86,12 +86,6 @@ class MountainCart:
         self.u[2] = self.u[2] + self.u[4]*self.ddt
         self.u[3] = self.u[3] + self.u[5]*self.ddt
   
-        #print(self.u[:4])
-        #if xold > 0:
-        #    assert(self.u[2]*self.u[3] >= 0)
-        #else:
-        #    assert(self.u[2]*self.u[3] <= 0)
- 	
 	# update location
         self.u[0] = self.u[0] + self.u[2]*self.ddt + 0.5*self.u[4]*self.ddt**2
         self.u[1] = self.u[0]**2 # track is x^2 # self.u[1] + self.u[3]*self.ddt + 0.5*self.u[5]*self.ddt**2

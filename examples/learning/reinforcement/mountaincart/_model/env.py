@@ -3,6 +3,9 @@ from mountaincart import *
 
 import pickle
 
+# generate states file 'states.pickle'?
+output = True 
+
 ######## Defining Environment Storage
 
 cart = MountainCart()
@@ -25,7 +28,6 @@ def env(s):
   
   # Performing the action
   done = cart.advance(s["Action"])
-  #print(s["Action"]) 
   
   # Getting Reward
   s["Reward"] = cart.getReward()
@@ -42,15 +44,17 @@ def env(s):
  else:
   s["Termination"] = "Truncated"
 
- data = {
-    'action': cart.actions,
-    'location': cart.locations,
-    'velocity': cart.velocity,
-    'acceleration' : cart.acceleration,
-    'fgravity' : cart.fgravity
- }
+ if output:
 
- with open('states.pickle', 'wb') as fp:
-    pickle.dump(data, fp)
+     data = {
+	'action': cart.actions,
+	'location': cart.locations,
+	'velocity': cart.velocity,
+	'acceleration' : cart.acceleration,
+	'fgravity' : cart.fgravity
+     }
+
+     with open('states.pickle', 'wb') as fp:
+       pickle.dump(data, fp)
 
 

@@ -13,18 +13,18 @@ from scipy.integrate import ode
 
 class MountainCart:
   def __init__(self):
-    self.dt = 0.1
-    self.ddt = 0.001
+    self.dt = 0.1 # step size
+    self.ddt = 0.01 # integrator discretization
     self.m = 1.0 # mass
     self.g = 9.81 # gravitaty
     self.r = 0.1 # friction
-    self.maxForce = 1.0 # max absolute force
+    self.maxForce = 3.0 # max absolute force
     self.maxSteps = 1000
     
     self.step = 0
     self.t = 0
     
-    self.F = 0.0 # force in cart direction (facing right)
+    self.F = 0.0 # force facing right
     self.u = np.asarray([0, 0, 0, 0, 0, 0]) # location x, location y, velocity x, velocity y, acceleration x, acceleration y
     self.highest = 0
 
@@ -68,65 +68,34 @@ class MountainCart:
     # simulate dt seconds 
     for i in range(int(self.dt/self.ddt)):
        
-        # calculate acceleration 
-        slope = 2.*self.u[0] # "ground" is x^2
-        theta = np.arctan(slope)
-        fg = -self.m*self.g
-        fx = self.F*np.cos(theta)
-        fy = self.F*np.sin(theta)
-        ftot = np.array([fx, fy+fg])
-        normal = np.array([-slope, 1])
-        normal /= np.linalg.norm(normal)
-
-        fnormal = normal*np.dot(ftot, normal)/np.dot(normal, normal)
-        fres = ftot-fnormal
-	        
-        #print(slope)
-        #print(ftot)
-        #print(normal)
-        #print(fnormal)
-        #print(fres)
+        # calculate velocity and acceleration 
+        slope = 2.*self.u[0] 			# slope of ground (ground is x^2)
+        theta = np.arctan(slope) 		# angle of slope
+        fg = -self.m*self.g*np.sin(theta) 	# resulting gravitational force
+        ftot = self.F + fg 			# force in cart direction
+        acc = ftot/self.m 			# acceleration
+        vtot = np.linalg.norm(self.u[2:4]) 	# current velocity
+        vnew = vtot + self.ddt*acc		# new total velocity
 
         # update acceleration
-        self.u[4] = fres[0]/self.m
-        self.u[5] = fres[1]/self.m
+        self.u[4] = ftot*np.cos(theta)
+        self.u[5] = ftot*np.sin(theta)
   
-        # leapfrog scheme (location)
-        self.u[0] = self.u[0] + self.u[2]*self.ddt + 0.5*self.u[4]*self.ddt**2
-        self.u[1] = self.u[0]**2 # track is x^2 # self.u[1] + self.u[3]*self.ddt + 0.5*self.u[5]*self.ddt**2
-        
-        # leapfrog scheme (velocity part a)
-        self.u[2] = self.u[2] + 0.5*self.u[4]*self.ddt
-        self.u[3] = self.u[3] + 0.5*self.u[5]*self.ddt
+        # update velocity
+        self.u[2] = vnew*np.cos(theta)
+        self.u[3] = vnew*np.sin(theta)
   
-    
-        # calculate acceleration at new position
-        slope = 2.*self.u[0] # "ground" is x^2
-        theta = np.arctan(slope)
-        fg = -self.m*self.g
-        fx = self.F*np.cos(theta)
-        fy = self.F*np.sin(theta)
-        ftot = np.array([fx, fy+fg])
-        normal = np.array([-slope, 1])
-        normal /= np.linalg.norm(normal)
-
-        fnormal = normal*np.dot(ftot, normal)/np.dot(normal, normal)
-        fres = ftot-fnormal
-	
-        # update acceleration
-        self.u[4] = fres[0]/self.m
-        self.u[5] = fres[1]/self.m
-
-        # leapfrog scheme (velocity part b)
-        self.u[2] = self.u[2] + 0.5*self.u[4]*self.ddt
-        self.u[3] = self.u[3] + 0.5*self.u[5]*self.ddt
-  
+        #print(slope, theta)
         #print(self.u[:4])
         if self.u[0] > 0:
-            assert(self.u[4]*self.u[5] > 0)
+            assert(self.u[2]*self.u[3] >= 0)
         else:
-            assert(self.u[4]*self.u[5] < 0)
-
+            assert(self.u[2]*self.u[3] <= 0)
+ 	
+	# update location
+        self.u[0] = self.u[0] + vnew*np.cos(theta)*self.ddt + 0.5*self.u[4]*self.ddt**2
+        self.u[1] = self.u[0]**2 # track is x^2 # self.u[1] + self.u[3]*self.ddt + 0.5*self.u[5]*self.ddt**2
+ 
        
         self.t = self.t + self.ddt
     

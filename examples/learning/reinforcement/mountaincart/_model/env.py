@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from mountaincart import *
 
+import pickle
+
 ######## Defining Environment Storage
 
 cart = MountainCart()
@@ -16,7 +18,7 @@ def env(s):
  step = 0
  done = False
 
- while not done and step < maxSteps:
+ while step < maxSteps:
 
   # Getting new action
   s.update()
@@ -39,3 +41,16 @@ def env(s):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
+
+ data = {
+    'action': cart.actions,
+    'location': cart.locations,
+    'velocity': cart.velocity,
+    'acceleration' : cart.acceleration,
+    'fgravity' : cart.fgravity
+ }
+
+ with open('states.pickle', 'wb') as fp:
+    pickle.dump(data, fp)
+
+

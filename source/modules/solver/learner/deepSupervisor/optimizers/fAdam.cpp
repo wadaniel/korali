@@ -68,8 +68,6 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
     throw std::runtime_error("Bad Inputs for Optimizer.");
   }
 
-  const float secondCentralMomentFactor = 1.0f / (1.0f - std::pow(_beta2, (float)_modelEvaluationCount));
-  const float firstCentralMomentFactor = 1.0f / (1.0f - std::pow(_beta1, (float)_modelEvaluationCount));
   const float notBeta1 = 1.0f - _beta1;
   const float notBeta2 = 1.0f - _beta2;
 
@@ -78,10 +76,8 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   for (size_t i = 0; i < _nVars; i++)
   {
     _firstMoment[i] = _beta1 * _firstMoment[i] - notBeta1 * gradient[i];
-    const float biasCorrectedFirstMoment = _firstMoment[i] * firstCentralMomentFactor;
     _secondMoment[i] = _beta2 * _secondMoment[i] + notBeta2 * gradient[i] * gradient[i];
-    const float biasCorrectedSecondMoment = _secondMoment[i] * secondCentralMomentFactor;
-    _currentValue[i] -= _eta / (std::sqrt(biasCorrectedSecondMoment) + _epsilon) * biasCorrectedFirstMoment;
+    _currentValue[i] -= _eta / (std::sqrt(_secondMoment[i]) + _epsilon) * _firstMoment[i];
   }
 }
 

@@ -18,7 +18,7 @@ class MountainCart:
     self.m = 1.0 # mass
     self.g = 9.81 # gravitaty
     self.r = 0.1 # friction
-    self.maxForce = 3.0 # max absolute force
+    self.maxForce = 1.0 # max absolute force
     self.maxSteps = 1000
     
     self.step = 0
@@ -74,26 +74,26 @@ class MountainCart:
         fg = -self.m*self.g*np.sin(theta) 	# resulting gravitational force
         ftot = self.F + fg 			# force in cart direction
         acc = ftot/self.m 			# acceleration
-        vtot = np.linalg.norm(self.u[2:4]) 	# current velocity
-        vnew = vtot + self.ddt*acc		# new total velocity
 
         # update acceleration
-        self.u[4] = ftot*np.cos(theta)
-        self.u[5] = ftot*np.sin(theta)
-  
+        self.u[4] = acc*np.cos(theta)
+        self.u[5] = acc*np.sin(theta)
+        
+        # project velocity in direction of acceleration
+        self.u[2:4] = self.u[4:] * np.dot(self.u[2:4], self.u[4:]) / np.dot(self.u[4:], self.u[4:])
+        
         # update velocity
-        self.u[2] = vnew*np.cos(theta)
-        self.u[3] = vnew*np.sin(theta)
+        self.u[2] = self.u[2] + self.u[4]*self.ddt
+        self.u[3] = self.u[3] + self.u[5]*self.ddt
   
-        #print(slope, theta)
         #print(self.u[:4])
-        if self.u[0] > 0:
-            assert(self.u[2]*self.u[3] >= 0)
-        else:
-            assert(self.u[2]*self.u[3] <= 0)
+        #if xold > 0:
+        #    assert(self.u[2]*self.u[3] >= 0)
+        #else:
+        #    assert(self.u[2]*self.u[3] <= 0)
  	
 	# update location
-        self.u[0] = self.u[0] + vnew*np.cos(theta)*self.ddt + 0.5*self.u[4]*self.ddt**2
+        self.u[0] = self.u[0] + self.u[2]*self.ddt + 0.5*self.u[4]*self.ddt**2
         self.u[1] = self.u[0]**2 # track is x^2 # self.u[1] + self.u[3]*self.ddt + 0.5*self.u[5]*self.ddt**2
  
        

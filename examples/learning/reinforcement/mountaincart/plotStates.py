@@ -25,7 +25,7 @@ if __name__ == "__main__":
     acceleration = last['acceleration']
 
     # define plotting area
-    expand = 1.05
+    expand = 1.2
     minx = min(location[0,:])*expand
     maxx = max(location[0,:])*expand
     miny = min(location[1,:])*expand
@@ -39,7 +39,7 @@ if __name__ == "__main__":
       
       print("Plotting {}/{}".format(i, len(location[0,:])), end='\r')
       plt.figure()
-      plt.title("Velocity ({:.1f},{:.1f}), Acceleration ({:.1f},{:.1f})".format(velocity[0,i], velocity[1,i], acceleration[0,i], acceleration[1,i]))
+      plt.title("Force {:.1f}, Velocity ({:.1f},{:.1f}), Acceleration ({:.1f},{:.1f})".format(action[i], velocity[0,i], velocity[1,i], acceleration[0,i], acceleration[1,i]))
       plt.plot(location[0,:i],location[1,:i])
       plt.arrow(location[0,i],location[1,i], action[i], 0.)
       plt.xlim((minx, maxx))

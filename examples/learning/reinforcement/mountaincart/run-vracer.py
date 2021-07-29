@@ -41,7 +41,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 1e6
+e["Problem"]["Training Reward Threshold"] = 1e9
 e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
@@ -57,11 +57,17 @@ e["Variables"][2]["Type"] = "State"
 e["Variables"][3]["Name"] = "Cart Velocity Y"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Force"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -1.0
-e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Initial Exploration Noise"] = 0.3
+e["Variables"][4]["Name"] = "Cart Acceleration X"
+e["Variables"][4]["Type"] = "State"
+
+e["Variables"][5]["Name"] = "Cart Acceleration Y"
+e["Variables"][5]["Type"] = "State"
+
+e["Variables"][6]["Name"] = "Force"
+e["Variables"][6]["Type"] = "Action"
+e["Variables"][6]["Lower Bound"] = -1.0
+e["Variables"][6]["Upper Bound"] = +1.0
+e["Variables"][6]["Initial Exploration Noise"] = 0.3
 
 ### Defining Agent Configuration 
 
@@ -105,8 +111,8 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Generations"] = 250
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1e9
 
 ### Setting file output configuration
 

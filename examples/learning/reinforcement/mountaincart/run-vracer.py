@@ -72,6 +72,9 @@ e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
+e["Solver"]["L2 Regularization"]["Enabled"] = False
+e["Solver"]["L2 Regularization"]["Importance"] = 0.95
+
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Policy"]["Distribution"] = args.distribution
@@ -93,13 +96,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 5e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 500
-e["File Output"]["Path"] = '_korali_results_{}'.format(e["Solver"]["Policy"]["Distribution"].replace(' ','_'))
+e["File Output"]["Path"] = '_korali_results_{}_3'.format(e["Solver"]["Policy"]["Distribution"].replace(' ','_'))
 
 ### Running Experiment
 

@@ -25,7 +25,7 @@ fAdam::fAdam(size_t nVars)
   _beta2 = 0.999f;
   _beta1Pow = 1.0f;
   _beta2Pow = 1.0f;
-  _eta = 0.0001f;
+  _eta = 0.001f;
   _epsilon = 1e-08f;
 
   // Termination Criteria

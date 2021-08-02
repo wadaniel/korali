@@ -30,6 +30,17 @@ class fAdam : public fGradientBasedOptimizer
 * @brief Beta for gradient update
 */
   float _beta2;
+  
+  /**
+* @brief Running powers of _beta2
+*/
+
+  float _beta1Pow;
+  /**
+* @brief Running powers of _beta2
+*/
+  float _beta2Pow;
+
 
   /**
 * @brief Smoothing Term

@@ -40,7 +40,7 @@ void DeepSupervisor::initialize()
 
   // Adding user-defined hidden layers
   for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) {
-    neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
+    //neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
     neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkHiddenLayers[i];
     curLayer++;
   }
@@ -156,6 +156,7 @@ void DeepSupervisor::runGeneration()
     if (_l2RegularizationEnabled)
     {
       const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+#pragma omp parallel for simd
       for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
         nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
     }

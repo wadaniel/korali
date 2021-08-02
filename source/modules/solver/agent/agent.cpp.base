@@ -738,7 +738,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
 #ifdef ALPHAOFFP
   _experienceReplayOffPolicyRatio = 0.1*_experienceReplayOffPolicyRatio+0.9*offPolicyCountDelta/(float)updateBatch.size();
 #else
-  _experienceReplayOffPolicyCount += offPolicyCountDelta;
+//  _experienceReplayOffPolicyCount += offPolicyCountDelta;
   _experienceReplayOffPolicyRatio = (float)_experienceReplayOffPolicyCount / (float)_isOnPolicyVector.size();
 #endif
 

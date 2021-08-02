@@ -35,7 +35,7 @@ void __className__::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
-  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.0001;
+  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001; //0.0001;
 
   // No transformations for the state value output
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;

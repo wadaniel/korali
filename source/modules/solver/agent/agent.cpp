@@ -668,9 +668,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
   // Calculate offpolicy count difference in minibatch
-  int offPolicyCountDelta = 0;
+//  int offPolicyCountDelta = 0;
 
-#pragma omp parallel for reduction(+: offPolicyCountDelta)
+//#pragma omp parallel for reduction(+: offPolicyCountDelta)
+#pragma omp parallel for 
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -705,10 +706,14 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 #else
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-      offPolicyCountDelta++;
+#pragma omp atomic
+        _experienceReplayOffPolicyCount++;
+//      offPolicyCountDelta++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-      offPolicyCountDelta--;
+#pragma omp atomic
+        _experienceReplayOffPolicyCount--;
+//      offPolicyCountDelta--;
 #endif
 
     // Store computed information for use in replay memory.
@@ -737,7 +742,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 #ifdef ALPHAOFFP
   _experienceReplayOffPolicyRatio = 0.1*_experienceReplayOffPolicyRatio+0.9*offPolicyCountDelta/(float)updateBatch.size();
 #else
-  _experienceReplayOffPolicyCount += offPolicyCountDelta;
+//  _experienceReplayOffPolicyCount += offPolicyCountDelta;
   _experienceReplayOffPolicyRatio = (float)_experienceReplayOffPolicyCount / (float)_isOnPolicyVector.size();
 #endif
 

@@ -40,7 +40,7 @@ void DeepSupervisor::initialize()
 
   // Adding user-defined hidden layers
   for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) {
-    //neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
+    neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
     neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkHiddenLayers[i];
     curLayer++;
   }

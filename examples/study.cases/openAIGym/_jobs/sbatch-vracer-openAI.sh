@@ -22,7 +22,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/OpenAI_wsall_find/$ENV/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/OpenAI_undo_3/$ENV/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 pushd ..

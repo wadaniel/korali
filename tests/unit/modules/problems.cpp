@@ -207,20 +207,6 @@ namespace
   e["Variables"][0]["Name"] = "Var X";
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
-  problemJs = baseOptJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Granularity");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseOptJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Granularity"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseOptJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Granularity"] = 1.0;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  };
 
  TEST(Problem, SupervisedLearning)

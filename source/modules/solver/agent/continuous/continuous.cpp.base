@@ -736,9 +736,9 @@ std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      const float curInvSig = 1. / curSigma;
-      const float curInvVar = 1. / (curSigma * curSigma);
-      const float curInvSig3 = 1. / (curSigma * curSigma * curSigma);
+      const float curInvSig = 1./curSigma;
+      const float curInvVar = 1./(curSigma * curSigma);
+      const float curInvSig3 = 1./(curSigma * curSigma * curSigma);
       const float actionDiff = (curMean - oldMean);
 
       // KL-Gradient with respect to Mean
@@ -884,21 +884,21 @@ std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &
         // mu above upper bound
         const float lbMu = std::log(curMu-_actionUpperBounds[i])-curBeta2;
         const float laMu = std::log(curMu-_actionLowerBounds[i])-curAlpha2;
-        dCqSig = (-std::exp(lCq-lPi2-2.*lCurSig+lbMu)+std::exp(lCq-lPi2-2.*lCurSig+laMu));
+        dCqSig = -std::exp(lCq-lPi2-2.*lCurSig+lbMu)+std::exp(lCq-lPi2-2.*lCurSig+laMu);
       }
       else if (curAlpha > 0.f)
       {
         // mu below lower bound
         const float lbMu = std::log(_actionUpperBounds[i]-curMu)-curBeta2;
         const float laMu = std::log(_actionLowerBounds[i]-curMu)-curAlpha2;
-        dCqSig = (std::exp(lCq-lPi2-2.*lCurSig+lbMu)-std::exp(lCq-lPi2-2.*lCurSig+laMu));
+        dCqSig = std::exp(lCq-lPi2-2.*lCurSig+lbMu)-std::exp(lCq-lPi2-2.*lCurSig+laMu);
       }
       else
       {
         // mu between bounds
         const float lbMu = std::log(_actionUpperBounds[i]-curMu)-curBeta2;
         const float laMu = std::log(curMu-_actionLowerBounds[i])-curAlpha2;
-        dCqSig = (std::exp(lCq-lPi2-2.*lCurSig+laMu)+std::exp(lCq-lPi2-2.*lCurSig+lbMu));
+        dCqSig = std::exp(lCq-lPi2-2.*lCurSig+laMu)+std::exp(lCq-lPi2-2.*lCurSig+lbMu);
       }
      
       // KL-Gradient with respect to Mu

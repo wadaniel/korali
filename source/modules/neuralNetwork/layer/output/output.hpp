@@ -54,52 +54,6 @@ enum transformation_t
 };
 
 /**
-   * @brief Transformation interface to transform the output of a neural network.
-*/
-struct Transformation
-{
-  /**
-   * @brief Virtual mask function
-   */
-   virtual float transform(float x) const = 0;
- 
-   /**
-   * @brief Virtual gradient of mask
-   */
-   virtual float gradient(float x) const = 0;
-
-   /**
-   * @brief Virtual destructor to guarantee correct cleanup
-   */
-   virtual ~Transformation() {};
-};
-
-struct identity : public Transformation
-{
-    float transform(float x) const { return x; }
-    float gradient(float x) const { return 1.; }
-};
-
-struct tanh : public Transformation
-{
-    float transform(float x) const { return std::tanh(x); }
-    float gradient(float x) const { return 1.0f - x * x; }
-};
-
-struct sigmoid : public Transformation
-{
-    float transform(float x) const { return 1. / (1. + std::exp(-x)); }
-    float gradient(float x) const { return x * (1. - x); }
-};
- 
-struct softplus : public Transformation
-{
-    float transform(float x) const { return 0.5 * (x + std::sqrt(1. + x * x)); }
-    float gradient(float x) const { float nnx = x - 0.25 / x; return 0.5 * (1. + nnx / std::sqrt(nnx * nnx + 1)); }
-};
- 
-
-/**
 * @brief Class declaration for module: Output.
 */
 class Output : public Layer

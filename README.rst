@@ -14,6 +14,7 @@ High-performance framework for uncertainty quantification, optimization and rein
     :target: https://codecov.io/gh/cselab/korali
     :alt: Code Coverage
 
+
 Description
 ===========
 
@@ -23,14 +24,17 @@ Korali provides a simple interface that allows users to easily describe statisti
 
 For more information, read: S. Martin, D. Waelchli, G. Arampatzis, A. E. Economides and P. Karnakov, P. Koumoutsakos, "Korali: Efficient and Scalable Software Framework for Bayesian Uncertainty Quantification and Stochastic Optimization". arXiv 2005.13457. Zurich, Switzerland, March 2021. `[PDF] <https://arxiv.org/abs/2005.13457>`_.
 
-Website
+Usage
 ========
 
-Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
+Run with Docker: :code:`docker run -it cselab/korali:latest`
+Documentation: `https://korali.readthedocs.io/ <https://korali.readthedocs.io/>`_
+Website: `https://www.cse-lab.ethz.ch/korali/ <https://www.cse-lab.ethz.ch/korali/>`_ 
 
 Folders
 =======
 
+- docker/ Containes the Dockerfile and scripts to build Korali's Docker container
 - docs/ Contains all documentation for Korali source and website
 - examples/ Contains example scripts that solve all of Korali's problem types
 - python/ Contains Korali's pure python source code

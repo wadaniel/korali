@@ -1,8 +1,6 @@
 #include "modules/neuralNetwork/layer/output/output.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
-#include <cmath>
-
 #ifdef _KORALI_USE_CUDNN
   #include "auxiliar/cudaUtils.hpp"
 #endif

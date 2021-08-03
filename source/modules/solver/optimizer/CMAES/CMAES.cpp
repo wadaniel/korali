@@ -1782,6 +1782,15 @@ void CMAES::setConfiguration(knlohmann::json& js)
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
+ if (isDefined(_k->_js["Variables"][i], "Granularity"))
+ {
+ try { _k->_variables[i]->_granularity = _k->_js["Variables"][i]["Granularity"].get<double>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Granularity']\n%s", e.what()); } 
+   eraseValue(_k->_js["Variables"][i], "Granularity");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Granularity'] required by CMAES.\n"); 
+
  } 
  Optimizer::setConfiguration(js);
  _type = "optimizer/CMAES";
@@ -1884,6 +1893,7 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Current Max Standard Deviation"] = _currentMaxStandardDeviation;
    js["Constraint Evaluation Count"] = _constraintEvaluationCount;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
+   _k->_js["Variables"][i]["Granularity"] = _k->_variables[i]->_granularity;
  } 
  Optimizer::getConfiguration(js);
 } 
@@ -1900,7 +1910,7 @@ void CMAES::applyModuleDefaults(knlohmann::json& js)
 void CMAES::applyVariableDefaults() 
 {
 
- std::string defaultString = "{}";
+ std::string defaultString = "{\"Granularity\": 0.0}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  if (isDefined(_k->_js.getJson(), "Variables"))
   for (size_t i = 0; i < _k->_js["Variables"].size(); i++) 

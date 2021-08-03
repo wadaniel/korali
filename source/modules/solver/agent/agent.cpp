@@ -5,10 +5,7 @@
 #include <chrono>
 
 // Enable continuous rescaling (experimental)
-//#define CSCALE
-//#define CMUSCALE
-
-//#define ALPHAOFFP
+#define CSCALE
 
 namespace korali
 {
@@ -110,9 +107,7 @@ void Agent::initialize()
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
     _stateRescalingSigmas = std::vector<float>(_problem->_stateVectorSize, 1.0);
 
-    _rewardRescalingMean = 0.0f;
     _rewardRescalingSigma = 1.0f;
-    _rewardRescalingSumRewards = 0.0f;
     _rewardRescalingSumSquaredRewards = 0.0f;
     _rewardRescalingCount = 0;
     _rewardOutboundPenalizationCount = 0;
@@ -367,7 +362,6 @@ void Agent::calculateRewardRescalingFactors()
     sumSquareReward += reward * reward;
   }
 
-  _rewardRescalingMean = 0.;
   _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
   _rewardRescalingCount++;
 #endif
@@ -507,10 +501,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 #ifdef CSCALE
     if(_rewardVector.size() >= _experienceReplayMaximumSize)
     {
-        _rewardRescalingSumRewards -= _rewardVector[0];
         _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
     }
-    _rewardRescalingSumRewards += reward;
     _rewardRescalingSumSquaredRewards += reward*reward;
 #endif
     _rewardVector.add(reward);
@@ -624,10 +616,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
 #ifdef CSCALE
   _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
-#ifdef CMUSCALE
-  _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardVector.size();
-  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() - _rewardRescalingMean*_rewardRescalingMean + 1e-9);
-#endif
 #endif
 }
 
@@ -668,10 +656,9 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
   // Calculate offpolicy count difference in minibatch
-//  int offPolicyCountDelta = 0;
+  int offPolicyCountDelta = 0;
 
-//#pragma omp parallel for reduction(+: offPolicyCountDelta)
-#pragma omp parallel for 
+#pragma omp parallel for reduction(+: offPolicyCountDelta)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -700,21 +687,12 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
-#ifdef ALPHAOFFP
-    if (isOnPolicy == false)
-        offPolicyCountDelta++;
-#else
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-#pragma omp atomic
-        _experienceReplayOffPolicyCount++;
-//      offPolicyCountDelta++;
+      offPolicyCountDelta++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-#pragma omp atomic
-        _experienceReplayOffPolicyCount--;
-//      offPolicyCountDelta--;
-#endif
+      offPolicyCountDelta--;
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
@@ -738,15 +716,11 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     }
   }
 
-  // Updating the off policy Ratio
-#ifdef ALPHAOFFP
-  _experienceReplayOffPolicyRatio = 0.1*_experienceReplayOffPolicyRatio+0.9*offPolicyCountDelta/(float)updateBatch.size();
-#else
-//  _experienceReplayOffPolicyCount += offPolicyCountDelta;
+  // Updating the off policy count and ratio
+  _experienceReplayOffPolicyCount += offPolicyCountDelta;
   _experienceReplayOffPolicyRatio = (float)_experienceReplayOffPolicyCount / (float)_isOnPolicyVector.size();
-#endif
 
-  // Updating the off policy Cutoff
+  // Updating the off policy cutoff
   _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 
   // Now filtering experiences from the same episode
@@ -1110,7 +1084,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
+      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma);
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
@@ -1350,28 +1324,12 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Experience Count");
  }
 
- if (isDefined(js, "Reward", "Rescaling", "Mean"))
- {
- try { _rewardRescalingMean = js["Reward"]["Rescaling"]["Mean"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Mean']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Rescaling", "Mean");
- }
-
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
  {
  try { _rewardRescalingSigma = js["Reward"]["Rescaling"]["Sigma"].get<float>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sigma']\n%s", e.what()); } 
    eraseValue(js, "Reward", "Rescaling", "Sigma");
- }
-
- if (isDefined(js, "Reward", "Rescaling", "Sum Rewards"))
- {
- try { _rewardRescalingSumRewards = js["Reward"]["Rescaling"]["Sum Rewards"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sum Rewards']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Rescaling", "Sum Rewards");
  }
 
  if (isDefined(js, "Reward", "Rescaling", "Sum Squared Rewards"))
@@ -1802,9 +1760,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Current Sample ID"] = _currentSampleID;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
-   js["Reward"]["Rescaling"]["Mean"] = _rewardRescalingMean;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
-   js["Reward"]["Rescaling"]["Sum Rewards"] = _rewardRescalingSumRewards;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Reward"]["Rescaling"]["Count"] = _rewardRescalingCount;
    js["Reward"]["Outbound Penalization"]["Count"] = _rewardOutboundPenalizationCount;

@@ -303,17 +303,9 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
-  * @brief [Internal Use] Contains the mean of the rewards. They will be shifted by this value in order to normalize the reward distribution in the RM.
-  */
-   float _rewardRescalingMean;
-  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingSigma;
-  /**
-  * @brief [Internal Use] Sum of rewards in experience replay.
-  */
-   float _rewardRescalingSumRewards;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
@@ -741,16 +733,16 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {
-    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }

@@ -38,6 +38,7 @@ bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
 
 # Run doxygen
+sp.run('(cd .. && doxygen --version)', shell=True) # get doxygen version
 sp.run('(cd .. && doxygen)', shell=True) # compile the xml source
 
 # -- General configuration ---------------------------------------------------

@@ -51,7 +51,7 @@ void __className__::setInitialConfiguration()
     if (_k->_variables[i]->_granularity < 0.0) KORALI_LOG_ERROR("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
     if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
   }
-  
+
   _isViabilityRegime = _hasConstraints;
   if (_isViabilityRegime)
   {

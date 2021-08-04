@@ -51,7 +51,6 @@ void CMAES::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  
   /* check _granularity for discrete variables */
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -60,7 +59,6 @@ void CMAES::setInitialConfiguration()
   }
   
   _isViabilityRegime = _hasConstraints;
-  
   if (_isViabilityRegime)
   {
     _currentPopulationSize = _viabilityPopulationSize;

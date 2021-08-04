@@ -45,6 +45,7 @@ void __className__::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
+  
   /* check _granularity for discrete variables */
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -53,6 +54,7 @@ void __className__::setInitialConfiguration()
   }
   
   _isViabilityRegime = _hasConstraints;
+  
   if (_isViabilityRegime)
   {
     _currentPopulationSize = _viabilityPopulationSize;

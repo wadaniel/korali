@@ -10,7 +10,6 @@ namespace problem
 void Optimization::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
-
 }
 
 void Optimization::evaluateConstraints(Sample &sample)

@@ -6,7 +6,6 @@ __startNamespace__;
 void __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
-
 }
 
 void __className__::evaluateConstraints(Sample &sample)

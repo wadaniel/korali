@@ -1752,20 +1752,20 @@ namespace
   optimizerJs["Termination Criteria"]["Max Standard Deviation"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
  
-  //optimizerJs = baseOptJs;
-  //experimentJs = baseExpJs;
-  //e["Variables"][0].erase("Granularity");
-  //ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Granularity");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
-  //optimizerJs = baseOptJs;
-  //experimentJs = baseExpJs;
-  //e["Variables"][0]["Granularity"] = "Not a Number";
-  //ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Granularity"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
-  //optimizerJs = baseOptJs;
-  //experimentJs = baseExpJs;
-  //e["Variables"][0]["Granularity"] = 1.0;
-  //ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Granularity"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   // Testing changes in cumulative covariance
   opt->_initialCumulativeCovariance = -1.0;

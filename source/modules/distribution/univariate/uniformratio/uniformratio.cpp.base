@@ -1,0 +1,51 @@
+#include "modules/distribution/univariate/uniformratio/uniformratio.hpp"
+#include "modules/experiment/experiment.hpp"
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf.h>
+
+__startNamespace__;
+
+double
+__className__::getDensity(const double z) const
+{
+ double unnormalized = 1./(2 * (_maximumX-_minimumX)) * ( std::pow(std::min(_maximumY, _maximumX/z), 2.) - std::pow(std::max(_minimumY, _minimumX/z),2.) );
+ return unnormalized/_aux;
+}
+
+double __className__::getLogDensity(const double z) const
+{
+  double logUnnormalized = -std::log(2 * (_maximumX-_minimumX)) + std::log(std::pow(std::min(_maximumY, _maximumX/z),2.) - std::pow(std::max(_minimumY, _minimumX/z),2.));
+  return logUnnormalized - std::log(_aux);
+}
+
+double __className__::getLogDensityGradient(const double z) const
+{
+  // TODO
+  return 0.0;
+}
+
+double __className__::getLogDensityHessian(const double z) const
+{
+  // TODO
+  return 0.0;
+}
+
+double __className__::getRandomNumber()
+{
+  return gsl_ran_flat(_range, _minimumX, _maximumX)/gsl_ran_flat(_range, _minimumY, _maximumY);
+}
+
+void __className__::updateDistribution()
+{
+  if (_maximumX - _minimumX <= 0.0)
+    KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound of the first (dividend) Uniform distribution in order to draw a random number.\n", _maximumX, _minimumX);
+  if (_maximumY - _minimumY <= 0.0)
+    KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound of the second (divisor) Uniform distribution in order to draw a random number.\n", _maximumY, _minimumY);
+
+    // TODO
+    _aux = 0.0;
+}
+
+__moduleAutoCode__;
+
+__endNamespace__;

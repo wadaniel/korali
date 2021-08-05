@@ -26,20 +26,23 @@ e["Solver"]["Target Coefficient Of Variation"] = 0.8
 e["Solver"]["Covariance Scaling"] = 0.04
 
 # Configuring the problem's random distributions
-e["Distributions"][0]["Name"] = "Uniform 0"
-e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = 0.0
-e["Distributions"][0]["Maximum"] = +5.0
+e["Distributions"][0]["Name"] = "UniformRatio 0"
+e["Distributions"][0]["Type"] = "Univariate/UniformRatio"
+e["Distributions"][0]["Minimum X"] = 0.1
+e["Distributions"][0]["Maximum X"] = +15.0
+e["Distributions"][0]["Minimum Y"] = 1.0
+e["Distributions"][0]["Maximum Y"] = +3.0
+
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
-e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Prior Distribution"] = "UniformRatio 0"
 
 e["Variables"][1]["Name"] = "b"
-e["Variables"][1]["Prior Distribution"] = "Uniform 0"
+e["Variables"][1]["Prior Distribution"] = "UniformRatio 0"
 
 e["Variables"][2]["Name"] = "[Sigma]"
-e["Variables"][2]["Prior Distribution"] = "Uniform 0"
+e["Variables"][2]["Prior Distribution"] = "UniformRatio 0"
 
 e["Store Sample Information"] = True
 

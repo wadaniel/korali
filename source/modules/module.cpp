@@ -18,6 +18,7 @@
 #include "distribution/univariate/normal/normal.hpp"
 #include "distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "distribution/univariate/uniform/uniform.hpp"
+#include "distribution/univariate/uniformratio/uniformratio.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
 #include "neuralNetwork/layer/activation/activation.hpp"
@@ -124,6 +125,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Univariate/Normal")) module = new korali::distribution::univariate::Normal();
   if (iCompare(moduleType, "Univariate/TruncatedNormal")) module = new korali::distribution::univariate::TruncatedNormal();
   if (iCompare(moduleType, "Univariate/Uniform")) module = new korali::distribution::univariate::Uniform();
+  if (iCompare(moduleType, "Univariate/UniformRatio")) module = new korali::distribution::univariate::UniformRatio();
   if (iCompare(moduleType, "Univariate/Weibull")) module = new korali::distribution::univariate::Weibull();
   if (iCompare(moduleType, "Experiment")) module = new korali::Experiment();
   if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();

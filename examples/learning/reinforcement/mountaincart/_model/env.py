@@ -4,7 +4,7 @@ from mountaincart import *
 import pickle
 
 # generate states file 'states.pickle'?
-output = True 
+output = False
 
 ######## Defining Environment Storage
 

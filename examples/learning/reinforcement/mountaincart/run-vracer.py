@@ -96,7 +96,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 5e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 

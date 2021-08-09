@@ -4,6 +4,8 @@
 import sys
 import os
 import korali
+sys.path.append('_setup/model')
+from model import *
 
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
@@ -13,9 +15,13 @@ psi = korali.Experiment()
 sub.loadState('_setup/results_phase_1/000/latest')
 psi.loadState('_setup/results_phase_2/latest')
 
+data = getReferenceData("_setup/data/", 0)
+N = len(data)
+  
 e["Problem"]["Type"] = "Hierarchical/Theta"
 e["Problem"]["Sub Experiment"] = sub
 e["Problem"]["Psi Experiment"] = psi
+e["Problem"]["Sub Experiment Model"] = lambda d: normal(N,d)
 
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000

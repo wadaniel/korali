@@ -89,6 +89,15 @@ void Theta::initialize()
     _precomputedLogDenominator.push_back(localSum);
   }
 
+  // Now inheriting Sub problem's variables and distributions
+  _k->_variables.clear();
+  for (size_t i = 0; i < _subExperimentObject._variables.size(); i++)
+   _k->_variables.push_back(_subExperimentObject._variables[i]);
+
+  _k->_distributions.clear();
+  for (size_t i = 0; i < _subExperimentObject._distributions.size(); i++)
+    _k->_distributions.push_back(_subExperimentObject._distributions[i]);
+
   Hierarchical::initialize();
 }
 
@@ -141,6 +150,15 @@ void Theta::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Psi Experiment'] required by theta.\n"); 
 
+ if (isDefined(js, "Sub Experiment Model"))
+ {
+ try { _subExperimentModel = js["Sub Experiment Model"].get<std::uint64_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ theta ] \n + Key:    ['Sub Experiment Model']\n%s", e.what()); } 
+   eraseValue(js, "Sub Experiment Model");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Sub Experiment Model'] required by theta.\n"); 
+
  Hierarchical::setConfiguration(js);
  _type = "hierarchical/theta";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
@@ -153,6 +171,7 @@ void Theta::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Sub Experiment"] = _subExperiment;
    js["Psi Experiment"] = _psiExperiment;
+   js["Sub Experiment Model"] = _subExperimentModel;
  Hierarchical::getConfiguration(js);
 } 
 

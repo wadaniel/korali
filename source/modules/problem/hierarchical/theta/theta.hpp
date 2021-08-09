@@ -108,6 +108,10 @@ class Theta : public Hierarchical
   * @brief Results from the hierarchical problem (Psi).
   */
    knlohmann::json _psiExperiment;
+  /**
+  * @brief Stores the a function used by the underlying Bayesian problem, if required.
+  */
+   std::uint64_t _subExperimentModel;
   
  
   /**

@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = NAGENTS;
-  e["Problem"]["Training Reward Threshold"] = 200.0;
+  e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 

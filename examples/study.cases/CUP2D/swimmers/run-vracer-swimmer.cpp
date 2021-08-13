@@ -36,12 +36,12 @@ int main(int argc, char *argv[])
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 200.0;
+  e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path an dumping frequency in CUP
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables

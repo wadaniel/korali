@@ -8,8 +8,21 @@
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
-// Number of Agents
+// Settings for different setups
+#define NAGENTS 9
+#define XMAX 2
+#define YMIN 0.6
+#define YMAX 1.4
+
 #define NAGENTS 16
+#define XMAX 2.6
+#define YMIN 0.5
+#define YMAX 1.5
+
+#define NAGENTS 25
+#define XMAX 3.2
+#define YMIN 0.4
+#define YMAX 1.6
 
 // command line arguments are read in Korali application
 extern int _argc;

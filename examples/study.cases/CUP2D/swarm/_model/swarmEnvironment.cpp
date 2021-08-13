@@ -229,9 +229,9 @@ bool isTerminal(StefanFish *agent)
 
   bool terminal = false;
   if (X < 0.4) terminal = true;
-  if (X > 2.0) terminal = true;
-  if (Y < 0.6) terminal = true;
-  if (Y > 1.4) terminal = true;
+  if (X > XMAX) terminal = true;
+  if (Y < YMIN) terminal = true;
+  if (Y > YMAX) terminal = true;
 
   return terminal;
 }

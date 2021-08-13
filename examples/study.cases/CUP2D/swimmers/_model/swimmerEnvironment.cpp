@@ -21,7 +21,7 @@ void runEnvironment(korali::Sample &s)
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( not std::filesystem::create_directories(resDir) )
   {
-    fprintf(stderr, "[Korali] Error creating results directory for environment\n");
+    fprintf(stderr, "[Korali] Error creating results directory for environment: %s.\n", resDir);
     exit(-1);
   };
 
@@ -44,7 +44,6 @@ void runEnvironment(korali::Sample &s)
   _environment->init();
 
   // Obtaining environment objects and agent
-  // Shape *object = _environment->getShapes()[0];
   StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
 
   // Establishing environment's dump frequency

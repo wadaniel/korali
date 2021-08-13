@@ -35,13 +35,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  colCurrIndex = 0.0
 
  ## Plotting the individual experiment results
-    
- for resId, r in enumerate(results):
-  
-  if (len(r) == 0): continue  
-  
-  rewardHistory = r[-1]["Solver"]["Training"]["Reward History"]
-  obsCountHistory = r[-1]["Solver"]["Training"]["Experience History"]
+
+ for resultId, result in enumerate(results):
+  rewardHistory =   result["Solver"]["Training"]["Reward History"]
+  obsCountHistory = result["Solver"]["Training"]["Experience History"]
   
   # Gathering observation count for each result
   
@@ -53,7 +50,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    cumulativeObsList.append(currObsCount)
   
   # Updating common plot limits
- 
+
   if (currObsCount > maxPlotObservations): maxPlotObservations = currObsCount
   if (maxObservations): maxPlotObservations = int(maxObservations)
 
@@ -65,9 +62,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    if (max(rewardHistory) < math.inf):
     maxPlotReward = max(rewardHistory)
 
-  trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
-  testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
- 
+  trainingRewardThreshold = result["Problem"]["Training Reward Threshold"]
+  testingRewardThreshold  = result["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
+
   if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
    if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
 
@@ -79,7 +76,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    
   if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
    if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
- 
+
   # Getting average cumulative reward statistics
   
   meanHistory = [ rewardHistory[0] ]
@@ -104,68 +101,48 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+  ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resultId])
 
   # Updating color index
   if (len(results) > 1):
    colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
   
- ## Configuring common plotting features
+  ## Configuring common plotting features
 
- if (minReward): minPlotReward = float(minReward)
- if (maxReward): maxPlotReward = float(maxReward)
- 
- ax.set_ylabel('Cumulative Reward')  
- ax.set_xlabel('# Observations')
- ax.set_title('Korali RL History Viewer')
- 
- ax.yaxis.grid()
- ax.set_xlim([0, maxPlotObservations-1])
- ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
+  if (minReward): minPlotReward = float(minReward)
+  if (maxReward): maxPlotReward = float(maxReward)
+
+  ax.set_ylabel('Cumulative Reward')  
+  ax.set_xlabel('# Observations')
+  ax.set_title('Korali RL History Viewer')
+
+  ax.yaxis.grid()
+  ax.set_xlim([0, maxPlotObservations-1])
+  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
  
 ##################### Results parser
 
 def parseResults(dir):
 
  results = [ ]
- 
+
  for p in dir:
   configFile = p + '/latest'
   if (not os.path.isfile(configFile)):
-    print("[Korali] Error: Did not find any results in the {0} folder...".format(p))
-    exit(-1)
+   print("[Korali] Error: Did not find any results in the {0} folder...".format(p))
+   exit(-1)
  
   with open(configFile) as f:
-    js = json.load(f)
-  configRunId = js['Run ID']
- 
-  resultFiles = [
-      f for f in os.listdir(p)
-      if os.path.isfile(os.path.join(p, f)) and f.startswith('gen')
-  ]
-  resultFiles = sorted(resultFiles)
- 
-  genList = [ ]
- 
-  for file in resultFiles:
-   if (not 'aux' in file):
-    with open(p + '/' + file) as f:
-      genJs = json.load(f)
-      solverRunId = genJs['Run ID']
- 
-      if (configRunId == solverRunId):
-        curGen = genJs['Current Generation']
-        genList.append(genJs)
- 
-  del genList[0]
-  results.append(genList)
+    data = json.load(f)
+
+  results.append(data)
   
  return results
  
 ##################### Main Routine: Parsing arguments and result files
   
 if __name__ == '__main__':
- 
+
  # Setting termination signal handler
  
  signal.signal(signal.SIGINT, lambda x, y: exit(0))
@@ -256,8 +233,9 @@ if __name__ == '__main__':
  ax1 = fig1.add_subplot(111)
      
  ### Creating plots
-  
+
  plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
+ plt.legend()
  plt.draw()
  
  ### Printing live results if update frequency > 0

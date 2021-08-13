@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-eval-vracer-swimmer.sh RUNNAME"
+	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME"
 	exit 1
 fi
 if [ $# -gt 0 ] ; then
@@ -9,7 +9,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of agents
-NNODES=1
+NNODES=64
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
@@ -36,7 +36,7 @@ cat <<EOF >daint_sbatch
 
 export OMP_NUM_THREADS=12
 
-srun ./eval-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}"
+srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}"
 EOF
 
 chmod 755 daint_sbatch

@@ -13,9 +13,7 @@ NNODES=1
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
-mkdir -p ${RUNPATH}
-cp run-vracer-swarm ${RUNPATH}
-cp settings.sh ${RUNPATH}
+cp eval-vracer-swarm ${RUNPATH}
 cd ${RUNPATH}
 
 source settings.sh

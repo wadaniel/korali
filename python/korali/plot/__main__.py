@@ -98,7 +98,7 @@ def main(path, test, output, plotAll=False):
    exit(0)
 
   sys.path.append(solverDir)
-  solverLib = importlib.import_module(moduleName, package="plotter")
+  solverLib = importlib.import_module(moduleName, package="plot")
   solverLib.plot(genList, plotAll=plotAll )
 
   if not output:

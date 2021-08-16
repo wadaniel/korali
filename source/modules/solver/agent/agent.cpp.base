@@ -181,9 +181,6 @@ void __className__::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
-  // Setting to the latest saved training policy
-  setAgentPolicy(_trainingCurrentPolicy);
-
   // Setting generation-specific timers
   _generationRunningTime = 0.0;
   _generationSerializationTime = 0.0;
@@ -1017,9 +1014,6 @@ void __className__::deserializeExperienceReplay()
 
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicy);
-
-  // Resetting the optimizers that the algorithm might be using
-  resetAgentOptimizers();
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

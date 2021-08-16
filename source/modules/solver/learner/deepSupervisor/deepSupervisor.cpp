@@ -173,11 +173,11 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
 {
   // Update evaluation network
   _neuralNetwork->setHyperparameters(hyperparameters);
-}
 
-void DeepSupervisor::resetOptimizer()
-{
-  // Resetting
+  // Updating optimizer's current value
+  _optimizer->_currentValue = hyperparameters;
+
+  // Resetting Optimizer
   _optimizer->reset();
 }
 

@@ -96,7 +96,7 @@ void Agent::initialize()
 
     // If cutoff scale is not defined, use a heuristic value
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
-      KORALI_LOG_ERROR("Expericne Replay Cutoff Scale must be larger 0.0");
+      KORALI_LOG_ERROR("Experience Replay Cutoff Scale must be larger 0.0");
 
     _experienceReplayOffPolicyCount = 0;
     _experienceReplayOffPolicyRatio = 0.0f;
@@ -184,9 +184,6 @@ void Agent::runGeneration()
 void Agent::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-  // Setting to the latest saved training policy
-  setAgentPolicy(_trainingCurrentPolicy);
 
   // Setting generation-specific timers
   _generationRunningTime = 0.0;
@@ -1021,9 +1018,6 @@ void Agent::deserializeExperienceReplay()
 
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicy);
-
-  // Resetting the optimizers that the algorithm might be using
-  resetAgentOptimizers();
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

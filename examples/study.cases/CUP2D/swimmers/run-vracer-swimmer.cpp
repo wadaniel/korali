@@ -32,7 +32,10 @@ int main(int argc, char *argv[])
 
   // Check if existing results are there and continuing them
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
-  if (found == true) printf("[Korali] Continuing execution from previous run...\n");
+  if (found == true){
+    printf("[Korali] Continuing execution from previous run...\n");
+    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
+  }
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;

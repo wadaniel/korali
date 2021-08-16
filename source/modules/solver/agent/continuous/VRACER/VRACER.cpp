@@ -62,7 +62,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
-
+  
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
   
@@ -238,7 +238,6 @@ void VRACER::printAgentInformation()
   _k->_logger->logInfo("Detailed", " + [VRACER] Min Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _minMiniBatchPolicyMean[i], _minMiniBatchPolicyStdDev[i]);
-
 }
 
 void VRACER::setConfiguration(knlohmann::json& js) 

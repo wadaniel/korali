@@ -189,13 +189,13 @@ std::vector<float> __className__::generateTrainingAction(policy_t &curPolicy)
       const float mu = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       
-      const float alpha = (_actionLowerBounds[i]-mu)/sigma;
-      const float beta = (_actionUpperBounds[i]-mu)/sigma;
+      const float alpha = (_actionLowerBounds[i] - mu) / sigma;
+      const float beta = (_actionUpperBounds[i] - mu) / sigma;
       
       // Sampling via naive inverse sampling (not the safest approach due to numerical precision)
       const float u = _uniformGenerator->getRandomNumber();
-      const float z = u*normalCDF(beta, 0.f, 1.f) + (1.-u)*normalCDF(alpha, 0.f, 1.f);
-      action[i] = mu + M_SQRT2*ierf( 2.*z - 1. )*sigma;
+      const float z = u * normalCDF(beta, 0.f, 1.f) + (1. - u) * normalCDF(alpha, 0.f, 1.f);
+      action[i] = mu + M_SQRT2 * ierf( 2. * z - 1.) * sigma;
 
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];

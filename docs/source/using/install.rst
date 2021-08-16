@@ -4,8 +4,24 @@
 Installation
 *********************
 
-System Requirements
+Docker
 ==========================
+
+The easiest way to use Korali is to launch it's pre-built Docker container which provides Korali with all its dependencies already installed and configured. To launch the docker container, run:
+
+    .. code-block:: bash
+
+       docker run -it cselab/korali:latest
+
+Manual Installation
+==========================
+
+Korali has been thoroughly tested on Linux (Ubuntu, Fedora) systems. Although it is possible to compile and run Korali on MacOS, we strongly recommend users to use the Docker image instead. Korali is not yet supported on Windows systems.
+
+Below, we list the system requirements and steps to install Korali:
+
+System Requirements
+--------------------------
 
   - **C++ Compiler**
       Korali requires a C++ compiler that supports the C++17 standard (`-std=c++17`) to build.
@@ -25,7 +41,7 @@ System Requirements
       Korali requires a version of Python higher than 3.8 to be installed in the system. Korali's installer will check the *python3* command. The path to this command should be present in the $PATH environment variable. *Hint:* Make sure Python3 is correctly installed or its module loaded before configuring Korali.
 
 Installation Steps
-===================
+--------------------------
 
 1. Download Korali
 
@@ -83,7 +99,7 @@ To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the 
      source tools/env/set_env.sh PREFIX
      
 Troubleshooting
-====================
+--------------------------
 
 If you are experiencing problems installing or running Korali, please check the following hints:
 
@@ -97,7 +113,7 @@ If you are experiencing problems installing or running Korali, please check the 
 
 
 Cray systems (Piz Daint)
-------------------------
+--------------------------
 
 Cray systems use a propietary build system that may cause conflicts with the default meson configuration when using MPI. To fix this, the following steps are recommended:
 
@@ -125,7 +141,7 @@ Cray systems use a propietary build system that may cause conflicts with the def
     python3 -m pip install --user mpi4py --ignore-installed -v
     
 Optional Requirements
-=============================
+--------------------------
 
  - **oneDNN**
       Korali uses the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ for deep learning modules, and is disabled by default. You can enable it by adding the ``-Donednn=true`` option on the meson configuration line. To recommended configuration for oneDNN is:

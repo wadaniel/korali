@@ -111,15 +111,15 @@ void Agent::initialize()
     _rewardRescalingSigma = 1.0f;
     _rewardRescalingCount = 0;
     _rewardOutboundPenalizationCount = 0;
+
+    // Getting agent's initial policy
+    _trainingCurrentPolicy = getAgentPolicy();
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
     if (_mode == "Training" || _testingBestPolicy.empty())
       deserializeExperienceReplay();
-
-  // Getting agent's initial policy
-  _trainingCurrentPolicy = getAgentPolicy();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
@@ -184,6 +184,9 @@ void Agent::runGeneration()
 void Agent::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
+  // Setting to the latest saved training policy
+  setAgentPolicy(_trainingCurrentPolicy);
 
   // Setting generation-specific timers
   _generationRunningTime = 0.0;

@@ -102,7 +102,6 @@ void __className__::initialize()
 
     _rewardRescalingSigma = 1.0f;
     _rewardRescalingSumSquaredRewards = 0.0f;
-    _rewardRescalingCount = 0;
     _rewardOutboundPenalizationCount = 0;
   }
 

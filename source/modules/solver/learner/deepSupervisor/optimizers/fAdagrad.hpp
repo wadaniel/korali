@@ -26,11 +26,6 @@ class fAdagrad : public fAdam
   */
   std::vector<float> _s;
 
-  /**
-   * @brief Safety addition on divide
-   */
-  float _epsilon;
-
   virtual bool checkTermination() override;
   virtual void processResult(float evaluation, std::vector<float> &gradient) override;
   virtual void reset() override;

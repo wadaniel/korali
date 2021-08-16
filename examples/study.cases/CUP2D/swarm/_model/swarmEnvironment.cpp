@@ -189,9 +189,9 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   // with noise
   if (isTraining)
   {
-    std::uniform_real_distribution<double> disA(-10. / 180. * M_PI, 10. / 180. * M_PI);
-    std::uniform_real_distribution<double> disX(-0.05, 0.05);
-    std::uniform_real_distribution<double> disY(-0.075, 0.075);
+    std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
+    std::uniform_real_distribution<double> disX(-0.025, 0.025);
+    std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
     initialAngle = disA(_randomGenerator);
     initialPosition[0] = initialPosition[0] + disX(_randomGenerator);

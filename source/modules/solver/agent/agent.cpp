@@ -470,15 +470,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-    if(_rewardRescalingEnabled)
+    if (_rewardRescalingEnabled)
     {
-      if(_rewardVector.size() >= _experienceReplayMaximumSize)
+      if (_rewardVector.size() >= _experienceReplayMaximumSize)
       {
         _rewardRescalingSumSquaredRewards -= _rewardVector[0] * _rewardVector[0];
       }
       _rewardRescalingSumSquaredRewards += reward * reward;
     }
-    
+
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -631,7 +631,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   // Calculate offpolicy count difference in minibatch
   int offPolicyCountDelta = 0;
 
-#pragma omp parallel for reduction(+: offPolicyCountDelta)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCountDelta)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];

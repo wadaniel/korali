@@ -50,11 +50,10 @@ void fAdam::reset()
       throw std::runtime_error("Bad Inputs for Optimizer.");
     }
 
-  for (size_t i = 0; i < _nVars; i++)
-    _currentValue[i] = _initialValues[i];
-
+#pragma omp parallel for simd
   for (size_t i = 0; i < _nVars; i++)
   {
+    _currentValue[i] = _initialValues[i];
     _firstMoment[i] = 0.0f;
     _secondMoment[i] = 0.0f;
   }

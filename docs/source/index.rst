@@ -1,5 +1,9 @@
 .. include:: README.rst
 
+*************
+User Manual
+*************
+
 .. toctree::
    :caption: Using Korali
    :maxdepth: 2

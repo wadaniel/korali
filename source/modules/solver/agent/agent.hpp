@@ -187,10 +187,6 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief The number of policy updates between consecutive reward rescalings.
-  */
-   size_t _rewardRescalingFrequency;
-  /**
   * @brief If enabled, it penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
   */
    int _rewardOutboundPenalizationEnabled;
@@ -310,10 +306,6 @@ class Agent : public Solver
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
    float _rewardRescalingSumSquaredRewards;
-  /**
-  * @brief [Internal Use] Indicates how many times have the rewards been rescaled
-  */
-   size_t _rewardRescalingCount;
   /**
   * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
   */

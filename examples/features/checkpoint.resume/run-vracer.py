@@ -19,14 +19,14 @@ if (found == False):
   print('------------------------------------------------------')
   print('Running first 5 generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 80
 
 # If found, we continue 
 if (found == True):
   print('------------------------------------------------------')
   print('Running 5 more generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + 5
+  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + 80
   
 ### Defining the Cartpole problem's configuration
 
@@ -56,8 +56,8 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Learning Rate"] = 0.005
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 e["Solver"]["Mini Batch"]["Size"] = 32
@@ -88,7 +88,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "_result_vracer"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 5
  
 ### Running Training Experiment
 

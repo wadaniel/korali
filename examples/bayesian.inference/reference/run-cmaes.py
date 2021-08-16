@@ -33,13 +33,13 @@ e["Distributions"][0]["Maximum"] = +5.0
 # Configuring the problem's variables
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-e["Variables"][0]["Initial Value"] = +0.0
-e["Variables"][0]["Initial Standard Deviation"] = +1.0
+e["Variables"][0]["Initial Value"] = +2.5
+e["Variables"][0]["Initial Standard Deviation"] = +0.5
 
 e["Variables"][1]["Name"] = "b"
 e["Variables"][1]["Prior Distribution"] = "Uniform 0"
-e["Variables"][1]["Initial Value"] = +0.0
-e["Variables"][1]["Initial Standard Deviation"] = +1.0
+e["Variables"][1]["Initial Value"] = +2.5
+e["Variables"][1]["Initial Standard Deviation"] = +0.5
 
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 0"

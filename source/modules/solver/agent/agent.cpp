@@ -588,7 +588,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _retraceValueVector[expId] = retV;
   }
 
-  if(_rewardRescalingEnabled)
+  if (_rewardRescalingEnabled)
     _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / (float)_rewardVector.size() + 1e-9);
 }
 

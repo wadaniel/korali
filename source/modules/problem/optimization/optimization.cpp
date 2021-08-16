@@ -10,13 +10,6 @@ namespace problem
 void Optimization::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
-
-  /* check _granularity for discrete variables */
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_granularity < 0.0) KORALI_LOG_ERROR("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
-    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
-  }
 }
 
 void Optimization::evaluateConstraints(Sample &sample)
@@ -114,15 +107,6 @@ void Optimization::setConfiguration(knlohmann::json& js)
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
- if (isDefined(_k->_js["Variables"][i], "Granularity"))
- {
- try { _k->_variables[i]->_granularity = _k->_js["Variables"][i]["Granularity"].get<double>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Granularity']\n%s", e.what()); } 
-   eraseValue(_k->_js["Variables"][i], "Granularity");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Granularity'] required by optimization.\n"); 
-
  } 
   bool detectedCompatibleSolver = false; 
   std::string solverName = toLower(_k->_js["Solver"]["Type"]); 
@@ -148,7 +132,6 @@ void Optimization::getConfiguration(knlohmann::json& js)
    js["Constraints"] = _constraints;
    js["Has Discrete Variables"] = _hasDiscreteVariables;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
-   _k->_js["Variables"][i]["Granularity"] = _k->_variables[i]->_granularity;
  } 
  Problem::getConfiguration(js);
 } 
@@ -165,7 +148,7 @@ void Optimization::applyModuleDefaults(knlohmann::json& js)
 void Optimization::applyVariableDefaults() 
 {
 
- std::string defaultString = "{\"Granularity\": 0.0}";
+ std::string defaultString = "{}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  if (isDefined(_k->_js.getJson(), "Variables"))
   for (size_t i = 0; i < _k->_js["Variables"].size(); i++) 

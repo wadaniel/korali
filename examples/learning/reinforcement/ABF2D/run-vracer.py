@@ -49,7 +49,7 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 50 
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 128
-e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
+e["Solver"]["Policy"]["Distribution"] = "Normal"
 e["Solver"]["Experience Replay"]["Start Size"] = 32768
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 

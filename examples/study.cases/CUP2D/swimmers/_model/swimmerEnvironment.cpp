@@ -19,6 +19,7 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+  if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
     fprintf(stderr, "[Korali] Error creating results directory for environment: %s.\n", resDir);

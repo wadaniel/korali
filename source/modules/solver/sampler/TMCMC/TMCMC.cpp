@@ -1420,7 +1420,7 @@ void TMCMC::getConfiguration(knlohmann::json& js)
 void TMCMC::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Multinomial Generator\": {\"Type\": \"Specific/Multinomial\"}, \"Multivariate Generator\": {\"Type\": \"Multivariate/Normal\"}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Version\": \"TMCMC\", \"Max Chain Length\": 1, \"Default Burn In\": 0, \"Per Generation Burn In\": [], \"Target Coefficient Of Variation\": 1.0, \"Covariance Scaling\": 0.04, \"Min Annealing Exponent Update\": 1e-05, \"Max Annealing Exponent Update\": 1.0, \"Domain Extension Factor\": 0.2, \"Step Size\": 0.1, \"Termination Criteria\": {\"Target Annealing Exponent\": 1.0}}";
+ std::string defaultString = "{\"Multinomial Generator\": {\"Type\": \"Specific/Multinomial\"}, \"Multivariate Generator\": {\"Type\": \"Multivariate/Normal\"}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Version\": \"TMCMC\", \"Max Chain Length\": 1, \"Burn In\": 0, \"Per Generation Burn In\": [], \"Target Coefficient Of Variation\": 1.0, \"Covariance Scaling\": 0.04, \"Min Annealing Exponent Update\": 1e-05, \"Max Annealing Exponent Update\": 1.0, \"Domain Extension Factor\": 0.2, \"Step Size\": 0.1, \"Termination Criteria\": {\"Target Annealing Exponent\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Sampler::applyModuleDefaults(js);

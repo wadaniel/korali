@@ -9,10 +9,10 @@
 #include "Utils/BufferedLogger.h"
 
 // Settings for different setups
-// #define NAGENTS 4
-// #define XMAX 1.4
-// #define YMIN 0.7
-// #define YMAX 1.3
+#define NAGENTS 4
+#define XMAX 1.4
+#define YMIN 0.7
+#define YMAX 1.3
 
 // #define NAGENTS 9
 // #define XMAX 2
@@ -24,10 +24,10 @@
 // #define YMIN 0.5
 // #define YMAX 1.5
 
-#define NAGENTS 25
-#define XMAX 3.2
-#define YMIN 0.4
-#define YMAX 1.6
+// #define NAGENTS 25
+// #define XMAX 3.2
+// #define YMIN 0.4
+// #define YMAX 1.6
 
 // command line arguments are read in Korali application
 extern int _argc;

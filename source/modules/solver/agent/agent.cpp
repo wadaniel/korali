@@ -474,9 +474,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     {
       if(_rewardVector.size() >= _experienceReplayMaximumSize)
       {
-        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+        _rewardRescalingSumSquaredRewards -= _rewardVector[0] * _rewardVector[0];
       }
-      _rewardRescalingSumSquaredRewards += reward*reward;
+      _rewardRescalingSumSquaredRewards += reward * reward;
     }
     
     _rewardVector.add(reward);
@@ -589,7 +589,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   }
 
   if(_rewardRescalingEnabled)
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / (float)_rewardVector.size() + 1e-9);
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

@@ -11,7 +11,7 @@ import math
 import numpy as np
 import scipy.stats as st
 import matplotlib.pyplot as plt
-from korali.plotter.helpers import hlsColors, drawMulticoloredLine
+from korali.plot.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
 
 # Check if name has correct suffix

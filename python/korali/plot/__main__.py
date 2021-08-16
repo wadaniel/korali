@@ -116,7 +116,7 @@ def main(path, test, output, plotAll=False):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
-      prog='korali.plotter',
+      prog='korali.plot',
       description='Plot the results of a Korali execution.')
   parser.add_argument(
       '--dir',

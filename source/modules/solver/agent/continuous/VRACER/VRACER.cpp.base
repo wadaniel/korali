@@ -57,7 +57,7 @@ void __className__::initializeAgent()
   
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
-  
+
   _minMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _minMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
 }

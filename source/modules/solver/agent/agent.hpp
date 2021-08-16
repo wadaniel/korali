@@ -747,11 +747,6 @@ class Agent : public Solver
     return rescaledReward;
   }
 
-  /**
-   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
-   */
-  void calculateRewardRescalingFactors();
-
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
    ***************************************************************************************************/

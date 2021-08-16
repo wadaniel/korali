@@ -8,4 +8,7 @@ For that, it shall switch between applying left and right Forces in order to inc
 in _model/env.py set output = True and visualize states with script plotStates.py
 use following command for a simplistic visualization of states
 
+
+.. code-block:: bash
+
     ffmpeg -framerate 10 -pattern_type glob -i 'figures/*.png' -c:v libx264 -r 30 -pix_fmt yuv420p cart.mp4

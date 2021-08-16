@@ -4,9 +4,6 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
-// Enable continuous rescaling (experimental)
-#define CSCALE
-
 namespace korali
 {
 namespace solver
@@ -223,11 +220,6 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
     {
-      // If we performed enough policy updates, we rescale rewards again
-      if (_rewardRescalingEnabled == true)
-        if (_policyUpdateCount >= _rewardRescalingFrequency * _rewardRescalingCount)
-          calculateRewardRescalingFactors();
-
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
@@ -346,25 +338,6 @@ void Agent::rescaleStates()
   for (size_t i = 0; i < _stateVector.size(); ++i)
     for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
-}
-
-void Agent::calculateRewardRescalingFactors()
-{
-#ifndef CSCALE
-  float sumReward = 0.0;
-  float sumSquareReward = 0.0;
-
-  // Calculate mean and standard deviation of unscaled rewards.
-  for (size_t i = 0; i < _rewardVector.size(); i++)
-  {
-    float reward = _rewardVector[i];
-    sumReward += reward;
-    sumSquareReward += reward * reward;
-  }
-
-  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
-  _rewardRescalingCount++;
-#endif
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -498,13 +471,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-#ifdef CSCALE
-    if(_rewardVector.size() >= _experienceReplayMaximumSize)
+    if(_rewardRescalingEnabled)
     {
+      if(_rewardVector.size() >= _experienceReplayMaximumSize)
+      {
         _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+      }
+      _rewardRescalingSumSquaredRewards += reward*reward;
     }
-    _rewardRescalingSumSquaredRewards += reward*reward;
-#endif
+    
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -614,9 +589,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _retraceValueVector[expId] = retV;
   }
 
-#ifdef CSCALE
-  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
-#endif
+  if(_rewardRescalingEnabled)
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

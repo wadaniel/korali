@@ -224,11 +224,6 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void VRACER::resetAgentOptimizers()
-{
-  _criticPolicyLearner->resetOptimizer();
-}
-
 void VRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);

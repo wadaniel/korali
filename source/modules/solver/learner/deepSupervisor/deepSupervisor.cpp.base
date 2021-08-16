@@ -167,11 +167,11 @@ void __className__::setHyperparameters(const std::vector<float> &hyperparameters
 {
   // Update evaluation network
   _neuralNetwork->setHyperparameters(hyperparameters);
-}
 
-void __className__::resetOptimizer()
-{
-  // Resetting
+  // Updating optimizer's current value
+  _optimizer->_currentValue = hyperparameters;
+
+  // Resetting Optimizer
   _optimizer->reset();
 }
 

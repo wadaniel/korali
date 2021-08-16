@@ -1,31 +1,31 @@
 #! /usr/bin/env python3
 from subprocess import call
 
-r = call(["python3", "-m", "korali.plotter", "--help"])
+r = call(["python3", "-m", "korali.plot", "--help"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "cmaes", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "cmaes", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "dea", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "dea", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "mocmaes", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "mocmaes", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "lmcmaes", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "lmcmaes", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "tmcmc", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "tmcmc", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.plotter", "--dir", "mcmc", "--test"])
+r = call(["python3", "-m", "korali.plot", "--dir", "mcmc", "--test"])
 if r!=0:
   exit(r)
 

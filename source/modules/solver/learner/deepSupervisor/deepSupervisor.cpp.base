@@ -82,6 +82,10 @@ void __className__::initialize()
   // Setting hyperparameter structures in the neural network and optmizer
   setHyperparameters(_hyperparameters);
 
+  // Resetting Optimizer
+  _optimizer->reset();
+
+  // Setting current loss
   _currentLoss = 0.0f;
 }
 
@@ -162,9 +166,6 @@ void __className__::setHyperparameters(const std::vector<float> &hyperparameters
 
   // Updating optimizer's current value
   _optimizer->_currentValue = hyperparameters;
-
-  // Resetting Optimizer
-  _optimizer->reset();
 }
 
 std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

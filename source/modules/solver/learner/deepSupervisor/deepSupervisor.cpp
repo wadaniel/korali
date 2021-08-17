@@ -88,6 +88,10 @@ void DeepSupervisor::initialize()
   // Setting hyperparameter structures in the neural network and optmizer
   setHyperparameters(_hyperparameters);
 
+  // Resetting Optimizer
+  _optimizer->reset();
+
+  // Setting current loss
   _currentLoss = 0.0f;
 }
 
@@ -168,9 +172,6 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
 
   // Updating optimizer's current value
   _optimizer->_currentValue = hyperparameters;
-
-  // Resetting Optimizer
-  _optimizer->reset();
 }
 
 std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

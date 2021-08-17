@@ -44,6 +44,7 @@ def env(s):
  else:
   s["Termination"] = "Truncated"
 
+ # Generate output file with states and actions
  if output:
 
      data = {

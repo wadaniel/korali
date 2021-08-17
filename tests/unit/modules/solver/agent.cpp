@@ -485,6 +485,16 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Sigma"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = 1.0;
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;

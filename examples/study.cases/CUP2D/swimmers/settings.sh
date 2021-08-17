@@ -16,8 +16,10 @@ PR=${PR:-5}
 LENGTH=${LENGTH:-0.2}
 PERIOD=${PERIOD:-1} # 0.2 for NACA
 XPOSFOLLOWER=${XPOSFOLLOWER:-0.9}
+PID=${PID:-0}
+PIDPOS=${PIDPOS:-0}
 
-# stefanfish Re=1'000 <-> NU=0.00001125
+# L=0.2 stefanfish Re=1'000 <-> NU=0.00004
 NU=${NU:-0.00004}
 
 # Settings for Obstacle
@@ -26,6 +28,7 @@ XPOSLEADER=${XPOSLEADER:-0.6}
 
 if [ "$OBSTACLE" = "halfDisk" ]
 then
+	NAGENTS=1
 	echo "###############################"
 	echo "setting options for halfDisk"
 	# options for halfDisk
@@ -33,13 +36,15 @@ then
 	XVEL=${XVEL:-0.15}
 	RADIUS=${RADIUS:-0.06}
 	# set object string
-	OBJECTS="halfDisk radius=$RADIUS angle=$ANGLE xpos=$XPOSLEADER bForced=1 bFixed=1 xvel=$XVEL tAccel=5
-stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
+halfDisk radius=$RADIUS angle=$ANGLE xpos=$XPOSLEADER bForced=1 bFixed=1 xvel=$XVEL tAccel=5
+"
 	echo $OBJECTS
 	# halfDisk Re=1'000 <-> NU=0.000018
 	# NU=${NU:-0.000018}
 elif [ "$OBSTACLE" = "NACA" ]
 then
+	NAGENTS=1
 	echo "###############################"
 	echo "setting options for NACA"
 	# options for NACA
@@ -48,18 +53,111 @@ then
 	LEADERLENGTH=${LEADERLENGTH:-0.12}
 	VELX=${VELX:-0.15}
 	# set object string
-	OBJECTS="NACA L=$LEADERLENGTH xpos=$XPOSLEADER angle=$ANGLE fixedCenterDist=0.299412 bFixed=1 xvel=$VELX Apitch=13.15 Fpitch=$FPITCH tAccel=5
-stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
+NACA L=$LEADERLENGTH xpos=$XPOSLEADER angle=$ANGLE fixedCenterDist=0.299412 bFixed=1 xvel=$VELX Apitch=13.15 Fpitch=$FPITCH tAccel=5
+"
 	echo $OBJECTS
 	# NACA Re=1'000 <-> NU=0.000018
 	# NU=${NU:-0.000018}
 elif [ "$OBSTACLE" = "stefanfish" ]
 then
+	NAGENTS=1
 	echo "###############################"
 	echo "setting options for stefanfish"
 	# set object string
-	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSLEADER bFixed=1 pid=1
-stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER"
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
+stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSLEADER bFixed=1 pid=1
+"
+	echo $OBJECTS
+elif [ "$OBSTACLE" = "swarm4" ]
+then
+	NAGENTS=4
+	echo "###############################"
+	echo "setting options for swarm4"
+	# set object string
+	### for L=0.2 and extentx=extenty=2, 4 swimmers
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+"
+	echo $OBJECTS
+elif [ "$OBSTACLE" = "swarm9" ]
+then
+	NAGENTS=9
+	echo "###############################"
+	echo "setting options for swarm9"
+	# set object string
+	### for L=0.2 and extentx=extenty=2, 9 swimmers
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+"
+	echo $OBJECTS
+elif [ "$OBSTACLE" = "swarm16" ]
+then
+	NAGENTS=16
+	echo "###############################"
+	echo "setting options for swarm16"
+	# set object string
+	### for L=0.2 and extentx=extenty=2, 16 swimmers
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=0.70 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.30 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+"
+	echo $OBJECTS
+elif [ "$OBSTACLE" = "swarm25" ]
+then
+	NAGENTS=25
+	echo "###############################"
+	echo "setting options for swarm25"
+	# set object string
+	### for L=0.2 and extentx=extenty=2, 25 swimmers
+	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=0.70 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.30 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=0.60 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.40 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.70 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.30 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=0.80 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.20 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.70 ypos=0.90 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=2.70 ypos=1.10 bFixed=1 pidpos=$PIDPOS pid=$PID
+stefanfish L=$LENGTH T=$PERIOD xpos=3.00 ypos=1.00 bFixed=1 pidpos=$PIDPOS pid=$PID
+"
 	echo $OBJECTS
 fi
 

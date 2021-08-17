@@ -44,20 +44,35 @@ void runEnvironment(korali::Sample &s)
   Simulation *_environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  // Obtaining environment objects and agent
-  StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
+  // Obtaining agents
+  std::vector<Shape*> shapes = _environment->getShapes();
+  size_t nAgents = shapes.size();
+  std::cout << "nAgents = " << nAgents << std::endl;
+  if( nAgents == 2 )
+    nAgents -= 1;
+  std::vector<StefanFish *> agents(nAgents);
+  for( size_t i = 0; i<nAgents; i++ )
+    agents[i] = dynamic_cast<StefanFish *>(shapes[i]);
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Reseting environment and setting initial conditions
-  setInitialConditions(agent, s["Mode"] == "Training");
+  // Resetting environment and setting initial conditions
+  for( size_t i = 0; i<nAgents; i++ )
+    setInitialConditions(agents[i], i, s["Mode"] == "Training");
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
   // Setting initial state
-  auto state = agent->state();
-  s["State"] = state;
+  if( nAgents > 1 )
+  {
+    std::vector<std::vector<double>> states(nAgents);
+    for( size_t i = 0; i<nAgents; i++ )
+        states[i] = agents[i]->state();
+    s["State"] = states;
+  }
+  else
+    s["State"] = agents[0]->state();
 
   // Variables for time and step conditions
   double t = 0;        // Current time
@@ -68,33 +83,48 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   size_t maxSteps = 200;
 
-  // Starting main environment loop
+// Starting main environment loop
   bool done = false;
-  while (done == false && curStep < maxSteps)
+  while ( curStep < maxSteps && done == false )
   {
-    // Getting new action
+    // Getting new actions
     s.update();
 
-    // Reading new action
-    std::vector<double> action = s["Action"];
+    // Reading new action(s)
+    auto actions = s["Action"];
 
-    // Write action to file
-    ofstream myfile ("actions.txt", ios::out | ios::app );
-    if (myfile.is_open())
+    // Setting action for each agent
+    for( size_t i = 0; i<nAgents; i++ )
     {
-      myfile << action[0] << " " << action[1] << std::endl;
-      myfile.close();
-    }
-    else{
-      fprintf(stderr, "Unable to open actions.txt file\n");
-      exit(-1);
-    }
+      std::vector<double> action;
+      if( nAgents > 1 )
+        action = actions[i].get<std::vector<double>>();
+      else
+        action = actions.get<std::vector<double>>();
 
-    // Setting action
-    agent->act(t, action);
+      // Write action to file
+      std::stringstream filename;
+      filename<<"actions_"<<i<<".txt";
+      ofstream myfile(filename.str().c_str());
+      if (myfile.is_open())
+      {
+        myfile << action[0] << " " << action[1] << std::endl;
+        myfile.close();
+      }
+      else{
+        fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+        exit(-1);
+      }
+
+      // Apply action
+      agents[i]->act(t, action);
+    }
 
     // Run the simulation until next action is required
-    dtAct = agent->getLearnTPeriod() * 0.5;
+    dtAct = 0.;
+    for( size_t i = 0; i<nAgents; i++ )
+    if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
+      dtAct = agents[i]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
     while ( t < tNextAct && done == false )
     {
@@ -105,32 +135,64 @@ void runEnvironment(korali::Sample &s)
       // Advance simulation
       _environment->advance(dt);
 
-      // Check for terminal state.
-      done = isTerminal(agent);
+      // Check if there was a collision -> termination.
+      done = _environment->sim.bCollision;
+
+      // Check termination because leaving margins
+      for( size_t i = 0; i<nAgents; i++ )
+        done = ( done || isTerminal(agents[i], nAgents) );
     }
 
-    // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
-    double reward = done ? -10.0 : agent->EffPDefBnd;
-
-    // Obtaining new agent state
-    state = agent->state();
-
-    // Storing reward
-    s["Reward"] = reward;
-
-    // Storing new state
-    s["State"] = state;
+    // Get and store state and action
+    if( nAgents > 1 )
+    {
+      std::vector<std::vector<double>> states(nAgents);
+      std::vector<double> rewards(nAgents);
+      for( size_t i = 0; i<nAgents; i++ )
+      {
+        states[i]  = agents[i]->state();
+        rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
+      }
+      s["State"]  = states;
+      s["Reward"] = rewards;
+    }
+    else{
+      s["State"]  = agents[0]->state();
+      s["Reward"] = done ? -10.0 : agents[0]->EffPDefBnd;
+    }
 
     // Printing Information:
     printf("[Korali] -------------------------------------------------------\n");
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    printf("[Korali] State: [ %.3f", state[0]);
-    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
-    printf("]\n");
-    printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
-    printf("[Korali] Reward: %.3f\n", reward);
-    printf("[Korali] Terminal?: %d\n", done);
-    printf("[Korali] -------------------------------------------------------\n");
+    if( nAgents > 1 )
+    {
+      for( size_t i = 0; i<nAgents; i++ )
+      {
+        auto state  = s["State"][i].get<std::vector<float>>();
+        auto action = s["Action"][i].get<std::vector<float>>();
+        auto reward = s["Reward"][i].get<float>();
+        printf("[Korali] AGENT %ld/%ld\n", i, nAgents);
+        printf("[Korali] State: [ %.3f", state[0]);
+        for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+        printf("]\n");
+        printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+        printf("[Korali] Reward: %.3f\n", reward);
+        printf("[Korali] Terminal?: %d\n", done);
+        printf("[Korali] -------------------------------------------------------\n");
+      }
+    }
+    else{
+      auto state  = s["State"].get<std::vector<float>>();
+      auto action = s["Action"].get<std::vector<float>>();
+      auto reward = s["Reward"].get<float>();
+      printf("[Korali] State: [ %.3f", state[0]);
+      for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+      printf("]\n");
+      printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+      printf("[Korali] Reward: %.3f\n", reward);
+      printf("[Korali] Terminal?: %d\n", done);
+      printf("[Korali] -------------------------------------------------------\n");
+    }
     fflush(stdout);
 
     // Advancing to next step
@@ -156,7 +218,7 @@ void runEnvironment(korali::Sample &s)
   fclose(logFile);
 }
 
-void setInitialConditions(StefanFish *agent, const bool isTraining)
+void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
@@ -165,8 +227,8 @@ void setInitialConditions(StefanFish *agent, const bool isTraining)
   // with noise
   if (isTraining)
   {
-    std::uniform_real_distribution<double> disA(-10. / 180. * M_PI, 10. / 180. * M_PI);
-    std::uniform_real_distribution<double> disX(-0.1, 0.1);
+    std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
+    std::uniform_real_distribution<double> disX(-0.025, 0.025);
     std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
     initialAngle = disA(_randomGenerator);
@@ -174,20 +236,22 @@ void setInitialConditions(StefanFish *agent, const bool isTraining)
     initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
   }
 
-  printf("[Korali] Initial Condition:\n");
+  printf("[Korali] Initial Condition Agent %ld:\n", agentId);
   printf("[Korali] angle: %f\n", initialAngle);
   printf("[Korali] x: %f\n", initialPosition[0]);
   printf("[Korali] y: %f\n", initialPosition[1]);
 
   // Write initial condition to file
-  ofstream myfile ("initialCondition.txt");
+  std::stringstream filename;
+  filename<<"initialCondition_"<<agentId<<".txt";
+  ofstream myfile(filename.str().c_str());
   if (myfile.is_open())
   {
     myfile << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
     myfile.close();
   }
   else{
-    fprintf(stderr, "Unable to open initialCondition.txt file\n");
+    fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
     exit(-1);
   }
 
@@ -196,16 +260,50 @@ void setInitialConditions(StefanFish *agent, const bool isTraining)
   agent->setOrientation(initialAngle);
 }
 
-bool isTerminal(StefanFish *agent)
+bool isTerminal(StefanFish *agent, size_t nAgents)
 {
+  double xMin, xMax, yMin, yMax;
+  if( nAgents == 1 ){
+    xMin = 0.8;
+    xMax = 1.4;
+    yMin = 0.8;
+    yMax = 1.2;
+  }
+  else if( nAgents == 4 ){
+    xMin = 0.4;
+    xMax = 1.4;
+    yMin = 0.7;
+    yMax = 1.3;
+  }
+  else if( nAgents == 9 ){
+    xMin = 0.4;
+    xMax = 2.0;
+    yMin = 0.6;
+    yMax = 1.4;
+  }
+  else if( nAgents == 16 )
+  {
+    xMin = 0.4;
+    xMax = 2.6;
+    yMin = 0.5;
+    yMax = 1.5;
+  }
+  else if( nAgents == 25 )
+  {
+    xMin = 0.4;
+    xMax = 3.2;
+    yMin = 0.4;
+    yMax = 1.6;
+  }
+
   const double X = agent->center[0];
   const double Y = agent->center[1];
 
   bool terminal = false;
-  if (X < 0.8) terminal = true;
-  if (X > 1.4) terminal = true;
-  if (Y < 0.8) terminal = true;
-  if (Y > 1.2) terminal = true;
+  if (X < xMin) terminal = true;
+  if (X > xMax) terminal = true;
+  if (Y < yMin) terminal = true;
+  if (Y > yMax) terminal = true;
 
   return terminal;
 }

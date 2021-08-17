@@ -24,7 +24,6 @@ def env(s):
   
   # Performing the action
   done = lander.advance(s["Action"])
-  #print(s["Action"]) 
   
   # Getting Reward
   reward = lander.getReward()
@@ -36,10 +35,6 @@ def env(s):
   
   # Advancing step counter
   step = step + 1
-
- #print(str(lander.getState()), end="")
- #print(" Step: " + str(step), end="")
- #print(" Reward: " + str(cumulativeReward))
 
  # Setting finalization status
  if (lander.isOver()):

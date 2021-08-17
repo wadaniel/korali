@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
+  // retreiving number of agents
+  int nAgents = atoi(argv[argc-1]);
+
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
@@ -39,11 +42,12 @@ int main(int argc, char *argv[])
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
+  e["Problem"]["Agents Per Environment"] = nAgents;
   e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  // Setting results path an dumping frequency in CUP
+  // Setting results path and dumping frequency in CUP
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
@@ -128,8 +132,10 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
+  // Configuring conduit / communicator
   k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
+  // ..and run
   k.run(e);
 }

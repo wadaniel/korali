@@ -24,4 +24,4 @@ source settings.sh
 
 set -ux
 
-$mpiflags ./eval-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}"
+$mpiflags ./eval-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS

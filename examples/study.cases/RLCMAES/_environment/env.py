@@ -15,9 +15,9 @@ def env(s, populationSize):
  #outfile = s["Custom Settings"]["Output"]
  #print(outfile)
  if s["Custom Settings"]["Evaluation"] == "True":
-    objective.reset(noisy=False)
+    objective.reset(noise=0.0)
  else:
-    objective.reset(noisy=True)
+    objective.reset(noise=1.0)
 
  s["State"] = objective.getState().tolist()
  step = 0

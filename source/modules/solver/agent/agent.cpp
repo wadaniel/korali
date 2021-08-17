@@ -1040,7 +1040,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
-    if (isinf(_problem->_trainingRewardThreshold) == false)
+    if (isinf(_problem->_trainingRewardThreshold) == false || _problem->_testingFrequency > 0)
     {
       _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 

@@ -11,8 +11,9 @@ e = korali.Experiment()
 
 
 evaluation = False
-resultDirectory = "_vracer_rosenbrock_new"
+resultDirectory = "_vracer_rosenbrock_1"
 maxGens = 1e6
+maxExperiences = 1e6
 populationSize = 16
 mu = int(populationSize/2) # states
 
@@ -79,14 +80,14 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1024
+e["Solver"]["Experience Replay"]["Start Size"] = 8192
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 128
 
-e["Solver"]["State Rescaling"]["Enabled"] = False
+e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 
@@ -110,7 +111,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
 
 
 if evaluation == True:
@@ -124,8 +125,9 @@ if len(sys.argv) == 2:
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 1000
 e["File Output"]["Path"] = resultDirectory
+e["Console Output"]["Verbosity"] = "Detailed"
 
 ### Running Experiment
 

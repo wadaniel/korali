@@ -28,7 +28,7 @@ class ObjectiveFactory:
     # Init variables
     self.reset()
 
-  def reset(self, noisy=True):
+  def reset(self, noise=1.0):
 
     # Initialize variable params
     self.scale = self.cs
@@ -52,13 +52,13 @@ class ObjectiveFactory:
     self.step = 0
 
     # Initialize optimziation target
-    u = 0.0
+    #u = 0.0
+    u = np.random.uniform(0.,1./5) + 2./5 # Rosenrbock
     self.a = 0.
     self.b = 0.
-    if noisy:
-        self.a += np.random.uniform(-10., 10.)
-        self.b += np.random.uniform(-10., 10.)
-        u = np.random.uniform(0.,1./5) + 2./5
+    self.noise = noise
+    self.a += self.noise*np.random.uniform(-1., 1.)
+    self.b += self.noise*np.random.uniform(-1., 1.)
 
     # Choose function to optimize
     if u < 1./5:
@@ -177,6 +177,7 @@ class ObjectiveFactory:
   def getReward(self):
     #r = (self.prevEf - self.curEf)/self.initialEf
     #r = (self.prevEf - self.curEf)/self.prevEf
+    #r = +np.log(self.prevEf)-np.log(self.curEf)
     r = -np.log(self.curEf)
     assert np.isfinite(r), "Return not finite {}".format(r)
 

@@ -206,12 +206,11 @@ void Experiment::finalize()
 {
   for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
   _variables.clear();
-  delete _logger;
-}
-
-Experiment::~Experiment()
-{
+  for (size_t i = 0; i < _distributions.size(); i++) delete _distributions[i];
+  _distributions.clear();
   if (_isInitialized == true) co_delete(_thread);
+  delete _logger;
+  delete _problem;
 }
 
 std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)

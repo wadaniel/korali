@@ -75,26 +75,18 @@ void DeepSupervisor::initialize()
   // If the hyperparameters have not been specified, produce new initial ones
   if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
 
-  // Creating and setting hyperparameter structures
-  _neuralNetwork->setHyperparameters(_hyperparameters);
-
   /*****************************************************************
   * Setting up weight and bias optimization experiment
   *****************************************************************/
 
-  auto weightAndBiasParameters = _neuralNetwork->getHyperparameters();
+  if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(_hyperparameters.size());
+  if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(_hyperparameters.size());
+  if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(_hyperparameters.size());
+  if (_neuralNetworkOptimizer == "RMSProp") _optimizer = new korali::fRMSProp(_hyperparameters.size());
+  if (_neuralNetworkOptimizer == "Adagrad") _optimizer = new korali::fAdagrad(_hyperparameters.size());
 
-  if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(weightAndBiasParameters.size());
-  if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(weightAndBiasParameters.size());
-  if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(weightAndBiasParameters.size());
-  if (_neuralNetworkOptimizer == "RMSProp") _optimizer = new korali::fRMSProp(weightAndBiasParameters.size());
-  if (_neuralNetworkOptimizer == "Adagrad") _optimizer = new korali::fAdagrad(weightAndBiasParameters.size());
-
-  // Setting initial guesses as the current weight and bias parameters
-  _optimizer->_initialValues = weightAndBiasParameters;
-
-  // Resetting solver before using it
-  _optimizer->reset();
+  // Setting hyperparameter structures in the neural network and optmizer
+  setHyperparameters(_hyperparameters);
 
   _currentLoss = 0.0f;
 }

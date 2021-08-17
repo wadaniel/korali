@@ -52,8 +52,11 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
+  size_t numStates = 16;
+  if( nAgents > 1 )
+    numStates++;
   size_t curVariable = 0;
-  for (; curVariable < 16; curVariable++)
+  for (; curVariable < numStates; curVariable++)
   {
     e["Variables"][curVariable]["Name"] = std::string("State") + std::to_string(curVariable);
     e["Variables"][curVariable]["Type"] = "State";

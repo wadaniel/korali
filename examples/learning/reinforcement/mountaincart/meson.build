@@ -1,6 +1,6 @@
 e = find_program('run-vracer.py', required: true)
 test('learning.reinforcement.mountaincart.squashednormal', e,
-e     args: [ '--distribution', 'Squashed Normal', '--maxExperiences', '10000'],
+      args: [ '--distribution', 'Squashed Normal', '--maxExperiences', '10000'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

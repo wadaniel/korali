@@ -87,8 +87,8 @@ void NeuralNetwork::initialize()
       for (size_t i = 0; i < layerCount; i++)
       {
         layerPipeline_t *p = &_pipelines[curThread][batchSizeIdx];
-        p->_layerVector[i]->_prevLayer = i > 0 ? p->_layerVector[i - 1] : NULL;
-        p->_layerVector[i]->_nextLayer = i < layerCount - 1 ? p->_layerVector[i + 1] : NULL;
+        p->_layerVector[i]->_prevLayer = i > 0 ? p->_layerVector[i - 1] : nullptr;
+        p->_layerVector[i]->_nextLayer = i < layerCount - 1 ? p->_layerVector[i + 1] : nullptr;
         p->_layerVector[i]->_index = i;
         p->_layerVector[i]->_nn = this;
         p->_layerVector[i]->_batchSize = _batchSizes[batchSizeIdx];

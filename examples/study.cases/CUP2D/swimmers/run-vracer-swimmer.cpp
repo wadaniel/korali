@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_model/fishEnvironment.hpp"
+#include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;

@@ -1,5 +1,5 @@
 e = find_program('run-vracer.py', required: true)
-test('learning.reinforcement.mountaincart.normal', e,
+test('learning.reinforcement.mountaincart.squashednormal', e,
 e     args: [ '--distribution', 'Squashed Normal', '--maxExperiences', '10000'],
       timeout : 3600,
       suite: 'regression',
@@ -8,7 +8,7 @@ e     args: [ '--distribution', 'Squashed Normal', '--maxExperiences', '10000'],
       env: nomalloc
     )
 
-test('learning.reinforcement.mountaincart.normal', e,
+test('learning.reinforcement.mountaincart.clippednormal', e,
       args: [ '--distribution', 'Clipped Normal', '--maxExperiences', '10000'],
       timeout : 3600,
       suite: 'regression',
@@ -17,7 +17,7 @@ test('learning.reinforcement.mountaincart.normal', e,
       env: nomalloc
     )
 
-test('learning.reinforcement.mountaincart.normal', e,
+test('learning.reinforcement.mountaincart.truncatednormal', e,
       args: [ '--distribution', 'Truncated Normal', '--maxExperiences', '10000'],
       timeout : 3600,
       suite: 'regression',

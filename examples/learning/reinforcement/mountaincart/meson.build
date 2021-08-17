@@ -1,6 +1,6 @@
 e = find_program('run-vracer.py', required: true)
 test('learning.reinforcement.mountaincart.normal', e,
-      args: [ '--distribution', 'Squashed Normal'],
+      args: [ '--distribution', 'Squashed Normal', '--maxExperiences', 1e4],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -9,7 +9,7 @@ test('learning.reinforcement.mountaincart.normal', e,
     )
 
 test('learning.reinforcement.mountaincart.normal', e,
-      args: [ '--distribution', 'Clipped Normal'],
+      args: [ '--distribution', 'Clipped Normal', '--maxExperiences', 1e4],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -18,7 +18,7 @@ test('learning.reinforcement.mountaincart.normal', e,
     )
 
 test('learning.reinforcement.mountaincart.normal', e,
-      args: [ '--distribution', 'Truncated Normal'],
+      args: [ '--distribution', 'Truncated Normal', '--maxExperiences', 1e4],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

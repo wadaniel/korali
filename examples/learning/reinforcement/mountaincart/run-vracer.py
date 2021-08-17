@@ -9,8 +9,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--distribution',
     help='Policy Distribution',
+    type=str,
     default='Normal',
     required=False)
+parser.add_argument(
+    '--maxExperiences',
+    help='Number of experiences to collect.',
+    type=int,
+    default=1e6,
+    required=False)
+
 
 print("Running Mountaincart example with arguments:")
 args = parser.parse_args()
@@ -61,7 +69,7 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 
-e["Solver"]["Experience Replay"]["Start Size"] = 131072
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
@@ -94,7 +102,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = args.maxExperiences
 
 ### Setting file output configuration
 

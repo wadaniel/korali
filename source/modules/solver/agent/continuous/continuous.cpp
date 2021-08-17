@@ -862,7 +862,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       }
 
       float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[i] - curMu);
-      
+
       // KL-Gradient with respect to Mu
       KLDivergenceGradients[i] = -dCqMu - muDif * curInvVar + Cps;
 

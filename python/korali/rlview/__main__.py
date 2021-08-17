@@ -37,7 +37,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  ## Reading the individual results
 
  unpackedResults = []
- for resultId, r in enumerate(results):
+ for r in results:
   
   if (len(r) == 0): continue  
   
@@ -121,7 +121,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resultId]) 
+  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
 
   # Plotting confidence intervals
   if showCI > 0.:

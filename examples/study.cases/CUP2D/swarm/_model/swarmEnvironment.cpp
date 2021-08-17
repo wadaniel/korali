@@ -22,7 +22,7 @@ void runEnvironment(korali::Sample &s)
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
-    fprintf(stderr, "[Korali] Error creating results directory for environment\n");
+    fprintf(stderr, "[Korali] Error creating results directory for environment: %s.\n", resDir);
     exit(-1);
   };
 

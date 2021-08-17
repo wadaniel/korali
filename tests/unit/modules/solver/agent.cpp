@@ -478,16 +478,6 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Mean"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Mean"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Sigma"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -495,15 +485,15 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Sigma"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
+ 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Count"] = "Not a Number";
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Count"] = 1;
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -935,21 +925,6 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Enabled"] = false;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"].erase("Frequency");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Frequency"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Frequency"] = 2;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;

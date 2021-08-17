@@ -24,7 +24,7 @@ e["Problem"]["Sub Experiment Model"] = lambda d: logistic(x, d)
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Termination Criteria"]["Max Generations"] = 30
-e["Solver"]["Default Burn In"] = 1
+e["Solver"]["Burn In"] = 1
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 
 e["Random Seed"] = 0xC0FFEE

@@ -2,8 +2,6 @@
 #include "_model/swarmEnvironment.hpp"
 #include "korali.hpp"
 
-std::string _resultsPath;
-
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
@@ -15,7 +13,7 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // Storing parameters
+  // Storing command-line arguments
   _argc = argc;
   _argv = argv;
 
@@ -38,6 +36,7 @@ int main(int argc, char *argv[])
     printf("[Korali] Continuing execution from previous run...\n");
     e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
   }
+
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = NAGENTS;
@@ -45,15 +44,15 @@ int main(int argc, char *argv[])
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
-   // Setting results path an dumping frequency in CUP
+  // Setting results path and dumping frequency in CUP
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
-  // Setting up the 16 state variables
+  // Setting up the state variables
   size_t curVariable = 0;
   for (; curVariable < 16; curVariable++)
   {
-    e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
+    e["Variables"][curVariable]["Name"] = std::string("State") + std::to_string(curVariable);
     e["Variables"][curVariable]["Type"] = "State";
   }
 
@@ -114,7 +113,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6;
 
   ////// Setting Korali output configuration
   e["Console Output"]["Verbosity"] = "Detailed";
@@ -130,6 +129,7 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
+  // Configuring conduit / communicator
   k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 

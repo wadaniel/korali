@@ -87,14 +87,13 @@ e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 128
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
-e["Solver"]["Policy"]["Distribution"] = "Normal"
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128

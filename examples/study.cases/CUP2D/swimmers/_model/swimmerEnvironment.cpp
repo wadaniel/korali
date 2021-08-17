@@ -68,7 +68,11 @@ void runEnvironment(korali::Sample &s)
   {
     std::vector<std::vector<double>> states(nAgents);
     for( size_t i = 0; i<nAgents; i++ )
-        states[i] = agents[i]->state();
+    {
+      std::vector<double> state = agents[i]->state();
+      state.push_back(i);
+      states[i]  = state;
+    }
     s["State"] = states;
   }
   else
@@ -150,7 +154,9 @@ void runEnvironment(korali::Sample &s)
       std::vector<double> rewards(nAgents);
       for( size_t i = 0; i<nAgents; i++ )
       {
-        states[i]  = agents[i]->state();
+        std::vector<double> state = agents[i]->state();
+        state.push_back(i);
+        states[i]  = state;
         rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
       s["State"]  = states;

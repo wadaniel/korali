@@ -4,7 +4,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 bool Optimizer::isSampleFeasible(const std::vector<double> &sample)
 {
@@ -205,7 +205,8 @@ bool Optimizer::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //solver
 } //korali
+;

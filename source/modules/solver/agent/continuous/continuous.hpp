@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Continuous.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_
-#define _KORALI_SOLVER_AGENT_CONTINUOUS_
-
+#pragma once
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -25,7 +22,7 @@ namespace solver
 {
 namespace agent
 {
-
+;
 
 /**
 * @brief Class declaration for module: Continuous.
@@ -34,19 +31,19 @@ class Continuous : public Agent
 {
   public: 
   /**
-  * @brief Specifies which probability distribution to use to generate the actions of the agent.
+  * @brief Specifies which probability distribution to use for the policy.
   */
    std::string _policyDistribution;
   /**
-  * @brief [Internal Use] Gaussian random number generator for the agent's action.
+  * @brief [Internal Use] Gaussian random number generator to generate the agent's action.
   */
    korali::distribution::univariate::Normal* _normalGenerator;
   /**
-  * @brief [Internal Use] Shift required for bounded actions.
+  * @brief [Internal Use] Shifts required for bounded actions.
   */
    std::vector<float> _actionShifts;
   /**
-  * @brief [Internal Use] Scales required for bounded actions.
+  * @brief [Internal Use] Scales required for bounded actions (half the action domain width).
   */
    std::vector<float> _actionScales;
   /**
@@ -99,7 +96,7 @@ class Continuous : public Agent
   problem::reinforcementLearning::Continuous *_problem;
 
   /**
-   * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.
+   * @brief Calculates the gradient of teh importance weight  wrt to the parameter of the 2nd (current) distribution evaluated at old action.
    * @param action The action taken by the agent in the given experience
    * @param oldPolicy The policy for the given state used at the time the action was performed
    * @param curPolicy The current policy for the given state
@@ -120,7 +117,7 @@ class Continuous : public Agent
   * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTrainingAction(const policy_t &curPolicy);
+  std::vector<float> generateTrainingAction(policy_t &curPolicy);
 
   /**
   * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
@@ -131,13 +128,10 @@ class Continuous : public Agent
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent();
+  virtual void initializeAgent() override;
 };
 
 } //agent
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_CONTINUOUS_
-
+;

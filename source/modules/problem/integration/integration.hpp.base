@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   void initialize() override;
@@ -15,6 +15,4 @@ class @className : public @parentClassName
   void execute(korali::Sample &sample);
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

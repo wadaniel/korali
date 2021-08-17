@@ -1,8 +1,8 @@
 #include "modules/distribution/multivariate/multivariate.hpp"
 #include "modules/experiment/experiment.hpp"
 
-@startNamespace
+__startNamespace__;
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

@@ -1,13 +1,13 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -20,7 +20,7 @@ class @className : public @parentClassName
   * @param sampleIdx Index of the sample to evaluate
   * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
+  void sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.
@@ -139,6 +139,4 @@ class @className : public @parentClassName
   void finalize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

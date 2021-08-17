@@ -2,8 +2,7 @@
 * @brief Contains the koraliJson class, which supports JSON objects within Korali classes
 ******************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_KORALIJSON_HPP_
-#define _KORALI_AUXILIARS_KORALIJSON_HPP_
+#pragma once
 
 #include "auxiliar/jsonInterface.hpp"
 #include <pybind11/functional.h>
@@ -58,18 +57,6 @@ class KoraliJson
   void setJson(knlohmann::json &js);
 
   /**
-  * @brief Function to obtain a serialized string of the JSON object.
-  * @return A serialized string of the JSON object.
-  */
-  std::string get();
-
-  /**
-  * @brief Function to replace the JSON object by deserializing a JSON string
-  * @param js The input serialized JSON object.
- */
-  void set(const std::string &js);
-
-  /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @return A pybind11 object
@@ -112,4 +99,3 @@ class KoraliJson
 };
 
 } // namespace korali
-#endif // _KORALI_AUXILIARS_KORALIJSON_HPP_

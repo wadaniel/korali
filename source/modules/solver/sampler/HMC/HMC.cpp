@@ -20,7 +20,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void HMC::setInitialConfiguration()
 {
@@ -88,13 +88,7 @@ void HMC::setInitialConfiguration()
 
   // Initializing variable defaults
   for (size_t i = 0; i < _variableCount; i++)
-  {
-    if (std::isfinite(_k->_variables[i]->_initialMean) == false)
-      KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
-    if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
-      KORALI_LOG_ERROR("Initial Standard Deviation of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
     _positionLeader[i] = _k->_variables[i]->_initialMean;
-  }
 
   // Initializing metric and inverseMetric for diagonal and dense
   if (_useDiagonalMetric == true || _metricType == Metric::Static)
@@ -297,17 +291,11 @@ void HMC::runGenerationNUTS(const double logUniSample)
     numLeavesSubtree = helper->numLeavesOut;
 
     if (buildCriterionSubtree == true)
-    {
-      if (numValidLeaves == 0)
-      {
-        _k->_logger->logWarning("Normal", "Division by zero encountered in NUTS (numValidLeaves is %lf), candidate rejected.\n", numValidLeaves);
-      }
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
         _leaderEvaluation = -_hamiltonian->U();
       }
-    }
 
     numValidLeaves += numValidLeavesSubtree;
 
@@ -392,17 +380,11 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
     numLeavesSubtree = helper->numLeavesOut;
 
     if (buildCriterionSubtree == true)
-    {
-      if (numValidLeaves == 0)
-      {
-        _k->_logger->logWarning("Normal", "Division by zero encountered in NUTS (numValidLeaves is %lf), candidate rejected.\n", numValidLeaves);
-      }
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
         _leaderEvaluation = -_hamiltonian->U();
       }
-    }
 
     numValidLeaves += numValidLeavesSubtree;
 
@@ -483,9 +465,7 @@ void HMC::updateStepSize()
 
   // Apply Step Size Jitter after burn in period
   else if (_stepSizeJitter > 0.)
-  {
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
-  }
 
   if (_useNUTS == false && _useAdaptiveStepSize == true)
   {
@@ -1318,9 +1298,9 @@ bool HMC::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: MOCMAES.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-#define _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -26,7 +23,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: MOCMAES.
@@ -39,7 +36,7 @@ class MOCMAES : public Optimizer
   */
    size_t _populationSize;
   /**
-  * @brief Number of best samples advancing to the next generation (by default it is half the Sample Count).
+  * @brief Number of best samples (offspring) advancing to the next generation (by default it is half the Sample Count).
   */
    size_t _muValue;
   /**
@@ -87,7 +84,7 @@ class MOCMAES : public Optimizer
   */
    std::vector<std::vector<double>> _previousValues;
   /**
-  * @brief [Internal Use] Tracking index of parent.
+  * @brief [Internal Use] Tracking index of parent samples.
   */
    std::vector<size_t> _parentIndex;
   /**
@@ -307,7 +304,4 @@ class MOCMAES : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_MOCMAES_
-
+;

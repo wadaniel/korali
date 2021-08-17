@@ -6,7 +6,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 void Integrator::setInitialConfiguration()
 {
@@ -46,23 +46,16 @@ void Integrator::runGeneration()
     rest = _modelEvaluationCount;
     for (int d = _variableCount - 1; d >= 0; d--)
     {
-      if (_k->_variables[0]->_samplePoints.size() > 0)
-      { //quadrature
-        // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_index[2]*_sample[1].size() + .....
-        if (d == 0)
-          index = rest % _indicesHelper[d];
-        else
-          index = rest / _indicesHelper[d];
-        rest -= index * _indicesHelper[d];
-
-        sampleData[d] = _k->_variables[d]->_samplePoints[index];
-        usedIndices[i][d] = index;
-      }
+      //quadrature
+      // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_index[2]*_sample[1].size() + .....
+      if (d == 0)
+        index = rest % _indicesHelper[d];
       else
-      { //monte carlo
-        sampleData[d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
-        usedIndices[i][d] = 0;
-      }
+        index = rest / _indicesHelper[d];
+      rest -= index * _indicesHelper[d];
+
+      sampleData[d] = _k->_variables[d]->_samplePoints[index];
+      usedIndices[i][d] = index;
     }
 
     _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount + 1, _sampleCount);
@@ -175,7 +168,8 @@ void Integrator::applyVariableDefaults()
  Solver::applyVariableDefaults();
 } 
 
-
+;
 
 } //solver
 } //korali
+;

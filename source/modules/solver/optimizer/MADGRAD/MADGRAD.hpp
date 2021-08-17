@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: MADGRAD.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-#define _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -23,7 +20,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: MADGRAD.
@@ -32,15 +29,15 @@ class MADGRAD : public Optimizer
 {
   public: 
   /**
-  * @brief Learning Rate
+  * @brief Learning Rate (Step Size)
   */
    double _eta;
   /**
-  * @brief Constant for exponential moving avaerage of value update.
+  * @brief Smoothing factor for variable update.
   */
    double _weightDecay;
   /**
-  * @brief Term for numerical stability
+  * @brief Term to facilitate numerical stability
   */
    double _epsilon;
   /**
@@ -128,7 +125,4 @@ class MADGRAD : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_MADGRAD_
-
+;

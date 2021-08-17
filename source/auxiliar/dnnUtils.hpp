@@ -19,8 +19,7 @@
 * with user code.
 *******************************************************************************/
 
-#ifndef ONEDNN_UTILS_HPP
-#define ONEDNN_UTILS_HPP
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -195,19 +194,6 @@ inline void read_from_dnnl_memory(void *handle, dnnl::memory &mem)
     for (size_t i = 0; i < bytes; ++i)
       ((uint8_t *)handle)[i] = src[i];
   }
-#if DNNL_GPU_RUNTIME == DNNL_RUNTIME_OCL
-  else if (eng.get_kind() == dnnl::engine::kind::gpu)
-  {
-    dnnl::stream s(eng);
-    cl_command_queue q = s.get_ocl_command_queue();
-    cl_mem m = mem.get_ocl_mem_object();
-
-    cl_int ret = clEnqueueReadBuffer(
-      q, m, CL_TRUE, 0, bytes, handle, 0, NULL, NULL);
-    if (ret != CL_SUCCESS)
-      throw std::runtime_error("clEnqueueReadBuffer failed.");
-  }
-#endif
 }
 
 // Read from handle, write to memory
@@ -222,22 +208,7 @@ inline void write_to_dnnl_memory(void *handle, dnnl::memory &mem)
     for (size_t i = 0; i < bytes; ++i)
       dst[i] = ((uint8_t *)handle)[i];
   }
-#if DNNL_GPU_RUNTIME == DNNL_RUNTIME_OCL
-  else if (eng.get_kind() == dnnl::engine::kind::gpu)
-  {
-    dnnl::stream s(eng);
-    cl_command_queue q = s.get_ocl_command_queue();
-    cl_mem m = mem.get_ocl_mem_object();
-    size_t bytes = mem.get_desc().get_size();
-
-    cl_int ret = clEnqueueWriteBuffer(
-      q, m, CL_TRUE, 0, bytes, handle, 0, NULL, NULL);
-    if (ret != CL_SUCCESS)
-      throw std::runtime_error("clEnqueueWriteBuffer failed.");
-  }
-#endif
 }
 
 } // namespace dnnl
 
-#endif

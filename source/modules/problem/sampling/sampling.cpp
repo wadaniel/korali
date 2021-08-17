@@ -5,7 +5,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 void Sampling::initialize()
 {
@@ -18,12 +18,11 @@ void Sampling::evaluate(Sample &sample)
 
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
-  if (std::isnan(evaluation))
-    sample["logP(x)"] = -Inf;
-  else
-    sample["logP(x)"] = evaluation;
+  if (std::isfinite(evaluation) == false)
+    KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
 
-  sample["F(x)"] = sample["logP(x)"];
+  sample["logP(x)"] = evaluation;
+  sample["F(x)"] = evaluation;
 }
 
 void Sampling::evaluateGradient(korali::Sample &sample)
@@ -132,8 +131,8 @@ bool Sampling::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
-
+;
 
 } //problem
 } //korali
-
+;

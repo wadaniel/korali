@@ -129,7 +129,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param inverseMetric Inverse of current metric. 
   * @return Error code of Cholesky decomposition.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double> &metric, std::vector<double> &inverseMetric)
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double> &metric, std::vector<double> &inverseMetric) override
   {
     double mean, cov, sum;
     double sumOfSquares;

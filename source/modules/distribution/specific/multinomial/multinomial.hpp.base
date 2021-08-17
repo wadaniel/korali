@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/specific/specific.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -16,6 +16,4 @@ class @className : public @parentClassName
   void getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N);
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

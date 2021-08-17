@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Integrator.
 */
 
-
-#ifndef _KORALI_SOLVER_INTEGRATOR_
-#define _KORALI_SOLVER_INTEGRATOR_
-
+#pragma once
 
 #include "modules/solver/solver.hpp"
 
@@ -21,7 +18,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 /**
 * @brief Class declaration for module: Integrator.
@@ -77,7 +74,4 @@ class Integrator : public Solver
 
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_INTEGRATOR_
-
+;

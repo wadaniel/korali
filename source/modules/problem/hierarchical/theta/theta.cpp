@@ -8,7 +8,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 void Theta::initialize()
 {
@@ -25,15 +25,6 @@ void Theta::initialize()
 
   if (_thetaExperiment["Is Finished"] == false)
     KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta) requires that the theta problem has run completely, but this one has not.\n");
-
-  // Psi-problem correctness checks
-  std::string psiProblemType = _psiExperiment["Problem"]["Type"];
-  if (iCompare(psiProblemType, "Hierarchical/Psi") == false)
-    KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
-
-  // Cross-checks
-  if (_psiExperiment["Problem"]["Conditional Priors"].size() != _thetaExperiment["Variables"].size())
-    KORALI_LOG_ERROR("Sub-problem contains a different number of variables (%lu) than conditional priors in the Bayesian/Hierarchical/Psi problem (%lu).\n", _thetaExperiment["Variables"].size(), _psiExperiment["Problem"]["Conditional Priors"].size());
 
   // Now inheriting Sub problem's variables
   _k->_distributions = _thetaExperimentObject._distributions;
@@ -125,18 +116,16 @@ void Theta::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Theta Experiment"))
  {
- try { _thetaExperiment = js["Theta Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ theta ] \n + Key:    ['Theta Experiment']\n%s", e.what()); } 
+ _thetaExperiment = js["Theta Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Theta Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Theta Experiment'] required by theta.\n"); 
 
  if (isDefined(js, "Psi Experiment"))
  {
- try { _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ theta ] \n + Key:    ['Psi Experiment']\n%s", e.what()); } 
+ _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Psi Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Psi Experiment'] required by theta.\n"); 
@@ -168,8 +157,9 @@ void Theta::applyVariableDefaults()
  Hierarchical::applyVariableDefaults();
 } 
 
-
+;
 
 } //hierarchical
 } //problem
 } //korali
+;

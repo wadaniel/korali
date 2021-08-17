@@ -17,7 +17,7 @@ namespace korali
 {
 namespace neuralNetwork
 {
-
+;
 
 void Layer::createForwardPipeline()
 {
@@ -73,7 +73,7 @@ std::vector<std::vector<float>> Layer::getOutput()
 
   std::vector<float> outputVals(N * OC);
 
-// Copying previous layer's output to this layer's output
+  // Copying previous layer's output to this layer's output
   if (_nn->_engine == "Korali")
   {
     memcpy(outputVals.data(), _outputValues, N * OC * sizeof(float));
@@ -153,6 +153,12 @@ void Layer::createHyperparameterMemory()
   _hyperparameterCount = 0;
 }
 
+void Layer::backwardHyperparameters(const size_t t)
+{
+  if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
+};
+
 void Layer::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
@@ -205,8 +211,8 @@ void Layer::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
-
+;
 
 } //neuralNetwork
 } //korali
-
+;

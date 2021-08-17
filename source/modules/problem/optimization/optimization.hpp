@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Optimization.
 */
 
-
-#ifndef _KORALI_PROBLEM_OPTIMIZATION_
-#define _KORALI_PROBLEM_OPTIMIZATION_
-
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -21,7 +18,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: Optimization.
@@ -105,6 +102,4 @@ class Optimization : public Problem
 
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_OPTIMIZATION_
+;

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: dVRACER.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-#define _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
@@ -27,7 +24,7 @@ namespace agent
 {
 namespace discrete
 {
-
+;
 
 /**
 * @brief Class declaration for module: dVRACER.
@@ -36,7 +33,7 @@ class dVRACER : public Discrete
 {
   public: 
   /**
-  * @brief [Internal Use] Standard deviation of actions in minibatch.
+  * @brief [Internal Use] Standard deviation of the actions in the minibatch.
   */
    std::vector<float> _statisticsAverageActionSigmas;
   
@@ -108,7 +105,4 @@ class dVRACER : public Discrete
 } //agent
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
-
+;

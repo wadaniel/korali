@@ -105,10 +105,6 @@ class fCMAES
 */
   int _isDiagonal;
   /**
-  * @brief Flag that gives notice of any possible numerical/functional errors during runtime
-  */
-  bool _isFailFlag;
-  /**
 * @brief [Internal Use] Objective function values.
 */
   std::vector<float> _valueVector;
@@ -279,7 +275,7 @@ class fCMAES
 */
   int _isEigensystemUpdated;
   /**
-* @brief [Internal Use] This is the $eta$ factor that indicates how fast the covariance matrix is adapted.
+* @brief [Internal Use] This is the beta factor that indicates how fast the covariance matrix is adapted.
 */
   float _covarianceMatrixAdaptionFactor;
   /**

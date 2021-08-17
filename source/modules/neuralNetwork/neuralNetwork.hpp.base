@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "config.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -15,7 +15,7 @@
   #include <cudnn.h>
 #endif
 
-@startNamespace
+__startNamespace__;
 
 /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
@@ -68,7 +68,7 @@ struct layerPipeline_t
   std::vector<size_t> _inputBatchLastStep;
 };
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
@@ -176,6 +176,4 @@ class @className : public @parentClassName
   void initialize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

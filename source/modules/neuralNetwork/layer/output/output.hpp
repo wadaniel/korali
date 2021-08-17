@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Output.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-#define _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -23,7 +20,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 /**
 * @brief This enumerator details all possible transformations. It is used in lieu of string comparison to accelerate the application of this layer
@@ -122,7 +119,4 @@ class Output : public Layer
 } //layer
 } //neuralNetwork
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_LAYER_OUTPUT_
-
+;

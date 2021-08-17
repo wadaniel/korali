@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "engine.hpp"
 
@@ -10,13 +10,11 @@
 
 #include <memory>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
-  ~GaussianProcess();
-
   /**
   * @brief Storage for the output values
   */
@@ -37,13 +35,6 @@ class @className : public @parentClassName
   */
   Experiment _koraliExperiment;
 
-  /**
-  * @brief Model function to evaluate the error function of the GP
-  * @param sample The sample containing the proposal parameters
-  * @param gp Pointer to the GP
-  */
-  static void runSample(Sample &sample, libgp::GaussianProcess *gp);
-
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getHyperparameters() override;
   void setHyperparameters(const std::vector<float> &hyperparameters) override;
@@ -52,6 +43,4 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

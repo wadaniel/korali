@@ -1,5 +1,5 @@
 *************
-LSTM
+GRU Layer
 *************
 
-Uses the Long short-term memory (LSTM) architecture.
+Specialization of the Recurrent Layer for Long Short Term Memory (LSTM).

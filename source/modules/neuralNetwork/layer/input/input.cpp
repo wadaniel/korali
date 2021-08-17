@@ -13,14 +13,13 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 namespace korali
 {
 namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 void Input::initialize()
 {
@@ -116,9 +115,9 @@ void Input::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
-
+;
 
 } //layer
 } //neuralNetwork
 } //korali
-
+;

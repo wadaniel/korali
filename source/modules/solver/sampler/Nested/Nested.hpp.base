@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -6,7 +6,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
 /**
  * @brief Ellipse object to generate bounds.
@@ -96,7 +96,7 @@ struct ellipse_t
   double pointVolume;
 };
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   /*
@@ -288,6 +288,4 @@ class @className : public @parentClassName
   void finalize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

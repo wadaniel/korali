@@ -5,7 +5,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 void Integration::initialize()
 {
@@ -30,9 +30,7 @@ void Integration::initialize()
           _k->_variables[i]->_distributionIndex = j;
         }
 
-      if (_k->_variables[i]->_samplingDistribution == " ")
-        KORALI_LOG_ERROR("Please specify distribution to sample for variable %s\n", _k->_variables[i]->_name.c_str());
-      else if (foundDistribution == false)
+      if (foundDistribution == false)
         KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_samplingDistribution.c_str(), _k->_variables[i]->_name.c_str());
 
       _k->_variables[i]->_quadratureWeights.resize(1);
@@ -40,7 +38,8 @@ void Integration::initialize()
     }
     else if (_integrationMethod == "Custom")
     {
-      if (_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size()) KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size())
+        KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
     }
     else
     {
@@ -251,7 +250,8 @@ bool Integration::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
-
+;
 
 } //problem
 } //korali
+;

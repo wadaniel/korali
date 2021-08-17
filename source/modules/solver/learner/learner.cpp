@@ -4,9 +4,10 @@ namespace korali
 {
 namespace solver
 {
+;
 
-
-std::vector<std::vector<float>>& Learner::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> &
+Learner::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
 }
@@ -56,8 +57,8 @@ bool Learner::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //solver
 } //korali
-
+;

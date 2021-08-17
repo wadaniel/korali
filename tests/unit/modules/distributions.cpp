@@ -20,7 +20,7 @@ namespace
 {
  using namespace korali;
 
- TEST(Conduit, BaseDistribution)
+ TEST(Distrtibutions, BaseDistribution)
  {
    knlohmann::json distributionJs;
    Experiment e;
@@ -38,6 +38,8 @@ namespace
    // Creating distribution correctly now
    distributionJs["Type"] = "Univariate/Beta";
    ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
+
+   auto baseJs = distributionJs;
 
    // Triggering configuration errors
    distributionJs.clear();
@@ -67,16 +69,32 @@ namespace
    distributionJs["Random Seed"] = "Seed";
    ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad seed format
 
-   distributionJs.clear();
-   distributionJs["Name"] = "Name";
-   distributionJs["Range"] = "Range";
-   distributionJs["Random Seed"] = 0;
-   distributionJs["Alpha"] = 0.5;
-   distributionJs["Beta"] = 0.5;
-   ASSERT_NO_THROW(d->setConfiguration(distributionJs)); // Correct Configuration
+   distributionJs = baseJs;
+   distributionJs.erase("Random Seed");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Random Seed"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Random Seed"] = 1;
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Range");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Range"] = 1.0;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Range"] = "Not a Number";
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
  }
 
- TEST(Conduit, BetaDistribution)
+ TEST(Distrtibutions, BetaDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -361,7 +379,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, CauchyDistribution)
+ TEST(Distrtibutions, CauchyDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -631,7 +649,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, ExponentialDistribution)
+ TEST(Distrtibutions, ExponentialDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -906,7 +924,7 @@ namespace
   EXPECT_EQ(d->getLogDensityHessian( 0.5 ), 0.0);
  }
 
- TEST(Conduit, GammaDistribution)
+ TEST(Distrtibutions, GammaDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1200,7 +1218,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, GeometricDistribution)
+ TEST(Distrtibutions, GeometricDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1294,7 +1312,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian(1));
  }
 
- TEST(Conduit, iGammaDistribution)
+ TEST(Distrtibutions, iGammaDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;
@@ -1391,7 +1409,7 @@ namespace
    ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
   }
 
- TEST(Conduit, LaplaceDistribution)
+ TEST(Distrtibutions, LaplaceDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1656,7 +1674,8 @@ namespace
   EXPECT_NEAR(d->getLogDensity( 5.00 ), -7.479329380, PDENSITY_ERROR_TOLERANCE);
 
   // Testing extreme case for log density
-  ASSERT_NO_THROW(d->getLogDensityGradient(0.5));
+  ASSERT_NO_THROW(d->getLogDensityGradient(-10.0));
+  ASSERT_NO_THROW(d->getLogDensityGradient(+10.0));
 
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++) ASSERT_NO_THROW(d->getRandomNumber());
@@ -1666,7 +1685,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, LogNormalDistribution)
+ TEST(Distrtibutions, LogNormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1956,7 +1975,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, NormalDistribution)
+ TEST(Distrtibutions, NormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2233,7 +2252,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, TruncatedNormalDistribution)
+ TEST(Distrtibutions, TruncatedNormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2351,7 +2370,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, UniformDistribution)
+ TEST(Distrtibutions, UniformDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2635,7 +2654,7 @@ namespace
   EXPECT_EQ(d->getLogDensityHessian( 5.0 ), 0.0);
  }
 
- TEST(Conduit, WeibullDistribution)
+ TEST(Distrtibutions, WeibullDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;
@@ -2828,7 +2847,7 @@ namespace
    ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
   }
 
- TEST(Conduit, MultivariateNormalDistribution)
+ TEST(Distrtibutions, MultivariateNormalDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;
@@ -2887,6 +2906,38 @@ namespace
    d->_sigma = std::vector<double>({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
    ASSERT_NO_THROW(d->updateDistribution());
    ASSERT_NO_THROW(d->getRandomVector(x, 4));
+
+   distributionJs = baseJs;
+   distributionJs["Work Vector"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Work Vector"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Mean Vector");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Mean Vector"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Mean Vector"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Sigma");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Sigma"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Sigma"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
 
    // To-do: check expected densities
   }

@@ -26,26 +26,6 @@ void mkdir(const std::string dirPath)
   ::mkdir(tmp, S_IRWXU);
 }
 
-std::vector<std::string> listDirFiles(const std::string dirPath)
-{
-  struct dirent *entry = nullptr;
-  std::vector<std::string> dirList;
-
-  DIR *dp = nullptr;
-
-  dp = opendir(dirPath.c_str());
-  if (dp != nullptr)
-    while ((entry = readdir(dp)))
-    {
-      std::string filePath = dirPath;
-      filePath += "/";
-      filePath += entry->d_name;
-      dirList.push_back(filePath);
-    }
-  closedir(dp);
-
-  return dirList;
-}
 
 bool dirExists(const std::string dirPath)
 {

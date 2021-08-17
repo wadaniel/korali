@@ -1,11 +1,11 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   void evaluateFunctionAndGradient(Sample &sample);
@@ -20,6 +20,4 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

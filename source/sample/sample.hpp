@@ -2,8 +2,7 @@
 * @brief Contains the definition of a Korali Sample
 *****************************************************************************************************/
 
-#ifndef __KORALI_SAMPLE_HPP_
-#define __KORALI_SAMPLE_HPP_
+#pragma once
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
@@ -68,11 +67,6 @@ class Sample
   * @brief Queue of messages sent from the sample to the engine
   */
   std::queue<knlohmann::json> _messageQueue;
-
-  /**
-  * @brief Pointer to global parameters
-  */
-  knlohmann::json *_globals;
 
   /**
   * @brief Current state of the sample
@@ -197,5 +191,3 @@ class Sample
 };
 
 } // namespace korali
-
-#endif // __KORALI_SAMPLE_HPP_

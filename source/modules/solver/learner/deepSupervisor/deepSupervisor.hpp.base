@@ -1,19 +1,19 @@
-@startIncludeGuard
+#pragma once
 
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -36,13 +36,14 @@ class @className : public @parentClassName
    */
   NeuralNetwork *_neuralNetwork;
 
-  /**
-    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
-    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
-    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
-    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-   */
-  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
+  // Only needed for DDPG
+  //
+  //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
+  //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+  //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
+  //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
+  //
+  //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
 
   /**
    * @brief Resets the optimizer after passing new hyperparameters
@@ -58,6 +59,4 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

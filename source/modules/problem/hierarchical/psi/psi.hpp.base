@@ -1,11 +1,11 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/problem/hierarchical/hierarchical.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   /**
@@ -69,6 +69,4 @@ class @className : public @parentClassName
   void initialize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

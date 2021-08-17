@@ -9,13 +9,13 @@
  * @brief Functions to support direct conversion of Python/C++ objects to JSON and vice versa
  *********************************************************************************************/
 
-#ifndef PYBIND_JSON_HPP
-#define PYBIND_JSON_HPP
+#pragma once
+
 
 #include "auxiliar/json.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <functional>
 #include <gsl/gsl_rng.h>
 #include <string>
@@ -216,4 +216,3 @@ inline void adl_serializer<pybind11::object>::to_json(json &j, const pybind11::o
 
 } // namespace knlohmann
 
-#endif

@@ -11,7 +11,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void MOCMAES::setInitialConfiguration()
 {
@@ -1064,9 +1064,9 @@ bool MOCMAES::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

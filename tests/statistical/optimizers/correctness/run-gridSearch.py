@@ -28,7 +28,7 @@ e["File Output"]["Enabled"] = False
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 # Testing termination by maximum evaluations
 values = np.linspace(-10, 10, 1000).tolist()

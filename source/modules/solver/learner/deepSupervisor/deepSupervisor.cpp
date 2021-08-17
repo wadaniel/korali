@@ -10,7 +10,7 @@ namespace solver
 {
 namespace learner
 {
-
+;
 
 void DeepSupervisor::initialize()
 {
@@ -193,16 +193,17 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   return _neuralNetwork->getOutputValues(N);
 }
 
-std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-{
-  const size_t N = input.size();
-
-  // Running the input values through the neural network
-  _neuralNetwork->backward(outputGradients);
-
-  // Returning the input data gradients
-  return _neuralNetwork->getInputGradients(N);
-}
+// Only needed for DDPG
+//std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+//{
+//  const size_t N = input.size();
+//
+//  // Running the input values through the neural network
+//  _neuralNetwork->backward(outputGradients);
+//
+//  // Returning the input data gradients
+//  return _neuralNetwork->getInputGradients(N);
+//}
 
 void DeepSupervisor::printGenerationAfter()
 {
@@ -241,27 +242,24 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Neural Network", "Hidden Layers"))
  {
- try { _neuralNetworkHiddenLayers = js["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Neural Network']['Hidden Layers']\n%s", e.what()); } 
+ _neuralNetworkHiddenLayers = js["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
+
    eraseValue(js, "Neural Network", "Hidden Layers");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Hidden Layers'] required by deepSupervisor.\n"); 
 
  if (isDefined(js, "Neural Network", "Output Activation"))
  {
- try { _neuralNetworkOutputActivation = js["Neural Network"]["Output Activation"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Neural Network']['Output Activation']\n%s", e.what()); } 
+ _neuralNetworkOutputActivation = js["Neural Network"]["Output Activation"].get<knlohmann::json>();
+
    eraseValue(js, "Neural Network", "Output Activation");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Output Activation'] required by deepSupervisor.\n"); 
 
  if (isDefined(js, "Neural Network", "Output Layer"))
  {
- try { _neuralNetworkOutputLayer = js["Neural Network"]["Output Layer"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Neural Network']['Output Layer']\n%s", e.what()); } 
+ _neuralNetworkOutputLayer = js["Neural Network"]["Output Layer"].get<knlohmann::json>();
+
    eraseValue(js, "Neural Network", "Output Layer");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Output Layer'] required by deepSupervisor.\n"); 
@@ -439,9 +437,9 @@ bool DeepSupervisor::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //learner
 } //solver
 } //korali
-
+;

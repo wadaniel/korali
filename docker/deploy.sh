@@ -2,9 +2,9 @@
 set -e
 
 # Always update this if you made changes to the Dockerfile
-TAG=$(git describe)
+TAG=3.0.0
 
-buildah bud \
+podman build \
     -t "cselab/korali:${TAG}" \
     -t "cselab/korali:latest" .
 

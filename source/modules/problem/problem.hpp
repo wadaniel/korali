@@ -10,17 +10,14 @@
 * @brief Contains code, documentation, and scripts for module: Problem.
 */
 
-
-#ifndef _KORALI_PROBLEM_
-#define _KORALI_PROBLEM_
-
+#pragma once
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Problem.
@@ -59,6 +56,4 @@ class Problem : public Module
 };
 
 } //korali
-
-
-#endif // _KORALI_PROBLEM_
+;

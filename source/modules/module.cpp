@@ -71,6 +71,16 @@ std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
 double _cumulativeTime;
 
+void Module::initialize() {};
+void Module::finalize() {};
+std::string Module::getType() { return _type; };
+bool Module::checkTermination() { return false; };
+void Module::getConfiguration(knlohmann::json &js){};
+void Module::setConfiguration(knlohmann::json &js){};
+void Module::applyModuleDefaults(knlohmann::json &js){};
+void Module::applyVariableDefaults(){};
+bool Module::runOperation(std::string operation, korali::Sample &sample) { return false; };
+
 Module *Module::getModule(knlohmann::json &js, Experiment *e)
 {
   std::string moduleType = "Undefined";
@@ -163,13 +173,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (isExperiment == false) module->_k = e;
 
   return module;
-}
-
-Module *Module::duplicate(Module *src)
-{
-  knlohmann::json js;
-  src->getConfiguration(js);
-  return Module::getModule(js, src->_k);
 }
 
 } // namespace korali

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: VRACER.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-#define _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -27,7 +24,7 @@ namespace agent
 {
 namespace continuous
 {
-
+;
 
 /**
 * @brief Class declaration for module: VRACER.
@@ -36,7 +33,7 @@ class VRACER : public Continuous
 {
   public: 
   /**
-  * @brief [Internal Use] Standard deviation of actions in minibatch.
+  * @brief [Internal Use] Standard deviation of the actions in the minibatch.
   */
    std::vector<float> _statisticsAverageActionSigmas;
   
@@ -118,7 +115,4 @@ class VRACER : public Continuous
 } //agent
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+;

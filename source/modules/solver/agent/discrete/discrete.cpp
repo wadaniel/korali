@@ -8,7 +8,7 @@ namespace solver
 {
 namespace agent
 {
-
+;
 
 void Discrete::initializeAgent()
 {
@@ -18,81 +18,76 @@ void Discrete::initializeAgent()
 
 void Discrete::getAction(korali::Sample &sample)
 {
-  // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
+  // Get action for all the agents in the environment
+  for (size_t i = 0; i < sample["State"].size(); i++)
+  {
+    // Getting current state
+    auto state = sample["State"][i].get<std::vector<float>>();
 
-  // Adding state to the state time sequence
-  _stateTimeSequence.add(state);
+    // Adding state to the state time sequence
+    _stateTimeSequence.add(state);
 
-  // Getting the probability of the actions given by the agent's policy
-  auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
-  const auto &pActions = policy.distributionParameters;
+    // Getting the probability of the actions given by the agent's policy
+    auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+    const auto &pActions = policy.distributionParameters;
 
-  // Storage for the action index to use
-  size_t actionIdx = 0;
+    // Storage for the action index to use
+    size_t actionIdx = 0;
 
-  /*****************************************************************************
+    /*****************************************************************************
   * During training, we follow the Epsilon-greedy strategy. Choose, given a
   * probability (pEpsilon), one from the following:
   *  - Uniformly random action among all possible actions
   *  - Sample action guided by the policy's probability distribution
   ****************************************************************************/
 
-  if (sample["Mode"] == "Training")
-  {
-    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
-    float pEpsilon = _uniformGenerator->getRandomNumber();
-
-    // Producing random (uniform) number for the selection of the action
-    float x = _uniformGenerator->getRandomNumber();
-
-    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    if (pEpsilon < _randomActionProbability)
+    if (sample["Mode"] == "Training")
     {
-      actionIdx = floor(x * _problem->_possibleActions.size());
-    }
-    else // else we select guided by the policy's probability distribution
-    {
-      // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
-      float curSum = 0.0;
-      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+      float pEpsilon = _uniformGenerator->getRandomNumber();
+
+      // Producing random (uniform) number for the selection of the action
+      float x = _uniformGenerator->getRandomNumber();
+
+      // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+      if (pEpsilon < _randomActionProbability)
       {
-        curSum += pActions[actionIdx];
-        if (x < curSum) break;
+        actionIdx = floor(x * _problem->_possibleActions.size());
       }
+      else // else we select guided by the policy's probability distribution
+      {
+        // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
+        float curSum = 0.0;
+        for (actionIdx = 0; actionIdx < pActions.size() - 1; actionIdx++)
+        {
+          curSum += pActions[actionIdx];
+          if (x < curSum) break;
+        }
 
-      // NOTE: In original DQN paper [Minh2015] we choose max
-      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+        // NOTE: In original DQN paper [Minh2015] we choose max
+        // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      }
     }
-  }
 
-  /*****************************************************************************
+    /*****************************************************************************
   * During testing, we just select the action with the largest probability
   * given by the policy.
   ****************************************************************************/
 
-  // Finding the best action index from the probabilities
-  if (sample["Mode"] == "Testing")
-    actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+    // Finding the best action index from the probabilities
+    if (sample["Mode"] == "Testing")
+      actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
 
-  /*****************************************************************************
+    /*****************************************************************************
   * Storing the action itself
  ****************************************************************************/
 
-  if (actionIdx >= _problem->_possibleActions.size())
-  {
-    float cump = 0.0;
-    for (float p : pActions) cump += p;
-    _k->_logger->logWarning("Minimal", "Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
-    for (size_t i = 0; i < _problem->_possibleActions.size(); ++i) _k->_logger->logWarning("Minimal", "p(a_%zu) = %f\n", i, pActions[i]);
-    actionIdx = _problem->_possibleActions.size() - 1;
+    // Storing action itself, its idx, and probabilities
+    sample["Policy"][i]["Distribution Parameters"] = pActions;
+    sample["Policy"][i]["Action Index"] = actionIdx;
+    sample["Policy"][i]["State Value"] = policy.stateValue;
+    sample["Action"][i] = _problem->_possibleActions[actionIdx];
   }
-
-  // Storing action itself, its idx, and probabilities
-  sample["Policy"]["Distribution Parameters"] = pActions;
-  sample["Policy"]["Action Index"] = actionIdx;
-  sample["Policy"]["State Value"] = policy.stateValue;
-  sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
 float Discrete::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
@@ -215,9 +210,9 @@ bool Discrete::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //agent
 } //solver
 } //korali
-
+;

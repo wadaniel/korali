@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: TMCMC.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_TMCMC_
-#define _KORALI_SOLVER_SAMPLER_TMCMC_
-
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -22,14 +19,13 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-
 namespace korali
 {
 namespace solver
 {
 namespace sampler
 {
-
+;
 
 /**
   * @brief Struct for TMCMC optimization operations
@@ -57,84 +53,11 @@ typedef struct fparam_s
   double cov;
 } fparam_t;
 
-
 /**
 * @brief Class declaration for module: TMCMC.
 */
 class TMCMC : public Sampler
 {
-  private:
-  /*
-  * @brief Sets the burn in steps per generation
-  */
-  void setBurnIn();
-
-  /*
-  * @brief Prepare Generation before evaluation.
-  */
-  void prepareGeneration();
-
-  /*
-  * @brief Process Generation after receiving all results.
-  */
-  void processGeneration();
-
-  /*
-  * @brief Helper function for annealing exponent update/
-  * @param fj Pointer to exponentiated probability values.
-  * @param fn Current exponent.
-  * @param pj Number of values in fj array.
-  * @paran objTol
-  * @param xmin Location of minimum, the new exponent.
-  * @param fmin Found minimum in search.
-  */
-  void minSearch(double const *fj, size_t fn, double pj, double objTol, double &xmin, double &fmin);
-
-  /*
-  * @brief Collects results after sampleevaluation.
-  */
-  void processCandidate(const size_t sampleId);
-
-  /*
-  * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
-  */
-  void calculateGradients(std::vector<Sample> &samples);
-
-  /*
-  * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
-  */
-  void calculateProposals(std::vector<Sample> &samples);
-
-  /*
-  * @brief Generate candidate from leader.
-  */
-  void generateCandidate(const size_t sampleId);
-
-  /*
-  * @brief Add leader into sample database.
-  */
-  void updateDatabase(const size_t sampleId);
-
-  /*
-  * @brief Calculate acceptance probability.
-  */
-  double calculateAcceptanceProbability(const size_t sampleId);
-
-  /*
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  */
-  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
-
-  /*
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  */
-  static double objLog(const gsl_vector *v, void *param);
-
-  /*
-  * @brief Number of variables to sample.
-  */
-  size_t N;
-
   public: 
   /**
   * @brief Indicates which variant of the TMCMC algorithm to use.
@@ -405,6 +328,93 @@ class TMCMC : public Sampler
   
 
   /**
+  * @brief Sets the burn in steps per generation
+  */
+  void setBurnIn();
+
+  /**
+  * @brief Prepare Generation before evaluation.
+  */
+  void prepareGeneration();
+
+  /**
+  * @brief Process Generation after receiving all results.
+  */
+  void processGeneration();
+
+  /**
+  * @brief Helper function for annealing exponent update/
+  * @param fj Pointer to exponentiated probability values.
+  * @param fn Current exponent.
+  * @param pj Number of values in fj array.
+  * @param objTol Tolerance
+  * @param xmin Location of minimum, the new exponent.
+  * @param fmin Found minimum in search.
+  */
+  void minSearch(double const *fj, size_t fn, double pj, double objTol, double &xmin, double &fmin);
+
+  /**
+  * @brief Collects results after sample evaluation.
+  * @param sampleId Id of the sample to process
+  */
+  void processCandidate(const size_t sampleId);
+
+  /**
+  * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
+  * @param samples Samples to calculate gradients for
+  */
+  void calculateGradients(std::vector<Sample> &samples);
+
+  /**
+  * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
+  * @param samples Samples to calculate proposal distributions for
+  */
+  void calculateProposals(std::vector<Sample> &samples);
+
+  /**
+  * @brief Generate candidate from leader.
+  * @param sampleId Id of the sample to generate
+  */
+  void generateCandidate(const size_t sampleId);
+
+  /**
+  * @brief Add leader into sample database.
+  * @param sampleId Id of the sample to update the database with
+  */
+  void updateDatabase(const size_t sampleId);
+
+  /**
+  * @brief Calculate acceptance probability.
+  * @param sampleId Id of the sample to calculate acceptance probability
+  * @return The acceptance probability of the given sample
+  */
+  double calculateAcceptanceProbability(const size_t sampleId);
+
+  /**
+  * @brief Helper function to calculate the squared difference between (CVaR) for min search.
+  * @param x Alternative exponent
+  * @param loglike Vector of loglikelihood values
+  * @param Ns Size of loglike array
+  * @param exponent Current rho
+  * @param targetCV Target CV
+  * @return The squared CV difference
+  */
+  static double calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCV);
+
+  /**
+  * @brief Helper function for minimization procedure to find the target CV.
+  * @param v Input GSL vector containing loglikelihood values
+  * @param param Input parameter for method 'calculateSquaredCVDifference'
+  * @return The squared CV difference
+  */
+  static double calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param);
+
+  /**
+  * @brief Number of variables to sample.
+  */
+  size_t N;
+
+  /**
  * @brief Configures TMCMC.
  */
   void setInitialConfiguration() override;
@@ -433,6 +443,4 @@ class TMCMC : public Sampler
 } //sampler
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_SAMPLER_TMCMC_
+;

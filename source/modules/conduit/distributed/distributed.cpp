@@ -1,3 +1,4 @@
+#include "auxiliar/MPIUtils.hpp"
 #include "engine.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -9,24 +10,9 @@ using namespace std;
 
 namespace korali
 {
-
-
-bool __isMPICommGiven = false;
-MPI_Comm __KoraliGlobalMPIComm;
-MPI_Comm __koraliWorkerMPIComm;
-#define __KORALI_MPI_MESSAGE_JSON_TAG 1
-
-#ifdef _KORALI_USE_MPI
- int setKoraliMPIComm(const MPI_Comm& comm) { __isMPICommGiven = true; return MPI_Comm_dup(comm, &__KoraliGlobalMPIComm); }
- void* getKoraliWorkerMPIComm() { return &__koraliWorkerMPIComm; }
-#else
- int setKoraliMPIComm(...) { KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n"); return -1; }
- void* getKoraliWorkerMPIComm() { KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n"); return NULL; }
-#endif
-
 namespace conduit
 {
-
+;
 
 void Distributed::initialize()
 {
@@ -49,6 +35,9 @@ void Distributed::initialize()
   // Determining ranks per worker
   int curWorker = 0;
   _workerCount = (_rankCount - 1) / _ranksPerWorker;
+  size_t workerRemainder = (_rankCount - 1) % _ranksPerWorker;
+  if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus one for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _ranksPerWorker, workerRemainder);
+
   _localRankId = 0;
   _workerIdSet = false;
 
@@ -91,8 +80,7 @@ void Distributed::initialize()
     int mpiSize;
     MPI_Comm_size(__KoraliGlobalMPIComm, &mpiSize);
 
-    if (_rankCount < _ranksPerWorker + 1)
-      KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
+    checkRankCount();
 
     curWorker = _workerCount + 1;
   }
@@ -103,6 +91,12 @@ void Distributed::initialize()
   // Waiting for all ranks to reach this point
   MPI_Barrier(__KoraliGlobalMPIComm);
 #endif
+}
+
+void Distributed::checkRankCount()
+{
+  if (_rankCount < _ranksPerWorker + 1)
+    KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
 }
 
 void Distributed::initServer()
@@ -164,13 +158,6 @@ bool Distributed::isRoot()
 #endif
 
   return true;
-}
-
-void Distributed::abort()
-{
-#ifdef _KORALI_USE_MPI
-  MPI_Abort(__KoraliGlobalMPIComm, -1);
-#endif
 }
 
 void Distributed::sendMessageToEngine(knlohmann::json &message)
@@ -330,9 +317,8 @@ void Distributed::applyVariableDefaults()
  Conduit::applyVariableDefaults();
 } 
 
+;
 
-
-} /* conduit */ 
-
-} /* korali */ 
-
+} //conduit
+} //korali
+;

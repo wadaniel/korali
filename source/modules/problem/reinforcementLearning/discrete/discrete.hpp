@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Discrete.
 */
 
-
-#ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
-#define _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
-
+#pragma once
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
@@ -23,7 +20,7 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
+;
 
 /**
 * @brief Class declaration for module: Discrete.
@@ -71,6 +68,4 @@ class Discrete : public ReinforcementLearning
 } //reinforcementLearning
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
+;

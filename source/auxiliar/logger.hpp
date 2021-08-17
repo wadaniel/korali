@@ -2,8 +2,8 @@
 * @brief Contains functions to manage file and console output, verbosity levels, and error reporting.
 ******************************************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_LOGGER_HPP_
-#define _KORALI_AUXILIARS_LOGGER_HPP_
+#pragma once
+
 
 #include <string>
 
@@ -32,11 +32,6 @@ class Logger
   FILE *_outputFile;
 
   /**
- * @brief Default constructor for Korali Logger
- */
-  Logger();
-
-  /**
  * @brief parametrized constructor for Korali Logger
  * @param verbosityLevel The verbosity level above which nothing is printed.
  * @param file Output file (default: stdout)
@@ -44,23 +39,11 @@ class Logger
   Logger(const std::string verbosityLevel, FILE *file = stdout);
 
   /**
-  * @brief Sets the verbosity level.
-  * @param verbosityLevel specifies the verbosity level: { SILENT, MINIMAL, NORMAL, DETAILED }
-  */
-  void setVerbosityLevel(const std::string verbosityLevel);
-
-  /**
   * @brief Gets the numerical value of a verbosity level, given its string value.
   * @param verbosityLevel specifies the verbosity level.
   * @return Numerical value corresponding to verbosity level: { SILENT=0, MINIMAL=1, NORMAL=2, DETAILED=3 }
   */
   size_t getVerbosityLevel(const std::string verbosityLevel);
-
-  /**
-  * @brief Sets the console output file.
-  * @param file Open pointer to the file onto which to save the output.
-  */
-  void setConsoleOutputFile(FILE *file);
 
   /**
   * @brief Checks whether the current verbosity level is enough to authorize the requested level. Serves to filter out non-important messages when low verbosity is chosen.
@@ -104,4 +87,3 @@ class Logger
 };
 
 } // namespace korali
-#endif

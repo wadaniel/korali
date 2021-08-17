@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Psi.
 */
 
-
-#ifndef _KORALI_PROBLEM_HIERARCHICAL_PSI_
-#define _KORALI_PROBLEM_HIERARCHICAL_PSI_
-
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/problem/hierarchical/hierarchical.hpp"
@@ -24,7 +21,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 /**
 * @brief Class declaration for module: Psi.
@@ -127,6 +124,4 @@ class Psi : public Hierarchical
 } //hierarchical
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_HIERARCHICAL_PSI_
+;

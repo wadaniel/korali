@@ -17,6 +17,8 @@ namespace
   // Selecting an incorrect conduit
   e._js["Conduit"] = "Incorrect option";
   ASSERT_ANY_THROW(e.initialize());
+
+  ASSERT_ANY_THROW(e[0] = "Incorrect Key");
  }
 
 } // namespace

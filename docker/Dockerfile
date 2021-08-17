@@ -1,45 +1,37 @@
-FROM ubuntu:20.04
+FROM docker.io/ubuntu:hirsute
 
 # update aptitude
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Zurich
-RUN apt-get update && apt-get -y --fix-missing upgrade
+RUN apt-get update
+RUN apt-get -y --fix-missing upgrade
 
 # install aptitude essentials
-RUN apt-get -y install \
-    build-essential \
-    meson \
-    cmake \
-    git \
-    vim \
-    curl \
-    wget \
-    doxygen \
-    clang-format \
-    libgsl-dev \
-    libeigen3-dev \
-    openmpi-bin \
-    openmpi-common \
-    libhdf5-openmpi-dev \
-    libcairo2-dev \
-    libcairo-gobject2 \
-    python3-dev \
-    python3-pip \
-    python3-numpy \
-    python3-matplotlib \
-    python3-pandas \
-    python3-scipy \
-    python3-xlrd
+RUN apt-get -y install build-essential
+RUN apt-get -y install git
+RUN apt-get -y install vim
+RUN apt-get -y install rsync
+RUN apt-get -y install curl
+RUN apt-get -y install gdb
+RUN apt-get -y install libgsl-dev
+RUN apt-get -y install wget
+RUN apt-get -y install pkg-config
+RUN apt-get -y install python3-dev
+RUN apt-get -y install python3-pip
+RUN apt-get -y install python3-numpy
+RUN apt-get -y install python3-matplotlib
+RUN apt-get -y install python3-scipy
+RUN apt-get -y install python3-xlrd
+RUN apt-get -y install python3-pandas
+RUN apt-get -y install libdnnl-dev
 
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install meson
+RUN python3 -m pip install ninja
+RUN python3 -m pip install cmake
+RUN python3 -m pip install pybind11
 
-CMD ["/bin/bash"]
-
-# add non-root user
-RUN useradd -m korali
-WORKDIR /home/korali
-USER korali
-
-# install korali
-RUN git clone https://github.com/cselab/korali.git --recursive
-RUN (cd korali && python3 -m pip install --user .)
+RUN git clone https://github.com/cselab/korali.git
+RUN cd korali; CC=gcc CXX=g++ meson setup build --prefix=/usr/local --buildtype=release
+RUN cd korali; ninja -C build
+RUN cd korali; meson install -C build
+ENV PYTHONPATH=/usr/local/lib/python3.9/site-packages/:$PYTHONPATH

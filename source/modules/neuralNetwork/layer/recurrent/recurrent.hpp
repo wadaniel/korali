@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Recurrent.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-#define _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -23,7 +20,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 /**
 * @brief Class declaration for module: Recurrent.
@@ -32,7 +29,7 @@ class Recurrent : public Layer
 {
   public: 
   /**
-  * @brief The number of consecutive copies of this layer. This has a better performance than just defining many of these layers manually since it is optimized by the underlying engine.
+  * @brief The number of copies of this layer. This has a better performance than just defining many of these layers manually since it is optimized by the underlying engine.
   */
    size_t _depth;
   
@@ -220,7 +217,7 @@ class Recurrent : public Layer
   void createHyperparameterMemory() override;
   void backwardHyperparameters(const size_t t) override;
   void createBackwardPipeline() override;
-  void copyHyperparameterPointers(Layer *dstLayer);
+  void copyHyperparameterPointers(Layer *dstLayer) override;
   std::vector<float> generateInitialHyperparameters() override;
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;
@@ -230,7 +227,4 @@ class Recurrent : public Layer
 } //layer
 } //neuralNetwork
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_
-
+;

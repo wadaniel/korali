@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: GRU.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
-#define _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
-
+#pragma once
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
@@ -25,7 +22,7 @@ namespace layer
 {
 namespace recurrent
 {
-
+;
 
 /**
 * @brief Class declaration for module: GRU.
@@ -91,7 +88,4 @@ class GRU : public Recurrent
 } //layer
 } //neuralNetwork
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
-
+;

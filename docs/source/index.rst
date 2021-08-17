@@ -1,6 +1,8 @@
-************************
-Korali's Documentation
-************************
+.. include:: README.rst
+
+*************
+User Manual
+*************
 
 .. toctree::
    :caption: Using Korali
@@ -42,20 +44,12 @@ Korali's Documentation
    :maxdepth: 2
    :caption: Development
 
-   dev/contributing
-   dev/build
-   dev/testing
-   dev/moduledev
-   C++ Class List <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
-   Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
-   Github Repository <https://github.com/cselab/korali>
-
-.. toctree::
-   :caption: Code Documentation
-   :name: code_documentation
-
+   modules/README.rst
    code_documentation/index.rst
-
+   Github Repository <https://github.com/cselab/korali>
+   Build Status <https://app.circleci.com/pipelines/github/cselab/korali>
+   Test Coverage <https://app.codecov.io/gh/cselab/korali>
+   
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

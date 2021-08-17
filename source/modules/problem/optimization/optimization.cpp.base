@@ -1,21 +1,14 @@
 #include "modules/problem/optimization/optimization.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::initialize()
+void __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
-
-  /* check _granularity for discrete variables */
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_granularity < 0.0) KORALI_LOG_ERROR("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
-    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
-  }
 }
 
-void @className::evaluateConstraints(Sample &sample)
+void __className__::evaluateConstraints(Sample &sample)
 {
   for (size_t i = 0; i < _constraints.size(); i++)
   {
@@ -23,61 +16,52 @@ void @className::evaluateConstraints(Sample &sample)
 
     auto evaluation = KORALI_GET(double, sample, "F(x)");
 
-    // If constraint is not a finite number, constraint is set to +Infinity
-    if (std::isnan(evaluation))
-      sample["Constraint Evaluations"][i] = Inf;
-    else
-      sample["Constraint Evaluations"][i] = evaluation;
+    if (std::isfinite(evaluation) == false)
+      KORALI_LOG_ERROR("Non finite value of constraint evaluation %lu detected: %f\n", i, evaluation);
+
+    sample["Constraint Evaluations"][i] = evaluation;
   }
 }
 
-void @className::evaluate(Sample &sample)
+void __className__::evaluate(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
   auto evaluation = KORALI_GET(double, sample, "F(x)");
 
-  // If result is not a finite number, objective function evaluates to -Infinity
-  if (std::isnan(evaluation))
-    sample["F(x)"] = -Inf;
+  if (std::isfinite(evaluation) == false)
+    KORALI_LOG_ERROR("Non finite value of function evaluation detected: %f\n", evaluation);
 }
 
-void @className::evaluateMultiple(Sample &sample)
+void __className__::evaluateMultiple(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
   auto evaluation = KORALI_GET(std::vector<double>, sample, "F(x)");
 
-  // If result is not a finite number, objective function evaluates to -Infinity
-  for (size_t i = 0; i < evaluation.size(); ++i)
-    if (std::isnan(evaluation[i]))
-      sample["F(x)"][i] = -Inf;
+  for (size_t i = 0; i < evaluation.size(); i++)
+    if (std::isfinite(evaluation[i]) == false)
+      KORALI_LOG_ERROR("Non finite value of function evaluation detected for variable %lu: %f\n", i, evaluation[i]);
 }
 
-void @className::evaluateWithGradients(Sample &sample)
+void __className__::evaluateWithGradients(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
   auto evaluation = KORALI_GET(double, sample, "F(x)");
-
-  // If result is not a finite number, objective function evaluates to -Infinity
-  if (std::isnan(evaluation))
-    sample["F(x)"] = -Inf;
-  else
-    sample["F(x)"] = evaluation;
-
   auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
   if (gradient.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
 
-  // If result is not a finite number, gradient is set to zero
-  if (std::isnan(evaluation) || isanynan(gradient))
-    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
-  else
-    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
+  if (std::isfinite(evaluation) == false)
+    KORALI_LOG_ERROR("Non finite value of function evaluation detected: %f\n", evaluation);
+
+  for (size_t i = 0; i < gradient.size(); i++)
+    if (std::isfinite(gradient[i]) == false)
+      KORALI_LOG_ERROR("Non finite value of gradient evaluation detected for variable %lu: %f\n", i, gradient[i]);
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

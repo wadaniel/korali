@@ -1,14 +1,14 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/module.hpp"
 #include <queue>
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
 class Engine;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -48,11 +48,6 @@ class @className : public @parentClassName
    * @brief (Worker Side) Pops the top of the engine stack
    */
   void workerPopEngine();
-
-  /**
- * @brief Aborts execution for all ranks/threads/processes.
- */
-  virtual void abort() { exit(-1); }
 
   /**
  * @brief Starts the execution of the sample.
@@ -155,6 +150,4 @@ class @className : public @parentClassName
   virtual size_t getProcessId() = 0;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

@@ -6,7 +6,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 void Executor::runGeneration()
 {
@@ -104,7 +104,8 @@ void Executor::applyVariableDefaults()
  Solver::applyVariableDefaults();
 } 
 
-
+;
 
 } //solver
 } //korali
+;

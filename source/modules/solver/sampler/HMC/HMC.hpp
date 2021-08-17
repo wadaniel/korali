@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: HMC.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_HMC_
-#define _KORALI_SOLVER_SAMPLER_HMC_
-
+#pragma once
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -39,7 +36,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 /**
   * @brief Enum to set metric type.
@@ -382,7 +379,4 @@ class HMC : public Sampler
 } //sampler
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_SAMPLER_HMC_
-
+;

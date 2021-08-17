@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -13,14 +13,16 @@
   #include <cudnn.h>
 #endif
 
-@startNamespace0
-
+namespace korali
+{
 class NeuralNetwork;
 struct layerPipeline_t;
 
-@startNamespace1
+} // namespace korali
 
-class @className : public @parentClassName
+__startNamespace__;
+
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -75,7 +77,6 @@ class @className : public @parentClassName
  */
   float *_outputGradient;
 
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Stores the propagation kind (inference/training)
@@ -118,15 +119,15 @@ class @className : public @parentClassName
 
 #endif
 
-    /**
+  /**
   * @brief Default constructor
   */
-   @className() = default;
+  __className__() = default;
 
   /**
   * @brief Default destructor
   */
-  virtual ~@className() = default;
+  virtual ~__className__() = default;
 
   /**
    * @brief Returns the output values for the current layer
@@ -195,11 +196,7 @@ class @className : public @parentClassName
   * @brief Calculates the gradients of layer hyperparameters
   * @param t Indicates the current timestep
   */
-  virtual void backwardHyperparameters(const size_t t){};
+  virtual void backwardHyperparameters(const size_t t);
 };
 
-@endNamespace1
-
-@endNamespace0
-
-@endIncludeGuard
+__endNamespace__;

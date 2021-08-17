@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: LogNormal.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
-
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -23,7 +20,7 @@ namespace distribution
 {
 namespace univariate
 {
-
+;
 
 /**
 * @brief Class declaration for module: LogNormal.
@@ -120,7 +117,4 @@ class LogNormal : public Univariate
 } //univariate
 } //distribution
 } //korali
-
-
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
-
+;

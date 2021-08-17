@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: CMAES.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_CMAES_
-#define _KORALI_SOLVER_OPTIMIZER_CMAES_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -26,7 +23,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: CMAES.
@@ -39,7 +36,7 @@ class CMAES : public Optimizer
   */
    size_t _populationSize;
   /**
-  * @brief Number of best samples used to update the covariance matrix and the mean (by default it is half the Sample Count).
+  * @brief Number of best samples (offspring samples) used to update the covariance matrix and the mean (by default it is half the Sample Count).
   */
    size_t _muValue;
   /**
@@ -83,7 +80,7 @@ class CMAES : public Optimizer
   */
    size_t _viabilityPopulationSize;
   /**
-  * @brief Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is hald the Viability Sample Count).
+  * @brief Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is half the Viability Sample Count).
   */
    size_t _viabilityMuValue;
   /**
@@ -135,7 +132,7 @@ class CMAES : public Optimizer
   */
    size_t _currentMuValue;
   /**
-  * @brief [Internal Use] Weights for each of the Mu samples.
+  * @brief [Internal Use] Calibrated Weights for each of the Mu offspring samples.
   */
    std::vector<double> _muWeights;
   /**
@@ -287,7 +284,7 @@ class CMAES : public Optimizer
   */
    int _hasConstraints;
   /**
-  * @brief [Internal Use] This is the $eta$ factor that indicates how fast the covariance matrix is adapted.
+  * @brief [Internal Use] This is the beta factor that indicates how fast the covariance matrix is adapted.
   */
    double _covarianceMatrixAdaptionFactor;
   /**
@@ -327,7 +324,7 @@ class CMAES : public Optimizer
   */
    std::vector<size_t> _sampleConstraintViolationCounts;
   /**
-  * @brief [Internal Use] Constraint Evaluations $$e$$.
+  * @brief [Internal Use] Functions to be evaluated as constraint evaluations, if the return from any of them is > 0, then the constraint is met.
   */
    std::vector<std::vector<double>> _constraintEvaluations;
   /**
@@ -432,7 +429,7 @@ class CMAES : public Optimizer
   * @param sampleIdx Index of the sample to evaluate
   * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
+  void sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.
@@ -554,7 +551,4 @@ class CMAES : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_CMAES_
-
+;

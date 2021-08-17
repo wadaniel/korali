@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Theta.
 */
 
-
-#ifndef _KORALI_PROBLEM_HIERARCHICAL_THETA_
-#define _KORALI_PROBLEM_HIERARCHICAL_THETA_
-
+#pragma once
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
@@ -24,7 +21,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 /**
 * @brief Class declaration for module: Theta.
@@ -141,6 +138,4 @@ class Theta : public Hierarchical
 } //hierarchical
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_HIERARCHICAL_THETA_
+;

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Bayesian.
 */
 
-
-#ifndef _KORALI_PROBLEM_BAYESIAN_
-#define _KORALI_PROBLEM_BAYESIAN_
-
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -21,7 +18,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: Bayesian.
@@ -131,7 +128,4 @@ class Bayesian : public Problem
 
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_BAYESIAN_
-
+;

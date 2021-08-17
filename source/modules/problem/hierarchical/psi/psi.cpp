@@ -10,7 +10,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 void Psi::initialize()
 {
@@ -125,12 +125,6 @@ void Psi::updateConditionalPriors(Sample &sample)
 
 void Psi::evaluateLogLikelihood(Sample &sample)
 {
-  if (isSampleFeasible(sample) == false)
-  {
-    sample["logLikelihood"] = -Inf;
-    return;
-  };
-
   updateConditionalPriors(sample);
 
   double logLikelihood = 0.0;
@@ -147,12 +141,6 @@ void Psi::evaluateLogLikelihood(Sample &sample)
     }
 
     logLikelihood += logSumExp(logValues);
-
-    if (std::isnan(logLikelihood))
-    {
-      sample["logLikelihood"] = -Inf;
-      return;
-    };
   }
 
   sample["logLikelihood"] = logLikelihood;
@@ -164,9 +152,8 @@ void Psi::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Sub Experiments"))
  {
- try { _subExperiments = js["Sub Experiments"].get<std::vector<knlohmann::json>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ psi ] \n + Key:    ['Sub Experiments']\n%s", e.what()); } 
+ _subExperiments = js["Sub Experiments"].get<std::vector<knlohmann::json>>();
+
    eraseValue(js, "Sub Experiments");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Sub Experiments'] required by psi.\n"); 
@@ -207,8 +194,9 @@ void Psi::applyVariableDefaults()
  Hierarchical::applyVariableDefaults();
 } 
 
-
+;
 
 } //hierarchical
 } //problem
 } //korali
+;

@@ -13,7 +13,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void Rprop::setInitialConfiguration()
 {
@@ -367,9 +367,9 @@ bool Rprop::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

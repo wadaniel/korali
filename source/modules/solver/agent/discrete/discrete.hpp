@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Discrete.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_DISCRETE_
-#define _KORALI_SOLVER_AGENT_DISCRETE_
-
+#pragma once
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
@@ -24,7 +21,7 @@ namespace solver
 {
 namespace agent
 {
-
+;
 
 /**
 * @brief Class declaration for module: Discrete.
@@ -33,7 +30,7 @@ class Discrete : public Agent
 {
   public: 
   /**
-  * @brief Specifies the probability of taking an (exploratory) random action. This is the epsilon in the epsilon-greedy strategy.
+  * @brief Specifies the probability of taking a random action for the epsilon-greedy strategy.
   */
    float _randomActionProbability;
   
@@ -89,13 +86,10 @@ class Discrete : public Agent
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
 
   void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent();
+  virtual void initializeAgent() override;
 };
 
 } //agent
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_DISCRETE_
-
+;

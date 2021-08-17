@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: LSTM.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
-#define _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
-
+#pragma once
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
@@ -25,7 +22,7 @@ namespace layer
 {
 namespace recurrent
 {
-
+;
 
 /**
 * @brief Class declaration for module: LSTM.
@@ -120,7 +117,4 @@ class LSTM : public Recurrent
 } //layer
 } //neuralNetwork
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_LSTM_
-
+;

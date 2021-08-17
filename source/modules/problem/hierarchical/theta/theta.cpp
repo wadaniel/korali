@@ -12,7 +12,6 @@ namespace hierarchical
 
 void Theta::initialize()
 {
-
   // Psi Experiment
 
   // Setting experiment configurations to actual korali experiments
@@ -92,7 +91,7 @@ void Theta::initialize()
   // Now inheriting Sub problem's variables and distributions
   _k->_variables.clear();
   for (size_t i = 0; i < _subExperimentObject._variables.size(); i++)
-   _k->_variables.push_back(_subExperimentObject._variables[i]);
+    _k->_variables.push_back(_subExperimentObject._variables[i]);
 
   _k->_distributions.clear();
   for (size_t i = 0; i < _subExperimentObject._distributions.size(); i++)
@@ -105,7 +104,7 @@ void Theta::evaluateLogLikelihood(Sample &sample)
 {
   double logLikelihood = 0.0;
 
-  dynamic_cast<problem::Bayesian*>(_subExperimentObject._problem)->evaluateLoglikelihood(sample);
+  dynamic_cast<problem::Bayesian *>(_subExperimentObject._problem)->evaluateLoglikelihood(sample);
 
   std::vector<double> psiSample;
   psiSample.resize(_psiVariableCount);

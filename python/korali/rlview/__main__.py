@@ -11,7 +11,7 @@ import math
 import numpy as np
 import scipy.stats as st
 import matplotlib.pyplot as plt
-from korali.plotter.helpers import hlsColors, drawMulticoloredLine
+from korali.plot.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
 
 # Check if name has correct suffix
@@ -22,7 +22,7 @@ def validateOutput(output):
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  
@@ -34,20 +34,39 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  cmap = matplotlib.cm.get_cmap('brg')
  colCurrIndex = 0.0
 
- ## Plotting the individual experiment results
+ ## Reading the individual results
 
- for resultId, result in enumerate(results):
-  rewardHistory =   result["Solver"]["Training"]["Reward History"]
-  obsCountHistory = result["Solver"]["Training"]["Experience History"]
+ unpackedResults = []
+ for resultId, r in enumerate(results):
   
-  # Gathering observation count for each result
+  if (len(r) == 0): continue  
   
-  currObsCount = 0
-  cumulativeObsList = []
-  epList = range(0, len(rewardHistory)) 
-  for c in obsCountHistory:
-   currObsCount = currObsCount + c
-   cumulativeObsList.append(currObsCount)
+  cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
+  rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
+  trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
+  testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
+
+  # Merge Results
+  if aggregate == True and len(unpackedResults) > 0:
+    coH, rH, trTh, teTh = unpackedResults[0]
+    aggCumObs = np.append(coH, cumulativeObsCountHistory)
+    aggRewards = np.append(rH, rewardHistory)
+
+    sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
+    sortedAggCumObs = np.sort(aggCumObs)
+    unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold, testingRewardThreshold)
+
+  # Append Results
+  else:
+    unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold, testingRewardThreshold) )
+
+ ## Plotting the individual experiment results
+    
+ for resId, r in enumerate(unpackedResults):
+  
+  cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingRewardThreshold = r
+  
+  currObsCount = cumulativeObsArr[-1]
   
   # Updating common plot limits
 
@@ -62,9 +81,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    if (max(rewardHistory) < math.inf):
     maxPlotReward = max(rewardHistory)
 
-  trainingRewardThreshold = result["Problem"]["Training Reward Threshold"]
-  testingRewardThreshold  = result["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
-
   if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
    if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
 
@@ -78,30 +94,38 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
 
   # Getting average cumulative reward statistics
-  
-  meanHistory = [ rewardHistory[0] ]
-  confIntervalLowerHistory= [ rewardHistory[0] ]
-  confIntervalUpperHistory= [ rewardHistory[0] ]
-  for i in range(1, len(rewardHistory)):
-   startPos = i - int(averageDepth)
-   if (startPos < 0): startPos = 0
-   endPos = i
-   data = rewardHistory[startPos:endPos]
-   mean = np.mean(data)
-   stdDev = np.std(data)
-   if showCI > 0.0:
-    ciLow = np.percentile(data, 50-50*showCI)
-    ciUp = np.percentile(data, 50+50*showCI)
-    confIntervalLowerHistory.append(ciLow)
-    confIntervalUpperHistory.append(ciUp)
-   meanHistory.append(mean)
-  meanHistory = np.array(meanHistory)
-  confIntervalLowerHistory = np.array(confIntervalLowerHistory)
-  confIntervalUpperHistory = np.array(confIntervalUpperHistory)
+  cumRewards = np.cumsum(rewardHistory)
+  meanHistoryStart = cumRewards[:averageDepth]/np.arange(1,averageDepth+1)
+  meanHistoryEnd = (cumRewards[averageDepth:]-cumRewards[:-averageDepth])/float(averageDepth)
+  meanHistory = np.append(meanHistoryStart, meanHistoryEnd)
+
+  confIntervalLowerHistory = None
+  confIntervalUpperHistory = None
+
+  # Calculating confidence intervals
+  if showCI > 0.0:
+    confIntervalLowerHistory= [ rewardHistory[0] ]
+    confIntervalUpperHistory= [ rewardHistory[0] ]
+
+    for i in range(1, len(rewardHistory)):
+      startPos = max(i - averageDepth, 0)
+      endPos = i
+      data = rewardHistory[startPos:endPos]
+      ciLow = np.percentile(data, 50-50*showCI)
+      ciUp = np.percentile(data, 50+50*showCI)
+      confIntervalLowerHistory.append(ciLow)
+      confIntervalUpperHistory.append(ciUp)
+      
+    confIntervalLowerHistory = np.array(confIntervalLowerHistory)
+    confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resultId])
+  ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resultId]) 
+
+  # Plotting confidence intervals
+  if showCI > 0.:
+    ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
   # Updating color index
   if (len(results) > 1):
@@ -161,6 +185,7 @@ if __name__ == '__main__':
  parser.add_argument(
      '--maxObservations',
      help='Maximum observations (x-axis) to display',
+     type=int,
      default=None,
      required=False)
  parser.add_argument(
@@ -186,7 +211,8 @@ if __name__ == '__main__':
  parser.add_argument(
       '--averageDepth',
       help='Specifies the depth for plotting average',
-      default=300,
+      type=int,
+      default=100,
       required=False)
  parser.add_argument(
       '--showCI',
@@ -194,6 +220,10 @@ if __name__ == '__main__':
       type = float,
       default=0.0,
       required=False)
+ parser.add_argument(
+      '--aggregate',
+      help='Aggregate multiple runs and plot result summary.',
+      action='store_true')
  parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
@@ -234,7 +264,7 @@ if __name__ == '__main__':
      
  ### Creating plots
 
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
  plt.legend()
  plt.draw()
  
@@ -249,7 +279,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
    plt.draw()
    
    # Check if maximum time exceeded

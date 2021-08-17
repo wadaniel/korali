@@ -32,10 +32,12 @@ int main(int argc, char *argv[])
   auto e = korali::Experiment();
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
 
-  // Checking if existing results are there and continuing them
+  // Check if existing results are there and continuing them
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
-  if (found == true) printf("[Korali] Continuing execution from previous run...\n");
-
+  if (found == true){
+    printf("[Korali] Continuing execution from previous run...\n");
+    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
+  }
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = NAGENTS;
@@ -43,7 +45,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  // Adding custom setting to run the environment without dumping the state files during training
+   // Setting results path an dumping frequency in CUP
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 

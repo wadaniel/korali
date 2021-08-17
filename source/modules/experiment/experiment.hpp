@@ -132,7 +132,6 @@ class Experiment : public Module
   
 
   Experiment();
-  ~Experiment();
 
   void initialize() override;
   void finalize() override;

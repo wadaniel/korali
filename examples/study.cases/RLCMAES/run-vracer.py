@@ -50,7 +50,7 @@ if evaluation == True:
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s, objective, populationSize, noise)
+lEnv = lambda s : env(s, objective, dim, populationSize, noise)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
@@ -59,28 +59,26 @@ e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 10
 
-for i in range(mu):
-    for j in range(dim):
-        e["Variables"][i]["Name"] = "Position {}".format(j)
+i = 0
+for j in range(mu):
+    for d in range(dim):
+        e["Variables"][i]["Name"] = "Position {}/{}".format(j,d)
         e["Variables"][i]["Type"] = "State"
         i += 1
 
-    e["Variables"][i*3+dim]["Name"] = "Evaluation"
-    e["Variables"][i*3+dim]["Type"] = "State"
+    e["Variables"][i]["Name"] = "Evaluation"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
 
-i += 1
-e["Variables"][i]["Name"] = "Diagonal Variance 1"
-e["Variables"][i]["Type"] = "State"
+for d in range(dim):
+    e["Variables"][i]["Name"] = "Diagonal Variance {}".format(d)
+    e["Variables"][i]["Type"] = "State"
+    i += 1
 
-i += 1
-e["Variables"][i]["Name"] = "Diagonal Variance 2"
-e["Variables"][i]["Type"] = "State"
-
-i += 1
 e["Variables"][i]["Name"] = "Best Ever Evaluation"
 e["Variables"][i]["Type"] = "State"
-
 i += 1
+
 e["Variables"][i]["Name"] = "Step Size Rate"
 e["Variables"][i]["Type"] = "Action"
 e["Variables"][i]["Lower Bound"] = 0.0

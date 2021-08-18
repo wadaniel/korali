@@ -6,18 +6,18 @@ from objective import *
 
 maxSteps = 100
 
-def env(s, populationSize):
+def env(s, objective, dim, populationSize, noise):
 
  # Initializing environment
- objective = ObjectiveFactory(populationSize)
+ objective = ObjectiveFactory(objective, dim, populationSize)
  
  outfile = "history.npz"
  #outfile = s["Custom Settings"]["Output"]
- #print(outfile)
+ 
  if s["Custom Settings"]["Evaluation"] == "True":
     objective.reset(noise=0.0)
  else:
-    objective.reset(noise=1.0)
+    objective.reset(noise=noise)
 
  s["State"] = objective.getState().tolist()
  step = 0
@@ -46,12 +46,12 @@ def env(s, populationSize):
 
   step = step + 1
 
- print("Objective: {}".format(objective.name))
- print("Initial Ef {} -- Terminal Ef {}".format(objective.initialEf, objective.curEf))
- print("Initial Best F {} -- Terminal Best F {} -- Best Ever F {}".format(objective.initialBestF, objective.curBestF, objective.bestEver))
- print("Terminal Scale\n{}".format(objective.scale))
- print("Terminal Mean\n{}".format(objective.mean))
- print("Terminal Cov\n{}".format(objective.cov))
+ #print("Objective: {}".format(objective.name))
+ #print("Initial Ef {} -- Terminal Ef {}".format(objective.initialEf, objective.curEf))
+ #print("Initial Best F {} -- Terminal Best F {} -- Best Ever F {}".format(objective.initialBestF, objective.curBestF, objective.bestEver))
+ #print("Terminal Scale\n{}".format(objective.scale))
+ #print("Terminal Mean\n{}".format(objective.mean))
+ #print("Terminal Cov\n{}".format(objective.cov))
  # Setting finalization status
  if (objective.isOver()):
   s["Termination"] = "Terminal"

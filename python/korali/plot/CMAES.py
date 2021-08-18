@@ -20,6 +20,7 @@ def plot(genList, **kwargs):
 
   cond = [0.0] * numgens
   absfval = [0.0] * numgens
+  absmeanfval = [0.0] * numgens
   dfval = [0.0] * numgens
   genIds = [0.0] * numgens
   sigma = [0.0] * numgens
@@ -42,6 +43,7 @@ def plot(genList, **kwargs):
         'Maximum Covariance Eigenvalue'] / genList[gen]['Solver'][
             'Minimum Covariance Eigenvalue']
     absfval[curPos] = abs(genList[gen]['Solver']['Current Best Value'])
+    absmeanfval[curPos] = abs(np.mean(genList[gen]['Solver']['Value Vector']))
     dfval[curPos] = abs(genList[gen]['Solver']['Current Best Value'] -
                         genList[gen]['Solver']['Best Ever Value'])
     sigma[curPos] = genList[gen]['Solver']['Sigma']
@@ -65,6 +67,7 @@ def plot(genList, **kwargs):
   ax[0, 0].set_yscale('log')
   #drawMulticoloredLine(ax[0,0], genIds, absfval, 0.0, 'r', 'b', '$| F |$')
   ax[0, 0].plot(genIds, absfval, color='r', label='$| F |$')
+  ax[0, 0].plot(genIds, absmeanfval, color='orange', label='$| E[F] |$')
   ax[0, 0].plot(genIds, dfval, 'x', color='#34495e', label='$| F - F_{best} |$')
   ax[0, 0].plot(genIds, cond, color='#98D8D8', label='$\kappa(\mathbf{C})$')
   ax[0, 0].plot(genIds, sigma, color='#F8D030', label='$\sigma$')

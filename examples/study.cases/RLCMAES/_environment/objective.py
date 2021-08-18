@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
+import sys
 import numpy as np
 
 ##  Copyright (c) 2018 CSE-Lab, ETH Zurich, Switzerland. All rights reserved.
 ##  Distributed under the terms of the MIT license.
 
 class ObjectiveFactory:
-  def __init__(self, populationSize):
+  def __init__(self, objective, dim, populationSize):
 
     # Initialize constants
+    self.objective = objective
     self.populationSize = populationSize
     self.mu = int(self.populationSize/2)
     self.weights = np.log(self.mu+1/2)-np.log(np.array(range(self.mu))+1)
     self.ueff = sum(self.weights)**2/sum(self.weights**2)
     self.weights /= sum(self.weights)
-    self.dim = 2
+    self.dim = dim
 
     self.chi = np.sqrt(self.dim)*(1-1/(4*self.dim)+1/(21*self.dim**2))
     self.dhat = 1. + 2. * max(0, np.sqrt((self.ueff-1)/(self.dim+1))-1.) # d - cp
@@ -28,7 +30,7 @@ class ObjectiveFactory:
     # Init variables
     self.reset()
 
-  def reset(self, noise=1.0):
+  def reset(self, noise=0.0):
 
     # Initialize variable params
     self.scale = self.cs
@@ -47,36 +49,62 @@ class ObjectiveFactory:
     self.initialEf = np.inf
     self.prevEf = np.inf
     self.curEf = np.inf
-    self.name = "NA"
     self.function = None
     self.step = 0
 
-    # Initialize optimziation target
-    #u = 0.0
-    u = np.random.uniform(0.,1./5) + 2./5 # Rosenrbock
-    self.a = 0.
-    self.b = 0.
+ 
+    # Init random objective if desired
+    if self.objective == "random":
+        u = np.random.uniform(0.,1)
+        if u < 1/5:
+            self.objective = "himmelblau"
+            self.a = 11.
+            self.b = 7.
+ 
+        elif u < 2/5:
+            self.objective = "booth"
+        elif u < 3/5:
+            self.objective = "rosenbrock"
+        elif u < 4/5:
+            self.objective = "spheres"
+        else:
+            self.objective = "levi"
+ 
+    # Init random noise params
     self.noise = noise
-    self.a += self.noise*np.random.uniform(-1., 1.)
-    self.b += self.noise*np.random.uniform(-1., 1.)
+    self.a = self.noise*np.random.uniform(-1., 1.)
+    self.b = self.noise*np.random.uniform(-1., 1.)
 
-    # Choose function to optimize
-    if u < 1./5:
-        self.name = "Himmelblau"
-        self.function = lambda x : (x[0]**2+x[1]-self.a)**2 + (x[0]+x[1]**2-self.b)**2 # Himmelblau
-    elif u < 2./5:
-        self.name = "Booth"
-        self.function = lambda x : (x[0]+2.*x[1]-self.a)**2 + (2*x[0]+x[1]-self.b)**2 # Booth
-    elif u < 3./5:
-        self.name = "Rosenbrock"
-        self.function = lambda x : abs(self.a)*(x[1]-x[0]**2)**2 + (self.b - x[0])**2 # Rosenbrock
-    elif u < 4./5:
-        self.name = "Spheres"
-        self.function = lambda x : (self.a-x[0])**2 + (self.b-x[1])**2 # Two Spheres
+
+    # Set function to optimize
+    if self.objective == "himmelblau":
+        self.a += -11
+        self.b += -7
+        self.function = lambda x : (np.sum(np.power(x[:int(self.dim/2)],2))+np.sum(x[int(self.dim/2):])+self.a)**2 + (np.sum(x[:int(self.dim/2):])+np.sum(np.power(x[int(self.dim/2):],2))+self.b)**2
+
+    elif self.objective == "booth":
+        self.a += -7
+        self.b += -5
+        self.function = lambda x : (np.sum(x[:int(self.dim/2)])+np.sum(x[int(self.dim/2):])*2+self.a)**2 + (np.sum(x[:int(self.dim/2):])*2+np.sum(x[int(self.dim/2):])+self.b)**2
+
+    elif self.objective == "rosenbrock":
+        self.a += 100
+        self.b += 1
+        self.function = lambda x : abs(self.a)*np.sum((x[1:]-np.power(x[:-1],2))**2) + np.sum(np.power(np.subtract(x, self.b),2))
+
+    elif self.objective == "spheres":
+        self.a += 2
+        self.b += -2
+        self.function = lambda x : np.sum(np.power(np.subtract(self.a,x[:int(self.dim/2)]),2)) + np.sum(np.power(np.subtract(self.b,x[1]),2))
+
+    elif self.objective == "levi":
+        self.a += -1
+        self.b += -1
+        self.function = lambda x : np.sin(3.*np.pi*x[0])**2 + (x[0]+self.a)**2*(1+np.sin(3*np.pi*x[1])**2)+(x[1]+self.b)**2*(1.+np.sin(2.*np.pi*x[1])**2)
     else:
-        self.name = "Levi"
-        self.function = lambda x : np.sin(3.*np.pi*(x[0]-self.a))**2 + (x[0]-self.a-1.)**2*(1+np.sin(3*np.pi*(x[1]-self.b))**2)+(x[1]-self.b-1.)**2*(1.+np.sin(2.*np.pi*(x[1]-self.b))**2) # Levi
-    
+        print("Objective {} not recognized! Abort..".format(self.objective))
+        sys.exit()
+
     #self.function = lambda x : np.sin(x[0]+x[1])+(x[0]-x[1]**2)-self.a*x[0]+self.b*x[1]+1 # McCormick
 
     # Initialize first population
@@ -116,7 +144,7 @@ class ObjectiveFactory:
     # Update current best values
     self.curEf = np.mean(self.feval)
     self.curBestF = min(self.feval)
-    assert self.curBestF > 0., "Best must be positive {} ({})".format(self.curBestF, self.name)
+    assert self.curBestF > 0., "Best must be positive {} ({})".format(self.curBestF, self.objective)
     if self.curBestF < self.bestEver:
         self.bestEver = self.curBestF
 
@@ -140,7 +168,7 @@ class ObjectiveFactory:
 
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
-    self.scale *= np.exp(cs/(self.dhat-cs)*(np.linalg.norm(self.paths)/self.chi-1))
+    self.scale *= np.exp(cs/self.dhat*(np.linalg.norm(self.paths)/self.chi-1))
     if(self.scale < 1e-24):
         print("Warning: scale reaching lower bound")
         self.scale = 1e-24
@@ -166,11 +194,10 @@ class ObjectiveFactory:
   def getState(self):
     state = np.zeros((self.dim+1)*self.mu+1+self.dim)
     for i in range(self.mu):
-        state[i*(self.dim+1):i*(self.dim+1)+self.dim] = self.population[i]
+        state[i*(self.dim+1):i*(self.dim+1)+self.dim] = self.population[i] - self.mean
         state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
     state[-1-self.dim:-1] = self.scale**2*np.diag(self.cov) # diagonal variance
     state[-1] = self.bestEver/self.curEf # relative function eval
-    #state[-1] = self.bestEver/self.curEf # relative function eval
     assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
     return state
 
@@ -178,13 +205,14 @@ class ObjectiveFactory:
     #r = (self.prevEf - self.curEf)/self.initialEf
     #r = (self.prevEf - self.curEf)/self.prevEf
     #r = +np.log(self.prevEf)-np.log(self.curEf)
-    r = -np.log(self.curEf)
+    #r = -np.log(self.curEf)
+    r = np.log(self.initialEf/self.curEf)
     assert np.isfinite(r), "Return not finite {}".format(r)
 
     return r
 
 if __name__ == '__main__':
-    objective = ObjectiveFactory(8)
+    objective = ObjectiveFactory(8, noise=0.0, objective="Random")
     objective.reset()
     objective.advance(np.ones(3))
     state = objective.getState()

@@ -3,19 +3,41 @@ import sys
 sys.path.append('./_environment')
 from env import *
 
+import argparse
+
+# Parse console arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--run', help='Run tag for result files.', required=True, type=int)
+parser.add_argument('--obj', help='Objective function.', required=True, type=str)
+parser.add_argument('--dim', help='Dimension of objective function.', required=True, type=int)
+parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
+parser.add_argument('--noise', help='Noise level of objective function.', required=True, type=float)
+parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
+args = parser.parse_args()
+print(args)
+
 ####### Defining Korali Problem
 
 import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+# Experiment Configuration
 
-evaluation = False
-resultDirectory = "_vracer_rosenbrock_1"
+run = args.run
+objective = args.obj
+dim = args.dim
+evaluation = args.eval
+populationSize = args.pop
+noise = args.noise
+resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
+
+mu = int(populationSize/2) # states
+
+# Termination Criteria
+
 maxGens = 1e6
 maxExperiences = 1e6
-populationSize = 16
-mu = int(populationSize/2) # states
 
 ### Defining the problem's configuration
 
@@ -28,26 +50,25 @@ if evaluation == True:
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s,populationSize)
+lEnv = lambda s : env(s, objective, populationSize, noise)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
-e["Problem"]["Testing Frequency"] = 100
+e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 10
 
 for i in range(mu):
-    e["Variables"][i*3]["Name"] = "Position X"
-    e["Variables"][i*3]["Type"] = "State"
+    for j in range(dim):
+        e["Variables"][i]["Name"] = "Position {}".format(j)
+        e["Variables"][i]["Type"] = "State"
+        i += 1
 
-    e["Variables"][i*3+1]["Name"] = "Position Y"
-    e["Variables"][i*3+1]["Type"] = "State"
+    e["Variables"][i*3+dim]["Name"] = "Evaluation"
+    e["Variables"][i*3+dim]["Type"] = "State"
 
-    e["Variables"][i*3+2]["Name"] = "Evaluation"
-    e["Variables"][i*3+2]["Type"] = "State"
-
-i = 3*mu
+i += 1
 e["Variables"][i]["Name"] = "Diagonal Variance 1"
 e["Variables"][i]["Type"] = "State"
 
@@ -66,19 +87,12 @@ e["Variables"][i]["Lower Bound"] = 0.0
 e["Variables"][i]["Upper Bound"] = +1.0
 e["Variables"][i]["Initial Exploration Noise"] = 0.1
 
-#i += 1
-#e["Variables"][i]["Name"] = "Mean Learning Rate"
-#e["Variables"][i]["Type"] = "Action"
-#e["Variables"][i]["Lower Bound"] = 0.0
-#e["Variables"][i]["Upper Bound"] = 1.0
-#e["Variables"][i]["Initial Exploration Noise"] = 0.1
-
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Episodes Per Generation"] = 10
 
 e["Solver"]["Experience Replay"]["Start Size"] = 8192
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
@@ -112,7 +126,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
 e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
-
 
 if evaluation == True:
     e["Solver"]["Testing"]["Sample Ids"] = [0]

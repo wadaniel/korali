@@ -1735,19 +1735,13 @@ namespace
   subExp["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.1});
   subExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
 
-  // Evaluation function
-  std::function<void(korali::Sample&)> modelFc = [](Sample& s)
-  {
-   s["F(x)"] = 1.0;
-  };
-
   // Configuring Problem
   Theta* pObj;
   knlohmann::json problemJs;
   problemJs["Type"] = "Hierarchical/Theta";
   problemJs["Sub Experiment"] = subExp;
   problemJs["Psi Experiment"] = psiExp;
-  problemJs["Sub Experiment Model"] = modelFc;
+  problemJs["Sub Experiment Model"] = 0;
 
   ASSERT_NO_THROW(pObj = dynamic_cast<Theta *>(Module::getModule(problemJs, &e)));
   e._problem = pObj;
@@ -1836,6 +1830,11 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs.erase("Sub Experiment Model");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Sub Experiment Model"] = "Not a Number";
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;

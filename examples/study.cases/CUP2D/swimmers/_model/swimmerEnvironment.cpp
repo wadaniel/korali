@@ -47,7 +47,6 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<Shape*> shapes = _environment->getShapes();
   size_t nAgents = shapes.size();
-  std::cout << "nAgents = " << nAgents << std::endl;
   if( nAgents == 2 )
     nAgents -= 1;
   std::vector<StefanFish *> agents(nAgents);
@@ -67,10 +66,37 @@ void runEnvironment(korali::Sample &s)
   if( nAgents > 1 )
   {
     std::vector<std::vector<double>> states(nAgents);
+    size_t rowEndId = 0;
+    size_t rowId = 0;
+    size_t colId = 0;
+    size_t nNextRow = 2;
+    size_t nCurrRow = 1;
+    bool increment = true;
     for( size_t i = 0; i<nAgents; i++ )
     {
       std::vector<double> state = agents[i]->state();
-      state.push_back(i);
+      // add column identifier ~ num fish in front
+      state.push_back( colId );
+      // number of fish to left
+      state.push_back( rowId );
+      // number of fish to right
+      state.push_back( ( nCurrRow-1 ) - rowId );
+      // increment counter
+      rowId++;
+      if( i == rowEndId )
+      {
+        rowId = 0;
+        colId++;
+        nCurrRow = nNextRow;
+        rowEndId += nNextRow;
+        if( nNextRow == (size_t)std::sqrt(nAgents) )
+          increment = false;
+        if( increment )
+          nNextRow++;
+        else
+          nNextRow--;
+      }
+      // assign state/reward to container
       states[i]  = state;
     }
     s["State"] = states;
@@ -87,7 +113,12 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   size_t maxSteps = 200;
 
-// Starting main environment loop
+  // File to write actions
+  std::stringstream filename;
+  filename<<"actions.txt";
+  ofstream myfile(filename.str().c_str());
+
+  // Starting main environment loop
   bool done = false;
   while ( curStep < maxSteps && done == false )
   {
@@ -107,13 +138,9 @@ void runEnvironment(korali::Sample &s)
         action = actions.get<std::vector<double>>();
 
       // Write action to file
-      std::stringstream filename;
-      filename<<"actions_"<<i<<".txt";
-      ofstream myfile(filename.str().c_str());
       if (myfile.is_open())
       {
-        myfile << action[0] << " " << action[1] << std::endl;
-        myfile.close();
+        myfile << i << " " << action[0] << " " << action[1] << std::endl;
       }
       else{
         fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
@@ -152,10 +179,37 @@ void runEnvironment(korali::Sample &s)
     {
       std::vector<std::vector<double>> states(nAgents);
       std::vector<double> rewards(nAgents);
+      size_t rowEndId = 0;
+      size_t rowId = 0;
+      size_t colId = 0;
+      size_t nNextRow = 2;
+      size_t nCurrRow = 1;
+      bool increment = true;
       for( size_t i = 0; i<nAgents; i++ )
       {
         std::vector<double> state = agents[i]->state();
-        state.push_back(i);
+        // add column identifier
+        state.push_back( colId );
+        // number of fish to left
+        state.push_back( rowId );
+        // number of fish to right
+        state.push_back( ( nCurrRow-1 ) - rowId );
+        // increment counter
+        rowId++;
+        if( i == rowEndId )
+        {
+          rowId = 0;
+          colId++;
+          nCurrRow = nNextRow;
+          rowEndId += nNextRow;
+          if( nNextRow == (size_t)std::sqrt(nAgents) )
+            increment = false;
+          if( increment )
+            nNextRow++;
+          else
+            nNextRow--;
+        }
+        // assign state/reward to container
         states[i]  = state;
         rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
@@ -205,6 +259,9 @@ void runEnvironment(korali::Sample &s)
     curStep++;
   }
 
+  // Close file to write actions
+  myfile.close();
+
   // Flush CUP logger
   logger.flush();
 
@@ -249,11 +306,11 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
 
   // Write initial condition to file
   std::stringstream filename;
-  filename<<"initialCondition_"<<agentId<<".txt";
-  ofstream myfile(filename.str().c_str());
+  filename<<"initialCondition.txt";
+  ofstream myfile(filename.str().c_str(), std::ofstream::app);
   if (myfile.is_open())
   {
-    myfile << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
+    myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
     myfile.close();
   }
   else{
@@ -300,6 +357,10 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
     xMax = 3.2;
     yMin = 0.4;
     yMax = 1.6;
+  }
+  else{
+    fprintf(stderr, "Number of Agents unknown, can not finish isTerminal...\n");
+    exit(-1);
   }
 
   const double X = agent->center[0];

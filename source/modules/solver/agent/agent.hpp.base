@@ -422,24 +422,19 @@ class __className__ : public __parentClassName__
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {
-    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }
-
-  /**
-   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
-   */
-  void calculateRewardRescalingFactors();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

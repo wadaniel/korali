@@ -19,7 +19,7 @@ e["Problem"]["Psi Experiment"] = psi
 
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000
-e["Solver"]["Default Burn In"] = 2
+e["Solver"]["Burn In"] = 2
 e["Solver"]["Max Chain Length"] = 1
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 

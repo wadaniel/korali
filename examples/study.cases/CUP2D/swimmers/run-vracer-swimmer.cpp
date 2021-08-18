@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   // Setting up the state variables
   size_t numStates = 16;
   if( nAgents > 1 )
-    numStates++;
+    numStates += 3;
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Concurrent Environments"] = N;
-  e["Solver"]["Experiences Between Policy Updates"] = 1;
+  e["Solver"]["Experiences Between Policy Updates"] = nAgents;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   // e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;

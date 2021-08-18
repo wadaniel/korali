@@ -46,7 +46,7 @@ e["Problem"]["Custom Settings"]["Evaluation"] = "False"
 if evaluation == True:
     found = e.loadState(resultDirectory +'/latest')
     e["Problem"]["Custom Settings"]["Evaluation"] = "True"
-    maxGens = maxGens + 1
+    maxGens = int(e["Current Generation"]) + 1
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
@@ -71,7 +71,7 @@ for j in range(mu):
     i += 1
 
 for d in range(dim):
-    e["Variables"][i]["Name"] = "Diagonal Variance {}".format(d)
+    e["Variables"][i]["Name"] = "Diagonal Sdev {}".format(d)
     e["Variables"][i]["Type"] = "State"
     i += 1
 
@@ -92,8 +92,8 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 10
 
-e["Solver"]["Experience Replay"]["Start Size"] = 8192
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
+e["Solver"]["Experience Replay"]["Start Size"] = 16384
+e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
@@ -126,6 +126,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
 e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
 
 if evaluation == True:
+    e["Solver"]["Mode"] = "Testing"
     e["Solver"]["Testing"]["Sample Ids"] = [0]
 
 ### If this is test mode, run only a couple generations

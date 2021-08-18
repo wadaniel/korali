@@ -11,8 +11,6 @@ def env(s, objective, dim, populationSize, noise):
  # Initializing environment
  objective = ObjectiveFactory(objective, dim, populationSize)
  
- outfile = "history.npz"
- #outfile = s["Custom Settings"]["Output"]
  
  if s["Custom Settings"]["Evaluation"] == "True":
     objective.reset(noise=0.0)
@@ -24,6 +22,7 @@ def env(s, objective, dim, populationSize, noise):
  done = False
 
  objectives = []
+ muobjectives = []
  scales = []
 
  while not done and step < maxSteps:
@@ -42,6 +41,7 @@ def env(s, objective, dim, populationSize, noise):
   
   # Advancing step counter
   objectives.append(objective.curBestF)
+  muobjectives.append(objective.curEf)
   scales.append(objective.scale)
 
   step = step + 1
@@ -61,16 +61,20 @@ def env(s, objective, dim, populationSize, noise):
  # Store statistics
  if s["Custom Settings"]["Evaluation"] == "True":
     # load previous
+    #outfile = s["Custom Settings"]["Output"]
+    outfile = "history_{}_{}_{}_{}.npz".format(objective.objective, dim, populationSize, noise)
     if os.path.isfile(outfile):
         history = np.load(outfile)
         scaleHistory = history['scaleHistory']
         objectiveHistory = history['objectiveHistory']
-        print(scaleHistory)
+        muobjectiveHistory = history['muobjectiveHistory']
+
         scaleHistory = np.concatenate((scaleHistory, [scales]))
         objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
+        muobjectiveHistory = np.concatenate((objectiveHistory, [muobjectives]))
     else:
         scaleHistory = [scales]
         objectiveHistory = [objectives]
-        print(scales)
+        muobjectiveHistory = [muobjectives]
      
-    np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory)
+    np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory)

@@ -196,7 +196,7 @@ class ObjectiveFactory:
     for i in range(self.mu):
         state[i*(self.dim+1):i*(self.dim+1)+self.dim] = self.population[i] - self.mean
         state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
-    state[-1-self.dim:-1] = self.scale**2*np.diag(self.cov) # diagonal variance
+    state[-1-self.dim:-1] = self.scale*np.sqrt(np.diag(self.cov)) # diagonal variance
     state[-1] = self.bestEver/self.curEf # relative function eval
     assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
     return state

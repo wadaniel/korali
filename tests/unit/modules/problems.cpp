@@ -1705,7 +1705,7 @@ namespace
   psiExp["Distributions"][0]["Maximum"] = 1.0;
   psiExp["Solver"]["Type"] = "Sampler/TMCMC";
   psiExp["Solver"]["Population Size"] = 1000;
-  psiExp["Solver"]["Default Burn In"] = 3;
+  psiExp["Solver"]["Burn In"] = 3;
   psiExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   psiExp["Solver"]["Covariance Scaling"] = 0.01;
   psiExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
@@ -1727,7 +1727,7 @@ namespace
   subExp["Distributions"][0]["Maximum"] = 1.0;
   subExp["Solver"]["Type"] = "Sampler/TMCMC";
   subExp["Solver"]["Population Size"] = 1000;
-  subExp["Solver"]["Default Burn In"] = 3;
+  subExp["Solver"]["Burn In"] = 3;
   subExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   subExp["Solver"]["Covariance Scaling"] = 0.01;
   subExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
@@ -1904,7 +1904,7 @@ namespace
   psiExp["Distributions"][0]["Maximum"] = 1.0;
   psiExp["Solver"]["Type"] = "Sampler/TMCMC";
   psiExp["Solver"]["Population Size"] = 1000;
-  psiExp["Solver"]["Default Burn In"] = 3;
+  psiExp["Solver"]["Burn In"] = 3;
   psiExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   psiExp["Solver"]["Covariance Scaling"] = 0.01;
   psiExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});

@@ -150,9 +150,7 @@ class ObjectiveFactory:
 
   def advance(self, action):
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
-    #cm = np.clip(action[1], a_min=0.0, a_max=1.0)
-    #cs = self.cs
-    cm = self.cm
+    cm = np.clip(action[1], a_min=0.0, a_max=1.0)
     y = (self.population[:self.mu]-self.mean)/self.scale
 
     # Calc weighted mean and cov
@@ -192,11 +190,11 @@ class ObjectiveFactory:
     self.step += 1
 
   def getState(self):
-    state = np.zeros((self.dim+1)*self.mu+1+self.dim)
+    state = np.zeros((self.dim+1)*self.mu+1)
+    diagsdev = self.scale*np.sqrt(np.diag(self.cov)) # diagonal sdev
     for i in range(self.mu):
-        state[i*(self.dim+1):i*(self.dim+1)+self.dim] = self.population[i] - self.mean
+        state[i*(self.dim+1):i*(self.dim+1)+self.dim] = np.divide(self.population[i] - self.mean, diagsdev)
         state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
-    state[-1-self.dim:-1] = self.scale*np.sqrt(np.diag(self.cov)) # diagonal variance
     state[-1] = self.bestEver/self.curEf # relative function eval
     assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
     return state

@@ -36,7 +36,6 @@ mu = int(populationSize/2) # states
 
 # Termination Criteria
 
-maxGens = 1e6
 maxExperiences = 1e6
 
 ### Defining the problem's configuration
@@ -65,13 +64,8 @@ for j in range(mu):
         e["Variables"][i]["Name"] = "Position {}/{}".format(j,d)
         e["Variables"][i]["Type"] = "State"
         i += 1
-
+    
     e["Variables"][i]["Name"] = "Evaluation"
-    e["Variables"][i]["Type"] = "State"
-    i += 1
-
-for d in range(dim):
-    e["Variables"][i]["Name"] = "Diagonal Sdev {}".format(d)
     e["Variables"][i]["Type"] = "State"
     i += 1
 
@@ -83,7 +77,15 @@ e["Variables"][i]["Name"] = "Step Size Rate"
 e["Variables"][i]["Type"] = "Action"
 e["Variables"][i]["Lower Bound"] = 0.0
 e["Variables"][i]["Upper Bound"] = +1.0
-e["Variables"][i]["Initial Exploration Noise"] = 0.1
+e["Variables"][i]["Initial Exploration Noise"] = 0.2
+i += 1
+
+e["Variables"][i]["Name"] = "Mean Adaption Rate"
+e["Variables"][i]["Type"] = "Action"
+e["Variables"][i]["Lower Bound"] = 0.0
+e["Variables"][i]["Upper Bound"] = +1.0
+e["Variables"][i]["Initial Exploration Noise"] = 0.2
+
 
 ### Defining Agent Configuration 
 
@@ -122,7 +124,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
 e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
 
 if evaluation == True:

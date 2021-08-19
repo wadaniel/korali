@@ -24,6 +24,7 @@ def env(s, objective, dim, populationSize, noise):
  objectives = []
  muobjectives = []
  scales = []
+ actions = []
 
  while not done and step < maxSteps:
 
@@ -43,6 +44,7 @@ def env(s, objective, dim, populationSize, noise):
   objectives.append(objective.curBestF)
   muobjectives.append(objective.curEf)
   scales.append(objective.scale)
+  actions.append(s["Action"])
 
   step = step + 1
 
@@ -52,6 +54,7 @@ def env(s, objective, dim, populationSize, noise):
  #print("Terminal Scale\n{}".format(objective.scale))
  #print("Terminal Mean\n{}".format(objective.mean))
  #print("Terminal Cov\n{}".format(objective.cov))
+ 
  # Setting finalization status
  if (objective.isOver()):
   s["Termination"] = "Terminal"
@@ -68,13 +71,19 @@ def env(s, objective, dim, populationSize, noise):
         scaleHistory = history['scaleHistory']
         objectiveHistory = history['objectiveHistory']
         muobjectiveHistory = history['muobjectiveHistory']
+        #actionHistory = history['actionHistory']
 
         scaleHistory = np.concatenate((scaleHistory, [scales]))
         objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
         muobjectiveHistory = np.concatenate((objectiveHistory, [muobjectives]))
+        #actionHistory = np.concatenate((actionHistory, [actions]))
+
     else:
         scaleHistory = [scales]
         objectiveHistory = [objectives]
         muobjectiveHistory = [muobjectives]
+        #actionHistory = [actions]
      
+    #np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
     np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory)
+

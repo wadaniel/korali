@@ -6,3 +6,8 @@ Finding: learning stops for 2 dim after ~3e6 exp, no learning for 4 & 8 dim
 # Run 6
 added mu learning rate as action, removed diagonal cov states, scaling parameter samples by diagoanl sdev
 running 2 and 4 dimension
+Finding: no improvement detected, ill continue with this varyation as it seems to be more reasonable
+
+# Run 0
+Actions Between Policy Updates set to 1 (used to be 10!) Rerunning all objectives wo noise, lets see if the agent learns
+Finding:

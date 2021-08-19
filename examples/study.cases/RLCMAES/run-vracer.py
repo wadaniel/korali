@@ -56,7 +56,7 @@ e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
-e["Problem"]["Actions Between Policy Updates"] = 10
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 i = 0
 for j in range(mu):
@@ -128,7 +128,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
 
 if evaluation == True:
     e["Solver"]["Mode"] = "Testing"
-    e["Solver"]["Testing"]["Sample Ids"] = [0]
+    e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
 
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:

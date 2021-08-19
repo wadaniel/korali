@@ -89,17 +89,17 @@ class ObjectiveFactory:
 
     elif self.objective == "rosenbrock":
         self.a += 100
-        self.b += 1
+        self.b += 5
         self.function = lambda x : abs(self.a)*np.sum((x[1:]-np.power(x[:-1],2))**2) + np.sum(np.power(np.subtract(x, self.b),2))
 
     elif self.objective == "spheres":
-        self.a += 2
-        self.b += -2
+        self.a += 5
+        self.b += -5
         self.function = lambda x : np.sum(np.power(np.subtract(self.a,x[:int(self.dim/2)]),2)) + np.sum(np.power(np.subtract(self.b,x[1]),2))
 
     elif self.objective == "levi":
-        self.a += -1
-        self.b += -1
+        self.a += -5
+        self.b += -5
         self.function = lambda x : np.sin(3.*np.pi*x[0])**2 + (x[0]+self.a)**2*(1+np.sin(3*np.pi*x[1])**2)+(x[1]+self.b)**2*(1.+np.sin(2.*np.pi*x[1])**2)
     else:
         print("Objective {} not recognized! Abort..".format(self.objective))

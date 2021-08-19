@@ -95,6 +95,7 @@ e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "_result_vracer"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10
+e["File Output"]["Use Multiple Files"] = False
  
 ### Running Training Experiment
 

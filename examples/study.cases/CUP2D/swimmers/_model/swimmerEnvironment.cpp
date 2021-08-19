@@ -16,9 +16,13 @@ void runEnvironment(korali::Sample &s)
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
+  // Get rank to create/switch to results folder
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rank);
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {

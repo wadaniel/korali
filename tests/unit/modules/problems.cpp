@@ -1727,7 +1727,7 @@ namespace
   subExp["Distributions"][0]["Maximum"] = 1.0;
   subExp["Solver"]["Type"] = "Sampler/TMCMC";
   subExp["Solver"]["Population Size"] = 1000;
-  subExp["Solver"]["Default Burn In"] = 3;
+  subExp["Solver"]["Burn In"] = 3;
   subExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   subExp["Solver"]["Covariance Scaling"] = 0.01;
   subExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
@@ -1739,8 +1739,9 @@ namespace
   Theta* pObj;
   knlohmann::json problemJs;
   problemJs["Type"] = "Hierarchical/Theta";
-  problemJs["Theta Experiment"] = subExp;
+  problemJs["Sub Experiment"] = subExp;
   problemJs["Psi Experiment"] = psiExp;
+  problemJs["Sub Experiment Model"] = 0;
 
   ASSERT_NO_THROW(pObj = dynamic_cast<Theta *>(Module::getModule(problemJs, &e)));
   e._problem = pObj;
@@ -1825,6 +1826,21 @@ namespace
   pObj->_subExperiment = subExp;
   pObj->_subExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Sub Experiment Model");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Sub Experiment Model"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Sub Experiment Model"] = 0;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;

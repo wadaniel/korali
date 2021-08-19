@@ -199,21 +199,6 @@ class __className__ : public __parentClassName__
   float _importanceWeightAnnealingRate;
 
   /**
-  * @brief Stores the current policy configuration.
-  */
-  knlohmann::json _trainingCurrentPolicy;
-
-  /**
-  * @brief Stores the training policy configuration that has produced the best results.
-  */
-  knlohmann::json _trainingBestPolicy;
-
-  /**
-  * @brief Stores the candidate policy configuration that has produced the best results.
-  */
-  knlohmann::json _testingBestPolicy;
-
-  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;

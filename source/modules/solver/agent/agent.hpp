@@ -91,9 +91,9 @@ class Agent : public Solver
   */
    std::vector<size_t> _testingSampleIds;
   /**
-  * @brief The hyperparameters of the policy to test.
+  * @brief The current hyperparameters of the policy to test.
   */
-   knlohmann::json _testingPolicy;
+   knlohmann::json _testingCurrentPolicy;
   /**
   * @brief Specifies the depth of the running training average to report.
   */
@@ -231,6 +231,14 @@ class Agent : public Solver
   */
    size_t _trainingBestEpisodeId;
   /**
+  * @brief [Internal Use] Stores the current training policy configuration.
+  */
+   knlohmann::json _trainingCurrentPolicy;
+  /**
+  * @brief [Internal Use] Stores the best training policy configuration found so far.
+  */
+   knlohmann::json _trainingBestPolicy;
+  /**
   * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
    std::vector<float> _testingReward;
@@ -266,6 +274,10 @@ class Agent : public Solver
   * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
   */
    float _testingBestAverageReward;
+  /**
+  * @brief [Internal Use] Stores the best testing policy configuration found so far.
+  */
+   knlohmann::json _testingBestPolicy;
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
@@ -500,21 +512,6 @@ class Agent : public Solver
   * @brief Stores the importance weight annealing factor.
   */
   float _importanceWeightAnnealingRate;
-
-  /**
-  * @brief Stores the current policy configuration.
-  */
-  knlohmann::json _trainingCurrentPolicy;
-
-  /**
-  * @brief Stores the training policy configuration that has produced the best results.
-  */
-  knlohmann::json _trainingBestPolicy;
-
-  /**
-  * @brief Stores the candidate policy configuration that has produced the best results.
-  */
-  knlohmann::json _testingBestPolicy;
 
   /**
   * @brief Storage for the pointer to the learning problem

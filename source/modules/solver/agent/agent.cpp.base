@@ -103,15 +103,18 @@ void __className__::initialize()
     _rewardRescalingSigma = 1.0f;
     _rewardRescalingSumSquaredRewards = 0.0f;
     _rewardOutboundPenalizationCount = 0;
+
+    // Getting agent's initial policy
+    _trainingCurrentPolicy = getAgentPolicy();
   }
+
+  // Setting current agent's training state
+  setAgentPolicy(_trainingCurrentPolicy);
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
     if (_mode == "Training" || _testingBestPolicy.empty())
       deserializeExperienceReplay();
-
-  // Getting agent's initial policy
-  _trainingCurrentPolicy = getAgentPolicy();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
@@ -144,17 +147,17 @@ void __className__::initialize()
     _maxGenerations = _k->_currentGeneration + 1;
 
     // Setting testing policy to best testing hyperparameters if not custom-set by the user
-    if (_testingPolicy.empty())
+    if (_testingCurrentPolicy.empty())
     {
       // Checking if testing policies have been generated
       if (_testingBestPolicy.empty())
       {
         _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
-        _testingPolicy = _trainingCurrentPolicy;
+        _testingCurrentPolicy = _trainingCurrentPolicy;
       }
       else
       {
-        _testingPolicy = _testingBestPolicy;
+        _testingCurrentPolicy = _testingBestPolicy;
       }
     }
 
@@ -289,7 +292,7 @@ void __className__::testingGeneration()
     testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
-    testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["Policy Hyperparameters"] = _testingCurrentPolicy;
     testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
@@ -899,11 +902,6 @@ void __className__::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = _curPolicyVector[i].unboundedAction;
   }
 
-  // Storing training/testing policies
-  stateJson["Training"]["Current Policy"] = _trainingCurrentPolicy;
-  stateJson["Training"]["Best Policy"] = _trainingBestPolicy;
-  stateJson["Testing"]["Best Policy"] = _testingBestPolicy;
-
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
@@ -984,14 +982,6 @@ void __className__::deserializeExperienceReplay()
     curPolicy.unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"].get<std::vector<float>>();
     _curPolicyVector.add(curPolicy);
   }
-
-  // Restoring training/testing policies
-  _trainingCurrentPolicy = stateJson["Training"]["Current Policy"];
-  _trainingBestPolicy = stateJson["Training"]["Best Policy"];
-  _testingBestPolicy = stateJson["Testing"]["Best Policy"];
-
-  // Setting current agent's training state
-  setAgentPolicy(_trainingCurrentPolicy);
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
+  e["File Output"]["Use Multiple Files"] = false;
   e["File Output"]["Path"] = trainingResultsPath;
 
   ////// Running Experiment

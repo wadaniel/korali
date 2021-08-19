@@ -41,7 +41,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   
   if (len(r) == 0): continue  
   
-  cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
+  nAgents = r["Problem"]["Agents Per Environment"]
+  # averageDepth *= nAgents
+  cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"])) / nAgents
   rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
   trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
   testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]

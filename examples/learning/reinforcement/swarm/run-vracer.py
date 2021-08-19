@@ -79,7 +79,6 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 # e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
 # e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
   
@@ -108,6 +107,7 @@ e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10
 e["File Output"]["Path"] = resultFolder
+
 
 ### Run Experiment
 k.run(e)

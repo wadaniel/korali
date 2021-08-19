@@ -62,6 +62,12 @@ e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 e["Solver"]["Mini Batch"]["Size"] = 64
 
+### Normalization Configuration
+
+e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
@@ -89,6 +95,7 @@ e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "_result_vracer"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10
+e["File Output"]["Use Multiple Files"] = False
  
 ### Running Training Experiment
 

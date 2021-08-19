@@ -11,3 +11,7 @@ Finding: no improvement detected, ill continue with this varyation as it seems t
 # Run 0
 Actions Between Policy Updates set to 1 (used to be 10!) Rerunning all objectives wo noise, lets see if the agent learns
 Finding:
+
+# Run 1
+using 3 actions, cs, cmu and csaddon. Rerunning rosenbrock and spheres wo noise, lets compare with run 0.
+Finding:

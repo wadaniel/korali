@@ -149,11 +149,14 @@ class ObjectiveFactory:
         self.bestEver = self.curBestF
 
   def advance(self, action):
+
+    # Unpack actions
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
-    y = (self.population[:self.mu]-self.mean)/self.scale
-
+    #csaddon = np.clip(action[2], a_min=-1.0, a_max=1.0)
+    
     # Calc weighted mean and cov
+    y = (self.population[:self.mu]-self.mean)/self.scale
     weightedMeanOfBest = np.average(y, weights=self.weights, axis=0)
 
     covOfBest = np.zeros((self.dim, self.dim))
@@ -167,6 +170,8 @@ class ObjectiveFactory:
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
     self.scale *= np.exp(cs/self.dhat*(np.linalg.norm(self.paths)/self.chi-1))
+    #self.scale *= np.exp(cs/self.dhat*(np.linalg.norm(self.paths)/self.chi-1) + csaddon)
+    
     if(self.scale < 1e-24):
         print("Warning: scale reaching lower bound")
         self.scale = 1e-24

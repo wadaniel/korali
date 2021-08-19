@@ -85,6 +85,14 @@ e["Variables"][i]["Type"] = "Action"
 e["Variables"][i]["Lower Bound"] = 0.0
 e["Variables"][i]["Upper Bound"] = +1.0
 e["Variables"][i]["Initial Exploration Noise"] = 0.2
+i += 1
+
+#e["Variables"][i]["Name"] = "Scale Addon"
+#e["Variables"][i]["Type"] = "Action"
+#e["Variables"][i]["Lower Bound"] = -1.0
+#e["Variables"][i]["Upper Bound"] = +1.0
+#e["Variables"][i]["Initial Exploration Noise"] = 0.2
+#i += 1
 
 
 ### Defining Agent Configuration 

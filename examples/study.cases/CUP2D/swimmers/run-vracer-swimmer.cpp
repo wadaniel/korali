@@ -53,8 +53,10 @@ int main(int argc, char *argv[])
 
   // Setting up the state variables
   size_t numStates = 16;
+  #ifndef NOID
   if( nAgents > 1 )
     numStates += 3;
+  #endif
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {

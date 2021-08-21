@@ -32,7 +32,7 @@ void runEnvironment(korali::Sample &s)
 
   // Redirecting all output to the log file
   char logFilePath[128];
-  sprintf(logFilePath, "%s/log.txt", resDir);
+  sprintf(logFilePath, "%s/log%08lu.txt", resDir, sampleId);
   auto logFile = freopen(logFilePath, "a", stdout);
   if (logFile == NULL)
   {
@@ -70,15 +70,18 @@ void runEnvironment(korali::Sample &s)
   if( nAgents > 1 )
   {
     std::vector<std::vector<double>> states(nAgents);
+    #ifndef NOID
     size_t rowEndId = 0;
     size_t rowId = 0;
     size_t colId = 0;
     size_t nNextRow = 2;
     size_t nCurrRow = 1;
     bool increment = true;
+    #endif
     for( size_t i = 0; i<nAgents; i++ )
     {
       std::vector<double> state = agents[i]->state();
+      #ifndef NOID
       // add column identifier ~ num fish in front
       state.push_back( colId );
       // number of fish to left
@@ -100,6 +103,7 @@ void runEnvironment(korali::Sample &s)
         else
           nNextRow--;
       }
+      #endif
       // assign state/reward to container
       states[i]  = state;
     }
@@ -183,15 +187,18 @@ void runEnvironment(korali::Sample &s)
     {
       std::vector<std::vector<double>> states(nAgents);
       std::vector<double> rewards(nAgents);
+      #ifndef NOID
       size_t rowEndId = 0;
       size_t rowId = 0;
       size_t colId = 0;
       size_t nNextRow = 2;
       size_t nCurrRow = 1;
       bool increment = true;
+      #endif
       for( size_t i = 0; i<nAgents; i++ )
       {
         std::vector<double> state = agents[i]->state();
+        #ifndef NOID
         // add column identifier
         state.push_back( colId );
         // number of fish to left
@@ -213,6 +220,7 @@ void runEnvironment(korali::Sample &s)
           else
             nNextRow--;
         }
+        #endif
         // assign state/reward to container
         states[i]  = state;
         rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;

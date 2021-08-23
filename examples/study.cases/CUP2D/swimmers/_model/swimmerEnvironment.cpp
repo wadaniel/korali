@@ -33,7 +33,7 @@ void runEnvironment(korali::Sample &s)
   // Redirecting all output to the log file
   char logFilePath[128];
   sprintf(logFilePath, "%s/log%08lu.txt", resDir, sampleId);
-  auto logFile = freopen(logFilePath, "a", stdout);
+  auto logFile = freopen(logFilePath, "w", stdout);
   if (logFile == NULL)
   {
     printf("[Korali] Error creating log file: %s.\n", logFilePath);

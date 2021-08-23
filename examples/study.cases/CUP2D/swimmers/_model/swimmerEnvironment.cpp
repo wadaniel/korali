@@ -50,11 +50,9 @@ void runEnvironment(korali::Sample &s)
 
   // Obtaining agents
   std::vector<Shape*> shapes = _environment->getShapes();
-  size_t nAgents = shapes.size();
-  if( nAgents == 2 )
-    nAgents -= 1;
+  size_t nAgents = shapes.size() - 1;
   std::vector<StefanFish *> agents(nAgents);
-  for( size_t i = 0; i<nAgents; i++ )
+  for( size_t i = 1; i<nAgents+1; i++ )
     agents[i] = dynamic_cast<StefanFish *>(shapes[i]);
 
   // Establishing environment's dump frequency

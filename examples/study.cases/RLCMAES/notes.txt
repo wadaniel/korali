@@ -8,10 +8,22 @@ added mu learning rate as action, removed diagonal cov states, scaling parameter
 running 2 and 4 dimension
 Finding: no improvement detected, ill continue with this varyation as it seems to be more reasonable
 
-# Run 0
-Actions Between Policy Updates set to 1 (used to be 10!) Rerunning all objectives wo noise, lets see if the agent learns
-Finding:
-
 # Run 1
+Actions Between Policy Updates set to 1 (used to be 10!) Rerunning all objectives wo noise, lets see if the agent learns
+Finding: agent learns, except for rosenbrock very flat. rosenbrock with params (100, 5) and spheres (5,5) same perf as cmaes. but worked well on booth, himmelblau and levi, next changing params of rosenbrock and retry (Run 2)
+Todo: check runs of levi13 and ackley
+
+# Run 2 (deleted)
 using 3 actions, cs, cmu and csaddon. Rerunning rosenbrock and spheres wo noise, lets compare with run 0.
-Finding:
+Finding: cov error!!!
+Todo: investigate, follow-up
+
+# Run 2
+Same as Run 1, but changed params of rosenbrock (100, 3)
+Finding: agent still learns flat w pop 8 and 32
+
+# Run 3
+Same as Run 2, but increasing population size to 32 s.t. variance of reward reduced  and potentially increases learning. running 'random' wo rosenbrock
+Finding: 
+
+

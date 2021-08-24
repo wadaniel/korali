@@ -55,26 +55,32 @@ class ObjectiveFactory:
  
     # Init random objective if desired
     if self.objective == "random":
-        u = np.random.uniform(0.,1)
-        if u < 1/5:
+        nobjectives = 6
+        u = np.random.uniform(0.,5/6)
+
+        if u < 1/nobjectives:
             self.objective = "himmelblau"
-            self.a = 11.
-            self.b = 7.
  
-        elif u < 2/5:
+        elif u < 2/nobjectives:
             self.objective = "booth"
-        elif u < 3/5:
-            self.objective = "rosenbrock"
-        elif u < 4/5:
+
+        elif u < 3/nobjectives:
+            self.objective = "levi13"
+
+        elif u < 4/nobjectives:
             self.objective = "spheres"
+
+        elif u < 5/nobjectives:
+            self.objective = "ackley"
+
         else:
-            self.objective = "levi"
+            self.objective = "rosenbrock"
  
     # Init random noise params
     self.noise = noise
     self.a = self.noise*np.random.uniform(-1., 1.)
     self.b = self.noise*np.random.uniform(-1., 1.)
-
+    self.zero = self.noise*np.random.uniform(-1., 1.)
 
     # Set function to optimize
     if self.objective == "himmelblau":
@@ -83,29 +89,97 @@ class ObjectiveFactory:
         self.function = lambda x : (np.sum(np.power(x[:int(self.dim/2)],2))+np.sum(x[int(self.dim/2):])+self.a)**2 + (np.sum(x[:int(self.dim/2):])+np.sum(np.power(x[int(self.dim/2):],2))+self.b)**2
 
     elif self.objective == "booth":
+        # zero at (1,3)
         self.a += -7
         self.b += -5
         self.function = lambda x : (np.sum(x[:int(self.dim/2)])+np.sum(x[int(self.dim/2):])*2+self.a)**2 + (np.sum(x[:int(self.dim/2):])*2+np.sum(x[int(self.dim/2):])+self.b)**2
 
     elif self.objective == "rosenbrock":
+        # zero at b
         self.a += 100
-        self.b += 5
+        self.b += 1 
         self.function = lambda x : abs(self.a)*np.sum((x[1:]-np.power(x[:-1],2))**2) + np.sum(np.power(np.subtract(x, self.b),2))
 
     elif self.objective == "spheres":
-        self.a += 5
+        # zero at b
+        self.a += +5
         self.b += -5
-        self.function = lambda x : np.sum(np.power(np.subtract(self.a,x[:int(self.dim/2)]),2)) + np.sum(np.power(np.subtract(self.b,x[1]),2))
+        self.function = lambda x : abs(self.a)*np.sum(np.power(np.subtract(self.b,x),2)) 
 
     elif self.objective == "levi":
-        self.a += -5
-        self.b += -5
-        self.function = lambda x : np.sin(3.*np.pi*x[0])**2 + (x[0]+self.a)**2*(1+np.sin(3*np.pi*x[1])**2)+(x[1]+self.b)**2*(1.+np.sin(2.*np.pi*x[1])**2)
+        # zero at a
+        self.a += -1
+        self.b += 10
+        self.function = lambda x : np.sin(np.pi*(1+(x[0]+self.a)/4))**2 + \
+                np.sum( ((x[:-1]+self.a)/4)**2 * (1+self.b*np.power(np.sin(np.pi*(1+(x[:-1]+self.a)/4)+1),2)) ) + \
+                ((x[-1]+self.a)/4)**2 * (1+np.sin(2*np.pi*(1+(x[-1]+self.a)/4)))
+
+    elif self.objective == "levi13":
+        # zero at (1,1)
+        self.a = -1
+        self.b = 10
+        self.function = lambda x : np.sin(3.*np.pi*(1+(x[0]+self.a)/4))**2 + \
+                np.sum(((x[:-1]+self.a)/4)**2*(1+self.b*np.sin(np.pi*(1+(x[:-1]+self.a)/4)+1)**2)) + \
+                ((x[-1]+self.a)/4)**2*(1+np.sin(2*np.pi*(1+(x[-1]+self.a)/4)))
+
+    elif self.objective == "ackley":
+        # zero at b
+        self.a += 20
+        self.b += 0
+        self.function = lambda x : -self.a*np.exp(-0.2*np.sqrt(1/self.dim*np.sum(np.power(x-self.b, 2))))-np.exp(1/self.dim*np.sum(np.cos(2.*np.pi*(x-self.b)))) + self.a + np.exp(1)
+ 
+    elif self.objective == "bukin":
+        # zero at (0.1*b, 0.1*b, .., -b)
+        self.a += 100
+        self.b += 10
+        self.function = lambda x : abs(self.a)*np.sum(np.sqrt(np.abs(x[1:]-0.01*x[-1]**2))) + 0.01*np.abs(x[-1]+self.b)
+    
+    elif self.objective == "fsphere":
+        self.zero += 0
+        self.function = lambda x : np.sum(np.power(x-self.zero,2))
+
+    elif self.objective == "fellipsoid":
+        self.zero += 0
+        self.function = lambda x : np.sum(np.power(10,6*np.arange(self.dim)/self.dim)*np.power(x-self.zero,2))
+ 
+    elif self.objective == "fcigar":
+        self.zero += 0
+        self.function = lambda x : (x[0]-self.zero)**2+np.sum(10**6*np.power(x[1:]-self.zero,2))
+ 
+    elif self.objective == "ftablet":
+        self.zero += 0
+        self.function = lambda x : 10**6*(x[0]-self.zero)**2+np.sum(np.power(x[1:]-self.zero,2))
+
+    elif self.objective == "fcigartablet":
+        self.zero += 0
+        self.function = lambda x : (x[0]-self.zero)**2+np.sum(10**4*np.power(x[1:-1]-self.zero,2))+10**8*(x[-1]-self.zero)**2
+ 
+    elif self.objective == "ftwoaxes":
+        self.zero += 0
+        self.function = lambda x : np.sum(10**6*np.power(x[:int(self.dim/2)]-self.zero,2))+np.sum((x[int(self.dim/2):]-self.zero)**2)
+ 
+    elif self.objective == "fparabr":
+        self.zero += 0
+        self.function = lambda x : -(x[0]-self.zero)+100*np.sum(np.power(x[1:]-self.zero,2))
+ 
+    elif self.objective == "fsharpr":
+        self.zero += 0
+        self.function = lambda x : -(x[0]-self.zero)+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
+
+    elif self.objective == "fdiffpow":
+        self.zero += 0
+        self.function = lambda x : np.sum(np.power(np.abs(x-self.zero),2+10*np.arange(self.dim)/self.dim))
+
+
+
+
+
+
+
     else:
         print("Objective {} not recognized! Abort..".format(self.objective))
         sys.exit()
 
-    #self.function = lambda x : np.sin(x[0]+x[1])+(x[0]-x[1]**2)-self.a*x[0]+self.b*x[1]+1 # McCormick
 
     # Initialize first population
     self.population = np.random.multivariate_normal(self.mean, self.scale*self.scale*self.cov, self.populationSize)
@@ -153,7 +227,7 @@ class ObjectiveFactory:
     # Unpack actions
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
-    #csaddon = np.clip(action[2], a_min=-1.0, a_max=1.0)
+    #csaddon = np.clip(action[2], a_min=-0.5, a_max=0.5)
     
     # Calc weighted mean and cov
     y = (self.population[:self.mu]-self.mean)/self.scale
@@ -209,6 +283,8 @@ class ObjectiveFactory:
     #r = (self.prevEf - self.curEf)/self.prevEf
     #r = +np.log(self.prevEf)-np.log(self.curEf)
     #r = -np.log(self.curEf)
+
+    #r = np.log(self.initialEf/self.curBestF)
     r = np.log(self.initialEf/self.curEf)
     assert np.isfinite(r), "Return not finite {}".format(r)
 

@@ -65,7 +65,7 @@ def env(s, objective, dim, populationSize, noise):
  if s["Custom Settings"]["Evaluation"] == "True":
     # load previous
     #outfile = s["Custom Settings"]["Output"]
-    outfile = "history_{}_{}_{}_{}.npz".format(objective.objective, dim, populationSize, noise)
+    outfile = "history_vracer_{}_{}_{}_{}.npz".format(objective.objective, dim, populationSize, noise)
     if os.path.isfile(outfile):
         history = np.load(outfile)
         scaleHistory = history['scaleHistory']

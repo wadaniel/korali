@@ -40,5 +40,6 @@ for idx, filename in enumerate(args.files):
 
 ax.legend()
 output = filename.replace("npz","png")
+plt.title("Mean of scale (dotted), best objective (solid), and mu-objective (dashed)")
 plt.savefig(output, format='png')
 

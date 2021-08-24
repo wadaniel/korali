@@ -55,26 +55,29 @@ class ObjectiveFactory:
  
     # Init random objective if desired
     if self.objective == "random":
-        nobjectives = 6
-        u = np.random.uniform(0.,5/6)
+        nobjectives = 7
+        u = np.random.uniform(0.,1.)
 
         if u < 1/nobjectives:
-            self.objective = "himmelblau"
+            self.objective = "fsphere"
  
         elif u < 2/nobjectives:
-            self.objective = "booth"
+            self.objective = "felli"
 
         elif u < 3/nobjectives:
-            self.objective = "levi13"
+            self.objective = "fcigar"
 
         elif u < 4/nobjectives:
-            self.objective = "spheres"
+            self.objective = "ftablet"
 
         elif u < 5/nobjectives:
-            self.objective = "ackley"
+            self.objective = "fcigtab"
 
+        elif u < 6/nobjectives:
+            self.objective = "ftwoax"
+ 
         else:
-            self.objective = "rosenbrock"
+            self.objective = "fdiffpow"
  
     # Init random noise params
     self.noise = noise
@@ -138,7 +141,7 @@ class ObjectiveFactory:
         self.zero += 0
         self.function = lambda x : np.sum(np.power(x-self.zero,2))
 
-    elif self.objective == "fellipsoid":
+    elif self.objective == "felli":
         self.zero += 0
         self.function = lambda x : np.sum(np.power(10,6*np.arange(self.dim)/self.dim)*np.power(x-self.zero,2))
  
@@ -150,21 +153,21 @@ class ObjectiveFactory:
         self.zero += 0
         self.function = lambda x : 10**6*(x[0]-self.zero)**2+np.sum(np.power(x[1:]-self.zero,2))
 
-    elif self.objective == "fcigartablet":
+    elif self.objective == "fcigtab":
         self.zero += 0
         self.function = lambda x : (x[0]-self.zero)**2+np.sum(10**4*np.power(x[1:-1]-self.zero,2))+10**8*(x[-1]-self.zero)**2
  
-    elif self.objective == "ftwoaxes":
+    elif self.objective == "ftwoax":
         self.zero += 0
         self.function = lambda x : np.sum(10**6*np.power(x[:int(self.dim/2)]-self.zero,2))+np.sum((x[int(self.dim/2):]-self.zero)**2)
  
     elif self.objective == "fparabr":
         self.zero += 0
-        self.function = lambda x : -(x[0]-self.zero)+100*np.sum(np.power(x[1:]-self.zero,2))
+        self.function = lambda x : -x[0]+100*np.sum(np.power(x[1:]-self.zero,2))
  
     elif self.objective == "fsharpr":
         self.zero += 0
-        self.function = lambda x : -(x[0]-self.zero)+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
+        self.function = lambda x : -x[0]+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
 
     elif self.objective == "fdiffpow":
         self.zero += 0

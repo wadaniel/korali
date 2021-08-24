@@ -24,6 +24,8 @@ Finding: agent still learns flat w pop 8 and 32
 
 # Run 3
 Same as Run 2, but increasing population size to 32 s.t. variance of reward reduced  and potentially increases learning. running 'random' wo rosenbrock
-Finding: 
+Finding: learning seems to be similar, not much improvement when comparing with plain cma-es  
 
-
+# Run 4
+Rosenbrock (100,1)
+Finding:

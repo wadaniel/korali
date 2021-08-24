@@ -13,6 +13,10 @@ parser.add_argument('--dim', help='Dimension of objective function.', required=T
 parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
 parser.add_argument('--noise', help='Noise level of objective function.', required=True, type=float)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
+
+# Defaults
+parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
+
 args = parser.parse_args()
 print(args)
 
@@ -30,13 +34,13 @@ dim = args.dim
 evaluation = args.eval
 populationSize = args.pop
 noise = args.noise
+maxExperiences = args.exp
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
 mu = int(populationSize/2) # states
 
 # Termination Criteria
 
-maxExperiences = 1e6
 
 ### Defining the problem's configuration
 
@@ -87,10 +91,10 @@ e["Variables"][i]["Upper Bound"] = +1.0
 e["Variables"][i]["Initial Exploration Noise"] = 0.2
 i += 1
 
-#e["Variables"][i]["Name"] = "Scale Addon"
+#e["Variables"][i]["Name"] = "Damping param"
 #e["Variables"][i]["Type"] = "Action"
-#e["Variables"][i]["Lower Bound"] = -0.5
-#e["Variables"][i]["Upper Bound"] = +0.5
+#e["Variables"][i]["Lower Bound"] = 1
+#e["Variables"][i]["Upper Bound"] = 3
 #e["Variables"][i]["Initial Exploration Noise"] = 0.2
 #i += 1
 

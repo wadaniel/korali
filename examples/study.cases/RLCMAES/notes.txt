@@ -24,8 +24,30 @@ Finding: agent still learns flat w pop 8 and 32
 
 # Run 3
 Same as Run 2, but increasing population size to 32 s.t. variance of reward reduced  and potentially increases learning. running 'random' wo rosenbrock
-Finding: learning seems to be similar, not much improvement when comparing with plain cma-es  
+Finding: learning seems to be similar, not much improvement when comparing with plain cma-es, random32 almost not learning, random8 not learning
 
 # Run 4
 Rosenbrock (100,1)
-Finding:
+Finding: vracer learning, slight improvement of rl-cmaes compared with plain cmeas on rosenrbock (8 and 32 samples)
+
+# Run 5
+new functions for random, taken from pk paper
+Finding: agent is learning random functions
+TODO: eval performance of all functions vs cmaes
+
+# Run 6
+reward based on distance to zero, running fsphere and random from pk
+Finding: random seems to learn better than in Run 5
+TODO: eval performance of all functions vs cmaes
+
+# Run 7
+added 3rd action to control dhat, running rosenbrock, reward from Run 4 (?)
+Finding: agent does not learn
+
+# Run 8
+reward based on distance to zero (version 2), running fsphere and random from pk
+Finding: random learns like Run 6, but rewards seem to be more even distributed
+TODO: eval performance of all functions vs cmaes
+
+# Run 9
+same as 8, running batch script for rosenbrok and ackley

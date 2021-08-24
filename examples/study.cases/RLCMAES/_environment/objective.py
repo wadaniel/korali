@@ -27,6 +27,8 @@ class ObjectiveFactory:
     self.cs = (self.ueff+2.)/(self.dim+self.ueff+5)
     self.cm = 1.
 
+    #print(" mueff {}\n chi {}\n dhat {}\n cc {}\n c1{}\n cu {}\n cs {}\n".format(self.ueff, self.chi, self.dhat, self.cc, self.c1, self.cu, self.cs))
+
     # Init variables
     self.reset()
 
@@ -47,9 +49,15 @@ class ObjectiveFactory:
     self.curBestF = np.inf
     self.initialBestF = np.inf
     self.initialEf = np.inf
+    self.curDist = np.inf
+    self.prevDist = np.inf
+    self.initialDist = np.inf
     self.prevEf = np.inf
     self.curEf = np.inf
     self.function = None
+    self.bestX = np.inf*np.ones(self.dim)
+    self.prevBestX = np.inf*np.ones(self.dim)
+    self.xstar = np.zeros(self.dim)
     self.step = 0
 
  
@@ -173,16 +181,12 @@ class ObjectiveFactory:
         self.zero += 0
         self.function = lambda x : np.sum(np.power(np.abs(x-self.zero),2+10*np.arange(self.dim)/self.dim))
 
-
-
-
-
-
-
     else:
         print("Objective {} not recognized! Abort..".format(self.objective))
         sys.exit()
 
+    # Set target for fobjectives
+    self.xstar = np.ones(self.dim)*self.zero
 
     # Initialize first population
     self.population = np.random.multivariate_normal(self.mean, self.scale*self.scale*self.cov, self.populationSize)
@@ -194,6 +198,7 @@ class ObjectiveFactory:
     self.prevBestEver = self.curBestF
     self.initialBestF = self.curBestF
     self.initialEf = self.curEf
+    self.initialDist = self.curDist
 
     # Init step
     self.step = 0
@@ -217,7 +222,13 @@ class ObjectiveFactory:
     # Update previous 
     self.prevEf = self.curEf
     self.prevBestF = self.curBestF
-    
+  
+    # Keep track of best sample
+    self.prevBestX = self.bestX
+    self.bestX = self.population[0]
+    self.prevDist = self.curDist
+    self.curDist = np.linalg.norm(self.bestX - self.xstar,2)
+   
     # Update current best values
     self.curEf = np.mean(self.feval)
     self.curBestF = min(self.feval)
@@ -230,7 +241,8 @@ class ObjectiveFactory:
     # Unpack actions
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
-    #csaddon = np.clip(action[2], a_min=-0.5, a_max=0.5)
+    dhat = self.dhat
+    #dhat = np.clip(action[2], a_min=1, a_max=3)
     
     # Calc weighted mean and cov
     y = (self.population[:self.mu]-self.mean)/self.scale
@@ -246,8 +258,7 @@ class ObjectiveFactory:
 
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
-    self.scale *= np.exp(cs/self.dhat*(np.linalg.norm(self.paths)/self.chi-1))
-    #self.scale *= np.exp(cs/self.dhat*(np.linalg.norm(self.paths)/self.chi-1) + csaddon)
+    self.scale *= np.exp(cs/dhat*(np.linalg.norm(self.paths)/self.chi-1))
     
     if(self.scale < 1e-24):
         print("Warning: scale reaching lower bound")
@@ -286,11 +297,13 @@ class ObjectiveFactory:
     #r = (self.prevEf - self.curEf)/self.prevEf
     #r = +np.log(self.prevEf)-np.log(self.curEf)
     #r = -np.log(self.curEf)
-
     #r = np.log(self.initialEf/self.curBestF)
-    r = np.log(self.initialEf/self.curEf)
-    assert np.isfinite(r), "Return not finite {}".format(r)
+    #r = np.log(self.initialEf/self.curEf) # run 4
 
+    #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6
+    r = np.log(self.curDist/self.initialDist) # run 8
+    
+    assert np.isfinite(r), "Return not finite {}".format(r)
     return r
 
 if __name__ == '__main__':

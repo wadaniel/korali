@@ -127,9 +127,9 @@ void __className__::saveState()
 
   // Naming result files depends on whether incremental numbering is used, or we overwrite previous results
   if (_fileOutputUseMultipleFiles == true)
-   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
+    sprintf(genFileName, "gen%08lu.json", _currentGeneration);
   else
-   sprintf(genFileName, "genLatest.json", _currentGeneration);
+    sprintf(genFileName, "genLatest.json", _currentGeneration);
 
   // If results directory doesn't exist, create it
   if (!dirExists(_fileOutputPath)) mkdir(_fileOutputPath);

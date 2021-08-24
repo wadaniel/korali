@@ -2,7 +2,8 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "swimmerEnvironment.hpp"
-#include <chrono>
+#include "configs.hpp"
+
 #include <filesystem>
 
 int _argc;
@@ -43,6 +44,34 @@ void runEnvironment(korali::Sample &s)
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
+
+  // Sample task and save in vector
+  #ifdef MULTITASK
+  std::uniform_int_distribution<> disT(1, 3);
+  int task = disT(_randomGenerator);
+  std::string argumentString;
+  switch(task) {
+    case 1 : arguments = OPTIONS + " -shapes " + OBJECTShalfDisk;
+             break;
+    case 2 : arguments = OPTIONS + " -shapes " + OBJECTSnaca;
+             break;
+    case 3 : arguments = OPTIONS + " -shapes " + OBJECTSstefanfish;
+             break;
+  }
+  std::stringstream ss(s);
+  std::string item;
+  std::vector<std::string> arguments;
+  while ( std::getline(ss, item, ' ') )
+    arguments.push_back(item);
+
+  // from https://stackoverflow.com/a/39883532
+  std::vector<char*> argv;
+  for (const auto& arg : arguments)
+    argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+  _argc = argv.size() - 1;
+  _argv = argv.data();
+  #endif
 
   // Creating simulation environment
   Simulation *_environment = new Simulation(_argc, _argv);

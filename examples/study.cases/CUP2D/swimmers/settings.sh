@@ -16,7 +16,7 @@ PR=${PR:-5}
 LENGTH=${LENGTH:-0.2}
 PERIOD=${PERIOD:-1} # 0.2 for NACA
 XPOSFOLLOWER=${XPOSFOLLOWER:-0.9}
-PID=${PID:-1}
+PID=${PID:-0}
 
 # L=0.2 stefanfish Re=1'000 <-> NU=0.00004
 NU=${NU:-0.00004}
@@ -25,12 +25,17 @@ NU=${NU:-0.00004}
 OBSTACLE=${OBSTACLE:-halfDisk}
 XPOSLEADER=${XPOSLEADER:-0.6}
 
+echo "###############################"
+echo "setting simulation options"
+OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 1 -verbose 0"
+echo $OPTIONS
+echo "----------------------------"
+
 if [ "$OBSTACLE" = "halfDisk" ]
 then
-	NAGENTS=1
-	echo "###############################"
 	echo "setting options for halfDisk"
 	# options for halfDisk
+	NAGENTS=1
 	ANGLE=${ANGLE:-20}
 	XVEL=${XVEL:-0.15}
 	RADIUS=${RADIUS:-0.06}
@@ -39,14 +44,14 @@ then
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
 "
 	echo $OBJECTS
+	echo "###############################"
 	# halfDisk Re=1'000 <-> NU=0.000018
 	# NU=${NU:-0.000018}
 elif [ "$OBSTACLE" = "NACA" ]
 then
-	NAGENTS=1
-	echo "###############################"
 	echo "setting options for NACA"
 	# options for NACA
+	NAGENTS=1
 	ANGLE=${ANGLE:-0}
 	FPITCH=${FPITCH:-0.715} # corresponds to f=1.43 from experiment
 	LEADERLENGTH=${LEADERLENGTH:-0.12}
@@ -56,23 +61,25 @@ then
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
 "
 	echo $OBJECTS
+	echo "###############################"
 	# NACA Re=1'000 <-> NU=0.000018
 	# NU=${NU:-0.000018}
 elif [ "$OBSTACLE" = "stefanfish" ]
 then
-	NAGENTS=1
-	echo "###############################"
 	echo "setting options for stefanfish"
+	# options for stefanfish
+	NAGENTS=1
 	# set object string
 	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSLEADER bFixed=1 pid=$PID
 stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
 "
 	echo $OBJECTS
+	echo "###############################"
 elif [ "$OBSTACLE" = "swarm4" ]
 then
-	NAGENTS=3
-	echo "###############################"
 	echo "setting options for swarm4"
+	# options for swarm4
+	NAGENTS=3
 	# set object string
 	### for L=0.2 and extentx=extenty=2, 4 swimmers
 	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
@@ -81,11 +88,12 @@ stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
 stefanfish L=$LENGTH T=$PERIOD xpos=1.20 ypos=1.00
 "
 	echo $OBJECTS
+	echo "###############################"
 elif [ "$OBSTACLE" = "swarm9" ]
 then
-	NAGENTS=8
-	echo "###############################"
 	echo "setting options for swarm9"
+	# options for swarm9
+	NAGENTS=8
 	# set object string
 	### for L=0.2 and extentx=extenty=2, 9 swimmers
 	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
@@ -99,11 +107,12 @@ stefanfish L=$LENGTH T=$PERIOD xpos=1.50 ypos=1.10
 stefanfish L=$LENGTH T=$PERIOD xpos=1.80 ypos=1.00
 "
 	echo $OBJECTS
+	echo "###############################"
 elif [ "$OBSTACLE" = "swarm16" ]
 then
-	NAGENTS=15
-	echo "###############################"
 	echo "setting options for swarm16"
+	# options for swarm16
+	NAGENTS=15
 	# set object string
 	### for L=0.2 and extentx=extenty=2, 16 swimmers
 	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
@@ -124,11 +133,12 @@ stefanfish L=$LENGTH T=$PERIOD xpos=2.10 ypos=1.10
 stefanfish L=$LENGTH T=$PERIOD xpos=2.40 ypos=1.00
 "
 	echo $OBJECTS
+	echo "###############################"
 elif [ "$OBSTACLE" = "swarm25" ]
 then
-	NAGENTS=24
-	echo "###############################"
 	echo "setting options for swarm25"
+	# options for swarm25
+	NAGENTS=24
 	# set object string
 	### for L=0.2 and extentx=extenty=2, 25 swimmers
 	OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
@@ -158,10 +168,12 @@ stefanfish L=$LENGTH T=$PERIOD xpos=2.70 ypos=1.10
 stefanfish L=$LENGTH T=$PERIOD xpos=3.00 ypos=1.00
 "
 	echo $OBJECTS
+	echo "###############################"
+elif [ "$OBSTACLE" = "multitask" ]
+then
+	echo "###############################"
+	echo "no options for multitask"
+	echo "###############################"
+	echo $OBJECTS
+	echo $OPTIONS
 fi
-
-echo "----------------------------"
-echo "setting simulation options"
-OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 1 -verbose 0"
-echo $OPTIONS
-echo "###############################"

@@ -1,4 +1,4 @@
-//  Korali environment for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP-2D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "korali.hpp"
@@ -9,6 +9,7 @@
 #include "Utils/BufferedLogger.h"
 
 // #define NOID
+#define MUTLITASK
 
 // command line arguments are read in Korali application
 extern int _argc;

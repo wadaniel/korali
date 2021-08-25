@@ -90,7 +90,7 @@ test('learning.supervised.sineWave.rnn.adam', e,
 
 e = find_program('run-rnn.py', required: true)
 test('learning.supervised.sineWave.rnn.madgrad', e,
-      args: [ '--optimizer', 'MADGRAD', '--learningRate', '0.002', '--maxGenerations', '30'],
+      args: [ '--optimizer', 'MADGRAD', '--learningRate', '0.001', '--maxGenerations', '60'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

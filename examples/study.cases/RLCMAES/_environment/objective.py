@@ -298,10 +298,10 @@ class ObjectiveFactory:
     #r = +np.log(self.prevEf)-np.log(self.curEf)
     #r = -np.log(self.curEf)
     #r = np.log(self.initialEf/self.curBestF)
-    #r = np.log(self.initialEf/self.curEf) # run 4
+    r = np.log(self.initialEf/self.curEf) # run 4
 
     #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6
-    r = np.log(self.curDist/self.initialDist) # run 8
+    #r = -np.log(self.curDist/self.initialDist) # run 8
     
     assert np.isfinite(r), "Return not finite {}".format(r)
     return r

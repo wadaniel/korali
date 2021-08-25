@@ -12,9 +12,10 @@ parser.add_argument('--run', help='Run tag for result files.', required=True, ty
 parser.add_argument('--dim', help='Dimension of objective function.', required=True, type=int)
 parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
 parser.add_argument('--obj', help='Objective function.', required=True, type=str)
-parser.add_argument('--noise', help='Noise level of objective function.', required=True, type=float)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=1, type=int)
+
+parser.add_argument('--noise', help='Noise level of objective function.', required=False, type=float, default=0.0)
 args = parser.parse_args()
 print(args)
 

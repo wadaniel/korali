@@ -11,11 +11,11 @@ parser.add_argument('--run', help='Run tag for result files.', required=True, ty
 parser.add_argument('--obj', help='Objective function.', required=True, type=str)
 parser.add_argument('--dim', help='Dimension of objective function.', required=True, type=int)
 parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
-parser.add_argument('--noise', help='Noise level of objective function.', required=True, type=float)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
+parser.add_argument('--noise', help='Noise level of objective function.', required=False, type=float, default=0.0)
 
 args = parser.parse_args()
 print(args)

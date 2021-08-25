@@ -2,7 +2,7 @@
 
 run=9
 noise=0.0
-obj="random"
+obj="rosenbrock"
 dims=(2 4 8 16 32 64 128)
 pops=(6 8 10 12 14 16 18)
 

@@ -921,6 +921,7 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Testing"].erase("Current Policy");
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -930,6 +931,7 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Testing"].erase("Best Policy");
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -954,6 +956,7 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Training"].erase("Current Policy");
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -963,6 +966,7 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Training"].erase("Best Policy");
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;

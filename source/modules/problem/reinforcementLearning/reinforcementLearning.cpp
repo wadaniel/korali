@@ -66,7 +66,7 @@ void __environmentWrapper()
   (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
-  if ((*agent)["Termination"] == "Non Terminal")  KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
+  if ((*agent)["Termination"] == "Non Terminal") KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
   bool terminationRecognized = false;
   if ((*agent)["Termination"] == "Terminal") terminationRecognized = true;
@@ -392,7 +392,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
   // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
-    if (std::isfinite(agent["Reward"][i].get<float>()) == false)  KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
+    if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 }
 
 void ReinforcementLearning::setConfiguration(knlohmann::json& js) 

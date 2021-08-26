@@ -136,8 +136,7 @@ void __className__::saveState()
 
   std::string filePath = "./" + _fileOutputPath + "/" + genFileName;
 
-  if (saveJsonToFile(filePath.c_str(), _js.getJson()) != 0)
-    KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
+  if (saveJsonToFile(filePath.c_str(), _js.getJson()) != 0) KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
 
   // If using multiple files, create a hard link to the latest result
   std::string linkPath = "./" + _fileOutputPath + "/latest";

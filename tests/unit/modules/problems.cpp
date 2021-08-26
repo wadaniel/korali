@@ -2100,6 +2100,21 @@ namespace
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
+  problemJs.erase("Agents Per Environment");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Agents Per Environment"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Agents Per Environment"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
   problemJs.erase("Environment Function");
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 

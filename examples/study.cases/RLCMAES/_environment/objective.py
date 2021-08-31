@@ -9,8 +9,15 @@ import numpy as np
 class ObjectiveFactory:
   def __init__(self, objective, dim, populationSize):
 
+    # Initialize objective
+    if objective == "random":
+        self.random = True
+        self.objective = None
+    else:
+        self.random = False
+        self.objective = objective
+
     # Initialize constants
-    self.objective = objective
     self.populationSize = populationSize
     self.mu = int(self.populationSize/2)
     self.weights = np.log(self.mu+1/2)-np.log(np.array(range(self.mu))+1)
@@ -58,34 +65,48 @@ class ObjectiveFactory:
     self.bestX = np.inf*np.ones(self.dim)
     self.prevBestX = np.inf*np.ones(self.dim)
     self.xstar = np.zeros(self.dim)
+    self.rfac = 1.0
     self.step = 0
-
  
     # Init random objective if desired
-    if self.objective == "random":
+    if self.random == True:
         nobjectives = 7
         u = np.random.uniform(0.,1.)
 
         if u < 1/nobjectives:
             self.objective = "fsphere"
+            self.rfac = 1/2.7
+            #self.rfac = 1/13.4
  
         elif u < 2/nobjectives:
             self.objective = "felli"
+            self.rfac = 1/2.1
+            #self.rfac = 1/8.9
 
         elif u < 3/nobjectives:
             self.objective = "fcigar"
+            self.rfac = 1/1.7
+            #self.rfac = 1/3.4
 
         elif u < 4/nobjectives:
             self.objective = "ftablet"
+            self.rfac = 1/1.6
+            #self.rfac = 1/3.3
 
         elif u < 5/nobjectives:
             self.objective = "fcigtab"
+            self.rfac = 1/1.5
+            #self.rfac = 1/1.1
 
         elif u < 6/nobjectives:
             self.objective = "ftwoax"
+            self.rfac = 1/1.6
+            #self.rfac = 1/3.5
  
         else:
             self.objective = "fdiffpow"
+            self.rfac = 1/1.8
+            #self.rfac = 1/2.2
  
     # Init random noise params
     self.noise = noise
@@ -298,10 +319,12 @@ class ObjectiveFactory:
     #r = +np.log(self.prevEf)-np.log(self.curEf)
     #r = -np.log(self.curEf)
     #r = np.log(self.initialEf/self.curBestF)
-    r = np.log(self.initialEf/self.curEf) # run 4
-
-    #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6
+    #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6 (similar to 8, but high var)
+    #r = np.log(self.initialEf/self.curEf) # run 4
     #r = -np.log(self.curDist/self.initialDist) # run 8
+    
+    r = self.rfac * np.log(self.initialEf/self.curEf) # run 11
+    #r = -self.rfac * np.log(self.curDist/self.initialDist) # run 12
     
     assert np.isfinite(r), "Return not finite {}".format(r)
     return r

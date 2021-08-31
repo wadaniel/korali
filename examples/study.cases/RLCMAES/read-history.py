@@ -28,18 +28,23 @@ for idx, filename in enumerate(args.files):
 
     history = np.load(filename)
 
-    scaleHistory = np.mean(history['scaleHistory'], axis=0)
-    objectiveHistory = np.mean(history['objectiveHistory'], axis=0)
-    muobjectiveHistory = np.mean(history['muobjectiveHistory'], axis=0)
+    scaleHistory = np.median(history['scaleHistory'], axis=0)
+    muobjectiveHistory = np.median(history['muobjectiveHistory'], axis=0)
+    
+    objectiveHistoryUpperQuantile = np.quantile(history['objectiveHistory'], 0.8, axis=0)
+    objectiveHistoryLowerQuantile = np.quantile(history['objectiveHistory'], 0.2, axis=0)
+    objectiveHistory = np.median(history['objectiveHistory'], axis=0)
 
     gens = np.arange(len(scaleHistory))
-    
-    ax.plot(gens, scaleHistory, c=colors[idx], linestyle='dotted', linewidth=0.5)
-    ax.plot(gens, objectiveHistory, c=colors[idx], linestyle='solid', label=filename)
-    ax.plot(gens, muobjectiveHistory, c=colors[idx], linestyle='dashed', linewidth=0.5)
+ 
+    col = colors[idx]
+    ax.plot(gens, scaleHistory, c=col, linestyle='dotted', linewidth=0.5)
+    ax.plot(gens, objectiveHistory, c=col, linestyle='solid', label=filename)
+    ax.plot(gens, muobjectiveHistory, c=col, linestyle='dashed', linewidth=0.5)
+    ax.fill_between(gens, objectiveHistoryLowerQuantile, objectiveHistoryUpperQuantile, color=col, alpha=0.2)
 
 ax.legend()
 output = filename.replace("npz","png")
-plt.title("Mean of scale (dotted), best objective (solid), and mu-objective (dashed)")
+plt.title("Median of scale (dotted), best objective (solid), and mu-objective (dashed)")
 plt.savefig(output, format='png')
 

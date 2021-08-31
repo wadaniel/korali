@@ -54,4 +54,15 @@ Finding:
 
 # Ran 10
 reward from Run 4, running random obj, increasing policy updates per action to 5, actions per policy up 0.2
+Finding: agent learns, same as in Run 5
+
+# Run 11
+repeating random run from Run 10, 5M exp and with reward factor
 Finding:
+
+# Run 11 - LSTM
+pop size 8, dim 2, lstm, depth 1, output layers 128
+Finding:
+
+# Run 12
+reward 12, running pop size 8, dim 2, vracer and lstm as in run 11

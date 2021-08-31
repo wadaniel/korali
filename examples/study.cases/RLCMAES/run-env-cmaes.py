@@ -49,6 +49,7 @@ action = [cs, cm]
 outfile = "history_cmaes_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise)
 objective = ObjectiveFactory(objective, dim, populationSize)
 
+rewardhistory = np.zeros(reps)
 for i in range(reps):
     objective.reset(noise=noise)
     state = objective.getState().tolist()
@@ -83,6 +84,7 @@ for i in range(reps):
      # Store statistics
 
     print(cumreward)
+    rewardhistory[i] = cumreward
     if evaluation == True:
         if os.path.isfile(outfile):
             history = np.load(outfile)
@@ -104,3 +106,6 @@ for i in range(reps):
         #np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
         np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory)
 
+print("Mean & Sdev")
+print(np.mean(rewardhistory))
+print(np.std(rewardhistory))

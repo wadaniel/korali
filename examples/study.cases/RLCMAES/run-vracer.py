@@ -12,6 +12,7 @@ parser.add_argument('--obj', help='Objective function.', required=True, type=str
 parser.add_argument('--dim', help='Dimension of objective function.', required=True, type=int)
 parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
+parser.add_argument('--feval', help='Evaluate stored policy.', required=False, type=str)
 
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
@@ -30,11 +31,13 @@ e = korali.Experiment()
 
 run = args.run
 objective = args.obj
+fobjective = args.feval if args.feval else objective
 dim = args.dim
 evaluation = args.eval
 populationSize = args.pop
 noise = args.noise
 maxExperiences = args.exp
+
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
 mu = int(populationSize/2) # states
@@ -53,14 +56,14 @@ if evaluation == True:
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s, objective, dim, populationSize, noise)
+lEnv = lambda s : env(s, fobjective, dim, populationSize, noise)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 0.2
 
 i = 0
 for j in range(mu):

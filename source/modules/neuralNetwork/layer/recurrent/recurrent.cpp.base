@@ -184,19 +184,19 @@ std::vector<float> __className__::generateInitialHyperparameters()
 
   // Calculate hyperparameters for weight and bias of all linear layers
   // Setting value for this layer's xavier constant
-  float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
+  float xavierConstant = std::sqrt(6.0f/(_outputChannels + _prevLayer->_outputChannels));
 
   // Weights applied to the input layer(s)
   for (size_t layerId = 0; layerId < L; layerId++)
     for (size_t gateId = 0; gateId < G; gateId++)
       for (size_t i = 0; i < OC * IC; i++)
-        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+        hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
   // Weights applied to the recurrent layer
   for (size_t layerId = 0; layerId < L; layerId++)
     for (size_t gateId = 0; gateId < G; gateId++)
       for (size_t i = 0; i < OC * OC; i++)
-        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+        hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
   // Bias for the recurrent layer
   for (size_t layerId = 0; layerId < L; layerId++)

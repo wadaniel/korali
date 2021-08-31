@@ -24,19 +24,19 @@ class __className__ : public __parentClassName__
   virtual void evaluate(korali::Sample &sample);
 
   /**
-  * @brief Evaluates the log prior of the given sample, and stores it in sample["Log Prior"]
+  * @brief Evaluates the log prior of the given sample, and stores it in sample["logPrior"]
   * @param sample A Korali Sample
   */
   void evaluateLogPrior(korali::Sample &sample);
 
   /**
- * @brief Evaluates the log likelihood of the given sample, and stores it in sample["Log Likelihood"]
+ * @brief Evaluates the log likelihood of the given sample, and stores it in sample["logLikelihood"]
  * @param sample A Korali Sample
  */
   virtual void evaluateLogLikelihood(korali::Sample &sample) = 0;
 
   /**
- * @brief Evaluates the log posterior of the given sample, and stores it in sample["Log Posterior"]
+ * @brief Evaluates the log posterior of the given sample, and stores it in sample["logPosterior"]
  * @param sample A Korali Sample
  */
   void evaluateLogPosterior(korali::Sample &sample);

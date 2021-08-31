@@ -79,7 +79,8 @@ void Theta::initialize()
     {
       double logConditionalPrior = 0;
       for (size_t k = 0; k < _subProblemVariableCount; k++)
-        logConditionalPrior += _psiExperimentObject._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(_subProblemSampleCoordinates[j][k]);
+        logConditionalPrior += 
+          _psiExperimentObject._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(_subProblemSampleCoordinates[j][k]);
 
       logValues[j] = logConditionalPrior - _subProblemSampleLogPriors[j];
     }
@@ -103,10 +104,9 @@ void Theta::initialize()
 
 void Theta::evaluateLogLikelihood(Sample &sample)
 {
-  double logLikelihood = 0.0;
-
+  // store the subproblem's likelihood in sample["logLikelihood"]
   dynamic_cast<problem::Bayesian*>(_subExperimentObject._problem)->evaluateLoglikelihood(sample);
-
+  
   std::vector<double> psiSample;
   psiSample.resize(_psiVariableCount);
 
@@ -122,12 +122,13 @@ void Theta::evaluateLogLikelihood(Sample &sample)
 
     double logConditionalPrior = 0.;
     for (size_t k = 0; k < _subProblemVariableCount; k++)
-      logConditionalPrior += _psiExperimentObject._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(sample["Parameters"][k]);
+      logConditionalPrior += 
+        _psiExperimentObject._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(sample["Parameters"][k]);
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
   }
 
-  sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
+  sample["logLikelihood"] += -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
 void Theta::setConfiguration(knlohmann::json& js) 

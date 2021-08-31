@@ -12,16 +12,20 @@ e = korali.Experiment()
 sub = korali.Experiment()
 psi = korali.Experiment()
 
-sub.loadState('_setup/results_phase_1/000/latest')
+# Loading previous results
 psi.loadState('_setup/results_phase_2/latest')
+sub.loadState('_setup/results_phase_1/000/latest')
 
+# We need to redefine the subproblem's computational model
+sub["Problem"]["Computational Model"] = lambda d: normal(N,d)
+
+# Specifying reference data
 data = getReferenceData("_setup/data/", 0)
 N = len(data)
   
 e["Problem"]["Type"] = "Hierarchical/Theta"
 e["Problem"]["Sub Experiment"] = sub
 e["Problem"]["Psi Experiment"] = psi
-e["Problem"]["Sub Experiment Model"] = lambda d: normal(N,d)
 
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000

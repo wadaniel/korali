@@ -27,19 +27,44 @@ void ES::setInitialConfiguration()
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
   for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
+  _randomVector.resize(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++) _randomVector[i].resize(_variableCount);
+
 
   _currentMean.resize(_variableCount);
   _previousMean.resize(_variableCount);
   _bestEverVariables.resize(_variableCount);
   _currentBestVariables.resize(_variableCount);
   _valueVector.resize(_populationSize);
-
-  if(_mirroredSampling)
-  {
-    if(_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
-  }
+  _weightVector.resize(_populationSize);
 
   _covarianceMatrix.resize(_variableCount * _variableCount);
+  
+  // Version specific checks
+  if (_version == "ES-EM")
+  {
+    _versionId = 0;
+  }
+  else if (_version == "ES-EM-SGA-v1")
+  {
+    _versionId = 1;
+  }
+  else if (_version == "ES-EM-SGA-v2")
+  {
+    _versionId = 2;
+  }
+  else if (_version == "ES-EM-SGA-v3")
+  {
+    if(_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
+    _versionId = 3;
+  }
+  else if (_version == "ES-EM-C")
+  {
+    _versionId = 4;
+  }
+  else
+    KORALI_LOG_ERROR("Version '%s' not recognized. Available options are 'ES-EM', 'ES-SGA-v1', 'ES-SGA-v2', 'ES-SGA-v3' and 'ES-EM-C'", _version);
+
 
   // Initializing variable defaults
   for (size_t i = 0; i < _variableCount; ++i)
@@ -59,6 +84,10 @@ void ES::setInitialConfiguration()
     }
   }
 
+  // Set initial mean and covariance
+  for(size_t d = 0; d < _variableCount; ++d) _currentMean[d] = _k->_variables[d]->_initialValue;
+  for(size_t d = 0; d < _variableCount; ++d) _covarianceMatrix[d*_variableCount+d] = _k->_variables[d]->_initialStandardDeviation;
+  
   _infeasibleSampleCount = 0;
 }
 
@@ -91,20 +120,11 @@ void ES::runGeneration()
 
 void ES::prepareGeneration()
 {
+  std::vector<double> rands(_variableCount);
   for (size_t i = 0; i < _populationSize; ++i)
   {
-    bool isFeasible;
-    do
-    {
-      std::vector<double> rands(_variableCount);
       for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
       sampleSingle(i, rands);
-
-      isFeasible = isSampleFeasible(_samplePopulation[i]);
-
-      _infeasibleSampleCount += isFeasible ? 0 : 1;
-
-    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }
 }
 
@@ -115,27 +135,73 @@ void ES::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers
 
 void ES::updateDistribution()
 {
-  /* Generate _sortingIndex */
+  // Update sorting index based on value vector
   sort_index(_valueVector, _sortingIndex, _populationSize);
 
-  /* update function value history */
+  // Update current best value and variable
   _previousBestValue = _currentBestValue;
-
-  /* update current best */
   _currentBestValue = _valueVector[_sortingIndex[0]];
-
   _currentBestVariables = _samplePopulation[_sortingIndex[0]];
 
-  /* update xbestever */
+  // Update best ever variables
   if (_currentBestValue > _bestEverValue || _k->_currentGeneration == 1)
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
     _bestEverVariables = _currentBestVariables;
-
   }
 
-  // TODO
+
+  // Set weight vector
+  if(_versionId == 0) // ES-EM
+  {
+    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
+    for(size_t i = 0; i < _populationSize; ++i)
+        _weightVector[i] = _valueVector[i]/sumOfValues;
+  }
+  else if(_versionId == 1) // ES-SGA-v1
+  {
+    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
+    for(size_t i = 0; i < _populationSize; ++i)
+        _weightVector[i] = _valueVector[i]/sumOfValues;
+  }
+  else if(_versionId == 2) // ES-SGA-v2
+  {
+    for(size_t i = 1; i < _populationSize; ++i)
+        _weightVector[i] = _valueVector[i]-_valueVector[0];
+  }
+  else if(_versionId == 3) // ES-SGA-v3
+  {
+    for(size_t i = 0; i < _populationSize; i+=2)
+        _weightVector[i] = 0.5*(_valueVector[i]-_valueVector[i+1]);
+  }
+  else if(_versionId == 4) // ES-EM-C
+  {
+    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
+    for(size_t i = 0; i < _populationSize; ++i)
+        _weightVector[i] = _valueVector[i]/sumOfValues;
+  }
+  
+  // Reset mean and covariance
+  _previousMean = _currentMean;
+  std::fill(_currentMean.begin(), _currentMean.end(), 0.f);
+  std::fill(_covarianceMatrix.begin(), _covarianceMatrix.end(), 0.f);
+  
+  // Update mean and covariance
+  for(size_t i = 0; i < _populationSize; ++i)
+  {
+
+    for(size_t d = 0; d < _variableCount; ++d)
+    {
+      _currentMean[d] += _weightVector[i]*_samplePopulation[i][d];
+      for(size_t e = 0; e < d; ++e)
+      {
+        _covarianceMatrix[d*_variableCount+e] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][e];
+        _covarianceMatrix[e*_variableCount+d] = _covarianceMatrix[d*_variableCount+e];
+      }
+    _covarianceMatrix[d*_variableCount+d] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][d];
+    }
+  }
 }
 
 void ES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
@@ -217,12 +283,28 @@ void ES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Value Vector");
  }
 
+ if (isDefined(js, "Weight Vector"))
+ {
+ try { _weightVector = js["Weight Vector"].get<std::vector<double>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Weight Vector']\n%s", e.what()); } 
+   eraseValue(js, "Weight Vector");
+ }
+
  if (isDefined(js, "Sample Population"))
  {
  try { _samplePopulation = js["Sample Population"].get<std::vector<std::vector<double>>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Sample Population']\n%s", e.what()); } 
    eraseValue(js, "Sample Population");
+ }
+
+ if (isDefined(js, "Random Vector"))
+ {
+ try { _randomVector = js["Random Vector"].get<std::vector<std::vector<double>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Random Vector']\n%s", e.what()); } 
+   eraseValue(js, "Random Vector");
  }
 
  if (isDefined(js, "Finished Sample Count"))
@@ -321,6 +403,14 @@ void ES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Minimum Diagonal Covariance Matrix Element");
  }
 
+ if (isDefined(js, "Version Id"))
+ {
+ try { _versionId = js["Version Id"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Version Id']\n%s", e.what()); } 
+   eraseValue(js, "Version Id");
+ }
+
  if (isDefined(js, "Population Size"))
  {
  try { _populationSize = js["Population Size"].get<size_t>();
@@ -330,23 +420,14 @@ void ES::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Population Size'] required by ES.\n"); 
 
- if (isDefined(js, "Diagonal Covariance"))
+ if (isDefined(js, "Version"))
  {
- try { _diagonalCovariance = js["Diagonal Covariance"].get<int>();
+ try { _version = js["Version"].get<std::string>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Diagonal Covariance']\n%s", e.what()); } 
-   eraseValue(js, "Diagonal Covariance");
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Version']\n%s", e.what()); } 
+   eraseValue(js, "Version");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Diagonal Covariance'] required by ES.\n"); 
-
- if (isDefined(js, "Mirrored Sampling"))
- {
- try { _mirroredSampling = js["Mirrored Sampling"].get<int>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Mirrored Sampling']\n%s", e.what()); } 
-   eraseValue(js, "Mirrored Sampling");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Mirrored Sampling'] required by ES.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Version'] required by ES.\n"); 
 
  if (isDefined(js, "Termination Criteria", "Max Infeasible Resamplings"))
  {
@@ -371,14 +452,15 @@ void ES::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Population Size"] = _populationSize;
-   js["Diagonal Covariance"] = _diagonalCovariance;
-   js["Mirrored Sampling"] = _mirroredSampling;
+   js["Version"] = _version;
    js["Termination Criteria"]["Max Infeasible Resamplings"] = _maxInfeasibleResamplings;
  if(_normalGenerator != NULL) _normalGenerator->getConfiguration(js["Normal Generator"]);
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Sorting Index"] = _sortingIndex;
    js["Value Vector"] = _valueVector;
+   js["Weight Vector"] = _weightVector;
    js["Sample Population"] = _samplePopulation;
+   js["Random Vector"] = _randomVector;
    js["Finished Sample Count"] = _finishedSampleCount;
    js["Current Best Variables"] = _currentBestVariables;
    js["Best Ever Variables"] = _bestEverVariables;
@@ -391,6 +473,7 @@ void ES::getConfiguration(knlohmann::json& js)
    js["Infeasible Sample Count"] = _infeasibleSampleCount;
    js["Maximum Diagonal Covariance Matrix Element"] = _maximumDiagonalCovarianceMatrixElement;
    js["Minimum Diagonal Covariance Matrix Element"] = _minimumDiagonalCovarianceMatrixElement;
+   js["Version Id"] = _versionId;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Optimizer::getConfiguration(js);

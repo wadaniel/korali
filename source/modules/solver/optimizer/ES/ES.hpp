@@ -35,13 +35,9 @@ class ES : public Optimizer
   */
    size_t _populationSize;
   /**
-  * @brief Covariance matrix updates will be optimized for diagonal matrices.
+  * @brief Name of the algorithm.
   */
-   int _diagonalCovariance;
-  /**
-  * @brief Generate the negative counterpart of each random number during sampling.
-  */
-   int _mirroredSampling;
+   std::string _version;
   /**
   * @brief [Internal Use] Normal random number generator.
   */
@@ -59,9 +55,17 @@ class ES : public Optimizer
   */
    std::vector<double> _valueVector;
   /**
+  * @brief [Internal Use] Weights to update mean and covariance.
+  */
+   std::vector<double> _weightVector;
+  /**
   * @brief [Internal Use] Sample coordinate information.
   */
    std::vector<std::vector<double>> _samplePopulation;
+  /**
+  * @brief [Internal Use] Random numbers to produce sample.
+  */
+   std::vector<std::vector<double>> _randomVector;
   /**
   * @brief [Internal Use] Counter of evaluated samples to terminate evaluation.
   */
@@ -110,6 +114,10 @@ class ES : public Optimizer
   * @brief [Internal Use] Minimum diagonal element of the Covariance Matrix.
   */
    double _minimumDiagonalCovarianceMatrixElement;
+  /**
+  * @brief [Internal Use] Identified for version.
+  */
+   size_t _versionId;
   /**
   * @brief [Termination Criteria] Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound.
   */

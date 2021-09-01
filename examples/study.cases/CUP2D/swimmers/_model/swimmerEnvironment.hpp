@@ -9,7 +9,7 @@
 #include "Utils/BufferedLogger.h"
 
 // #define NOID
-#define MUTLITASK
+// #define MULTITASK
 
 // command line arguments are read in Korali application
 extern int _argc;

@@ -51,24 +51,24 @@ void runEnvironment(korali::Sample &s)
   int task = disT(_randomGenerator);
   std::string argumentString;
   switch(task) {
-    case 1 : arguments = OPTIONS + " -shapes " + OBJECTShalfDisk;
+    case 1 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTShalfDisk;
              break;
-    case 2 : arguments = OPTIONS + " -shapes " + OBJECTSnaca;
+    case 2 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSnaca;
              break;
-    case 3 : arguments = OPTIONS + " -shapes " + OBJECTSstefanfish;
+    case 3 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSstefanfish;
              break;
   }
-  std::stringstream ss(s);
+  std::cout << "argumentString=" << argumentString << std::endl;
+  std::stringstream ss(argumentString);
   std::string item;
   std::vector<std::string> arguments;
   while ( std::getline(ss, item, ' ') )
     arguments.push_back(item);
 
-  // from https://stackoverflow.com/a/39883532
+  // Create argc / argv to pass to CUP
   std::vector<char*> argv;
   for (const auto& arg : arguments)
     argv.push_back((char*)arg.data());
-  argv.push_back(nullptr);
   _argc = argv.size() - 1;
   _argv = argv.data();
   #endif

@@ -25,11 +25,19 @@ NU=${NU:-0.00004}
 OBSTACLE=${OBSTACLE:-halfDisk}
 XPOSLEADER=${XPOSLEADER:-0.6}
 
+if [ "$OBSTACLE" = "multitask" ]
+then
+	echo "###############################"
+	echo "no options for multitask"
+	NAGENTS=1
+	echo "###############################"
+else
 echo "###############################"
 echo "setting simulation options"
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 1 -verbose 0"
 echo $OPTIONS
 echo "----------------------------"
+fi
 
 if [ "$OBSTACLE" = "halfDisk" ]
 then
@@ -169,11 +177,4 @@ stefanfish L=$LENGTH T=$PERIOD xpos=3.00 ypos=1.00
 "
 	echo $OBJECTS
 	echo "###############################"
-elif [ "$OBSTACLE" = "multitask" ]
-then
-	echo "###############################"
-	echo "no options for multitask"
-	echo "###############################"
-	echo $OBJECTS
-	echo $OPTIONS
 fi

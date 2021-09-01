@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-  // Gathering actual arguments from MPI
+  // Initialize MPI
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   if (provided != MPI_THREAD_FUNNELED)
@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true){
     printf("[Korali] Continuing execution from previous run...\n");
+    // Hack to enable execution after Testing.
     e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
   }
 
@@ -120,7 +121,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*1e6;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;
 
   ////// Setting Korali output configuration
   e["Console Output"]["Verbosity"] = "Detailed";

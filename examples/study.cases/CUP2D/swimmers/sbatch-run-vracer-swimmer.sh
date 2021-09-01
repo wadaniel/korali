@@ -9,7 +9,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of agents
-NNODES=64
+NNODES=1
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
@@ -25,17 +25,18 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=24:00:00
+#SBATCH --time=00:30:00
 #SBATCH --nodes=$((NNODES+1))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1
-#SBATCH --partition=normal
+#SBATCH --partition=debug
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
 export OMP_NUM_THREADS=12
 
+# srun ./run-vracer-swimmer
 srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
 EOF
 

@@ -10,15 +10,12 @@
 * @brief Contains code, documentation, and scripts for module: Solver.
 */
 
-
-#ifndef _KORALI_SOLVER_
-#define _KORALI_SOLVER_
-
+#pragma once
 
 #include "auxiliar/libco/libco.h"
-#include "sample/sample.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
+#include "sample/sample.hpp"
 #include <string>
 #include <vector>
 
@@ -27,17 +24,26 @@
 */
 namespace korali
 {
-
+;
 
 /**
  * @brief Macro to start the processing of a sample.
  */
-#define KORALI_START(SAMPLE) { if ( _k->_overrideEngine == false) _k->_engine->_conduit->start(SAMPLE); else _k->_overrideFunction(SAMPLE); }
+#define KORALI_START(SAMPLE)                \
+  {                                         \
+    if (_k->_overrideEngine == false)       \
+      _k->_engine->_conduit->start(SAMPLE); \
+    else                                    \
+      _k->_overrideFunction(SAMPLE);        \
+  }
 
 /**
  * @brief Macro to wait for the finishing of a sample.
  */
-#define KORALI_WAIT(SAMPLE)  { if ( _k->_overrideEngine == false) _k->_engine->_conduit->wait(SAMPLE); }
+#define KORALI_WAIT(SAMPLE)                                                \
+  {                                                                        \
+    if (_k->_overrideEngine == false) _k->_engine->_conduit->wait(SAMPLE); \
+  }
 
 /**
  * @brief Macro to wait for any of the given samples.
@@ -69,7 +75,6 @@ namespace korali
 */
 class Solver : public Module
 {
-
   public: 
   /**
   * @brief [Internal Use] Number of variables.
@@ -115,7 +120,6 @@ class Solver : public Module
   void applyVariableDefaults() override;
   
 
-
   /**
   * @brief Prints solver information before the execution of the current generation.
   */
@@ -143,7 +147,4 @@ class Solver : public Module
 };
 
 } //korali
-
-
-#endif // _KORALI_SOLVER_
-
+;

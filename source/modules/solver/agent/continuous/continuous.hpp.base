@@ -1,12 +1,12 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -50,6 +50,4 @@ class @className : public @parentClassName
   virtual void initializeAgent() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

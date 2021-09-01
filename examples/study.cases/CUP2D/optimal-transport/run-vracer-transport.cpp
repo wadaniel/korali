@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironmentVracer;
-  //e["Problem"]["Training Reward Threshold"] = 1.0; // max reward == 1
+  e["Problem"]["Training Reward Threshold"] = std::numeric_limits<double>::infinity(); // max reward == 1
   e["Problem"]["Testing Frequency"] = 100; // max reward == 1
   e["Problem"]["Policy Testing Episodes"] = testingEpisodes;
   e["Problem"]["Actions Between Policy Updates"] = 1;
@@ -88,26 +88,36 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Concurrent Environments"] = 1;
+  e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;
-  //e["Solver"]["Updates Between Reward Rescaling"] = 20000;
+  e["Solver"]["Mini Batch"]["Size"] =  128;
 
   /// Defining the configuration of replay memory
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
-  //// Configuring Mini Batch
+  //// Defining Policy distribution and scaling parameters
 
-  e["Solver"]["Mini Batch"]["Size"] = 256;
+  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
   //// Defining Neural Network
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
+
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
@@ -122,8 +132,9 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Max Generations"] = 1000;
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.99;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
+  // e["Solver"]["Termination Criteria"]["Testing"]["Max Generations"] = 1000;
+  // e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.99;
 
   ////// Setting Korali output configuration
 

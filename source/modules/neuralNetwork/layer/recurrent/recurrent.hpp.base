@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -176,6 +176,4 @@ class @className : public @parentClassName
   void getHyperparameterGradients(float *gradient) override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

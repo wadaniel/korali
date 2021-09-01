@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -42,6 +42,4 @@ class @className : public @parentClassName
   void evaluateLogPosterior(korali::Sample &sample);
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -7,8 +7,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-
-@startNamespace
+__startNamespace__;
 
 /**
   * @brief Struct for TMCMC optimization operations
@@ -36,11 +35,9 @@ typedef struct fparam_s
   double cov;
 } fparam_t;
 
-
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
-public:
-
+  public:
   /**
   * @brief Sets the burn in steps per generation
   */
@@ -105,23 +102,23 @@ public:
   double calculateAcceptanceProbability(const size_t sampleId);
 
   /**
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  * @param x Input value
-  * @param fj Input vector
-  * @param fn Vector size
-  * @param pj Input value
-  * @param zero Value of zero
-  * @return CVaR
+  * @brief Helper function to calculate the squared difference between (CVaR) for min search.
+  * @param x Alternative exponent
+  * @param loglike Vector of loglikelihood values
+  * @param Ns Size of loglike array
+  * @param exponent Current rho
+  * @param targetCV Target CV
+  * @return The squared CV difference
   */
-  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
+  static double calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCV);
 
   /**
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  * @param v Input GSL vector
-  * @param param Input parameter
-  * @return CVaR
+  * @brief Helper function for minimization procedure to find the target CV.
+  * @param v Input GSL vector containing loglikelihood values
+  * @param param Input parameter for method 'calculateSquaredCVDifference'
+  * @return The squared CV difference
   */
-  static double objLog(const gsl_vector *v, void *param);
+  static double calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param);
 
   /**
   * @brief Number of variables to sample.
@@ -154,6 +151,4 @@ public:
   void finalize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

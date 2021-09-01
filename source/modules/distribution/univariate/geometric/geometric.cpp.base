@@ -2,14 +2,15 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-@startNamespace
+__startNamespace__;
 
-double @className::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
 
-double @className::getLogDensity(const double x) const
+double __className__::getLogDensity(const double x) const
 {
   return std::log(_successProbability) + (x - 1) * std::log(1.0 - _successProbability);
 }
@@ -24,16 +25,16 @@ double Geometric::getLogDensityHessian(const double x) const
   return 0.;
 }
 
-double @className::getRandomNumber()
+double __className__::getRandomNumber()
 {
   return gsl_ran_geometric(_range, _successProbability);
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   _aux = 0.0;
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

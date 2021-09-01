@@ -20,7 +20,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void MCMC::setInitialConfiguration()
 {
@@ -559,9 +559,9 @@ bool MCMC::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

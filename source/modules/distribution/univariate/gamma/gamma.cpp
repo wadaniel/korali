@@ -8,9 +8,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-double Gamma::getDensity(const double x) const
+double
+Gamma::getDensity(const double x) const
 {
   return gsl_ran_gamma_pdf(x, _shape, _scale);
 }
@@ -96,9 +97,9 @@ double* Gamma::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
-
+;
 
 } //univariate
 } //distribution
 } //korali
-
+;

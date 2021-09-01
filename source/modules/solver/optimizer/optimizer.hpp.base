@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/solver/solver.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -15,6 +15,4 @@ class @className : public @parentClassName
   bool isSampleFeasible(const std::vector<double> &sample);
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

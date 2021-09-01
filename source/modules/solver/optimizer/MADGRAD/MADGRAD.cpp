@@ -8,7 +8,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void MADGRAD::setInitialConfiguration()
 {
@@ -301,9 +301,9 @@ bool MADGRAD::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

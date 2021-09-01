@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -8,7 +8,7 @@
 #include <algorithm> // std::shuffle
 #include <random>
 
-@startNamespace
+__startNamespace__;
 
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
@@ -60,7 +60,7 @@ struct policy_t
   std::vector<float> unboundedAction;
 };
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -422,24 +422,19 @@ class @className : public @parentClassName
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {
-    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }
-
-  /**
-   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
-   */
-  void calculateRewardRescalingFactors();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
@@ -489,6 +484,4 @@ class @className : public @parentClassName
   void finalize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

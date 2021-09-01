@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Layer.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_
-#define _KORALI_NEURALNETWORK_LAYER_
-
+#pragma once
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -30,17 +27,19 @@
 
 namespace korali
 {
-
-
 /**
 * @brief Class declaration for module: Layer.
 */
 class NeuralNetwork;
 struct layerPipeline_t;
 
+} // namespace korali
+
+namespace korali
+{
 namespace neuralNetwork
 {
-
+;
 
 /**
 * @brief Class declaration for module: Layer.
@@ -131,7 +130,6 @@ class Layer : public Module
  */
   float *_outputGradient;
 
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Stores the propagation kind (inference/training)
@@ -174,10 +172,10 @@ class Layer : public Module
 
 #endif
 
-    /**
+  /**
   * @brief Default constructor
   */
-   Layer() = default;
+  Layer() = default;
 
   /**
   * @brief Default destructor
@@ -254,9 +252,6 @@ class Layer : public Module
   virtual void backwardHyperparameters(const size_t t);
 };
 
-} /* neuralNetwork */ 
-
-} /* korali */ 
-
-#endif // _KORALI_NEURALNETWORK_LAYER_
-
+} //neuralNetwork
+} //korali
+;

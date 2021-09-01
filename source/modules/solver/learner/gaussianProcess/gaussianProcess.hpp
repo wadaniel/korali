@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: GaussianProcess.
 */
 
-
-#ifndef _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-#define _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-
+#pragma once
 
 #include "engine.hpp"
 
@@ -31,7 +28,7 @@ namespace solver
 {
 namespace learner
 {
-
+;
 
 /**
 * @brief Class declaration for module: GaussianProcess.
@@ -95,7 +92,6 @@ class GaussianProcess : public Learner
   void applyVariableDefaults() override;
   
 
-
   /**
   * @brief Storage for the output values
   */
@@ -127,7 +123,4 @@ class GaussianProcess : public Learner
 } //learner
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-
+;

@@ -1,4 +1,4 @@
-@startIncludeGuard
+#pragma once
 
 #include "auxiliar/libco/libco.h"
 #include "modules/conduit/conduit.hpp"
@@ -7,9 +7,9 @@
 #include <queue>
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -38,6 +38,4 @@ class @className : public @parentClassName
   size_t getProcessId() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

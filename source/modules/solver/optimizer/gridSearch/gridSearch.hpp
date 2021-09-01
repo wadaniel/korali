@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: GridSearch.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-#define _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -23,7 +20,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: GridSearch.
@@ -32,11 +29,11 @@ class GridSearch : public Optimizer
 {
   public: 
   /**
-  * @brief [Internal Use] Total number of locations to evaluate (==samples per generation).
+  * @brief [Internal Use] Total number of parameter to evaluate (samples per generation).
   */
    size_t _numberOfValues;
   /**
-  * @brief [Internal Use] Vector containing values of the Objective Function.
+  * @brief [Internal Use] Vector containing values of the objective function.
   */
    std::vector<double> _objective;
   /**
@@ -81,7 +78,4 @@ class GridSearch : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-
+;

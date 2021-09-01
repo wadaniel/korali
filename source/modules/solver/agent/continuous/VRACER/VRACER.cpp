@@ -5,7 +5,6 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-
 namespace korali
 {
 namespace solver
@@ -14,7 +13,7 @@ namespace agent
 {
 namespace continuous
 {
-
+;
 
 void VRACER::initializeAgent()
 {
@@ -66,6 +65,9 @@ void VRACER::initializeAgent()
 
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
+
+  _minMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
+  _minMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
 }
 
 void VRACER::trainPolicy()
@@ -101,8 +103,10 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    _maxMiniBatchPolicyMean[i] = 0.0f;
-    _maxMiniBatchPolicyStdDev[i] = 0.0f;
+    _maxMiniBatchPolicyMean[i] = -Inf;
+    _maxMiniBatchPolicyStdDev[i] = -Inf;
+    _minMiniBatchPolicyMean[i] = +Inf;
+    _minMiniBatchPolicyStdDev[i] = +Inf;
   }
 
 #pragma omp parallel for
@@ -167,14 +171,16 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      if (std::abs(expPolicy.distributionParameters[i]) > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = std::abs(expPolicy.distributionParameters[i]);
-      if (std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]) > _maxMiniBatchPolicyStdDev[i]) _maxMiniBatchPolicyStdDev[i] = std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]);
+      if (expPolicy.distributionParameters[i] > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = expPolicy.distributionParameters[i];
+      if (expPolicy.distributionParameters[_problem->_actionVectorSize + i] > _maxMiniBatchPolicyStdDev[i]) _maxMiniBatchPolicyStdDev[i] = expPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      if (expPolicy.distributionParameters[i] < _minMiniBatchPolicyMean[i]) _minMiniBatchPolicyMean[i] = expPolicy.distributionParameters[i];
+      if (expPolicy.distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[i]) _minMiniBatchPolicyStdDev[i] = expPolicy.distributionParameters[_problem->_actionVectorSize + i];
     }
 
     // Set Gradient of Loss as Solution
-    for( size_t i = 0; i<gradientLoss.size(); i++ )
-    if(std::isfinite(gradientLoss[i]) == false)
-      KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
+    for (size_t i = 0; i < gradientLoss.size(); i++)
+      if (std::isfinite(gradientLoss[i]) == false)
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 
@@ -201,7 +207,6 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 
     // Getting distribution parameters
     policyVector[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
-    //printf("pv [%zu] %f %f %f\n", b, policyVector[b].stateValue, policyVector[b].distributionParameters[0], policyVector[b].distributionParameters[1]);
   }
 
   return policyVector;
@@ -227,9 +232,12 @@ void VRACER::resetAgentOptimizers()
 void VRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
-  _k->_logger->logInfo("Normal", " + [VRACER] Max Policy Parameters:\n");
+  _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    _k->_logger->logInfo("Normal", " + [VRACER] Action %lu - N(%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
+    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
+  _k->_logger->logInfo("Detailed", " + [VRACER] Min Policy Parameters (Mu & Sigma):\n");
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _minMiniBatchPolicyMean[i], _minMiniBatchPolicyStdDev[i]);
 }
 
 void VRACER::setConfiguration(knlohmann::json& js) 
@@ -301,10 +309,10 @@ bool VRACER::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //continuous
 } //agent
 } //solver
 } //korali
-
+;

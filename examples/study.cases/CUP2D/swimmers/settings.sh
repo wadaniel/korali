@@ -8,7 +8,7 @@ RTOL=${RTOL-1}
 CTOL=${CTOL-0.1}
 EXTENT=${EXTENT:-2}
 CFL=${CFL:-0.2}
-PT=${PT:-1e-5}
+PT=${PT:-1e-6}
 PTR=${PTR:-1e-4}
 
 # Settings for Obstacle
@@ -68,6 +68,6 @@ fi
 
 echo "----------------------------"
 echo "setting simulation options"
-OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 100 -muteAll 0 -verbose 0"
+OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 0 -verbose 0"
 echo $OPTIONS
 echo "###############################"

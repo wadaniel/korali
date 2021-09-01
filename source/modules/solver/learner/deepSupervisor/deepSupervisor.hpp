@@ -10,20 +10,17 @@
 * @brief Contains code, documentation, and scripts for module: DeepSupervisor.
 */
 
+#pragma once
 
-#ifndef _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-#define _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-
-
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
 namespace korali
@@ -32,7 +29,7 @@ namespace solver
 {
 namespace learner
 {
-
+;
 
 /**
 * @brief Class declaration for module: DeepSupervisor.
@@ -178,7 +175,4 @@ class DeepSupervisor : public Learner
 } //learner
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-
+;

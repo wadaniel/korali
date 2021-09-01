@@ -2,8 +2,8 @@
 * @brief Auxiliary library for Korali's essential string operations.
 **************************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_STRING_HPP_
-#define _KORALI_AUXILIARS_STRING_HPP_
+#pragma once
+
 
 #include <string>
 
@@ -26,4 +26,3 @@ extern bool iCompare(const std::string &a, const std::string &b);
 
 } // namespace korali
 
-#endif // _KORALI_AUXILIARS_STRING_HPP_

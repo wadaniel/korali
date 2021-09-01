@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Geometric.
 */
 
-
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_GEOMETRIC_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_GEOMETRIC_
-
+#pragma once
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -23,7 +20,7 @@ namespace distribution
 {
 namespace univariate
 {
-
+;
 
 /**
 * @brief Class declaration for module: Geometric.
@@ -112,7 +109,4 @@ class Geometric : public Univariate
 } //univariate
 } //distribution
 } //korali
-
-
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_GEOMETRIC_
-
+;

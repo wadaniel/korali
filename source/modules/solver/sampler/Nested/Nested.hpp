@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Nested.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_NESTED_
-#define _KORALI_SOLVER_SAMPLER_NESTED_
-
+#pragma once
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -27,7 +24,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 /**
  * @brief Ellipse object to generate bounds.
@@ -559,7 +556,4 @@ class Nested : public Sampler
 } //sampler
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_SAMPLER_NESTED_
-
+;

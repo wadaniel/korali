@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Rprop.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_RPROP_
-#define _KORALI_SOLVER_OPTIMIZER_RPROP_
-
+#pragma once
 
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
@@ -24,7 +21,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: Rprop.
@@ -38,23 +35,23 @@ class Rprop : public Optimizer
 
   public: 
   /**
-  * @brief Initial Delta
+  * @brief Initial Delta.
   */
    double _delta0;
   /**
-  * @brief Minimum Delta
+  * @brief Minimum Delta, parameter for step size calibration.
   */
    double _deltaMin;
   /**
-  * @brief Maximum Delta
+  * @brief Maximum Delta, parameter for step size calibration.
   */
    double _deltaMax;
   /**
-  * @brief Eta Minus
+  * @brief Parameter for step size calibration.
   */
    double _etaMinus;
   /**
-  * @brief Eta Plus
+  * @brief Parameter for step size calibration.
   */
    double _etaPlus;
   /**
@@ -66,7 +63,7 @@ class Rprop : public Optimizer
   */
    std::vector<double> _bestEverVariable;
   /**
-  * @brief [Internal Use] Delta...
+  * @brief [Internal Use] Gradient scaling factor
   */
    std::vector<double> _delta;
   /**
@@ -90,7 +87,7 @@ class Rprop : public Optimizer
   */
    double _maxStallCounter;
   /**
-  * @brief [Internal Use] Difference in parameters...
+  * @brief [Internal Use] Norm of variable update.
   */
    double _xDiff;
   /**
@@ -143,7 +140,4 @@ class Rprop : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_RPROP_
-
+;

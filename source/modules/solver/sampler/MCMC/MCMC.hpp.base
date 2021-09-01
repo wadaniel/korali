@@ -1,13 +1,13 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -70,6 +70,4 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

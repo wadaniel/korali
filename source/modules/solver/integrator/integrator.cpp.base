@@ -2,9 +2,9 @@
 #include "modules/solver/integrator/integrator.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -26,7 +26,7 @@ void @className::setInitialConfiguration()
   }
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -42,16 +42,16 @@ void @className::runGeneration()
     rest = _modelEvaluationCount;
     for (int d = _variableCount - 1; d >= 0; d--)
     {
-     //quadrature
-     // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_index[2]*_sample[1].size() + .....
-     if (d == 0)
-       index = rest % _indicesHelper[d];
-     else
-       index = rest / _indicesHelper[d];
-     rest -= index * _indicesHelper[d];
+      //quadrature
+      // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_index[2]*_sample[1].size() + .....
+      if (d == 0)
+        index = rest % _indicesHelper[d];
+      else
+        index = rest / _indicesHelper[d];
+      rest -= index * _indicesHelper[d];
 
-     sampleData[d] = _k->_variables[d]->_samplePoints[index];
-     usedIndices[i][d] = index;
+      sampleData[d] = _k->_variables[d]->_samplePoints[index];
+      usedIndices[i][d] = index;
     }
 
     _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount + 1, _sampleCount);
@@ -81,20 +81,20 @@ void @className::runGeneration()
   (*_k)["Results"]["Integral"] = _integral;
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Total Terms summed %lu/%lu.\n", _modelEvaluationCount, _sampleCount);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   _k->_logger->logInfo("Minimal", "Integral Calculated: %e\n", _integral);
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

@@ -2,8 +2,7 @@
 * @brief Contains the definition of a Korali Sample
 *****************************************************************************************************/
 
-#ifndef __KORALI_SAMPLE_HPP_
-#define __KORALI_SAMPLE_HPP_
+#pragma once
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
@@ -192,5 +191,3 @@ class Sample
 };
 
 } // namespace korali
-
-#endif // __KORALI_SAMPLE_HPP_

@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Agent.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_
-#define _KORALI_SOLVER_AGENT_
-
+#pragma once
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -27,7 +24,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
@@ -190,10 +187,6 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief The number of policy updates between consecutive reward rescalings.
-  */
-   size_t _rewardRescalingFrequency;
-  /**
   * @brief If enabled, it penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
   */
    int _rewardOutboundPenalizationEnabled;
@@ -306,17 +299,13 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
-  * @brief [Internal Use] Contains the mean of the rewards. They will be shifted by this value in order to normalize the reward distribution in the RM.
-  */
-   float _rewardRescalingMean;
-  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingSigma;
   /**
-  * @brief [Internal Use] Indicates how many times have the rewards been rescaled
+  * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
-   size_t _rewardRescalingCount;
+   float _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
   */
@@ -736,24 +725,19 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {
-    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }
-
-  /**
-   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
-   */
-  void calculateRewardRescalingFactors();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
@@ -805,7 +789,4 @@ class Agent : public Solver
 
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_
-
+;

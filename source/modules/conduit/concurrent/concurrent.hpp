@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Concurrent.
 */
 
-
-#ifndef _KORALI_CONDUIT_CONCURRENT_
-#define _KORALI_CONDUIT_CONCURRENT_
-
+#pragma once
 
 #include "modules/conduit/conduit.hpp"
 #include <chrono>
@@ -24,7 +21,7 @@ namespace korali
 {
 namespace conduit
 {
-
+;
 
 /**
 * @brief Class declaration for module: Concurrent.
@@ -33,7 +30,7 @@ class Concurrent : public Conduit
 {
   public: 
   /**
-  * @brief Specifies the number of Korali jobs running concurrently evaluating the external model.
+  * @brief Specifies the number of worker processes (jobs) running concurrently.
   */
    size_t _concurrentJobs;
   
@@ -102,7 +99,4 @@ class Concurrent : public Conduit
 
 } //conduit
 } //korali
-
-
-#endif // _KORALI_CONDUIT_CONCURRENT_
-
+;

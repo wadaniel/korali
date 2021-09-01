@@ -1,19 +1,19 @@
-@startIncludeGuard
+#pragma once
 
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -59,6 +59,4 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

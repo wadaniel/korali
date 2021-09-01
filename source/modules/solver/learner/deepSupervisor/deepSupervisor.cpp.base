@@ -4,9 +4,9 @@
 #include "sample/sample.hpp"
 #include <omp.h>
 
-@startNamespace
+__startNamespace__;
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -33,7 +33,12 @@ void @className::initialize()
   curLayer++;
 
   // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) neuralNetworkConfig["Layers"][curLayer++] = _neuralNetworkHiddenLayers[i];
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++)
+  {
+    neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
+    neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkHiddenLayers[i];
+    curLayer++;
+  }
 
   // Adding linear transformation layer to convert hidden state to match output channels
   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
@@ -93,7 +98,7 @@ void @className::initialize()
   _currentLoss = 0.0f;
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   // Grabbing constants
   const size_t N = _problem->_trainingBatchSize;
@@ -146,6 +151,7 @@ void @className::runGeneration()
     if (_l2RegularizationEnabled)
     {
       const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+#pragma omp parallel for simd
       for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
         nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
     }
@@ -158,24 +164,24 @@ void @className::runGeneration()
   }
 }
 
-std::vector<float> @className::getHyperparameters()
+std::vector<float> __className__::getHyperparameters()
 {
   return _neuralNetwork->getHyperparameters();
 }
 
-void @className::setHyperparameters(const std::vector<float> &hyperparameters)
+void __className__::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   // Update evaluation network
   _neuralNetwork->setHyperparameters(hyperparameters);
 }
 
-void @className::resetOptimizer()
+void __className__::resetOptimizer()
 {
   // Resetting
   _optimizer->reset();
 }
 
-std::vector<std::vector<float>> &@className::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   // Grabbing constants
   const size_t N = input.size();
@@ -188,7 +194,7 @@ std::vector<std::vector<float>> &@className::getEvaluation(const std::vector<std
 }
 
 // Only needed for DDPG
-//std::vector<std::vector<float>> &@className::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+//std::vector<std::vector<float>> &__className__::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
 //{
 //  const size_t N = input.size();
 //
@@ -199,13 +205,13 @@ std::vector<std::vector<float>> &@className::getEvaluation(const std::vector<std
 //  return _neuralNetwork->getInputGradients(N);
 //}
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   // Printing results so far
   if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
   if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

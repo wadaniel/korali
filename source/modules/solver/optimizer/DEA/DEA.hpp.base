@@ -1,13 +1,13 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   /**
@@ -65,6 +65,4 @@ class @className : public @parentClassName
   void finalize() override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

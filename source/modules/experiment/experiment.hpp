@@ -10,14 +10,11 @@
 * @brief Contains code, documentation, and scripts for module: Experiment.
 */
 
+#pragma once
 
-#ifndef _KORALI_EXPERIMENT_
-#define _KORALI_EXPERIMENT_
-
-
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
@@ -26,7 +23,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Experiment.
@@ -44,7 +41,7 @@ class Engine;
 /**
 * @brief Class declaration for module: Experiment.
 */
-class Experiment: public Module
+class Experiment : public Module
 {
   public: 
   /**
@@ -243,7 +240,4 @@ class Experiment: public Module
 };
 
 } //korali
-
-
-#endif // _KORALI_EXPERIMENT_
-
+;

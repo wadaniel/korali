@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: NeuralNetwork.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_
-#define _KORALI_NEURALNETWORK_
-
+#pragma once
 
 #include "config.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -32,7 +29,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
@@ -248,7 +245,4 @@ class NeuralNetwork : public Module
 };
 
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_
-
+;

@@ -5,7 +5,7 @@ namespace korali
 {
 namespace distribution
 {
-
+;
 
 void Univariate::setConfiguration(knlohmann::json& js) 
 {
@@ -36,7 +36,8 @@ void Univariate::applyVariableDefaults()
  Distribution::applyVariableDefaults();
 } 
 
-
+;
 
 } //distribution
 } //korali
+;

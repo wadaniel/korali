@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: ReinforcementLearning.
 */
 
-
-#ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_
-#define _KORALI_PROBLEM_REINFORCEMENTLEARNING_
-
+#pragma once
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -23,7 +20,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: ReinforcementLearning.
@@ -176,7 +173,4 @@ class ReinforcementLearning : public Problem
 
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_
-
+;

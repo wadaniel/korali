@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: TMCMC.
 */
 
-
-#ifndef _KORALI_SOLVER_SAMPLER_TMCMC_
-#define _KORALI_SOLVER_SAMPLER_TMCMC_
-
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -22,14 +19,13 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-
 namespace korali
 {
 namespace solver
 {
 namespace sampler
 {
-
+;
 
 /**
   * @brief Struct for TMCMC optimization operations
@@ -57,13 +53,12 @@ typedef struct fparam_s
   double cov;
 } fparam_t;
 
-
 /**
 * @brief Class declaration for module: TMCMC.
 */
 class TMCMC : public Sampler
 {
-public: 
+  public: 
   /**
   * @brief Indicates which variant of the TMCMC algorithm to use.
   */
@@ -79,7 +74,7 @@ public:
   /**
   * @brief Specifies the number of additional TMCMC steps per chain per generation (except for generation 0 and 1).
   */
-   size_t _defaultBurnIn;
+   size_t _burnIn;
   /**
   * @brief Specifies the number of additional TMCMC steps per chain at specified generations (this property will overwrite Default Burn In at specified generations). The first entry of the vector corresponds to the 2nd TMCMC generation.
   */
@@ -332,7 +327,6 @@ public:
   void applyVariableDefaults() override;
   
 
-
   /**
   * @brief Sets the burn in steps per generation
   */
@@ -397,23 +391,23 @@ public:
   double calculateAcceptanceProbability(const size_t sampleId);
 
   /**
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  * @param x Input value
-  * @param fj Input vector
-  * @param fn Vector size
-  * @param pj Input value
-  * @param zero Value of zero
-  * @return CVaR
+  * @brief Helper function to calculate the squared difference between (CVaR) for min search.
+  * @param x Alternative exponent
+  * @param loglike Vector of loglikelihood values
+  * @param Ns Size of loglike array
+  * @param exponent Current rho
+  * @param targetCV Target CV
+  * @return The squared CV difference
   */
-  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
+  static double calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCV);
 
   /**
-  * @brief Helper function to calculate objective (CVaR) for min search.
-  * @param v Input GSL vector
-  * @param param Input parameter
-  * @return CVaR
+  * @brief Helper function for minimization procedure to find the target CV.
+  * @param v Input GSL vector containing loglikelihood values
+  * @param param Input parameter for method 'calculateSquaredCVDifference'
+  * @return The squared CV difference
   */
-  static double objLog(const gsl_vector *v, void *param);
+  static double calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param);
 
   /**
   * @brief Number of variables to sample.
@@ -449,7 +443,4 @@ public:
 } //sampler
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_SAMPLER_TMCMC_
-
+;

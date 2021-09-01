@@ -1,21 +1,21 @@
-@startIncludeGuard
+#pragma once
 
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
 #include <functional>
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
 class Solver;
 class Problem;
 class Engine;
 
-class @className: public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   Experiment();
@@ -126,6 +126,4 @@ class @className: public @parentClassName
   void setSeed(knlohmann::json &js);
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

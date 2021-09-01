@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: VRACER.
 */
 
-
-#ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-#define _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -27,7 +24,7 @@ namespace agent
 {
 namespace continuous
 {
-
+;
 
 /**
 * @brief Class declaration for module: VRACER.
@@ -97,14 +94,24 @@ class VRACER : public Continuous
   std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 
   /**
-   * @brief [Statistics] Keeps track of the policy mean of the current minibatch for each action variable
+   * @brief [Statistics] Keeps track of the max policy mu of the current minibatch for each action variable
    */
   std::vector<float> _maxMiniBatchPolicyMean;
 
   /**
-   * @brief [Statistics] Keeps track of the policy standard deviation of the current minibatch for each action variable
+   * @brief [Statistics] Keeps track of the max policy sigma of the current minibatch for each action variable
    */
   std::vector<float> _maxMiniBatchPolicyStdDev;
+
+  /**
+   * @brief [Statistics] Keeps track of the min policy mu of the current minibatch for each action variable
+   */
+  std::vector<float> _minMiniBatchPolicyMean;
+
+  /**
+   * @brief [Statistics] Keeps track of the min policy sigma of the current minibatch for each action variable
+   */
+  std::vector<float> _minMiniBatchPolicyStdDev;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
@@ -118,7 +125,4 @@ class VRACER : public Continuous
 } //agent
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_AGENT_CONTINUOUS_VRACER_
-
+;

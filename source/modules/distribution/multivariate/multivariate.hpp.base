@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/distribution/distribution.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -38,6 +38,4 @@ class @className : public @parentClassName
   virtual void getRandomVector(double *x, const size_t n) = 0;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

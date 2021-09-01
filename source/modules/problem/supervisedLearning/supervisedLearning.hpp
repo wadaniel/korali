@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: SupervisedLearning.
 */
 
-
-#ifndef _KORALI_PROBLEM_SUPERVISEDLEARNING_
-#define _KORALI_PROBLEM_SUPERVISEDLEARNING_
-
+#pragma once
 
 #include "modules/problem/problem.hpp"
 
@@ -21,7 +18,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: SupervisedLearning.
@@ -90,6 +87,4 @@ class SupervisedLearning : public Problem
 
 } //problem
 } //korali
-
-
-#endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_
+;

@@ -14,9 +14,9 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -53,7 +53,7 @@ void @className::setInitialConfiguration()
   _acceptanceRate = 1.0;
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -100,7 +100,7 @@ void @className::runGeneration()
   _chainLength++;
 }
 
-void @className::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const
+void __className__::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const
 {
   gsl_matrix *A = gsl_matrix_alloc(_variableCount, _variableCount);
 
@@ -131,7 +131,7 @@ void @className::choleskyDecomp(const std::vector<double> &inC, std::vector<doub
   gsl_matrix_free(A);
 }
 
-double @className::recursiveAlpha(double &denominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
+double __className__::recursiveAlpha(double &denominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
 {
   // recursive formula from Trias[2009]
 
@@ -167,7 +167,7 @@ double @className::recursiveAlpha(double &denominator, const double leaderLoglik
   }
 }
 
-void @className::generateCandidate(size_t sampleIdx)
+void __className__::generateCandidate(size_t sampleIdx)
 {
   _proposedSampleCount++;
 
@@ -184,7 +184,7 @@ void @className::generateCandidate(size_t sampleIdx)
       for (size_t e = 0; e < _variableCount; ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionChainCovariance[d * _variableCount + e] * _normalGenerator->getRandomNumber();
 }
 
-void @className::updateState()
+void __className__::updateState()
 {
   _acceptanceRate = ((double)_acceptanceCount / (double)_chainLength);
 
@@ -218,9 +218,9 @@ void @className::updateState()
   if ((_useAdaptiveSampling == true) && (_sampleDatabase.size() > _nonAdaptionPeriod)) choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
 }
 
-void @className::printGenerationBefore() { return; }
+void __className__::printGenerationBefore() { return; }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
@@ -240,7 +240,7 @@ void @className::printGenerationAfter()
   }
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   _k->_logger->logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
   _k->_logger->logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
@@ -248,6 +248,6 @@ void @className::finalize()
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

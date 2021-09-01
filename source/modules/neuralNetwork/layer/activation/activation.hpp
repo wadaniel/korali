@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: Activation.
 */
 
-
-#ifndef _KORALI_NEURALNETWORK_LAYER_ACTIVATION_
-#define _KORALI_NEURALNETWORK_LAYER_ACTIVATION_
-
+#pragma once
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -23,7 +20,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 /**
 * @brief Class declaration for module: Activation.
@@ -144,7 +141,4 @@ class Activation : public Layer
 } //layer
 } //neuralNetwork
 } //korali
-
-
-#endif // _KORALI_NEURALNETWORK_LAYER_ACTIVATION_
-
+;

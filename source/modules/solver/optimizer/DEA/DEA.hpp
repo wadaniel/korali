@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: DEA.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_DEA_
-#define _KORALI_SOLVER_OPTIMIZER_DEA_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -26,7 +23,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: DEA.
@@ -64,7 +61,7 @@ class DEA : public Optimizer
 
   public: 
   /**
-  * @brief Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables).
+  * @brief Specifies the number of samples to evaluate per generation (preferably 5-10x the number of variables).
   */
    size_t _populationSize;
   /**
@@ -216,7 +213,4 @@ class DEA : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_DEA_
-
+;

@@ -1,10 +1,10 @@
-@startIncludeGuard
+#pragma once
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
@@ -67,6 +67,4 @@ class @className : public @parentClassName
   void backwardData(const size_t t) override;
 };
 
-@endNamespace
-
-@endIncludeGuard
+__endNamespace__;

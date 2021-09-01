@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import shutil
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../tools/build/'))
 
@@ -27,6 +28,9 @@ project = 'korali'
 copyright = 'ETH Zurich'
 author = 'CSELab'
 
+# Copying base readme file
+shutil.copy('../../README.rst', './')
+  
 # Build rst files
 be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')
@@ -34,6 +38,7 @@ bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
 
 # Run doxygen
+sp.run('(cd .. && doxygen --version)', shell=True) # get doxygen version
 sp.run('(cd .. && doxygen)', shell=True) # compile the xml source
 
 # -- General configuration ---------------------------------------------------

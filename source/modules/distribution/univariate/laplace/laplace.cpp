@@ -9,9 +9,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-double Laplace::getDensity(const double x) const
+double
+Laplace::getDensity(const double x) const
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
 }
@@ -96,9 +97,9 @@ double* Laplace::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
-
+;
 
 } //univariate
 } //distribution
 } //korali
-
+;

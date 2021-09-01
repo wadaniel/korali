@@ -8,7 +8,7 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
+;
 
 void Discrete::initialize()
 {
@@ -96,8 +96,9 @@ bool Discrete::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
-
+;
 
 } //reinforcementLearning
 } //problem
 } //korali
+;

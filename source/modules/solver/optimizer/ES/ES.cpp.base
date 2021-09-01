@@ -2,9 +2,9 @@
 #include "modules/solver/optimizer/ES/ES.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -56,7 +56,7 @@ void @className::setInitialConfiguration()
   _infeasibleSampleCount = 0;
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -83,7 +83,7 @@ void @className::runGeneration()
   updateDistribution();
 }
 
-void @className::prepareGeneration()
+void __className__::prepareGeneration()
 {
   for (size_t i = 0; i < _populationSize; ++i)
   {
@@ -102,12 +102,12 @@ void @className::prepareGeneration()
   }
 }
 
-void @className::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
+void __className__::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
 {
     // TODO
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _populationSize);
@@ -132,7 +132,7 @@ void @className::updateDistribution()
   // TODO
 }
 
-void @className::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
+void __className__::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
 {
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
@@ -141,9 +141,9 @@ void @className::sort_index(const std::vector<double> &vec, std::vector<size_t> 
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
 }
 
-void @className::printGenerationBefore() { return; }
+void __className__::printGenerationBefore() { return; }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
@@ -161,7 +161,7 @@ void @className::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
@@ -173,6 +173,6 @@ void @className::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

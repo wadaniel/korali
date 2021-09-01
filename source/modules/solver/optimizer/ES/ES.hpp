@@ -10,10 +10,7 @@
 * @brief Contains code, documentation, and scripts for module: ES.
 */
 
-
-#ifndef _KORALI_SOLVER_OPTIMIZER_ES_
-#define _KORALI_SOLVER_OPTIMIZER_ES_
-
+#pragma once
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -25,7 +22,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: ES.
@@ -199,7 +196,4 @@ class ES : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
-
-#endif // _KORALI_SOLVER_OPTIMIZER_ES_
-
+;

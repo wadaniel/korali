@@ -8,7 +8,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void ES::setInitialConfiguration()
 {
@@ -430,9 +430,9 @@ bool ES::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

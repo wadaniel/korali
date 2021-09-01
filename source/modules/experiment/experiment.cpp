@@ -129,17 +129,16 @@ void Experiment::saveState()
 
   // Naming result files depends on whether incremental numbering is used, or we overwrite previous results
   if (_fileOutputUseMultipleFiles == true)
-   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
+    sprintf(genFileName, "gen%08lu.json", _currentGeneration);
   else
-   sprintf(genFileName, "genLatest.json", _currentGeneration);
+    sprintf(genFileName, "genLatest.json", _currentGeneration);
 
   // If results directory doesn't exist, create it
   if (!dirExists(_fileOutputPath)) mkdir(_fileOutputPath);
 
   std::string filePath = "./" + _fileOutputPath + "/" + genFileName;
 
-  if (saveJsonToFile(filePath.c_str(), _js.getJson()) != 0)
-    KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
+  if (saveJsonToFile(filePath.c_str(), _js.getJson()) != 0) KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
 
   // If using multiple files, create a hard link to the latest result
   std::string linkPath = "./" + _fileOutputPath + "/latest";

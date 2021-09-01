@@ -2,7 +2,6 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "swimmerEnvironment.hpp"
-#include "configs.hpp"
 
 #include <filesystem>
 
@@ -19,7 +18,7 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%05u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
@@ -59,26 +58,26 @@ void runEnvironment(korali::Sample &s)
   }
 
   // Creating simulation environment
-  cubism::ArgumentParser parser(argc, argv);
+  ArgumentParser parser(_argc, _argv);
   Simulation *_environment = new Simulation(comm, parser);
 
   // Obtaining agents
+  std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
+  size_t nAgents = shapes.size() - 1;
+  std::vector<StefanFish *> agents(nAgents);
+  for( size_t i = 1; i<nAgents+1; i++ )
+    agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
+
+  // Establishing environment's dump frequency
+  _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+
+  // Setting initial conditions
+  for( size_t i = 0; i<nAgents; i++ )
+    setInitialConditions(agents[i], i, s["Mode"] == "Training");
+  // After moving the agent, the obstacles have to be restarted
+  _environment->_init( false, parser );
+
   if( rank == 0 ) {
-    std::vector<Shape*> shapes = _environment->getObstacleVector();
-    size_t nAgents = shapes.size() - 1;
-    std::vector<StefanFish *> agents(nAgents);
-    for( size_t i = 1; i<nAgents+1; i++ )
-      agents[i-1] = dynamic_cast<StefanFish *>(shapes[i]);
-
-    // Establishing environment's dump frequency
-    _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-
-    // Setting initial conditions
-    for( size_t i = 0; i<nAgents; i++ )
-      setInitialConditions(agents[i], i, s["Mode"] == "Training");
-    // After moving the agent, the obstacles have to be restarted
-    _environment->_init();
-
     // Setting initial state
     if( nAgents > 1 )
     {
@@ -104,12 +103,11 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   size_t maxSteps = 200;
 
-  if( rank == 0 ) {
-    // File to write actions
-    std::stringstream filename;
-    filename<<"actions.txt";
-    ofstream myfile(filename.str().c_str());
-  }
+
+  // File to write actions
+  std::stringstream filename;
+  filename<<"actions.txt";
+  ofstream myfile(filename.str().c_str());
 
   // Starting main environment loop
   bool done = false;
@@ -164,7 +162,8 @@ void runEnvironment(korali::Sample &s)
       _environment->timestep(dt);
 
       // Check if there was a collision -> termination.
-      done = _environment->sim.bCollision;
+      // TODO
+      // done = _environment->sim.bCollision;
 
       // Check termination because leaving margins
       if ( rank == 0 ) {
@@ -263,7 +262,7 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
-  std::vector<double> initialPosition{ agent->origC[0], agent->origC[1] };
+  std::array<double,3> initialPosition = agent->getInitialLocation();
 
   // with noise
   if (isTraining)
@@ -297,7 +296,7 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   }
 
   // Setting initial position and orientation for the fish
-  agent->setCenterOfMass(initialPosition.data());
+  agent->setCenterOfMass(initialPosition);
   agent->setOrientation(initialAngle);
 }
 
@@ -341,8 +340,8 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
     exit(-1);
   }
 
-  const double X = agent->center[0];
-  const double Y = agent->center[1];
+  const double X = agent->position[0];
+  const double Y = agent->position[1];
 
   bool terminal = false;
   if (X < xMin) terminal = true;

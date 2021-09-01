@@ -4,9 +4,12 @@
 #include "korali.hpp"
 #include <algorithm>
 #include <random>
-#include "Obstacles/StefanFish.h"
+#include "obstacles/StefanFish.h"
 #include "Simulation.h"
-#include "Utils/BufferedLogger.h"
+#include "utils/BufferedLogger.h"
+#include <Cubism/ArgumentParser.h>
+
+using namespace cubismup3d;
 
 // #define NOID
 

@@ -69,6 +69,7 @@ void runEnvironment(korali::Sample &s)
   std::vector<char*> argv;
   for (const auto& arg : arguments)
     argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
   _argc = argv.size() - 1;
   _argv = argv.data();
   #endif
@@ -82,7 +83,7 @@ void runEnvironment(korali::Sample &s)
   size_t nAgents = shapes.size() - 1;
   std::vector<StefanFish *> agents(nAgents);
   for( size_t i = 1; i<nAgents+1; i++ )
-    agents[i] = dynamic_cast<StefanFish *>(shapes[i]);
+    agents[i-1] = dynamic_cast<StefanFish *>(shapes[i]);
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();

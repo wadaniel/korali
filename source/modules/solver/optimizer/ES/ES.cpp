@@ -22,14 +22,15 @@ void ES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
-  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount)));
+  // Validating configuration params
+  if (_populationSize == 0) KORALI_LOG_ERROR("Population Size must be larger 0 (is %zu)", _populationSize);
+  if (_learningRate <= 0. || _learningRate > 1.) KORALI_LOG_ERROR("The Learning Rate must be in (0,1] (it is %lf).", _learningRate);
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
   for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
   _randomVector.resize(_populationSize);
   for (size_t i = 0; i < _populationSize; i++) _randomVector[i].resize(_variableCount);
-
 
   _currentMean.resize(_variableCount);
   _previousMean.resize(_variableCount);
@@ -39,6 +40,7 @@ void ES::setInitialConfiguration()
   _weightVector.resize(_populationSize);
 
   _covarianceMatrix.resize(_variableCount * _variableCount);
+  _sigmaMatrix.resize(_variableCount * _variableCount);
   
   // Version specific checks
   if (_version == "ES-EM")
@@ -83,7 +85,7 @@ void ES::setInitialConfiguration()
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
   }
-
+    
   // Set initial mean and covariance
   for(size_t d = 0; d < _variableCount; ++d) _currentMean[d] = _k->_variables[d]->_initialValue;
   for(size_t d = 0; d < _variableCount; ++d) _covarianceMatrix[d*_variableCount+d] = _k->_variables[d]->_initialStandardDeviation;
@@ -120,17 +122,33 @@ void ES::runGeneration()
 
 void ES::prepareGeneration()
 {
-  std::vector<double> rands(_variableCount);
+  // Produce random numbers
   for (size_t i = 0; i < _populationSize; ++i)
   {
-      for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
-      sampleSingle(i, rands);
+    if(_versionId == 2) // ES-SGA-v1
+        if (i == 0) for(size_t d = 0; d < _variableCount; ++d) _randomVector[0][d] = 0.;
+        else for(size_t d = 0; d < _variableCount; ++d) _randomVector[i][d] = _normalGenerator->getRandomNumber();
+
+    else if(_versionId == 3) // ES-SGA-v3
+        if (i % 2 == 0) for(size_t d = 0; d < _variableCount; ++d) _randomVector[i][d] = _normalGenerator->getRandomNumber();
+        else for(size_t d = 0; d < _variableCount; ++d) _randomVector[i][d] = -_randomVector[i-1][d];
+
+    else // ES-EM, ES-SGA-v0, ES-EM-C
+        for(size_t d = 0; d < _variableCount; ++d) _randomVector[i][d] = _normalGenerator->getRandomNumber();
+  }
+
+  // Generate new population
+  for (size_t i = 0; i < _populationSize; ++i)
+  {
+      sampleSingle(i, _randomVector[i]);
   }
 }
 
 void ES::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
 {
-    // TODO
+    for (size_t d = 0; d < _variableCount; ++d)
+      for (size_t e = 0; e <= d; ++e) 
+        _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigmaMatrix[d*_variableCount+e] * randomNumbers[e];
 }
 
 void ES::updateDistribution()
@@ -150,58 +168,113 @@ void ES::updateDistribution()
     _bestEverValue = _currentBestValue;
     _bestEverVariables = _currentBestVariables;
   }
+ 
+  // Reset mean and covariance
+  _previousMean = _currentMean;
+  double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
 
-
-  // Set weight vector
+  // Update mean and covariance
   if(_versionId == 0) // ES-EM
   {
-    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
+    std::fill(_currentMean.begin(), _currentMean.end(), 0.f);
+    std::fill(_covarianceMatrix.begin(), _covarianceMatrix.end(), 0.f);
+ 
     for(size_t i = 0; i < _populationSize; ++i)
-        _weightVector[i] = _valueVector[i]/sumOfValues;
-  }
-  else if(_versionId == 1) // ES-SGA-v1
-  {
-    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
-    for(size_t i = 0; i < _populationSize; ++i)
-        _weightVector[i] = _valueVector[i]/sumOfValues;
-  }
-  else if(_versionId == 2) // ES-SGA-v2
-  {
-    for(size_t i = 1; i < _populationSize; ++i)
-        _weightVector[i] = _valueVector[i]-_valueVector[0];
-  }
-  else if(_versionId == 3) // ES-SGA-v3
-  {
-    for(size_t i = 0; i < _populationSize; i+=2)
-        _weightVector[i] = 0.5*(_valueVector[i]-_valueVector[i+1]);
+    {
+      _weightVector[i] = _valueVector[i]/sumOfValues;
+      for(size_t d = 0; d < _variableCount; ++d)
+      {
+        _currentMean[d] += _weightVector[i]*_samplePopulation[i][d];
+        for(size_t e = 0; e < d; ++e)
+        {
+          _covarianceMatrix[d*_variableCount+e] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][e];
+          _covarianceMatrix[e*_variableCount+d] = _covarianceMatrix[d*_variableCount+e];
+        }
+        _covarianceMatrix[d*_variableCount+d] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][d];
+      }
+    }
   }
   else if(_versionId == 4) // ES-EM-C
   {
-    double sumOfValues = std::accumulate(_valueVector.begin(), _valueVector.end(), 0.);
+ 
+    for(size_t d = 0; d < _variableCount; ++d) _currentMean[d] *= (1.-_learningRate);
+    for(size_t e = 0; e < _variableCount*_variableCount; ++e) _covarianceMatrix[e] *= (1.-_learningRate);
+ 
     for(size_t i = 0; i < _populationSize; ++i)
-        _weightVector[i] = _valueVector[i]/sumOfValues;
-  }
-  
-  // Reset mean and covariance
-  _previousMean = _currentMean;
-  std::fill(_currentMean.begin(), _currentMean.end(), 0.f);
-  std::fill(_covarianceMatrix.begin(), _covarianceMatrix.end(), 0.f);
-  
-  // Update mean and covariance
-  for(size_t i = 0; i < _populationSize; ++i)
-  {
-
+    {
+      _weightVector[i] = _valueVector[i]/sumOfValues;
+      for(size_t d = 0; d < _variableCount; ++d)
+      {
+        _currentMean[d] += _learningRate*_weightVector[i]*_samplePopulation[i][d];
+        for(size_t e = 0; e < d; ++e)
+          _covarianceMatrix[d*_variableCount+e] = _learningRate*_weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][e];
+        
+        _covarianceMatrix[d*_variableCount+d] = _learningRate*_weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][d];
+      }
+    }
+ 
     for(size_t d = 0; d < _variableCount; ++d)
     {
-      _currentMean[d] += _weightVector[i]*_samplePopulation[i][d];
-      for(size_t e = 0; e < d; ++e)
-      {
-        _covarianceMatrix[d*_variableCount+e] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][e];
-        _covarianceMatrix[e*_variableCount+d] = _covarianceMatrix[d*_variableCount+e];
-      }
-    _covarianceMatrix[d*_variableCount+d] = _weightVector[i]*_samplePopulation[i][d]*_samplePopulation[i][d];
+        for(size_t e = 0; e < d; ++e) 
+        {
+            _covarianceMatrix[d*_variableCount+e] -= _learningRate*_currentMean[d]*_currentMean[e];
+            _covarianceMatrix[e*_variableCount+d] = _covarianceMatrix[d*_variableCount+e];
+        }
+        _covarianceMatrix[d*_variableCount+d] -= _learningRate*_currentMean[d]*_currentMean[d];
+    }
+ 
+  }
+  else
+  {
+
+    size_t start;
+    size_t incr;
+    if(_versionId == 1) // ES-SGA-v1
+    {
+        for(size_t i = 0; i < _populationSize; ++i)
+            _weightVector[i] = _learningRate*_valueVector[i]/sumOfValues;
+
+        start = 0;
+        incr = 1;
+    }
+    else if(_versionId == 2) // ES-SGA-v2
+    {
+        for(size_t i = 1; i < _populationSize; ++i)
+            _weightVector[i] = _learningRate*_valueVector[i]-_valueVector[0];
+
+        start = 1;
+        incr = 1;
+    }
+    else if(_versionId == 3) // ES-SGA-v3
+    {
+        for(size_t i = 0; i < _populationSize; i+=2)
+            _weightVector[i] = _learningRate*0.5*(_valueVector[i]-_valueVector[i+1]);
+
+        start = 0;
+        incr = 2;
+    }
+
+    for(size_t i = start; i < _populationSize; i+=incr)
+    {
+        for(size_t d = 0; d < _variableCount; ++d)
+            for(size_t e = 0; e < d; ++e) 
+                _currentMean[d] += _weightVector[i]*_sigmaMatrix[d*_variableCount+e]*_randomVector[i][e];
+
+        for(size_t d = 0; d < _variableCount; ++d)
+        {
+            for(size_t e = 0; e <= d; ++e)
+            {
+                for(size_t f = 0; f < _variableCount; ++f) 
+                    if(e == f)
+                        _covarianceMatrix[d*_variableCount+e] += _weightVector[i]*_covarianceMatrix[d*_variableCount+f]*_randomVector[i][e]*_randomVector[i][f] - 1.;
+                    else
+                        _covarianceMatrix[d*_variableCount+e] += _weightVector[i]*_covarianceMatrix[d*_variableCount+f]*_randomVector[i][e]*_randomVector[i][f];
+                _covarianceMatrix[d*_variableCount+e] = _covarianceMatrix[e*_variableCount+d];
+            }
+        }
     }
   }
+ 
 }
 
 void ES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
@@ -363,6 +436,14 @@ void ES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Covariance Matrix");
  }
 
+ if (isDefined(js, "Sigma Matrix"))
+ {
+ try { _sigmaMatrix = js["Sigma Matrix"].get<std::vector<double>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Sigma Matrix']\n%s", e.what()); } 
+   eraseValue(js, "Sigma Matrix");
+ }
+
  if (isDefined(js, "Current Mean"))
  {
  try { _currentMean = js["Current Mean"].get<std::vector<double>>();
@@ -429,6 +510,15 @@ void ES::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Version'] required by ES.\n"); 
 
+ if (isDefined(js, "Learning Rate"))
+ {
+ try { _learningRate = js["Learning Rate"].get<double>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ ES ] \n + Key:    ['Learning Rate']\n%s", e.what()); } 
+   eraseValue(js, "Learning Rate");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Learning Rate'] required by ES.\n"); 
+
  if (isDefined(js, "Termination Criteria", "Max Infeasible Resamplings"))
  {
  try { _maxInfeasibleResamplings = js["Termination Criteria"]["Max Infeasible Resamplings"].get<size_t>();
@@ -453,6 +543,7 @@ void ES::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Population Size"] = _populationSize;
    js["Version"] = _version;
+   js["Learning Rate"] = _learningRate;
    js["Termination Criteria"]["Max Infeasible Resamplings"] = _maxInfeasibleResamplings;
  if(_normalGenerator != NULL) _normalGenerator->getConfiguration(js["Normal Generator"]);
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
@@ -468,6 +559,7 @@ void ES::getConfiguration(knlohmann::json& js)
    js["Best Sample Index"] = _bestSampleIndex;
    js["Previous Best Ever Value"] = _previousBestEverValue;
    js["Covariance Matrix"] = _covarianceMatrix;
+   js["Sigma Matrix"] = _sigmaMatrix;
    js["Current Mean"] = _currentMean;
    js["Previous Mean"] = _previousMean;
    js["Infeasible Sample Count"] = _infeasibleSampleCount;

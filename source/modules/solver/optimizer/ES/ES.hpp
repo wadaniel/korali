@@ -39,6 +39,10 @@ class ES : public Optimizer
   */
    std::string _version;
   /**
+  * @brief The learning rate of the ES-SGA and ES-EM-C algorithm.
+  */
+   double _learningRate;
+  /**
   * @brief [Internal Use] Normal random number generator.
   */
    korali::distribution::univariate::Normal* _normalGenerator;
@@ -91,9 +95,13 @@ class ES : public Optimizer
   */
    double _previousBestEverValue;
   /**
-  * @brief [Internal Use] (Unscaled) covariance Matrix of proposal distribution.
+  * @brief [Internal Use] Covariance Matrix of proposal distribution.
   */
    std::vector<double> _covarianceMatrix;
+  /**
+  * @brief [Internal Use] Lower triangular matrix of cholesky decomposition of the covariance matrix.
+  */
+   std::vector<double> _sigmaMatrix;
   /**
   * @brief [Internal Use] Current mean of proposal distribution.
   */

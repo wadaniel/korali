@@ -66,6 +66,7 @@ class ObjectiveFactory:
     self.prevBestX = np.inf*np.ones(self.dim)
     self.xstar = np.zeros(self.dim)
     self.rfac = 1.0
+    self.rfacs = []
     self.step = 0
  
     # Init random objective if desired
@@ -75,38 +76,40 @@ class ObjectiveFactory:
 
         if u < 1/nobjectives:
             self.objective = "fsphere"
-            self.rfac = 1/2.7
+            self.rfacs = [2187, 1575, 1076, 695, 441, 255, 232]
             #self.rfac = 1/13.4
  
         elif u < 2/nobjectives:
             self.objective = "felli"
-            self.rfac = 1/2.1
+            self.rfacs = [1652, 828, 533, 329, 194, 115, 60]
             #self.rfac = 1/8.9
 
         elif u < 3/nobjectives:
             self.objective = "fcigar"
-            self.rfac = 1/1.7
+            self.rfacs = [1279, 1139, 1014, 700, 435, 257, 124]
             #self.rfac = 1/3.4
 
         elif u < 4/nobjectives:
             self.objective = "ftablet"
-            self.rfac = 1/1.6
+            self.rfacs = [1223, 721, 434, 192, 98, 65, 63]
             #self.rfac = 1/3.3
 
         elif u < 5/nobjectives:
             self.objective = "fcigtab"
-            self.rfac = 1/1.5
+            self.rfacs = [1327, 756, 401, 200, 106, 77, 61]
             #self.rfac = 1/1.1
 
         elif u < 6/nobjectives:
             self.objective = "ftwoax"
-            self.rfac = 1/1.6
+            self.rfacs = [1256, 976, 774, 518, 315, 183, 97]
             #self.rfac = 1/3.5
  
         else:
             self.objective = "fdiffpow"
-            self.rfac = 1/1.8
+            self.rfacs = [1502, 1065, 757, 481, 291, 149, 72]
             #self.rfac = 1/2.2
+            
+        self.rfac = 1000./self.rfacs[int(np.log(self.dim)/np.log(2))]
  
     # Init random noise params
     self.noise = noise
@@ -305,10 +308,12 @@ class ObjectiveFactory:
 
   def getState(self):
     state = np.zeros((self.dim+1)*self.mu+1)
+    #state = np.zeros(self.mu+1)
     diagsdev = self.scale*np.sqrt(np.diag(self.cov)) # diagonal sdev
     for i in range(self.mu):
         state[i*(self.dim+1):i*(self.dim+1)+self.dim] = np.divide(self.population[i] - self.mean, diagsdev)
         state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
+        #state[i] = self.feval[i]/self.curEf
     state[-1] = self.bestEver/self.curEf # relative function eval
     assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
     return state

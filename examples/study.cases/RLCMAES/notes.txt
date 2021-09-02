@@ -58,11 +58,22 @@ Finding: agent learns, same as in Run 5
 
 # Run 11
 repeating random run from Run 10, 5M exp and with reward factor
-Finding:
+Finding: agent learned, training converged after ~1M exp, evaluation showed that in 7/7 cases vracer learned a better version of cma-es
 
 # Run 11 - LSTM
 pop size 8, dim 2, lstm, depth 1, output layers 128
-Finding:
+Finding: no advantage of using RNN
 
 # Run 12
 reward 12, running pop size 8, dim 2, vracer and lstm as in run 11
+Finding: no advantage of using RNN
+
+# Run 12
+reward run 11, remove position of samples, only take evals as state
+Finding: agent seems not to learn
+
+Next steps, eval run 12 on objectives, based on that choose reward function.
+
+# Run 13
+batch run for random, dims 2..128, added rfacs for each dim
+TODO: rerun batch form 8 & 64

@@ -50,6 +50,7 @@ void Agent::initialize()
   _actionVector.resize(_experienceReplayMaximumSize);
   _retraceValueVector.resize(_experienceReplayMaximumSize);
   _rewardVector.resize(_experienceReplayMaximumSize);
+  _environmentIdVector.resize(_experienceReplayMaximumSize);
   _stateValueVector.resize(_experienceReplayMaximumSize);
   _importanceWeightVector.resize(_experienceReplayMaximumSize);
   _truncatedImportanceWeightVector.resize(_experienceReplayMaximumSize);
@@ -104,8 +105,8 @@ void Agent::initialize()
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
     _stateRescalingSigmas = std::vector<float>(_problem->_stateVectorSize, 1.0);
 
-    _rewardRescalingSigma = 1.0f;
-    _rewardRescalingSumSquaredRewards = 0.0f;
+    _rewardRescalingSigma = std::vector<float>(_problem->_environmentCount, 1.0f);
+    _rewardRescalingSumSquaredRewards = std::vector<float>(_problem->_environmentCount, 0.0f);
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
@@ -446,6 +447,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
+    // Getting id of executed environment
+    size_t environmentId = episodeId % _problem->_environmentCount; // TODO: should be correct arg
+    _environmentIdVector.add(environmentId);
+    
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<float>>());
 
@@ -477,9 +482,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     {
       if (_rewardVector.size() >= _experienceReplayMaximumSize)
       {
-        _rewardRescalingSumSquaredRewards -= _rewardVector[0] * _rewardVector[0];
+        _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
       }
-      _rewardRescalingSumSquaredRewards += reward * reward;
+      _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
     }
 
     _rewardVector.add(reward);
@@ -585,14 +590,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + getScaledReward(_rewardVector[expId]);
+    retV = _discountFactor * retV + getScaledReward(_environmentIdVector[expId], _rewardVector[expId]);
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
 
   if (_rewardRescalingEnabled)
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / (float)_rewardVector.size() + 1e-9);
+    for(size_t i = 0; i < _problem->_environmentCount; ++i)
+    _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / (float)_rewardVector.size() + 1e-9); // TODO: division false
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
@@ -741,7 +747,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      const float curReward = getScaledReward(_rewardVector[curId]);
+      const float curReward = getScaledReward(_environmentIdVector[curId], _rewardVector[curId]);
 
       // Calculating state value function
       const float curV = _stateValueVector[curId];
@@ -941,6 +947,7 @@ void Agent::deserializeExperienceReplay()
   _actionVector.clear();
   _retraceValueVector.clear();
   _rewardVector.clear();
+  _environmentIdVector.clear();
   _stateValueVector.clear();
   _importanceWeightVector.clear();
   _truncatedImportanceWeightVector.clear();
@@ -1047,7 +1054,8 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma);
+        for(size_t i = 0; i < _problem->_environmentCount; ++i)
+      _k->_logger->logInfo("Normal", " + Reward Rescaling (Env %zu):            N(%.3e, %.3e)         \n", i, 0.0, _rewardRescalingSigma[i]);
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
@@ -1310,7 +1318,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
  {
- try { _rewardRescalingSigma = js["Reward"]["Rescaling"]["Sigma"].get<float>();
+ try { _rewardRescalingSigma = js["Reward"]["Rescaling"]["Sigma"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sigma']\n%s", e.what()); } 
    eraseValue(js, "Reward", "Rescaling", "Sigma");
@@ -1318,7 +1326,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Reward", "Rescaling", "Sum Squared Rewards"))
  {
- try { _rewardRescalingSumSquaredRewards = js["Reward"]["Rescaling"]["Sum Squared Rewards"].get<float>();
+ try { _rewardRescalingSumSquaredRewards = js["Reward"]["Rescaling"]["Sum Squared Rewards"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sum Squared Rewards']\n%s", e.what()); } 
    eraseValue(js, "Reward", "Rescaling", "Sum Squared Rewards");

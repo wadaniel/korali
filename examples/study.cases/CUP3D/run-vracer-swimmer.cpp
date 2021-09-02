@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
+  N = (int)(N / nRanks);
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
-  size_t numStates = 16+3;
+  size_t numStates = 10;
   #ifndef NOID
   numStates += 3;
   #endif

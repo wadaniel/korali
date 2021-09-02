@@ -8,11 +8,11 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
-# number of agents
-NWORKER = 64
+# number of workers
+NWORKER = 32
 
 # number of nodes per worker
-NRANKS = 128
+NRANKS = 32
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))
@@ -42,7 +42,7 @@ cat <<EOF >daint_sbatch
 
 export OMP_NUM_THREADS=12
 
-srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nWorker $NWORKER
+srun ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nRanks $NRANKS -nWorker $NWORKER
 EOF
 
 chmod 755 daint_sbatch

@@ -33,6 +33,10 @@ class ReinforcementLearning : public Problem
   */
    size_t _agentsPerEnvironment;
   /**
+  * @brief Number of environements to solve.
+  */
+   size_t _environmentCount;
+  /**
   * @brief Function to initialize and run an episode in the environment.
   */
    std::uint64_t _environmentFunction;

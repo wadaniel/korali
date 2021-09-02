@@ -102,6 +102,9 @@ void __className__::runTrainingEpisode(Sample &agent)
   // "Success" or "Truncated".
   agent["Termination"] = "Non Terminal";
 
+   // Setting the environment id, such that incoming values can be assigned to executed environment.
+  agent["Environment Id"] = _launchId % _environmentCount;
+ 
   // Getting first state
   runEnvironment(agent);
 
@@ -211,6 +214,7 @@ void __className__::runTrainingEpisode(Sample &agent)
   knlohmann::json message;
   message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
+  message["Environment Id"] = agent["Environment Id"];
   message["Episodes"] = episodes;
   KORALI_SEND_MSG_TO_ENGINE(message);
 

@@ -109,11 +109,39 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
+  // If multiple Enviroments, get the environment Id from each agent
+  std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
+  if( _environmentCount > 1 ) {
+    // Parsing environment Id while ensuring compatibility with single agent
+    if (_agentsPerEnvironment == 1)
+    {
+      auto envId = KORALI_GET(size_t, agent, "Environment Id");
+      agent._js.getJson().erase("Environment Id");
+      agent["Environment Id"][0] = envId;
+    }
+
+    // Checking correct format of environment Id
+    if (agent["Environment Id"].is_array() == false) KORALI_LOG_ERROR("Agent Environment Id variable returned by the environment is not a vector.\n");
+    if (agent["Environment Id"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents Environment Id vector returned with the wrong size: %lu, expected: %lu.\n", agent["Environment Id"].size(), _agentsPerEnvironment);
+
+    // Sanity checks and saving environment Id
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    {
+      auto envId = agent["Environment Id"][i].get<size_t>();
+      if (std::isfinite(envId) == false || envId > _environmentCount ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
+      environmentId[i] = agent["Environment Id"][i];
+    }
+  }
+
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from the agent's policy
     getAction(agent);
+
+    // Store the current environment Id in the experience
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      episodes[i]["Experiences"][actionCount]["Environment Id"] = environmentId[i];
 
     // Store the current state in the experience
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -386,7 +414,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     agent["Reward"][0] = reward;
   }
 
-  // Checking correct format of state
+  // Checking correct format of reward
   if (agent["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (agent["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", agent["Reward"].size(), _agentsPerEnvironment);
 
@@ -439,6 +467,15 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Agents Per Environment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Agents Per Environment'] required by reinforcementLearning.\n"); 
+
+ if (isDefined(js, "Environment Count"))
+ {
+ try { _environmentCount = js["Environment Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Environment Count']\n%s", e.what()); } 
+   eraseValue(js, "Environment Count");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Environment Count'] required by reinforcementLearning.\n"); 
 
  if (isDefined(js, "Environment Function"))
  {
@@ -549,6 +586,7 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Agents Per Environment"] = _agentsPerEnvironment;
+   js["Environment Count"] = _environmentCount;
    js["Environment Function"] = _environmentFunction;
    js["Actions Between Policy Updates"] = _actionsBetweenPolicyUpdates;
    js["Testing Frequency"] = _testingFrequency;
@@ -570,7 +608,7 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
 void ReinforcementLearning::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Agents Per Environment\": 1, \"Testing Frequency\": 0, \"Policy Testing Episodes\": 5, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
+ std::string defaultString = "{\"Agents Per Environment\": 1, \"Environment Count\": 1, \"Testing Frequency\": 0, \"Policy Testing Episodes\": 5, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Problem::applyModuleDefaults(js);

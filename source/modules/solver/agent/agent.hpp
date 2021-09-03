@@ -313,11 +313,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
-   float _rewardRescalingSigma;
+   std::vector<float> _rewardRescalingSigma;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
-   float _rewardRescalingSumSquaredRewards;
+   std::vector<float> _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
   */
@@ -492,9 +492,14 @@ class Agent : public Solver
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
   cBuffer<std::vector<float>> _truncatedStateVector;
+ 
+  /**
+   * @brief Contains the environment id of every experience
+   */
+  cBuffer<size_t> _environmentIdVector;
 
   /**
-   * @brief Contains the rewards for every experience
+   * @brief Contains the rewards of every experience
    */
   cBuffer<float> _rewardVector;
 
@@ -726,12 +731,12 @@ class Agent : public Solver
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const size_t environmentId, const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward for environment %lu is non finite: %f  (Sigma: %f)\n", environmentId, rescaledReward, _rewardRescalingSigma[environmentId]);
 
     return rescaledReward;
   }

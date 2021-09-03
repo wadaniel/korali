@@ -447,9 +447,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
-    // Getting id of executed environment
-    size_t environmentId = episodeId % _problem->_environmentCount; // TODO: should be correct arg
-    _environmentIdVector.add(environmentId);
+    // Getting environment id
+    _environmentIdVector.add(episode["Experiences"][expId]["Environment Id"].get<size_t>());
     
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<float>>());
@@ -484,7 +483,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       {
         _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
       }
-      _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
+      _rewardRescalingSumSquaredRewards[_environmentIdVector[expId]] += reward * reward;
     }
 
     _rewardVector.add(reward);
@@ -596,9 +595,12 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _retraceValueVector[expId] = retV;
   }
 
-  if (_rewardRescalingEnabled)
+  if (_rewardRescalingEnabled) {
+    // get environment Id vector
+    auto envIdVec = _environmentIdVector.getVector();
     for(size_t i = 0; i < _problem->_environmentCount; ++i)
-    _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / (float)_rewardVector.size() + 1e-9); // TODO: division false
+      _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / ( (float)std::count(envIdVec.begin(), envIdVec.end(), i) + 1e-9) );
+  }
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

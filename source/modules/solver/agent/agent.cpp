@@ -479,7 +479,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     if (_rewardRescalingEnabled)
     {
-      if (_rewardVector.size() >= _experienceReplayMaximumSize)
+      if (_rewardVector.size() == _experienceReplayMaximumSize)
       {
         _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
       }

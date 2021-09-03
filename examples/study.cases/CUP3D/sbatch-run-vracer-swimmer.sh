@@ -9,10 +9,10 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of workers
-NWORKER = 32
+NWORKER=32
 
 # number of nodes per worker
-NRANKS = 32
+NRANKS=32
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))

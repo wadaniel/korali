@@ -448,7 +448,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
     // Getting environment id
-    _environmentIdVector.add(episode["Experiences"][expId]["Environment Id"].get<size_t>());
+    auto environmentId = episode["Experiences"][expId]["Environment Id"].get<size_t>();
     
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<float>>());
@@ -483,9 +483,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       {
         _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
       }
-      _rewardRescalingSumSquaredRewards[_environmentIdVector[expId]] += reward * reward;
+      _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
     }
 
+    _environmentIdVector.add(environmentId);
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -598,8 +599,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   if (_rewardRescalingEnabled) {
     // get environment Id vector
     auto envIdVec = _environmentIdVector.getVector();
+    // finalize computation of standard deviation for reward rescaling
     for(size_t i = 0; i < _problem->_environmentCount; ++i)
-      _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / ( (float)std::count(envIdVec.begin(), envIdVec.end(), i) + 1e-9) );
+      _rewardRescalingSigma[i] = std::sqrt( _rewardRescalingSumSquaredRewards[i] / ( (float)std::count(envIdVec.begin(), envIdVec.end(), i) + 1e-9) ) + 1e-9;
   }
 }
 
@@ -654,7 +656,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     const auto &expPolicy = _expPolicyVector[expId];
     const auto &curPolicy = policyData[batchId];
 
-    // Grabbing state value from the latenst policy
+    // Grabbing state value from the latest policy
     auto stateValue = curPolicy.stateValue;
 
     // Sanity checks for state value
@@ -1057,7 +1059,7 @@ void Agent::printGenerationAfter()
 
     if (_rewardRescalingEnabled)
         for(size_t i = 0; i < _problem->_environmentCount; ++i)
-      _k->_logger->logInfo("Normal", " + Reward Rescaling (Env %zu):            N(%.3e, %.3e)         \n", i, 0.0, _rewardRescalingSigma[i]);
+      _k->_logger->logInfo("Normal", " + Reward Rescaling (Env %zu):        N(%.3e, %.3e)         \n", i, 0.0, _rewardRescalingSigma[i]);
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");

@@ -105,11 +105,28 @@ void __className__::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
-  // If multiple Enviroments, get the environment Id
+  // If multiple Enviroments, get the environment Id from each agent
   std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
   if( _environmentCount > 1 ) {
+    // Parsing environment Id while ensuring compatibility with single agent
+    if (_agentsPerEnvironment == 1)
+    {
+      auto envId = KORALI_GET(size_t, agent, "Environment Id");
+      agent._js.getJson().erase("Environment Id");
+      agent["Environment Id"][0] = envId;
+    }
+
+    // Checking correct format of environment Id
+    if (agent["Environment Id"].is_array() == false) KORALI_LOG_ERROR("Agent Environment Id variable returned by the environment is not a vector.\n");
+    if (agent["Environment Id"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents Environment Id vector returned with the wrong size: %lu, expected: %lu.\n", agent["Environment Id"].size(), _agentsPerEnvironment);
+
+    // Sanity checks and saving environment Id
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    {
+      auto envId = agent["Environment Id"][i].get<size_t>();
+      if (std::isfinite(envId) == false || envId > _environmentCount ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
       environmentId[i] = agent["Environment Id"][i];
+    }
   }
 
   // Saving experiences
@@ -222,7 +239,6 @@ void __className__::runTrainingEpisode(Sample &agent)
   knlohmann::json message;
   message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
-  message["Environment Id"] = agent["Environment Id"];
   message["Episodes"] = episodes;
   KORALI_SEND_MSG_TO_ENGINE(message);
 
@@ -394,7 +410,7 @@ void __className__::runEnvironment(Sample &agent)
     agent["Reward"][0] = reward;
   }
 
-  // Checking correct format of state
+  // Checking correct format of reward
   if (agent["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (agent["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", agent["Reward"].size(), _agentsPerEnvironment);
 

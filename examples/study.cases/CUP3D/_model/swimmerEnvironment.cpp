@@ -1,4 +1,4 @@
-//  Korali environment for CubismUP-2D
+//  Korali environment for CubismUP-3D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "swimmerEnvironment.hpp"
@@ -12,6 +12,13 @@ std::mt19937 _randomGenerator;
 // Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
 {
+  // Get MPI communicator
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+
+  // Get rank in subcommunicator
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+
   // Setting seed
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
@@ -19,6 +26,7 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+  if( rank == 0 ) {
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
@@ -28,7 +36,7 @@ void runEnvironment(korali::Sample &s)
 
   // Redirecting all output to the log file
   char logFilePath[128];
-  sprintf(logFilePath, "%s/log.txt", resDir);
+  sprintf(logFilePath, "%s/log-%03u.txt", resDir, rank);
   auto logFile = freopen(logFilePath, "w", stdout);
   if (logFile == NULL)
   {
@@ -39,12 +47,6 @@ void runEnvironment(korali::Sample &s)
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
-
-  // Get MPI communicator
-  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
-
-  int rank;
-  MPI_Comm_rank(comm,&rank);
 
   if( rank==0 ) {
     std::cout << "=======================================================================\n";
@@ -63,9 +65,9 @@ void runEnvironment(korali::Sample &s)
 
   // Obtaining agents
   std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
-  size_t nAgents = shapes.size() - 1;
+  size_t nAgents = shapes.size();
   std::vector<StefanFish *> agents(nAgents);
-  for( size_t i = 1; i<nAgents+1; i++ )
+  for( size_t i = 2; i<nAgents+1; i++ )
     agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
 
   // Establishing environment's dump frequency
@@ -168,7 +170,7 @@ void runEnvironment(korali::Sample &s)
       // Check termination because leaving margins
       if ( rank == 0 ) {
         for( size_t i = 0; i<nAgents; i++ )
-          done = ( done || isTerminal(agents[i], nAgents) );
+          done = ( done || isTerminal( agents[i] ) );
       }
     }
 
@@ -270,16 +272,19 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
     std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
     std::uniform_real_distribution<double> disX(-0.025, 0.025);
     std::uniform_real_distribution<double> disY(-0.05, 0.05);
+    std::uniform_real_distribution<double> disZ(-0.05, 0.05);
 
     initialAngle = disA(_randomGenerator);
     initialPosition[0] = initialPosition[0] + disX(_randomGenerator);
     initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
+    initialPosition[2] = initialPosition[2] + disZ(_randomGenerator);
   }
 
   printf("[Korali] Initial Condition Agent %ld:\n", agentId);
   printf("[Korali] angle: %f\n", initialAngle);
   printf("[Korali] x: %f\n", initialPosition[0]);
   printf("[Korali] y: %f\n", initialPosition[1]);
+  printf("[Korali] z: %f\n", initialPosition[2]);
 
   // Write initial condition to file
   std::stringstream filename;
@@ -287,7 +292,7 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   ofstream myfile(filename.str().c_str(), std::ofstream::app);
   if (myfile.is_open())
   {
-    myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
+    myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << " " << initialPosition[2] << std::endl;
     myfile.close();
   }
   else{
@@ -300,45 +305,12 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   agent->setOrientation(initialAngle);
 }
 
-bool isTerminal(StefanFish *agent, size_t nAgents)
+bool isTerminal(StefanFish *agent)
 {
-  double xMin, xMax, yMin, yMax;
-  if( nAgents == 1 ){
-    xMin = 0.8;
-    xMax = 1.4;
-    yMin = 0.8;
-    yMax = 1.2;
-  }
-  else if( nAgents == 4 ){
-    xMin = 0.4;
-    xMax = 1.4;
-    yMin = 0.7;
-    yMax = 1.3;
-  }
-  else if( nAgents == 9 ){
-    xMin = 0.4;
-    xMax = 2.0;
-    yMin = 0.6;
-    yMax = 1.4;
-  }
-  else if( nAgents == 16 )
-  {
-    xMin = 0.4;
-    xMax = 2.6;
-    yMin = 0.5;
-    yMax = 1.5;
-  }
-  else if( nAgents == 25 )
-  {
-    xMin = 0.4;
-    xMax = 3.2;
-    yMin = 0.4;
-    yMax = 1.6;
-  }
-  else{
-    fprintf(stderr, "Number of Agents unknown, can not finish isTerminal...\n");
-    exit(-1);
-  }
+  double xMin = 0.4;
+  double xMax = 2.0;
+  double yMin = 0.6;
+  double yMax = 1.4;
 
   const double X = agent->position[0];
   const double Y = agent->position[1];

@@ -53,7 +53,12 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
+  #ifdef NOSENSOR
+  size_t numStates = 10;
+  #else
   size_t numStates = 16;
+  #endif
+
   #ifndef NOID
   if( nAgents > 1 )
     numStates += 3;

@@ -9,6 +9,7 @@
 #include "Utils/BufferedLogger.h"
 
 // #define NOID
+// #define NOSENSOR
 #define MULTITASK
 
 // command line arguments are read in Korali application

@@ -102,17 +102,25 @@ void __className__::runTrainingEpisode(Sample &agent)
   // "Success" or "Truncated".
   agent["Termination"] = "Non Terminal";
 
-   // Setting the environment id, such that incoming values can be assigned to executed environment.
-  agent["Environment Id"] = _launchId % _environmentCount;
- 
   // Getting first state
   runEnvironment(agent);
+
+  // If multiple Enviroments, get the environment Id
+  std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
+  if( _environmentCount > 1 ) {
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      environmentId[i] = agent["Environment Id"][i];
+  }
 
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from the agent's policy
     getAction(agent);
+
+    // Store the current environment Id in the experience
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      episodes[i]["Experiences"][actionCount]["Environment Id"] = environmentId[i];
 
     // Store the current state in the experience
     for (size_t i = 0; i < _agentsPerEnvironment; i++)

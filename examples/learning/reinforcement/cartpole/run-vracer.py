@@ -54,7 +54,6 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 495
 e["Problem"]["Policy Testing Episodes"] = 30
 e["Problem"]["Actions Between Policy Updates"] = 5
-e["Problem"]["Environment Count"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"

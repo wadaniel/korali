@@ -177,9 +177,14 @@ class __className__ : public __parentClassName__
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
   cBuffer<std::vector<float>> _truncatedStateVector;
+ 
+  /**
+   * @brief Contains the environment id of every experience
+   */
+  cBuffer<size_t> _environmentIdVector;
 
   /**
-   * @brief Contains the rewards for every experience
+   * @brief Contains the rewards of every experience
    */
   cBuffer<float> _rewardVector;
 
@@ -411,12 +416,12 @@ class __className__ : public __parentClassName__
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const size_t environmentId, const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward for environment %lu is non finite: %f  (Sigma: %f)\n", environmentId, rescaledReward, _rewardRescalingSigma[environmentId]);
 
     return rescaledReward;
   }

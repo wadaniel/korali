@@ -89,7 +89,7 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 

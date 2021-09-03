@@ -1,4 +1,4 @@
-//  Korali environment for CubismUP-2D
+//  Korali environment for CubismUP-3D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "korali.hpp"
@@ -19,4 +19,4 @@ extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
-bool isTerminal(StefanFish *agent, size_t nAgents);
+bool isTerminal(StefanFish *agent);

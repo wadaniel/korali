@@ -118,7 +118,8 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 100
 
 ### Running Experiment
 

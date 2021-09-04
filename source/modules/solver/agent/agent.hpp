@@ -311,6 +311,10 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
+  * @brief [Internal Use] Count of the number of experiences in the replay memory per environment.
+  */
+   std::vector<size_t> _experienceCountPerEnvironment;
+  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    std::vector<float> _rewardRescalingSigma;

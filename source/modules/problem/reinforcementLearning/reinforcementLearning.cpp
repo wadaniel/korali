@@ -47,6 +47,8 @@ void ReinforcementLearning::initialize()
 
   _actionVectorSize = _actionVectorIndexes.size();
   _stateVectorSize = _stateVectorIndexes.size();
+  
+  if( _environmentCount == 0 ) KORALI_LOG_ERROR("Environment Count must be larger 0 (is %zu).\n", _environmentCount);
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
@@ -128,7 +130,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
       auto envId = agent["Environment Id"][i].get<size_t>();
-      if (std::isfinite(envId) == false || envId > _environmentCount ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
+      if (std::isfinite(envId) == false || _environmentCount <= envId ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
       environmentId[i] = agent["Environment Id"][i];
     }
   }

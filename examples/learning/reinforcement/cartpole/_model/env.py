@@ -11,7 +11,10 @@ def env(s):
  # Initializing environment and random seed
  sampleId = s["Sample Id"]
  launchId = s["Launch Id"]
- envId = sampleId % 3
+ if s["Mode"] == "Training":
+    envId = sampleId % 3
+ else:
+    envId = 0
  cart.reset(sampleId * 1024 + launchId)
  s["Environment Id"] = envId
  s["State"] = cart.getState().tolist()

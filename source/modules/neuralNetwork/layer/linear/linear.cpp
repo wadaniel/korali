@@ -39,7 +39,7 @@ std::vector<float> Linear::generateInitialHyperparameters()
   if (_prevLayer != nullptr)
   {
     // Setting value for this layer's xavier constant
-    float xavierConstant = std::sqrt(6.0f) / std::sqrt(_outputChannels + _prevLayer->_outputChannels);
+    float xavierConstant = std::sqrt(6.0f/(_outputChannels + _prevLayer->_outputChannels));
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _outputChannels; i++)

@@ -42,7 +42,11 @@ resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize
 
 mu = int(populationSize/2) # states
 
-# Termination Criteria
+
+if objective == "random":
+    environmentCount = 7
+else:
+    environmentCount = 1
 
 
 ### Defining the problem's configuration
@@ -60,6 +64,7 @@ lEnv = lambda s : env(s, fobjective, dim, populationSize, noise)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
+e["Problem"]["Environment Count"] = environmentCount
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10

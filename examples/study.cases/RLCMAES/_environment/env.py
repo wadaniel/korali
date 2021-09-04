@@ -6,7 +6,15 @@ from objective import *
 
 maxSteps = 100
 
+objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow"]
+ 
 def env(s, objective, dim, populationSize, noise):
+
+ # Selecting environment
+ if objective == "random":
+     envId = s["Sample Id"] % 7
+     s["Environment Id"] = envId
+     objective = objectiveList[envId]
 
  # Initializing environment
  objective = ObjectiveFactory(objective, dim, populationSize)

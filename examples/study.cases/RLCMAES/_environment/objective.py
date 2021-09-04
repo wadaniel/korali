@@ -10,12 +10,7 @@ class ObjectiveFactory:
   def __init__(self, objective, dim, populationSize):
 
     # Initialize objective
-    if objective == "random":
-        self.random = True
-        self.objective = None
-    else:
-        self.random = False
-        self.objective = objective
+    self.objective = objective
 
     # Initialize constants
     self.populationSize = populationSize
@@ -65,51 +60,7 @@ class ObjectiveFactory:
     self.bestX = np.inf*np.ones(self.dim)
     self.prevBestX = np.inf*np.ones(self.dim)
     self.xstar = np.zeros(self.dim)
-    self.rfac = 1.0
-    self.rfacs = []
     self.step = 0
- 
-    # Init random objective if desired
-    if self.random == True:
-        nobjectives = 7
-        u = np.random.uniform(0.,1.)
-
-        if u < 1/nobjectives:
-            self.objective = "fsphere"
-            self.rfacs = [2187, 1575, 1076, 695, 441, 255, 232]
-            #self.rfac = 1/13.4
- 
-        elif u < 2/nobjectives:
-            self.objective = "felli"
-            self.rfacs = [1652, 828, 533, 329, 194, 115, 60]
-            #self.rfac = 1/8.9
-
-        elif u < 3/nobjectives:
-            self.objective = "fcigar"
-            self.rfacs = [1279, 1139, 1014, 700, 435, 257, 124]
-            #self.rfac = 1/3.4
-
-        elif u < 4/nobjectives:
-            self.objective = "ftablet"
-            self.rfacs = [1223, 721, 434, 192, 98, 65, 63]
-            #self.rfac = 1/3.3
-
-        elif u < 5/nobjectives:
-            self.objective = "fcigtab"
-            self.rfacs = [1327, 756, 401, 200, 106, 77, 61]
-            #self.rfac = 1/1.1
-
-        elif u < 6/nobjectives:
-            self.objective = "ftwoax"
-            self.rfacs = [1256, 976, 774, 518, 315, 183, 97]
-            #self.rfac = 1/3.5
- 
-        else:
-            self.objective = "fdiffpow"
-            self.rfacs = [1502, 1065, 757, 481, 291, 149, 72]
-            #self.rfac = 1/2.2
-            
-        self.rfac = 1000./self.rfacs[int(np.log(self.dim)/np.log(2))]
  
     # Init random noise params
     self.noise = noise
@@ -325,10 +276,10 @@ class ObjectiveFactory:
     #r = -np.log(self.curEf)
     #r = np.log(self.initialEf/self.curBestF)
     #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6 (similar to 8, but high var)
-    #r = np.log(self.initialEf/self.curEf) # run 4
+    r = np.log(self.initialEf/self.curEf) # run 4
     #r = -np.log(self.curDist/self.initialDist) # run 8
     
-    r = self.rfac * np.log(self.initialEf/self.curEf) # run 11
+    #r = self.rfac * np.log(self.initialEf/self.curEf) # run 11
     #r = -self.rfac * np.log(self.curDist/self.initialDist) # run 12
     
     assert np.isfinite(r), "Return not finite {}".format(r)

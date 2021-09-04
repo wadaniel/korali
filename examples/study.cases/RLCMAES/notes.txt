@@ -77,3 +77,7 @@ Next steps, eval run 12 on objectives, based on that choose reward function.
 # Run 13
 batch run for random, dims 2..128, added rfacs for each dim
 TODO: rerun batch form 8 & 64
+
+# Run 15
+run random with old reward 4, but with new reward rescaling feature, dim 2, pop 8
+Finding:

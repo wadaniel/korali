@@ -387,6 +387,7 @@ void __className__::attendAgent(size_t agentId)
 
         // Storing bookkeeping information
         _trainingRewardHistory.push_back(_trainingLastReward);
+        _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Experiences"][0]["Environment Id"]);
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
       }
 
@@ -893,6 +894,7 @@ void __className__::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["State"] = _stateVector[i];
     stateJson["Experience Replay"][i]["Action"] = _actionVector[i];
     stateJson["Experience Replay"][i]["Reward"] = _rewardVector[i];
+    stateJson["Experience Replay"][i]["Environment Id"] = _environmentIdVector[i];
     stateJson["Experience Replay"][i]["State Value"] = _stateValueVector[i];
     stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
     stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
@@ -971,6 +973,7 @@ void __className__::deserializeExperienceReplay()
     _stateVector.add(stateJson["Experience Replay"][i]["State"].get<std::vector<float>>());
     _actionVector.add(stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>());
     _rewardVector.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
+    _environmentIdVector.add(stateJson["Experience Replay"][i]["Environment Id"].get<float>());
     _stateValueVector.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueVector.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<float>());

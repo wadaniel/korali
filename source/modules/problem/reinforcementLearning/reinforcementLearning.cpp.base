@@ -43,6 +43,8 @@ void __className__::initialize()
 
   _actionVectorSize = _actionVectorIndexes.size();
   _stateVectorSize = _stateVectorIndexes.size();
+  
+  if( _environmentCount == 0 ) KORALI_LOG_ERROR("Environment Count must be larger 0 (is %zu).\n", _environmentCount);
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
@@ -62,15 +64,13 @@ void __environmentWrapper()
   (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
-  if ((*agent)["Termination"] == "Non Terminal")
-    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
+  if ((*agent)["Termination"] == "Non Terminal") KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
   bool terminationRecognized = false;
   if ((*agent)["Termination"] == "Terminal") terminationRecognized = true;
   if ((*agent)["Termination"] == "Truncated") terminationRecognized = true;
 
-  if (terminationRecognized == false)
-    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
+  if (terminationRecognized == false) KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
 
   co_switch(agent->_workerThread);
 
@@ -107,11 +107,39 @@ void __className__::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
+  // If multiple Enviroments, get the environment Id from each agent
+  std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
+  if( _environmentCount > 1 ) {
+    // Parsing environment Id while ensuring compatibility with single agent
+    if (_agentsPerEnvironment == 1)
+    {
+      auto envId = KORALI_GET(size_t, agent, "Environment Id");
+      agent._js.getJson().erase("Environment Id");
+      agent["Environment Id"][0] = envId;
+    }
+
+    // Checking correct format of environment Id
+    if (agent["Environment Id"].is_array() == false) KORALI_LOG_ERROR("Agent Environment Id variable returned by the environment is not a vector.\n");
+    if (agent["Environment Id"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents Environment Id vector returned with the wrong size: %lu, expected: %lu.\n", agent["Environment Id"].size(), _agentsPerEnvironment);
+
+    // Sanity checks and saving environment Id
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    {
+      auto envId = agent["Environment Id"][i].get<size_t>();
+      if (std::isfinite(envId) == false || _environmentCount <= envId ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
+      environmentId[i] = agent["Environment Id"][i];
+    }
+  }
+
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from the agent's policy
     getAction(agent);
+
+    // Store the current environment Id in the experience
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      episodes[i]["Experiences"][actionCount]["Environment Id"] = environmentId[i];
 
     // Store the current state in the experience
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -360,8 +388,7 @@ void __className__::runEnvironment(Sample &agent)
     if (agent["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["State"][i].size(), _stateVectorSize);
 
     for (size_t j = 0; j < _stateVectorSize; j++)
-      if (std::isfinite(agent["State"][i][j].get<float>()) == false)
-        KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
+      if (std::isfinite(agent["State"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
   }
 
   // Normalizing State
@@ -385,14 +412,13 @@ void __className__::runEnvironment(Sample &agent)
     agent["Reward"][0] = reward;
   }
 
-  // Checking correct format of state
+  // Checking correct format of reward
   if (agent["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (agent["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", agent["Reward"].size(), _agentsPerEnvironment);
 
   // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
-    if (std::isfinite(agent["Reward"][i].get<float>()) == false)
-      KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
+    if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 }
 
 __moduleAutoCode__;

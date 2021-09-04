@@ -54,7 +54,6 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
 e["Solver"]["Policy"]["Distribution"] = args.dis
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
   
 ### Configuring the neural network and its hidden layers
 

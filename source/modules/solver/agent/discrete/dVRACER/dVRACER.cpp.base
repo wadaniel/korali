@@ -98,7 +98,7 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
     if (_isOnPolicyVector[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = getScaledReward(_rewardVector[expId]);
+      float Qret = getScaledReward(_environmentIdVector[expId], _rewardVector[expId]);
 
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
@@ -216,11 +216,6 @@ knlohmann::json __className__::getAgentPolicy()
 void __className__::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
-}
-
-void __className__::resetAgentOptimizers()
-{
-  _criticPolicyLearner->resetOptimizer();
 }
 
 void __className__::printAgentInformation()

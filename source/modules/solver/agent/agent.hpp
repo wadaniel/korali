@@ -91,9 +91,9 @@ class Agent : public Solver
   */
    std::vector<size_t> _testingSampleIds;
   /**
-  * @brief The hyperparameters of the policy to test.
+  * @brief The current hyperparameters of the policy to test.
   */
-   knlohmann::json _testingPolicy;
+   knlohmann::json _testingCurrentPolicy;
   /**
   * @brief Specifies the depth of the running training average to report.
   */
@@ -211,6 +211,10 @@ class Agent : public Solver
   */
    std::vector<float> _trainingRewardHistory;
   /**
+  * @brief [Internal Use] Keeps a history of all training environment ids.
+  */
+   std::vector<size_t> _trainingEnvironmentIdHistory;
+  /**
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
    std::vector<size_t> _trainingExperienceHistory;
@@ -230,6 +234,14 @@ class Agent : public Solver
   * @brief [Internal Use] Remembers the episode that obtained the maximum cumulative sum of rewards found so far.
   */
    size_t _trainingBestEpisodeId;
+  /**
+  * @brief [Internal Use] Stores the current training policy configuration.
+  */
+   knlohmann::json _trainingCurrentPolicy;
+  /**
+  * @brief [Internal Use] Stores the best training policy configuration found so far.
+  */
+   knlohmann::json _trainingBestPolicy;
   /**
   * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
@@ -267,6 +279,10 @@ class Agent : public Solver
   */
    float _testingBestAverageReward;
   /**
+  * @brief [Internal Use] Stores the best testing policy configuration found so far.
+  */
+   knlohmann::json _testingBestPolicy;
+  /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
    size_t _experienceReplayOffPolicyCount;
@@ -299,13 +315,17 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
+  * @brief [Internal Use] Count of the number of experiences in the replay memory per environment.
+  */
+   std::vector<size_t> _experienceCountPerEnvironment;
+  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
-   float _rewardRescalingSigma;
+   std::vector<float> _rewardRescalingSigma;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
-   float _rewardRescalingSumSquaredRewards;
+   std::vector<float> _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
   */
@@ -480,9 +500,14 @@ class Agent : public Solver
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
   cBuffer<std::vector<float>> _truncatedStateVector;
+ 
+  /**
+   * @brief Contains the environment id of every experience
+   */
+  cBuffer<size_t> _environmentIdVector;
 
   /**
-   * @brief Contains the rewards for every experience
+   * @brief Contains the rewards of every experience
    */
   cBuffer<float> _rewardVector;
 
@@ -500,21 +525,6 @@ class Agent : public Solver
   * @brief Stores the importance weight annealing factor.
   */
   float _importanceWeightAnnealingRate;
-
-  /**
-  * @brief Stores the current policy configuration.
-  */
-  knlohmann::json _trainingCurrentPolicy;
-
-  /**
-  * @brief Stores the training policy configuration that has produced the best results.
-  */
-  knlohmann::json _trainingBestPolicy;
-
-  /**
-  * @brief Stores the candidate policy configuration that has produced the best results.
-  */
-  knlohmann::json _testingBestPolicy;
 
   /**
   * @brief Storage for the pointer to the learning problem
@@ -729,12 +739,12 @@ class Agent : public Solver
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const size_t environmentId, const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward for environment %lu is non finite: %f  (Sigma: %f)\n", environmentId, rescaledReward, _rewardRescalingSigma[environmentId]);
 
     return rescaledReward;
   }
@@ -759,11 +769,6 @@ class Agent : public Solver
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
-
-  /**
-   * @brief Resets the states of the optimizers
-   */
-  virtual void resetAgentOptimizers() = 0;
 
   /**
    * @brief Initializes the internal state of the policy

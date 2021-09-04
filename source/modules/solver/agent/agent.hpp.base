@@ -177,9 +177,14 @@ class __className__ : public __parentClassName__
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
   cBuffer<std::vector<float>> _truncatedStateVector;
+ 
+  /**
+   * @brief Contains the environment id of every experience
+   */
+  cBuffer<size_t> _environmentIdVector;
 
   /**
-   * @brief Contains the rewards for every experience
+   * @brief Contains the rewards of every experience
    */
   cBuffer<float> _rewardVector;
 
@@ -197,21 +202,6 @@ class __className__ : public __parentClassName__
   * @brief Stores the importance weight annealing factor.
   */
   float _importanceWeightAnnealingRate;
-
-  /**
-  * @brief Stores the current policy configuration.
-  */
-  knlohmann::json _trainingCurrentPolicy;
-
-  /**
-  * @brief Stores the training policy configuration that has produced the best results.
-  */
-  knlohmann::json _trainingBestPolicy;
-
-  /**
-  * @brief Stores the candidate policy configuration that has produced the best results.
-  */
-  knlohmann::json _testingBestPolicy;
 
   /**
   * @brief Storage for the pointer to the learning problem
@@ -426,12 +416,12 @@ class __className__ : public __parentClassName__
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const size_t environmentId, const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward for environment %lu is non finite: %f  (Sigma: %f)\n", environmentId, rescaledReward, _rewardRescalingSigma[environmentId]);
 
     return rescaledReward;
   }
@@ -456,11 +446,6 @@ class __className__ : public __parentClassName__
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
-
-  /**
-   * @brief Resets the states of the optimizers
-   */
-  virtual void resetAgentOptimizers() = 0;
 
   /**
    * @brief Initializes the internal state of the policy

@@ -627,28 +627,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         dCqMu = 0.;
       }
 
-      float dCqSig;
-      if (curBeta < 0.f)
-      {
-        // mu above upper bound
-        const float lbMu = std::log(curMu - _actionUpperBounds[i]) - curBeta2;
-        const float laMu = std::log(curMu - _actionLowerBounds[i]) - curAlpha2;
-        dCqSig = (-std::exp(lCq - lPi2 - 2. * lCurSig + lbMu) + std::exp(lCq - lPi2 - 2. * lCurSig + laMu));
-      }
-      else if (curAlpha > 0.f)
-      {
-        // mu below lower bound
-        const float lbMu = std::log(_actionUpperBounds[i] - curMu) - curBeta2;
-        const float laMu = std::log(_actionLowerBounds[i] - curMu) - curAlpha2;
-        dCqSig = (std::exp(lCq - lPi2 - 2. * lCurSig + lbMu) - std::exp(lCq - lPi2 - 2. * lCurSig + laMu));
-      }
-      else
-      {
-        // mu between bounds
-        const float lbMu = std::log(_actionUpperBounds[i] - curMu) - curBeta2;
-        const float laMu = std::log(curMu - _actionLowerBounds[i]) - curAlpha2;
-        dCqSig = (std::exp(lCq - lPi2 - 2. * lCurSig + laMu) + std::exp(lCq - lPi2 - 2. * lCurSig + lbMu));
-      }
+      float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[i] - curMu);
 
       // Gradient with respect to Mean
       importanceWeightGradients[i] = (curActionDif * curInvVar + dCqMu);
@@ -882,28 +861,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
         Cps = 0.;
       }
 
-      float dCqSig;
-      if (curBeta < 0.f)
-      {
-        // mu above upper bound
-        const float lbMu = std::log(curMu - _actionUpperBounds[i]) - curBeta2;
-        const float laMu = std::log(curMu - _actionLowerBounds[i]) - curAlpha2;
-        dCqSig = -std::exp(lCq - lPi2 - 2. * lCurSig + lbMu) + std::exp(lCq - lPi2 - 2. * lCurSig + laMu);
-      }
-      else if (curAlpha > 0.f)
-      {
-        // mu below lower bound
-        const float lbMu = std::log(_actionUpperBounds[i] - curMu) - curBeta2;
-        const float laMu = std::log(_actionLowerBounds[i] - curMu) - curAlpha2;
-        dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig + lbMu) - std::exp(lCq - lPi2 - 2. * lCurSig + laMu);
-      }
-      else
-      {
-        // mu between bounds
-        const float lbMu = std::log(_actionUpperBounds[i] - curMu) - curBeta2;
-        const float laMu = std::log(curMu - _actionLowerBounds[i]) - curAlpha2;
-        dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig + laMu) + std::exp(lCq - lPi2 - 2. * lCurSig + lbMu);
-      }
+      float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[i] - curMu);
 
       // KL-Gradient with respect to Mu
       KLDivergenceGradients[i] = -dCqMu - muDif * curInvVar + Cps;

@@ -36,7 +36,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
  ## Checking for multi envs and splitting results
  environmentCount = results[0][-1]["Problem"]["Environment Count"]
- print(environmentCount)
  if environmentCount > 1:
     if len(results) > 1:
         print("Plotting multiple results with Environment Count > 1 not yet supported.")
@@ -52,7 +51,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
     results = splittedResults
 
- print(len(results))
  ## Reading the individual results
  unpackedResults = []
  for r in results:

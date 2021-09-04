@@ -104,9 +104,9 @@ void Agent::initialize()
     // Rescaling information
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
     _stateRescalingSigmas = std::vector<float>(_problem->_stateVectorSize, 1.0);
-
     _rewardRescalingSigma = std::vector<float>(_problem->_environmentCount, 1.0f);
     _rewardRescalingSumSquaredRewards = std::vector<float>(_problem->_environmentCount, 0.0f);
+    _experienceCountPerEnvironment.resize(_problem->_environmentCount, 0);
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
@@ -482,8 +482,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       if (_rewardVector.size() == _experienceReplayMaximumSize)
       {
         _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
+        _experienceCountPerEnvironment[_environmentIdVector[0]]--;
       }
       _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
+      _experienceCountPerEnvironment[environmentId]++;
     }
 
     _environmentIdVector.add(environmentId);
@@ -598,10 +600,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   if (_rewardRescalingEnabled) {
     // get environment Id vector
-    auto envIdVec = _environmentIdVector.getVector();
     // finalize computation of standard deviation for reward rescaling
     for(size_t i = 0; i < _problem->_environmentCount; ++i)
-      _rewardRescalingSigma[i] = std::sqrt( _rewardRescalingSumSquaredRewards[i] / ( (float)std::count(envIdVec.begin(), envIdVec.end(), i) + 1e-9) ) + 1e-9;
+      _rewardRescalingSigma[i] = std::sqrt( _rewardRescalingSumSquaredRewards[i] / ( (float)_experienceCountPerEnvironment[i] + 1e-9) ) + 1e-9;
   }
 }
 
@@ -1007,16 +1008,18 @@ void Agent::printGenerationAfter()
 {
   if (_mode == "Training")
   {
-    _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
-
+    _k->_logger->logInfo("Normal", "Experience Replay Statistics:\n");
+    if (_problem->_environmentCount > 1)
+        for(size_t i = 0; i < _problem->_environmentCount; ++i)
+            _k->_logger->logInfo("Normal", " + Experience Count Env %zu:      %lu\n", i, _experienceCountPerEnvironment[i]);
+ 
     _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _stateVector.size(), _experienceReplayMaximumSize);
-
     if (_maxEpisodes > 0)
       _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
     else
       _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
-
-    if (_maxExperiences > 0)
+ 
+   if (_maxExperiences > 0)
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
     else
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
@@ -1318,6 +1321,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Count']\n%s", e.what()); } 
    eraseValue(js, "Experience Count");
+ }
+
+ if (isDefined(js, "Experience Count Per Environment"))
+ {
+ try { _experienceCountPerEnvironment = js["Experience Count Per Environment"].get<std::vector<size_t>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Count Per Environment']\n%s", e.what()); } 
+   eraseValue(js, "Experience Count Per Environment");
  }
 
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
@@ -1741,6 +1752,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Current Sample ID"] = _currentSampleID;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
+   js["Experience Count Per Environment"] = _experienceCountPerEnvironment;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Reward"]["Outbound Penalization"]["Count"] = _rewardOutboundPenalizationCount;

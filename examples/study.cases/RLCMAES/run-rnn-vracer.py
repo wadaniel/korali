@@ -37,6 +37,11 @@ noise = args.noise
 maxExperiences = args.exp
 resultDirectory = "_vracer_rnn_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
+if objective == "random":
+    environmentCount = 7
+else:
+    environmentCount = 1
+
 mu = int(populationSize/2) # states
 
 # Termination Criteria
@@ -57,6 +62,7 @@ lEnv = lambda s : env(s, objective, dim, populationSize, noise)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
+e["Problem"]["Environment Count"] = environmentCount
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
@@ -106,8 +112,8 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 10
 
-e["Solver"]["Experience Replay"]["Start Size"] = 16384
-e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
+e["Solver"]["Experience Replay"]["Start Size"] = 131072
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4

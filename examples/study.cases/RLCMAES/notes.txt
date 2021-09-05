@@ -79,5 +79,9 @@ batch run for random, dims 2..128, added rfacs for each dim
 TODO: rerun batch form 8 & 64
 
 # Run 15
-run random with old reward 4, but with new reward rescaling feature, dim 2, pop 8
+run random with reward 4, but with new reward rescaling feature, dim 2, pop 8, dim 4 pop 16
+Finding:
+
+# Run 16
+run random with reward 8, but with new reward rescaling feature, dim 2, pop 8, dim 4 pop 16
 Finding:

@@ -63,12 +63,12 @@ void runEnvironment(korali::Sample &s)
   ArgumentParser parser(_argc, _argv);
   Simulation *_environment = new Simulation(comm, parser);
 
-  // Obtaining agents
+  // Obtaining agents (all of them!)
   std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
   size_t nAgents = shapes.size();
   std::vector<StefanFish *> agents(nAgents);
-  for( size_t i = 2; i<nAgents+1; i++ )
-    agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
+  for( size_t i = 0; i<nAgents; i++ )
+    agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
 
   // Establishing environment's dump frequency
   _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();

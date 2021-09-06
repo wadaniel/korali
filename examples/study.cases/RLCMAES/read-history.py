@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 # Parse console arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--files', help='History file to read.', required=True, type=str, nargs='+')
+parser.add_argument('--out', help='Name of output file.', required=False, type=str)
 
 args = parser.parse_args()
  

@@ -13,6 +13,7 @@ parser.add_argument('--dim', help='Dimension of objective function.', required=T
 parser.add_argument('--pop', help='CMAES population size.', required=True, type=int)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--feval', help='Evaluate stored policy.', required=False, type=str)
+parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=10, type=int)
 
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
@@ -33,10 +34,11 @@ run = args.run
 objective = args.obj
 fobjective = args.feval if args.feval else objective
 dim = args.dim
-evaluation = args.eval
 populationSize = args.pop
 noise = args.noise
 maxExperiences = args.exp
+evaluation = args.eval
+repetitions = args.reps
 
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
@@ -146,7 +148,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = maxExperiences
 
 if evaluation == True:
     e["Solver"]["Mode"] = "Testing"
-    e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
+    e["Solver"]["Testing"]["Sample Ids"] = list(range(repetitions))
 
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:

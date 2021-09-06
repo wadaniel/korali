@@ -1,4 +1,3 @@
-// Select which environment to use
 #include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 
@@ -44,6 +43,7 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
+  e["Problem"]["Environment Count"] = 3;
   e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;

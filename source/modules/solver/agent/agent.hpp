@@ -211,6 +211,10 @@ class Agent : public Solver
   */
    std::vector<float> _trainingRewardHistory;
   /**
+  * @brief [Internal Use] Keeps a history of all training environment ids.
+  */
+   std::vector<size_t> _trainingEnvironmentIdHistory;
+  /**
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
    std::vector<size_t> _trainingExperienceHistory;
@@ -310,6 +314,10 @@ class Agent : public Solver
   * @brief [Internal Use] Count of the number of experiences produced so far.
   */
    size_t _experienceCount;
+  /**
+  * @brief [Internal Use] Count of the number of experiences in the replay memory per environment.
+  */
+   std::vector<size_t> _experienceCountPerEnvironment;
   /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */

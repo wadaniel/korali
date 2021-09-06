@@ -34,19 +34,30 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  cmap = matplotlib.cm.get_cmap('brg')
  colCurrIndex = 0.0
 
- ## Reading the individual results
+ ## Checking for multi envs and splitting results
+ environmentCount = results[0]["Problem"]["Environment Count"]
+ if environmentCount > 1:
+    if len(results) > 1:
+        print("Plotting multiple results with Environment Count > 1 not yet supported.")
+        sys.exit()
 
+    splittedResults = []
+    envIds = results[0]["Solver"]["Training"]["Environment Id History"]
+    for envId in range(environmentCount):
+        res = { }
+        res["Solver"] = { "Training" : { "Experience History" : [ exp for (env, exp) in zip (envIds, results[0]["Solver"]["Training"]["Experience History"]) if env == envId ] } }
+        res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, results[0]["Solver"]["Training"]["Reward History"]) if env == envId ]
+        splittedResults.append(res)
+    results = splittedResults
+
+ ## Reading the individual results
  unpackedResults = []
  for r in results:
-  
-  if (len(r) == 0): continue  
-  
-  nAgents = r["Problem"]["Agents Per Environment"]
-  # averageDepth *= nAgents
+  nAgents = 1
+  if environmentCount == 1:
+    nAgents = r["Problem"]["Agents Per Environment"]
   cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"])) / nAgents
   rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
-  trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
-  testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
 
   # Merge Results
   if aggregate == True and len(unpackedResults) > 0:
@@ -56,17 +67,15 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
     sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
     sortedAggCumObs = np.sort(aggCumObs)
-    unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold, testingRewardThreshold)
-
+    unpackedResults[0] = (sortedAggCumObs, sortedAggRewards)
   # Append Results
   else:
-    unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold, testingRewardThreshold) )
+    unpackedResults.append( (cumulativeObsCountHistory, rewardHistory) )
 
  ## Plotting the individual experiment results
-    
  for resId, r in enumerate(unpackedResults):
   
-  cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingRewardThreshold = r
+  cumulativeObsArr, rewardHistory = r
   
   currObsCount = cumulativeObsArr[-1]
   
@@ -82,18 +91,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   if (max(rewardHistory) > maxPlotReward):
    if (max(rewardHistory) < math.inf):
     maxPlotReward = max(rewardHistory)
-
-  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
-   if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
-
-  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-   if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
-  
-  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
-   if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-   
-  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-   if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
 
   # Getting average cumulative reward statistics
   cumRewards = np.cumsum(rewardHistory)
@@ -123,7 +120,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
+  if environmentCount > 1:
+    ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label="Environment {}".format(resId)) 
+  else:
+    ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
 
   # Plotting confidence intervals
   if showCI > 0.:

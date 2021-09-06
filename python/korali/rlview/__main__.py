@@ -41,10 +41,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   
   if (len(r) == 0): continue  
   
-  cumulativeObsCountHistory = np.cumsum(np.array(r[-1]["Solver"]["Training"]["Experience History"]))
-  rewardHistory = np.array(r[-1]["Solver"]["Training"]["Reward History"])
-  trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
-  testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
+  cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
+  rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
+  trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
+  testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
 
   # Merge Results
   if aggregate == True and len(unpackedResults) > 0:
@@ -149,37 +149,17 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 def parseResults(dir):
 
  results = [ ]
- 
+
  for p in dir:
   configFile = p + '/latest'
   if (not os.path.isfile(configFile)):
-    print("[Korali] Error: Did not find any results in the {0} folder...".format(p))
-    exit(-1)
+   print("[Korali] Error: Did not find any results in the {0} folder...".format(p))
+   exit(-1)
  
   with open(configFile) as f:
-    js = json.load(f)
-  configRunId = js['Run ID']
- 
-  resultFiles = [
-      f for f in os.listdir(p)
-      if os.path.isfile(os.path.join(p, f)) and f.startswith('gen')
-  ]
-  resultFiles = sorted(resultFiles)
- 
-  genList = [ ]
- 
-  for file in resultFiles:
-   if (not 'aux' in file):
-    with open(p + '/' + file) as f:
-      genJs = json.load(f)
-      solverRunId = genJs['Run ID']
- 
-      if (configRunId == solverRunId):
-        curGen = genJs['Current Generation']
-        genList.append(genJs)
- 
-  del genList[0]
-  results.append(genList)
+    data = json.load(f)
+
+  results.append(data)
   
  return results
  

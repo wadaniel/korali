@@ -99,7 +99,7 @@ void runEnvironment(korali::Sample &s)
   if( nAgents > 1 )
   {
     std::vector<std::vector<double>> states(nAgents);
-    #ifndef NOID
+    #ifdef ID
     size_t rowEndId = 0;
     size_t rowId = 0;
     size_t colId = 0;
@@ -110,7 +110,7 @@ void runEnvironment(korali::Sample &s)
     for( size_t i = 0; i<nAgents; i++ )
     {
       std::vector<double> state = agents[i]->state();
-      #ifndef NOID
+      #ifdef ID
       // add column identifier ~ num fish in front
       state.push_back( colId );
       // number of fish to left
@@ -216,7 +216,7 @@ void runEnvironment(korali::Sample &s)
     {
       std::vector<std::vector<double>> states(nAgents);
       std::vector<double> rewards(nAgents);
-      #ifndef NOID
+      #ifdef ID
       size_t rowEndId = 0;
       size_t rowId = 0;
       size_t colId = 0;
@@ -227,7 +227,7 @@ void runEnvironment(korali::Sample &s)
       for( size_t i = 0; i<nAgents; i++ )
       {
         std::vector<double> state = agents[i]->state();
-        #ifndef NOID
+        #ifdef ID
         // add column identifier
         state.push_back( colId );
         // number of fish to left
@@ -373,26 +373,26 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
     yMin = 0.8;
     yMax = 1.2;
   }
-  else if( nAgents == 4 ){
+  else if( nAgents == 3 ){
     xMin = 0.4;
     xMax = 1.4;
     yMin = 0.7;
     yMax = 1.3;
   }
-  else if( nAgents == 9 ){
+  else if( nAgents == 8 ){
     xMin = 0.4;
     xMax = 2.0;
     yMin = 0.6;
     yMax = 1.4;
   }
-  else if( nAgents == 16 )
+  else if( nAgents == 15 )
   {
     xMin = 0.4;
     xMax = 2.6;
     yMin = 0.5;
     yMax = 1.5;
   }
-  else if( nAgents == 25 )
+  else if( nAgents == 24 )
   {
     xMin = 0.4;
     xMax = 3.2;

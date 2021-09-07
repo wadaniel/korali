@@ -43,7 +43,9 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
+  #ifdef MULTITASK
   e["Problem"]["Environment Count"] = 3;
+  #endif
   e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
@@ -59,7 +61,7 @@ int main(int argc, char *argv[])
   size_t numStates = 16;
   #endif
 
-  #ifndef NOID
+  #ifdef ID
   if( nAgents > 1 )
     numStates += 3;
   #endif

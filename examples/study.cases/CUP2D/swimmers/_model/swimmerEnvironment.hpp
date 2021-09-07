@@ -8,7 +8,7 @@
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
-// #define NOID
+// #define ID
 // #define NOSENSOR
 #define MULTITASK
 

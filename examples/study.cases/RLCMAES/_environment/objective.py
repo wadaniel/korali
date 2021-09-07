@@ -275,7 +275,7 @@ class ObjectiveFactory:
 
     else:
         state = np.zeros(self.dim+self.mu+1)
-        state[:self.dim] = np.diag(self.covMu)/self.scale
+        state[:self.dim] = np.diag(self.covMu)
         state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
         state[-1] = self.bestEver/self.curEf
     

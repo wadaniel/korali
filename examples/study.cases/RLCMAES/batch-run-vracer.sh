@@ -1,22 +1,22 @@
 #!/bin/bash
 
-run=17
+run=18
 noise=0.0
 reps=100
-version=0
+version=1
 obj="random"
 #dims=(2 4 8 16)
 #dims=(32 64 128)
 #pops=(6 8 10 12)
 #pops=(14 16 18)
-exp=5000000
+exp=300000
 
 #dims=(2 4 8 16 32 64)
 #pops=(8 16 32 64 128 256)
-dims=(8 16 32)
-pops=(32 64 128)
-#dims=(8)
-#pops=(32)
+dims=(2 4 8 16 32)
+pops=(8 16 32 64 128)
+#dims=(4)
+#pops=(16)
 
 objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow")
 
@@ -25,7 +25,7 @@ do
     python run-vracer.py --noise $noise --obj $obj --dim ${dims[i]} --pop ${pops[i]} --run $run --exp $exp --version=$version
     python -m korali.rlview --dir "_vracer_${obj}_${dims[i]}_${pops[i]}_${noise}_${run}/" --out "${obj}_${dims[i]}_${pops[i]}_${run}.png"
     
-    python run-vracer.py --noise $noise --obj $obj --dim ${dims[i]} --pop ${pops[i]} --run $run --eval --reps $reps;
+    python run-vracer.py --noise $noise --obj $obj --dim ${dims[i]} --pop ${pops[i]} --run $run --eval --reps $reps --version=$version
 
     for o in "${objectives[@]}";
     do

@@ -15,9 +15,14 @@ void runEnvironment(korali::Sample &s)
   // Get MPI communicator
   MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
 
-  // Get rank in subcommunicator
-  int rank;
+  // Get rank and size of subcommunicator
+  int rank, size;
   MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+
+  // Get rank in world
+  int rankGlobal;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
 
   // Setting seed
   size_t sampleId = s["Sample Id"];
@@ -25,8 +30,8 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
-  if( rank == 0 ) {
+  sprintf(resDir, "%s/sample%03d", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  if( rank == 0 )
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
@@ -35,14 +40,19 @@ void runEnvironment(korali::Sample &s)
   };
 
   // Redirecting all output to the log file
-  char logFilePath[128];
-  sprintf(logFilePath, "%s/log-%03u.txt", resDir, rank);
-  auto logFile = freopen(logFilePath, "w", stdout);
-  if (logFile == NULL)
-  {
-    printf("[Korali] Error creating log file: %s.\n", logFilePath);
-    exit(-1);
+  FILE * logFile;
+  if( rank == 0 ) {
+    char logFilePath[128];
+    sprintf(logFilePath, "%s/log.txt", resDir);
+    logFile = freopen(logFilePath, "a", stdout);
+    if (logFile == NULL)
+    {
+      printf("[Korali] Error creating log file: %s.\n", logFilePath);
+      exit(-1);
+    }
   }
+  // Make sure folder / logfile is created before switching path
+  MPI_Barrier(comm);
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
@@ -63,21 +73,45 @@ void runEnvironment(korali::Sample &s)
   ArgumentParser parser(_argc, _argv);
   Simulation *_environment = new Simulation(comm, parser);
 
-  // Obtaining agents (all of them!)
+  //////////// Obtaining agents (all of them!) ////////////
+  // std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
+  // size_t nAgents = shapes.size();
+  // std::vector<StefanFish *> agents(nAgents);
+  // for( size_t i = 0; i<nAgents; i++ )
+  //   agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
+  /////////////////////////////////////////////////////////
+
+  //////////// Obtaining agents (only followers!) ////////////
   std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
-  size_t nAgents = shapes.size();
+  size_t nAgents = shapes.size()-5;
   std::vector<StefanFish *> agents(nAgents);
-  for( size_t i = 0; i<nAgents; i++ )
-    agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
+  // plane 1 with 4 fish
+  agents[0] = dynamic_cast<StefanFish *>(shapes[2].get());
+  agents[1] = dynamic_cast<StefanFish *>(shapes[3].get());
+  agents[2] = dynamic_cast<StefanFish *>(shapes[4].get());
+  // # plane 2 with 9 fish
+  agents[3]  = dynamic_cast<StefanFish *>(shapes[6].get());
+  agents[4]  = dynamic_cast<StefanFish *>(shapes[7].get());
+  agents[5]  = dynamic_cast<StefanFish *>(shapes[8].get());
+  agents[6]  = dynamic_cast<StefanFish *>(shapes[9].get());
+  agents[7]  = dynamic_cast<StefanFish *>(shapes[10].get());
+  agents[8]  = dynamic_cast<StefanFish *>(shapes[11].get());
+  agents[9]  = dynamic_cast<StefanFish *>(shapes[12].get());
+  agents[10] = dynamic_cast<StefanFish *>(shapes[13].get());
+  // plane 3 with 4 fish
+  agents[11] = dynamic_cast<StefanFish *>(shapes[15].get());
+  agents[12] = dynamic_cast<StefanFish *>(shapes[16].get());
+  agents[13] = dynamic_cast<StefanFish *>(shapes[17].get());
+  ////////////////////////////////////////////////////////////
 
   // Establishing environment's dump frequency
   _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Setting initial conditions
-  for( size_t i = 0; i<nAgents; i++ )
-    setInitialConditions(agents[i], i, s["Mode"] == "Training");
+  // Setting initial conditions (TODO, currently parser overwrites the new locations)
+  // for( size_t i = 0; i<nAgents; i++ )
+  //   setInitialConditions(agents[i], i, s["Mode"] == "Training");
   // After moving the agent, the obstacles have to be restarted
-  _environment->_init( false, parser );
+  // _environment->_init( false, parser );
 
   if( rank == 0 ) {
     // Setting initial state
@@ -105,11 +139,10 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   size_t maxSteps = 200;
 
-
-  // File to write actions
-  std::stringstream filename;
-  filename<<"actions.txt";
-  ofstream myfile(filename.str().c_str());
+  // File to write actions (TODO)
+  // std::stringstream filename;
+  // filename<<"actions.txt";
+  // ofstream myfile(filename.str().c_str());
 
   // Starting main environment loop
   bool done = false;
@@ -132,14 +165,14 @@ void runEnvironment(korali::Sample &s)
           action = actions.get<std::vector<double>>();
 
         // Write action to file
-        if (myfile.is_open())
-        {
-          myfile << i << " " << action[0] << " " << action[1] << std::endl;
-        }
-        else{
-          fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
-          exit(-1);
-        }
+        // if (myfile.is_open())
+        // {
+        //   myfile << i << " " << action[0] << " " << action[1] << std::endl;
+        // }
+        // else{
+        //   fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+        //   exit(-1);
+        // }
 
         // Apply action
         agents[i]->act(t, action);
@@ -147,13 +180,11 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Run the simulation until next action is required
-    if( rank == 0 ) {
-      dtAct = 0.;
-      for( size_t i = 0; i<nAgents; i++ )
-      if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
-        dtAct = agents[i]->getLearnTPeriod() * 0.5;
-      tNextAct += dtAct;       
-    }
+    dtAct = 0.;
+    for( size_t i = 0; i<nAgents; i++ )
+    if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
+      dtAct = agents[i]->getLearnTPeriod() * 0.5;
+    tNextAct += dtAct;       
     while ( t < tNextAct && done == false )
     {
       // Compute timestep
@@ -229,15 +260,14 @@ void runEnvironment(korali::Sample &s)
       }
       fflush(stdout);
     }
-
     // Advancing to next step
     curStep++;
   }
 
-  if ( rank == 0 ) {
-    // Close file to write actions
-    myfile.close();
-  }
+  // if ( rank == 0 ) {
+  //   // Close file to write actions
+  //   myfile.close();
+  // }
 
   // Flush CUP logger
   logger.flush();
@@ -257,7 +287,8 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(curPath);
 
   // Closing log file
-  fclose(logFile);
+  if( rank == 0 )
+    fclose(logFile);
 }
 
 void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
@@ -287,18 +318,17 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   printf("[Korali] z: %f\n", initialPosition[2]);
 
   // Write initial condition to file
-  std::stringstream filename;
-  filename<<"initialCondition.txt";
-  ofstream myfile(filename.str().c_str(), std::ofstream::app);
-  if (myfile.is_open())
-  {
-    myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << " " << initialPosition[2] << std::endl;
-    myfile.close();
-  }
-  else{
-    fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
-    exit(-1);
-  }
+  // std::stringstream filename;
+  // filename<<"initialCondition.txt";
+  // ofstream myfile(filename.str().c_str(), std::ofstream::app);
+  // if (myfile.is_open()) {
+  //   myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << " " << initialPosition[2] << std::endl;
+  //   myfile.close();
+  // }
+  // else {
+  //   fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+  //   exit(-1);
+  // }
 
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition);

@@ -1,4 +1,3 @@
-// Select which environment to use
 #include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 

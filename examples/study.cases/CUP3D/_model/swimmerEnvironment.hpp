@@ -11,8 +11,6 @@
 
 using namespace cubismup3d;
 
-// #define NOID
-
 // command line arguments are read in Korali application
 extern int _argc;
 extern char **_argv;

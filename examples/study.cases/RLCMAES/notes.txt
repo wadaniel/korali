@@ -80,8 +80,18 @@ TODO: rerun batch form 8 & 64
 
 # Run 15
 run random with reward 4, but with new reward rescaling feature, dim 2, pop 8, dim 4 pop 16
-Finding:
+Finding: reward 4 works well up to dim ~8
 
 # Run 16
 run random with reward 8, but with new reward rescaling feature, dim 2, pop 8, dim 4 pop 16
+Finding: reward 8 does not work well
+
+
+# Run 17
+increasing NN size to 512, and then compare to Run 15 (dim 8 - 32)
+Finding:
+
+
+# Run 18
+version 1, changed state to weighted cov of mu, NN size 256 (only dim 8)
 Finding:

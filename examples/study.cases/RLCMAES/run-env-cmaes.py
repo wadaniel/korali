@@ -46,7 +46,7 @@ cs = (ueff+2.)/(dim+ueff+5)
 cm = 1
 action = [cs, cm]
 
-outfile = "history_cmaes_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise)
+outfile = "history_cmaes_{}_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise, args.run)
 objective = ObjectiveFactory(objective, dim, populationSize)
 
 rewardhistory = np.zeros(reps)

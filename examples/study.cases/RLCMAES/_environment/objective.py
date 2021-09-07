@@ -7,11 +7,14 @@ import numpy as np
 ##  Distributed under the terms of the MIT license.
 
 class ObjectiveFactory:
-  def __init__(self, objective, dim, populationSize):
+  def __init__(self, objective, dim, populationSize, version=0):
 
     # Initialize objective
     self.objective = objective
 
+    # Init version
+    self.version = version
+    
     # Initialize constants
     self.populationSize = populationSize
     self.mu = int(self.populationSize/2)
@@ -40,6 +43,7 @@ class ObjectiveFactory:
     self.scale = self.cs
     self.mean = np.zeros(self.dim)
     self.cov = np.diag(np.ones(self.dim))
+    self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)
     self.pathc = np.zeros(self.dim)
 
@@ -223,9 +227,9 @@ class ObjectiveFactory:
     y = (self.population[:self.mu]-self.mean)/self.scale
     weightedMeanOfBest = np.average(y, weights=self.weights, axis=0)
 
-    covOfBest = np.zeros((self.dim, self.dim))
+    self.covMu = np.zeros((self.dim, self.dim))
     for i in range(self.mu):
-        covOfBest += self.weights[i] * np.outer(y[i], y[i])
+        self.covMu = self.weights[i] * np.outer(y[i], y[i])
 
     # Update mean
     prevMean = self.mean
@@ -248,7 +252,7 @@ class ObjectiveFactory:
     dhsig = min((1.-hsig)*self.cc*(2.-self.cc),1.0)
 
     self.pathc = (1-self.cc)*self.pathc+np.sqrt(self.cc*(2.-self.cc)*self.ueff)*weightedMeanOfBest
-    self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * covOfBest
+    self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
 
     # Resample
     self.population = np.random.multivariate_normal(self.mean, self.scale**2*self.cov, self.populationSize)
@@ -258,16 +262,25 @@ class ObjectiveFactory:
     self.step += 1
 
   def getState(self):
-    state = np.zeros((self.dim+1)*self.mu+1)
-    #state = np.zeros(self.mu+1)
-    diagsdev = self.scale*np.sqrt(np.diag(self.cov)) # diagonal sdev
-    for i in range(self.mu):
-        state[i*(self.dim+1):i*(self.dim+1)+self.dim] = np.divide(self.population[i] - self.mean, diagsdev)
-        state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
-        #state[i] = self.feval[i]/self.curEf
-    state[-1] = self.bestEver/self.curEf # relative function eval
-    assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
+    if self.version == 0:
+        state = np.zeros((self.dim+1)*self.mu+1)
+        #state = np.zeros(self.mu+1)
+        diagsdev = self.scale*np.sqrt(np.diag(self.cov)) # diagonal sdev
+        for i in range(self.mu):
+            state[i*(self.dim+1):i*(self.dim+1)+self.dim] = np.divide(self.population[i] - self.mean, diagsdev)
+            state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
+            #state[i] = self.feval[i]/self.curEf
+        state[-1] = self.bestEver/self.curEf # relative function eval
+        assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
+
+    else:
+        state = np.zeros(self.dim+self.mu+1)
+        state[:self.dim] = np.diag(self.covMu)/self.scale
+        state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
+        state[-1] = self.bestEver/self.curEf
+    
     return state
+
 
   def getReward(self):
     #r = (self.prevEf - self.curEf)/self.initialEf

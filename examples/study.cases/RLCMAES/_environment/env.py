@@ -8,7 +8,7 @@ maxSteps = 100
 
 objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow"]
  
-def env(s, objective, dim, populationSize, noise):
+def env(s, objective, dim, populationSize, noise, version):
 
  # Selecting environment
  if objective == "random":
@@ -17,7 +17,7 @@ def env(s, objective, dim, populationSize, noise):
      objective = objectiveList[envId]
 
  # Initializing environment
- objective = ObjectiveFactory(objective, dim, populationSize)
+ objective = ObjectiveFactory(objective, dim, populationSize, version)
  
  
  if s["Custom Settings"]["Evaluation"] == "True":
@@ -72,8 +72,7 @@ def env(s, objective, dim, populationSize, noise):
  # Store statistics
  if s["Custom Settings"]["Evaluation"] == "True":
     # load previous
-    #outfile = s["Custom Settings"]["Output"]
-    outfile = "history_vracer_{}_{}_{}_{}.npz".format(objective.objective, dim, populationSize, noise)
+    outfile = s["Custom Settings"]["Outfile"]
     if os.path.isfile(outfile):
         history = np.load(outfile)
         scaleHistory = history['scaleHistory']

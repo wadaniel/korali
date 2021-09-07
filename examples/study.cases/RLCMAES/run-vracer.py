@@ -18,6 +18,7 @@ parser.add_argument('--reps', help='Number of optimization runs.', required=Fals
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
 parser.add_argument('--noise', help='Noise level of objective function.', required=False, type=float, default=0.0)
+parser.add_argument('--version', help='Version of objective factory.', required=False, type=int, default=0)
 
 args = parser.parse_args()
 print(args)
@@ -39,6 +40,7 @@ noise = args.noise
 maxExperiences = args.exp
 evaluation = args.eval
 repetitions = args.reps
+version = args.version
 
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
@@ -55,12 +57,14 @@ e["Problem"]["Custom Settings"]["Evaluation"] = "False"
 
 if evaluation == True:
     found = e.loadState(resultDirectory +'/latest')
+    outfile = "history_vracer_{}_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise, run)
     e["Problem"]["Custom Settings"]["Evaluation"] = "True"
+    e["Problem"]["Custom Settings"]["Outfile"] = outfile
     maxGens = int(e["Current Generation"]) + 1
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s, fobjective, dim, populationSize, noise)
+lEnv = lambda s : env(s, fobjective, dim, populationSize, noise, version)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
@@ -70,20 +74,37 @@ e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 0.2
 
-i = 0
-for j in range(mu):
-    for d in range(dim):
-        e["Variables"][i]["Name"] = "Position {}/{}".format(j,d)
+if version == 0:
+    i = 0
+    for j in range(mu):
+        for d in range(dim):
+            e["Variables"][i]["Name"] = "Position {}/{}".format(j,d)
+            e["Variables"][i]["Type"] = "State"
+            i += 1
+        
+        e["Variables"][i]["Name"] = "Evaluation"
         e["Variables"][i]["Type"] = "State"
         i += 1
-    
-    e["Variables"][i]["Name"] = "Evaluation"
+
+    e["Variables"][i]["Name"] = "Best Ever Evaluation"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+else:
+    i = 0
+    for j in range(dim):
+        e["Variables"][i]["Name"] = "Mu Cov {}".format(j)
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+        
+    for j in range(mu):
+        e["Variables"][i]["Name"] = "Evaluation"
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+
+    e["Variables"][i]["Name"] = "Best Ever Evaluation"
     e["Variables"][i]["Type"] = "State"
     i += 1
 
-e["Variables"][i]["Name"] = "Best Ever Evaluation"
-e["Variables"][i]["Type"] = "State"
-i += 1
 
 e["Variables"][i]["Name"] = "Step Size Rate"
 e["Variables"][i]["Type"] = "Action"
@@ -131,13 +152,13 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 256
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 256
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

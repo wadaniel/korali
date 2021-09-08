@@ -91,7 +91,10 @@ Finding: reward 8 does not work well
 increasing NN size to 256, and then compare to Run 15 (dim 8 - 32)
 Finding:
 
-
 # Run 18
-version 1, changed state to weighted cov of mu, NN size 128 (only dim 8)
+version 1, changed state to weighted cov of mu, NN size 128
+Finding: it learns, up to dim 64 tested
+
+# Run 19
+version 1, changed state to weighted cov of mu, NN size 256
 Finding:

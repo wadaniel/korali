@@ -1,6 +1,6 @@
 #!/bin/bash
 
-run=18
+run=19
 noise=0.0
 reps=100
 version=1
@@ -9,12 +9,12 @@ obj="random"
 #dims=(32 64 128)
 #pops=(6 8 10 12)
 #pops=(14 16 18)
-exp=300000
+exp=3000000
 
 #dims=(2 4 8 16 32 64)
 #pops=(8 16 32 64 128 256)
-dims=(2 4 8 16 32)
-pops=(8 16 32 64 128)
+dims=(2 4 8 16 32 64)
+pops=(8 16 32 64 128 256)
 #dims=(4)
 #pops=(16)
 

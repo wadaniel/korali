@@ -18,12 +18,7 @@ def env(s, objective, dim, populationSize, noise, version):
 
  # Initializing environment
  objective = ObjectiveFactory(objective, dim, populationSize, version)
- 
- 
- if s["Custom Settings"]["Evaluation"] == "True":
-    objective.reset(noise=0.0)
- else:
-    objective.reset(noise=noise)
+ objective.reset(noise=noise)
 
  s["State"] = objective.getState().tolist()
  step = 0

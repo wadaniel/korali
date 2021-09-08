@@ -68,6 +68,9 @@ void __environmentWrapper()
   (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
+  // If this is not root rank, return immediately without checking termination state
+  if (_agent->_k->_engine->_conduit->isRoot() == false) return;
+
   if ((*agent)["Termination"] == "Non Terminal") KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
   bool terminationRecognized = false;
@@ -110,6 +113,13 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
+
+  // If this is not root rank, return immediately
+  if (_k->_engine->_conduit->isRoot() == false)
+  {
+   finalizeEnvironment();
+   return;
+  }
 
   // If multiple Enviroments, get the environment Id from each agent
   std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
@@ -270,6 +280,13 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
+  // If this is not root rank, return immediately
+  if (_k->_engine->_conduit->isRoot() == false)
+  {
+   finalizeEnvironment();
+   return;
+  }
+
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
   {
@@ -372,6 +389,9 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   co_switch(_envThread);
   auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
+  // If this is not root rank, return immediately
+  if (_k->_engine->_conduit->isRoot() == false) return;
 
   // In case of this being a single agent, support returning state as only vector
   if (_agentsPerEnvironment == 1)

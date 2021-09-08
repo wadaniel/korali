@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Start Size"] = 16384;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
   e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
@@ -109,7 +109,6 @@ int main(int argc, char *argv[])
   ////// Defining Termination Criteria
 
   e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.6;
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 55;
 
   ////// Setting file output configuration
 

@@ -25,8 +25,6 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.6;
-  e["Problem"]["Policy Testing Episodes"] = 20;
 
   //// Setting state variables
 
@@ -105,10 +103,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
-
-  ////// Defining Termination Criteria
-
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.6;
 
   ////// Setting file output configuration
 

@@ -247,42 +247,6 @@ class Agent : public Solver
   */
    std::vector<float> _testingReward;
   /**
-  * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
-  */
-   float _testingBestReward;
-  /**
-  * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
-  */
-   float _testingWorstReward;
-  /**
-  * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
-  */
-   size_t _testingBestEpisodeId;
-  /**
-  * @brief [Internal Use] Remembers the number of candidate policies tested so far.
-  */
-   size_t _testingCandidateCount;
-  /**
-  * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
-  */
-   float _testingAverageReward;
-  /**
-  * @brief [Internal Use] Remembers the standard deviation of the cumulative sum of rewards from latest testing episodes, if any.
-  */
-   float _testingStdevReward;
-  /**
-  * @brief [Internal Use] Remembers the average cumulative sum of rewards from previous testing episodes, if any.
-  */
-   float _testingPreviousAverageReward;
-  /**
-  * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
-  */
-   float _testingBestAverageReward;
-  /**
-  * @brief [Internal Use] Stores the best testing policy configuration found so far.
-  */
-   knlohmann::json _testingBestPolicy;
-  /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
    size_t _experienceReplayOffPolicyCount;
@@ -346,14 +310,6 @@ class Agent : public Solver
   * @brief [Termination Criteria] The solver will stop when the given number of experiences have been gathered.
   */
    size_t _maxExperiences;
-  /**
-  * @brief [Termination Criteria] The solver will stop when the given best average per-episode reward has been reached among the experiences between two learner updates.
-  */
-   float _testingTargetAverageReward;
-  /**
-  * @brief [Termination Criteria] The solver will stop when the average testing reward is below the previous testing average by more than a threshold given by this factor multiplied with the testing standard deviation.
-  */
-   float _testingAverageRewardIncrement;
   /**
   * @brief [Termination Criteria] The solver will stop when the given number of optimization steps have been performed.
   */

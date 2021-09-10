@@ -2,7 +2,7 @@ git clone git@gitlab.ethz.ch:mavt-cse/modelBasedRL.git
 mkdir Utils/
 mkdir _modelCoord/
 cd modelBasedRL
-cp model.py ../_modelCoord/model.py
+cp model.py ../model.py
 cp env.py ../_modelCoord/env.py
 cp cartpole.py ../_modelCoord/cartpole.py
 cp grid_search.py ../Utils/grid_search.py

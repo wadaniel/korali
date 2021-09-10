@@ -1,4 +1,4 @@
-git clone https://gitlab.ethz.ch/mavt-cse/modelBasedRL.git
+git clone git@gitlab.ethz.ch:mavt-cse/modelBasedRL.git
 mkdir Utils/
 cd modelBasedRL
 cp model.py ../_modelCoord/model.py

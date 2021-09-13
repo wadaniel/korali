@@ -45,6 +45,7 @@ parser.add_argument("--launchNum", type=int, default=1, help="Number of times to
 parser.add_argument("--iniRetrain", type=int, default=10000, help="Initial retraining sample data points.")
 parser.add_argument("--retrain", type=int, default=10000, help="Retraining sample data points.")
 parser.add_argument("--lrRL", type=float, default=1e-4, help="Learning Rate RL")
+parser.add_argument("--l2Regul", type=float, default=1.0, help="L2 Regularization importance RL, or False if 0.")
 args = parser.parse_args()
 
 comm = MPI.COMM_WORLD   # define communicator for the solver for surrogate model parallel training and predicting (Korali in serial mode)
@@ -55,6 +56,8 @@ tags = {"tag_keep_retraining": 11, "tag_iter_surr": 12, "tag_retrained_ready": 1
 now = datetime.now()
 if args.m == "":
     args.m = now.strftime("%Y%m%d%H%M%S") + "/"
+else:
+    args.m = "Results/" + args.m
 
 if rank == 0:
     if not os.path.exists(args.m): os.makedirs(args.m)
@@ -262,8 +265,9 @@ for launch in range(args.launchNum):
     e["Solver"]["Learning Rate"] = args.lrRL #1e-4 # The base learning rate to use for the NN hyperparameter optimization.
     e["Solver"]["Mini Batch"]["Size"] = 32 # The number of experiences to randomly select to train the neural network with (uniform distribution)
 
-    e["Solver"]["L2 Regularization"]["Enabled"] = True #False # (default)
-    e["Solver"]["L2 Regularization"]["Importance"] = 1.0 #0.0001 # (default)
+    if args.l2Regul != 0.:
+        e["Solver"]["L2 Regularization"]["Enabled"] = True #False # (default)
+        e["Solver"]["L2 Regularization"]["Importance"] = args.l2Regul #was 1.0 #0.0001 # (default)
 
     e["Solver"]["State Rescaling"]["Enabled"] = False # Determines whether to use state scaling (done only once after the initial exploration phase).
     e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False # Determines whether to use reward scaling

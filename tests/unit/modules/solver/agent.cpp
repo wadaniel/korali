@@ -141,7 +141,6 @@ namespace
 
   a->_testingSampleIds = std::vector<size_t>({1});
   a->_trainingCurrentPolicy = std::vector<float>({1.0});
-  a->_testingBestPolicy = std::vector<float>();
   ASSERT_NO_THROW(a->initialize());
   ASSERT_EQ(a->_testingCurrentPolicy, a->_trainingCurrentPolicy);
 
@@ -219,10 +218,6 @@ namespace
   a->_maxPolicyUpdates = 0;
   ASSERT_NO_THROW(a->printGenerationAfter());
   a->_maxPolicyUpdates = 1;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = -korali::Inf;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = 1.0;
   ASSERT_NO_THROW(a->printGenerationAfter());
 
   // Testing optional parameters
@@ -1068,14 +1063,6 @@ namespace
   a->_experienceCount = 20;
   ASSERT_TRUE(a->checkTermination());
   a->_experienceCount = 5;
-  ASSERT_FALSE(a->checkTermination());
-
-  // Checking average reward increment termination
-  a->_mode = "Training";
-  a->_testingAverageRewardIncrement  = 10.0;
-  a->_testingPreviousAverageReward  = 20.0;
-  ASSERT_TRUE(a->checkTermination());
-  a->_testingPreviousAverageReward  = 5.0;
   ASSERT_FALSE(a->checkTermination());
 
   // Checking curPolicy update termination

@@ -45,18 +45,6 @@ class ReinforcementLearning : public Problem
   */
    size_t _actionsBetweenPolicyUpdates;
   /**
-  * @brief Number of generations after which the policy will be forcibly tested (even if it does not meet the threshold).
-  */
-   size_t _testingFrequency;
-  /**
-  * @brief Minimum value of the episode's cummulative sum of rewards for a policy to be considered as candidate.
-  */
-   float _trainingRewardThreshold;
-  /**
-  * @brief Number of test episodes to run the policy (without noise) for, for which the average average sum of rewards will serve to evaluate the termination criteria.
-  */
-   size_t _policyTestingEpisodes;
-  /**
   * @brief Any used-defined settings required by the environment.
   */
    knlohmann::json _customSettings;

@@ -55,7 +55,7 @@ tags = {"tag_keep_retraining": 11, "tag_iter_surr": 12, "tag_retrained_ready": 1
 
 now = datetime.now()
 if args.m == "":
-    args.m = now.strftime("%Y%m%d%H%M%S") + "/"
+    args.m = "Results/" + now.strftime("%Y%m%d%H%M%S") + "/"
 else:
     args.m = "Results/" + args.m
 
@@ -68,7 +68,7 @@ dirfiles = {"Results Launches": args.m + "{:.5f}".format(args.conf) + "_"  + f"_
 
 if rank == 0:
     fname = dirfiles["Results Launches"]
-    infores = "#bestTestingEpisodeId,averageTrainingReward,finalGenerationRes,previousDataUsage,usagesurrogateModel,averageTestReward,numberInteractionsWithReal,numberInteractionsWithSurr,totalNumberInteractionsWithEnv,interactionsRealWarmUp,ratioExperiences,policyUpdateCount"
+    infores = "#bestTestingEpisodeId,averageTrainingReward,finalGenerationRes,previousDataUsage,usagesurrogateModel,averageTestReward,numberInteractionsWithReal,numberInteractionsWithSurr,totalNumberInteractionsWithEnv,interactionsRealWarmUp,ratioExperiences,policyUpdateCount,iterationsUsed"
     with open(fname, "w") as fhandle:
         fhandle.write(infores+"\n")
             
@@ -109,6 +109,7 @@ for launch in range(args.launchNum):
     experiencesBetweenPolicyUpdates = args.expBetPolUp
     maxPolicyUpdates = args.maxPolUp
     maxSize = args.maxSize
+    startSize = 2 * args.iniRetrain
 
     # Initialize the hyperparameters of the problem
     scale = True
@@ -254,7 +255,7 @@ for launch in range(args.launchNum):
 
     # Off/On-policy RL
     # Note: Remember and Forget Experience Replay (ReF-ER), a novel method that can en- hance RL algorithms with parameterized policies (based on that)
-    e["Solver"]["Experience Replay"]["Start Size"] = args.iniRetrain + args.retrain # The minimum number of experiences to gather before learning starts. - was 1000
+    e["Solver"]["Experience Replay"]["Start Size"] = startSize #args.iniRetrain + args.retrain # The minimum number of experiences to gather before learning starts. - was 1000
     e["Solver"]["Experience Replay"]["Maximum Size"] = maxSize # The minimum number of experiences to accumulate before starting to forget.
     e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0 # (default)
     e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1 # (default)
@@ -268,6 +269,7 @@ for launch in range(args.launchNum):
     if args.l2Regul != 0.:
         e["Solver"]["L2 Regularization"]["Enabled"] = True #False # (default)
         e["Solver"]["L2 Regularization"]["Importance"] = args.l2Regul #was 1.0 #0.0001 # (default)
+        
 
     e["Solver"]["State Rescaling"]["Enabled"] = False # Determines whether to use state scaling (done only once after the initial exploration phase).
     e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False # Determines whether to use reward scaling
@@ -357,17 +359,17 @@ for launch in range(args.launchNum):
         print(f"[Korali|Ensemble] Model Usage Total: {usagesurrogateModel:.4f}%")
         print("[Korali] Now, test trained ensemble on the total training dataset:")
         
-        numberInteractionsWithReal = argsEnv.interactionsWithReal
+        interactionsRealWarmUp = startSize #args.iniRetrain + args.retrain
+        numberInteractionsWithReal = argsEnv.interactionsWithReal - interactionsRealWarmUp
         numberInteractionsWithSurr = argsEnv.interactionsWithSurr
         totalNumberInteractionsWithEnv = argsEnv.totalInteractionsWithEnv
         ratioExperiences = numberInteractionsWithReal / (numberInteractionsWithReal + numberInteractionsWithSurr)
-        interactionsRealWarmUp = args.iniRetrain + args.retrain
         print(f"[Korali|Ensemble] Number Interactions With Real: {numberInteractionsWithReal}")
         print(f"[Korali|Ensemble] Number Interactions With Surr: {numberInteractionsWithSurr}")
         print(f"[Korali|Ensemble] Total Number Interactions With Env: {totalNumberInteractionsWithEnv}")
         print(f"[Korali|Ensemble] Warm Up Interactions: {interactionsRealWarmUp}")
         print(f"[Korali|Ensemble] Ratio Experiences: {ratioExperiences}")
-        print(f"[Korali|Ensemble] Ratio Experiences: {policyUpdateCount}")
+        print(f"[Korali|Ensemble] Policy Update Count: {policyUpdateCount}")
 
         
         listInteractionsWithReal = argsEnv.listInteractionsWithReal
@@ -414,10 +416,12 @@ for launch in range(args.launchNum):
             onesCountVar += sum(l)
         usageSurrBestTestingPolicy = 100 * onesCountVar / totalCountVar
         print(f"[Korali|Ensemble] Model Usage at Best Policy Testing: {usageSurrBestTestingPolicy:.4f}%")
+        
+        iterationsUsed = argsEnv.iterationSurrogate-1
             
         fname_results = dirfiles["Results Launches"]
         #infores = "#previousDataUsage,usagesurrogateModel,finalGenerationRes,averageTrainingReward,bestTestingEpisodeId"
-        info_res = f"{bestTestingEpisodeId},{averageTrainingReward:.4f},{finalGenerationRes},{previousDataUsage},{usageSurrBestTestingPolicy:.4f},{averageTestReward:.4f},{numberInteractionsWithReal},{numberInteractionsWithSurr},{totalNumberInteractionsWithEnv},{interactionsRealWarmUp},{ratioExperiences:.4f},{policyUpdateCount}"
+        info_res = f"{bestTestingEpisodeId},{averageTrainingReward:.4f},{finalGenerationRes},{previousDataUsage},{usageSurrBestTestingPolicy:.4f},{averageTestReward:.4f},{numberInteractionsWithReal},{numberInteractionsWithSurr},{totalNumberInteractionsWithEnv},{interactionsRealWarmUp},{ratioExperiences:.4f},{policyUpdateCount},{iterationsUsed}"
         with open(fname_results, "a") as fhandle_results:
             fhandle_results.write(info_res+"\n")
         

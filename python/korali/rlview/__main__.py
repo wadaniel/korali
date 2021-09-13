@@ -23,9 +23,7 @@ def validateOutput(output):
 ##################### Plotting Reward History
 
 def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate):
-
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
- 
  maxPlotObservations = -math.inf
  maxPlotReward = -math.inf
  minPlotReward = +math.inf
@@ -34,33 +32,27 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  cmap = matplotlib.cm.get_cmap('brg')
  colCurrIndex = 0.0
 
- ## Checking for multi envs and splitting results
- environmentCount = results[0]["Problem"]["Environment Count"]
- if environmentCount > 1:
-    if len(results) > 1:
-        print("Plotting multiple results with Environment Count > 1 not yet supported.")
-        sys.exit()
-
-    splittedResults = []
-    envIds = results[0]["Solver"]["Training"]["Environment Id History"]
-    for envId in range(environmentCount):
-        res = { }
-        res["Solver"] = { "Training" : { "Experience History" : [ exp for (env, exp) in zip (envIds, results[0]["Solver"]["Training"]["Experience History"]) if env == envId ] } }
-        res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, results[0]["Solver"]["Training"]["Reward History"]) if env == envId ]
-        splittedResults.append(res)
-    results = splittedResults
-
  ## Reading the individual results
  unpackedResults = []
- for r in results:
-  nAgents = 1
-  if environmentCount == 1:
-    nAgents = r["Problem"]["Agents Per Environment"]
-  cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"])) / nAgents
-  rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
+ for resId, r in enumerate(results):
+  environmentCount = r["Problem"]["Environment Count"]
+  nAgents = r["Problem"]["Agents Per Environment"]
 
-  # Merge Results
-  if aggregate == True and len(unpackedResults) > 0:
+  ## Split results for multi envs
+  envIds = r["Solver"]["Training"]["Environment Id History"]
+  resultsFolder = dirs[resId]
+  del dirs[resId]
+  for envId in range(environmentCount):
+   dirs.insert(resId+envId, resultsFolder+" env {}".format(envId))
+   res = {}
+   res["Solver"] = { "Training" : { "Experience History" : [ exp for (env, exp) in zip (envIds, r["Solver"]["Training"]["Experience History"]) if env == envId ] } }
+   res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, r["Solver"]["Training"]["Reward History"]) if env == envId ]
+
+   cumulativeObsCountHistory = np.cumsum(np.array(res["Solver"]["Training"]["Experience History"])) / nAgents
+   rewardHistory = np.array(res["Solver"]["Training"]["Reward History"])
+
+   # Merge Results
+   if aggregate == True and len(unpackedResults) > 0:
     coH, rH, trTh, teTh = unpackedResults[0]
     aggCumObs = np.append(coH, cumulativeObsCountHistory)
     aggRewards = np.append(rH, rewardHistory)
@@ -68,8 +60,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
     sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
     sortedAggCumObs = np.sort(aggCumObs)
     unpackedResults[0] = (sortedAggCumObs, sortedAggRewards)
-  # Append Results
-  else:
+   # Append Results
+   else:
     unpackedResults.append( (cumulativeObsCountHistory, rewardHistory) )
 
  ## Plotting the individual experiment results
@@ -120,10 +112,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  if environmentCount > 1:
-    ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label="Environment {}".format(resId)) 
-  else:
-    ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
+  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
 
   # Plotting confidence intervals
   if showCI > 0.:
@@ -131,7 +120,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Updating color index
   if (len(results) > 1):
-   colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
+   colCurrIndex = colCurrIndex + (1.0 / float(len(unpackedResults)-1)) - 0.0001
   
   ## Configuring common plotting features
 

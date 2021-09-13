@@ -1,16 +1,14 @@
 #!/bin/bash -l
 #SBATCH --job-name="run-vracer-coord-test"
-#SBATCH --account="s929"
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=joancl@student.ethz.ch
+#SBATCH --output=run-vracer-coord_%j.out
+#SBATCH --account=s929
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=6
 #SBATCH --cpus-per-task=1
-#SBATCH --partition=low
-#SBATCH --constraint=mc
-#SBATCH --hint=nomultithread
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
 
 pushd ..
 

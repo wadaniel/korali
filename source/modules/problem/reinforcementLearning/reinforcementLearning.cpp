@@ -68,8 +68,8 @@ void __environmentWrapper()
   (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
-  // If this is not root rank, return immediately without checking termination state
-  if (_agent->_k->_engine->_conduit->isRoot() == false) return;
+  // If this is not the leader rank within the worker group, return immediately without checking termination state
+  if (_agent->_k->_engine->_conduit->isWorkerLeadRank() == false) return;
 
   if ((*agent)["Termination"] == "Non Terminal") KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
@@ -114,8 +114,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
-  // If this is not root rank, return immediately
-  if (_k->_engine->_conduit->isRoot() == false)
+  // If this is not the leader rank within the worker group, return immediately
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
    finalizeEnvironment();
    return;
@@ -237,8 +237,8 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
-  // If this is not root rank, return immediately
-  if (_k->_engine->_conduit->isRoot() == false)
+  // If this is not the leader rank within the worker group, return immediately
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
    finalizeEnvironment();
    return;
@@ -347,8 +347,8 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
-  // If this is not root rank, return immediately
-  if (_k->_engine->_conduit->isRoot() == false) return;
+  // If this is not the leader rank within the worker group, return immediately
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false) return;
 
   // In case of this being a single agent, support returning state as only vector
   if (_agentsPerEnvironment == 1)

@@ -11,6 +11,7 @@ cp group_results.py ../Utils/group_results.py
 cp plot_best_surrogate_based_model.py ../Utils/plot_best_surrogate_based_model.py
 cp plot_results.py ../Utils/plot_results.py
 cp plot_updates.py ../Utils/plot_updates.py
+cp plot_optimize_3d.py ../Utils/plot_optimize_3d.py
 cp render_cartpole.py ../Utils/render_cartpole.py
 mkdir ../Results/
 mkdir ../Visualization/

@@ -8,7 +8,7 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
-# number of agents
+# number of parallel enviornments
 NNODES=64
 
 # setup run directory and copy necessary files
@@ -36,8 +36,8 @@ cat <<EOF >daint_sbatch
 
 export OMP_NUM_THREADS=12
 
-srun ./run-vracer-swimmer -nAgents $NAGENTS
-# srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
+srun ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
+
 EOF
 
 chmod 755 daint_sbatch

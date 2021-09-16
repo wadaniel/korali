@@ -16,5 +16,5 @@ extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
+void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining, int rank);
 bool isTerminal(StefanFish *agent);

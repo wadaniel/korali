@@ -44,8 +44,6 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
-  e["Problem"]["Training Reward Threshold"] = 100.0;
-  e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path and dumping frequency in CUP
@@ -54,9 +52,6 @@ int main(int argc, char *argv[])
 
   // Setting up the state variables
   size_t numStates = 10;
-  #ifndef NOID
-  numStates += 3;
-  #endif
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {

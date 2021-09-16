@@ -107,14 +107,16 @@ void runEnvironment(korali::Sample &s)
   // Establishing environment's dump frequency
   _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Setting initial conditions (TODO, currently parser overwrites the new locations)
-  // for( size_t i = 0; i<nAgents; i++ )
-  //   setInitialConditions(agents[i], i, s["Mode"] == "Training");
-  // After moving the agent, the obstacles have to be restarted
-  // _environment->_init( false, parser );
+  // Setting random initial conditions
+  for( size_t i = 0; i<nAgents; i++ )
+    setInitialConditions(agents[i], i, s["Mode"] == "Training", rank);
+  // Wait for all ranks to update initial conditions for agents
+  MPI_Barrier(comm);
+  // After moving the agent, the grid has to be refined
+  _environment->refineGrid();
 
+  // Setting initial state
   if( rank == 0 ) {
-    // Setting initial state
     if( nAgents > 1 )
     {
       std::vector<std::vector<double>> states(nAgents);
@@ -148,36 +150,31 @@ void runEnvironment(korali::Sample &s)
   bool done = false;
   while ( curStep < maxSteps && done == false )
   {
+    // Careful, hardcoded the number of action(s)!
+    std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
     if( rank == 0 ) {
-      // Getting new actions
+      // Getting new action(s)
       s.update();
-
-      // Reading new action(s)
-      auto actions = s["Action"];
+      auto actionsJson = s["Action"];
 
       // Setting action for each agent
       for( size_t i = 0; i<nAgents; i++ )
       {
         std::vector<double> action;
         if( nAgents > 1 )
-          action = actions[i].get<std::vector<double>>();
+          action = actionsJson[i].get<std::vector<double>>();
         else
-          action = actions.get<std::vector<double>>();
-
-        // Write action to file
-        // if (myfile.is_open())
-        // {
-        //   myfile << i << " " << action[0] << " " << action[1] << std::endl;
-        // }
-        // else{
-        //   fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
-        //   exit(-1);
-        // }
-
-        // Apply action
-        agents[i]->act(t, action);
+          action = actionsJson.get<std::vector<double>>();
+        actions[i] = action;
       }
     }
+
+    // Broadcast action(s) to all ranks
+    MPI_Bcast( actions.data(), actions.size()*actions[0].size(), MPI_DOUBLE, 0, comm );
+
+    // Apply action
+    for( size_t i = 0; i<nAgents; i++ )
+      agents[i]->act(t, actions[i]);
 
     // Run the simulation until next action is required
     dtAct = 0.;
@@ -195,18 +192,18 @@ void runEnvironment(korali::Sample &s)
       _environment->timestep(dt);
 
       // Check if there was a collision -> termination.
-      // TODO
-      // done = _environment->sim.bCollision;
+      done = _environment->sim.bCollision;
 
       // Check termination because leaving margins
-      if ( rank == 0 ) {
-        for( size_t i = 0; i<nAgents; i++ )
-          done = ( done || isTerminal( agents[i] ) );
-      }
+      for( size_t i = 0; i<nAgents; i++ )
+        done = ( done || isTerminal( agents[i] ) );
+
+      // Allreduce for termination
+      MPI_Allreduce( MPI_IN_PLACE, &done, 1, MPI_C_BOOL, MPI_LOR, comm );
     }
 
     // Get and store state and action
-    if ( rank == 0 ) {
+    if( rank == 0 ) {
       if( nAgents > 1 )
       {
         std::vector<std::vector<double>> states(nAgents);
@@ -272,11 +269,16 @@ void runEnvironment(korali::Sample &s)
   // Flush CUP logger
   logger.flush();
 
-  // delete simulation class
-  delete _environment;
+  // Closing log file
+  if( rank == 0 )
+    fclose(logFile);
 
-  if ( rank == 0 ) {
-    // Setting finalization status
+  // delete simulation class
+  if( rank == 0 )
+    delete _environment;
+
+  // Setting finalization status
+  if( rank == 0 ) {
     if (done == true)
       s["Termination"] = "Terminal";
     else
@@ -285,13 +287,9 @@ void runEnvironment(korali::Sample &s)
 
   // Switching back to experiment directory
   std::filesystem::current_path(curPath);
-
-  // Closing log file
-  if( rank == 0 )
-    fclose(logFile);
 }
 
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
+void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining, int rank)
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
@@ -311,11 +309,14 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
     initialPosition[2] = initialPosition[2] + disZ(_randomGenerator);
   }
 
-  printf("[Korali] Initial Condition Agent %ld:\n", agentId);
-  printf("[Korali] angle: %f\n", initialAngle);
-  printf("[Korali] x: %f\n", initialPosition[0]);
-  printf("[Korali] y: %f\n", initialPosition[1]);
-  printf("[Korali] z: %f\n", initialPosition[2]);
+  if( rank == 0 )
+  {
+    printf("[Korali] Initial Condition Agent %ld:\n", agentId);
+    printf("[Korali] angle: %f\n", initialAngle);
+    printf("[Korali] x: %f\n", initialPosition[0]);
+    printf("[Korali] y: %f\n", initialPosition[1]);
+    printf("[Korali] z: %f\n", initialPosition[2]);
+  }
 
   // Write initial condition to file
   // std::stringstream filename;

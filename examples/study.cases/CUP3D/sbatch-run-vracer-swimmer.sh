@@ -12,7 +12,7 @@ fi
 NAGENTS=14
 
 # number of workers
-NWORKER=32
+NWORKER=1
 
 # number of nodes per worker
 NRANKS=32
@@ -34,7 +34,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=20:00:00
+#SBATCH --time=05:00:00
 #SBATCH --nodes=$((NNODES+1))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12

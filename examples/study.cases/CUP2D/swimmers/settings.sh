@@ -8,9 +8,9 @@ RTOL=${RTOL-2}
 CTOL=${CTOL-1}
 EXTENT=${EXTENT:-4}
 CFL=${CFL:-0.4}
-PT=${PT:-1e-8}
-PTR=${PTR:-1e-4}
-PR=${PR:-100}
+PT=${PT:-1e-5}
+PTR=${PTR:-1e-3}
+PR=${PR:-5}
 
 # Defaults for follower
 LENGTH=${LENGTH:-0.2}

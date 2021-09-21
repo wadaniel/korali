@@ -102,9 +102,9 @@ void Theta::initialize()
 
 void Theta::evaluateLogLikelihood(Sample &sample)
 {
-  double logLikelihood = 0.0;
-
   dynamic_cast<problem::Bayesian *>(_subExperimentObject._problem)->evaluateLoglikelihood(sample);
+
+  double logLikelihood = sample["logLikelihood"].get<double>();
 
   std::vector<double> psiSample;
   psiSample.resize(_psiVariableCount);
@@ -126,7 +126,7 @@ void Theta::evaluateLogLikelihood(Sample &sample)
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
   }
 
-  sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
+  sample["logLikelihood"] = logLikelihood -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
 void Theta::setConfiguration(knlohmann::json& js) 

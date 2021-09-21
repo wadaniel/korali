@@ -13,8 +13,8 @@ sub = korali.Experiment()
 psi = korali.Experiment()
 
 # Loading previous results
-psi.loadState('_setup/results_phase_2/latest')
 sub.loadState('_setup/results_phase_1/000/latest')
+psi.loadState('_setup/results_phase_2/latest')
 
 # We need to redefine the subproblem's computational model
 sub["Problem"]["Computational Model"] = lambda d: normal(N,d)
@@ -39,6 +39,6 @@ e["File Output"]["Path"] = "_setup/results_phase_3b/"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
+# k["Conduit"]["Type"] = "Concurrent"
+# k["Conduit"]["Concurrent Jobs"] = 4
 k.run(e)

@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 
-import gym
-#import pyBulletEnvironments
 import math
-from HumanoidWrapper import HumanoidWrapper
-from AntWrapper import AntWrapper
 import pdb
 import numpy as np
 
@@ -14,8 +10,6 @@ def initEnvironment(e, envName, moviePath = ''):
  if (envName ==  'Waterworld'):
     from pettingzoo.sisl import waterworld_v3
     env = waterworld_v3.env()
-    #print(env.action_spaces.values())
-    #pdb.set_trace()
     stateVariableCount = 242
     actionVariableCount = 2
     eps = 10 ** (-20)
@@ -25,22 +19,13 @@ def initEnvironment(e, envName, moviePath = ''):
     ac_low = -0.01 + eps
     numIndividuals = 5
  
- # Handling special cases
- 
- if (envName == 'Humanoid-v2'):
-  env = HumanoidWrapper(env)
-  
- if (envName == 'HumanoidStandup-v2'):
-  env = HumanoidWrapper(env)
-  
- if (envName == 'Ant-v2'):
-  env = AntWrapper(env)
-
  
   
  # Re-wrapping if saving a movie
+ '''
  if (moviePath != ''):
   env = gym.wrappers.Monitor(env, moviePath, force=True)
+ '''
  
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
@@ -50,19 +35,8 @@ def initEnvironment(e, envName, moviePath = ''):
  e["Problem"]["Policy Testing Episodes"] = 20
  e["Problem"]["Agents Per Environment"] = numIndividuals
  
- # Getting environment variable counts
- #commented this out
- #stateVariableCount = env.observation_space.shape[0]
- #actionVariableCount = env.action_space.shape[0]
- 
  # Generating state variable index list
  stateVariablesIndexes = range(stateVariableCount)
- 
- # Handling Environment-Specific Configuration
- 
- if (envName == 'Ant-v2'):
-  stateVariableCount = 27
-  stateVariablesIndexes = range(stateVariableCount) 
  
  # Defining State Variables
  
@@ -85,12 +59,6 @@ def initEnvironment(e, envName, moviePath = ''):
 
  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
  
-'''
-  for agent in env.agent_iter():
-      observation, reward, done, info = env.last()
-      action = policy(observation, agent)
-      env.step(action)
-'''
 
 def agent(s, env):
 
@@ -98,9 +66,6 @@ def agent(s, env):
   printStep = True
  else:
   printStep = False
-
- #s["State"] = env.reset().tolist()
-
  
  env.reset()
  states = []
@@ -108,10 +73,8 @@ def agent(s, env):
  for ag in env.agents:
   state = env.observe(ag).tolist()
   states.append(state)
-  
-
- 
  s["State"] = states
+ 
  step = 0
  done = False
 
@@ -121,9 +84,6 @@ def agent(s, env):
  overSteps = 0
   
  while not done and step < 500:
-
-  # Getting new action
-
 
   s.update()
   
@@ -138,27 +98,13 @@ def agent(s, env):
    rewards.append(reward)
    if done == True:
     continue
-   action = actions.pop(0)
-   #pdb.set_trace()
-   
-   #print(action)
-   #pdb.set_trace()
-   
-   
+   action = actions.pop(0)   
    env.step(np.array(action,dtype= 'float32'))
 
 
-  
-  
- 
   # Getting Reward
   s["Reward"] = rewards
   
-  # Printing step information
-  #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
-  #cumulativeReward = cumulativeReward + reward 
-  #if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
-   
   # Storing New State
   states = []
  

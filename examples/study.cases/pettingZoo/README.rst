@@ -1,13 +1,11 @@
-Reinforcement Learning examples on OpenAI Gym
+Reinforcement Learning examples on pettingZoo
 ==============================================
 
-This folders contain a ready-to-use setup to run OpenAI Gym, both for Multi-Joint dynamics with Contact (MuJoCo) and PyBullet environments. 
+This folders contain a ready-to-use setup to run pettingZoo. 
 
 Pre-Requisites:
 ------------------
-
-To use MuJoCo environments, follow the installation instructions here: https://github.com/openai/mujoco-py#install-mujoco. For this, you will first need to acquire a `MuJoCo license <https://www.roboti.us/license.html>`_
-To use PyBullet environments, simply run the :code:`./install_deps.sh` script. PyBullet requires no license to run.
+None.
 
 Running an environment:
 -------------------------
@@ -16,30 +14,15 @@ Any of the following environments are available for testing:
 
 .. code-block:: bash
    
-   % MuJoCo
-   Ant-v2
-   HalfCheetah-v2
-   Hopper-v2
-   Humanoid-v2
-   HumanoidStandup-v2
-   InvertedDoublePendulum-v2
-   InvertedPendulum-v2
-   Reacher-v2
-   Swimmer-v2
-   Walker2d-v2
-   
-   % PyBullet
-   AntBulletEnv-v0
-   HalfCheetahBulletEnv-v0
-   HopperBulletEnv-v0
-   HumanoidBulletEnv-v0
-   Walker2DBulletEnv-v0
+   % pettingZoo
+   Waterworld
+
 
 To run any of these, use the following example:
 
 .. code-block:: bash
 
-   python3 run-vracer.py --env AntBulletEnv-v0
+   python3 run-vracer.py --env Waterworld --dis 'Clipped Normal'
 
 Producing a movie:
 -------------------------

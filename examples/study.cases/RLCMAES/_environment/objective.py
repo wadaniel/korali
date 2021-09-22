@@ -150,11 +150,11 @@ class ObjectiveFactory:
  
     elif self.objective == "fparabr":
         self.zero += 0
-        self.function = lambda x : -x[0]+100*np.sum(np.power(x[1:]-self.zero,2))
+        self.function = lambda x : x[0]*x[0]+100*np.sum(np.power(x[1:]-self.zero,2))
  
     elif self.objective == "fsharpr":
         self.zero += 0
-        self.function = lambda x : -x[0]+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
+        self.function = lambda x : x[0]*x[0]+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
 
     elif self.objective == "fdiffpow":
         self.zero += 0
@@ -221,7 +221,7 @@ class ObjectiveFactory:
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
     dhat = self.dhat + cs
-    #dhat = np.clip(action[2], a_min=1, a_max=3)
+    cu = np.clip(action[2], a_min=0.0, a_max=1.0)
     
     # Calc weighted mean and cov
     y = (self.population[:self.mu]-self.mean)/self.scale
@@ -248,11 +248,12 @@ class ObjectiveFactory:
     if cs < 1e-6:
         hsig = 0.
     elif np.linalg.norm(self.paths)/np.sqrt(1-(1-cs)**(2.*self.step+1)) < 1.4+2/(self.dim+1)*self.chi:
-        self.hsig = 1.
+        hsig = 1.
     dhsig = min((1.-hsig)*self.cc*(2.-self.cc),1.0)
 
     self.pathc = (1-self.cc)*self.pathc+np.sqrt(self.cc*(2.-self.cc)*self.ueff)*weightedMeanOfBest
-    self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
+    #self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
+    self.cov = (1.-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
 
     # Resample
     self.population = np.random.multivariate_normal(self.mean, self.scale**2*self.cov, self.populationSize)

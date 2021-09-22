@@ -98,3 +98,6 @@ Finding: it learns, up to dim 64 tested
 # Run 19
 version 1, changed state to weighted cov of mu, NN size 256
 Finding:
+
+# Run 20
+version 1, added rosenbrock, NN 256

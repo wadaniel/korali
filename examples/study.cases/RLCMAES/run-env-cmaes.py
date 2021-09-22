@@ -38,7 +38,7 @@ resultdir = "_env_cmaes_{}_{}_{}_{}".format(objective, dim, populationSize, nois
  
 maxSteps = 100
 
-# Calculate defaults
+# Calculate defaults to define cs and cm
 mu = int(populationSize/2)
 weights = np.log(mu+1/2)-np.log(np.array(range(mu))+1)
 ueff = sum(weights)**2/sum(weights**2)
@@ -83,7 +83,7 @@ for i in range(reps):
 
      # Store statistics
 
-    print(cumreward)
+    #print(cumreward)
     rewardhistory[i] = cumreward
     if evaluation == True:
         if os.path.isfile(outfile):
@@ -91,21 +91,20 @@ for i in range(reps):
             scaleHistory = history['scaleHistory']
             objectiveHistory = history['objectiveHistory']
             muobjectiveHistory = history['muobjectiveHistory']
-            #actionHistory = history['actionHistory']
+            actionHistory = history['actionHistory']
 
             scaleHistory = np.concatenate((scaleHistory, [scales]))
             objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
             muobjectiveHistory = np.concatenate((objectiveHistory, [muobjectives]))
-            #actionHistory = np.concatenate((objectiveHistory, [actions]))
+            actionHistory = np.concatenate((actionHistory, [actions]))
         else:
             scaleHistory = [scales]
             objectiveHistory = [objectives]
             muobjectiveHistory = [muobjectives]
-            #actionHistory = [actions]
+            actionHistory = [actions]
          
-        #np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
-        np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory)
+        np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
 
-print("Mean & Sdev")
+print("CMA-ES Reward Mean & Sdev")
 print(np.mean(rewardhistory))
 print(np.std(rewardhistory))

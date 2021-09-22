@@ -6,13 +6,13 @@ from objective import *
 
 maxSteps = 100
 
-objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow"]
+objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
  
 def env(s, objective, dim, populationSize, noise, version):
 
  # Selecting environment
  if objective == "random":
-     envId = s["Sample Id"] % 7
+     envId = s["Sample Id"] % 8
      s["Environment Id"] = envId
      objective = objectiveList[envId]
 

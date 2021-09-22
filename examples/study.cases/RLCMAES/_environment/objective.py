@@ -17,14 +17,14 @@ class ObjectiveFactory:
     
     # Initialize constants
     self.populationSize = populationSize
-    self.mu = int(self.populationSize/2)
+    self.mu = int(self.populationSize/4)
     self.weights = np.log(self.mu+1/2)-np.log(np.array(range(self.mu))+1)
     self.ueff = sum(self.weights)**2/sum(self.weights**2)
     self.weights /= sum(self.weights)
     self.dim = dim
 
     self.chi = np.sqrt(self.dim)*(1-1/(4*self.dim)+1/(21*self.dim**2))
-    self.dhat = 1. + 2. * max(0, np.sqrt((self.ueff-1)/(self.dim+1))-1.) # d - cp
+    self.dhat = 1. + 2. * max(0, np.sqrt((self.ueff-1)/(self.dim+1))-1.) # d - cs
     self.cc = (4.+self.ueff/self.dim)/(self.dim+4.+2.*self.ueff/self.dim)
     self.c1 = 2./((self.dim+1.3)**2+self.ueff)
     self.cu = min(1.-self.c1, 2.*(self.ueff-2+1/self.ueff)/((self.dim+2)**2+2.*self.ueff/2))
@@ -159,7 +159,7 @@ class ObjectiveFactory:
     elif self.objective == "fdiffpow":
         self.zero += 0
         self.function = lambda x : np.sum(np.power(np.abs(x-self.zero),2+10*np.arange(self.dim)/self.dim))
-
+ 
     else:
         print("Objective {} not recognized! Abort..".format(self.objective))
         sys.exit()
@@ -220,7 +220,7 @@ class ObjectiveFactory:
     # Unpack actions
     cs = np.clip(action[0], a_min=0.0, a_max=1.0)
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
-    dhat = self.dhat
+    dhat = self.dhat + cs
     #dhat = np.clip(action[2], a_min=1, a_max=3)
     
     # Calc weighted mean and cov

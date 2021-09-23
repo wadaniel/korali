@@ -126,7 +126,7 @@ void Theta::evaluateLogLikelihood(Sample &sample)
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
   }
 
-  sample["logLikelihood"] = logLikelihood -log(_psiProblemSampleCount) + logSumExp(logValues);
+  sample["logLikelihood"] = logLikelihood - log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
 void Theta::setConfiguration(knlohmann::json& js) 

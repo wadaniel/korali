@@ -24,17 +24,12 @@ parser.add_argument(
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=1e-3,
+    default=3e-3,
     required=False)
 parser.add_argument(
     '--concurrentEnvironments',
     help='Number of environments to run concurrently',
     default=1,
-    required=False)
-parser.add_argument(
-    '--testRewardThreshold',
-    help='Threshold for the testing MSE, under which the run will report an error',
-    default=150,
     required=False)
 args = parser.parse_args()
 
@@ -51,10 +46,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Environment Count"] = 3
-e["Problem"]["Training Reward Threshold"] = 495
-e["Problem"]["Policy Testing Episodes"] = 30
-e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Environment Count"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -90,7 +83,7 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### Configuring the neural network and its hidden layers
 
@@ -113,28 +106,20 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
+e["Solver"]["Termination Criteria"]["Max Generations"] = 150
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
 k.run(e)
 
-### Now we run a few test samples and check their reward
+### Checking if we reached a minimum performance
 
-e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(5))
-
-k.run(e)
-
-averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
-print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < 150):
- print("Cartpole example did not reach minimum testing average.")
+bestReward = e["Solver"]["Training"]["Best Reward"]
+if (bestReward < 400.0):
+ print("Cartpole example did not reach minimum training performance.")
  exit(-1)
 

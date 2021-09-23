@@ -14,7 +14,7 @@ parser.add_argument(
 parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
-    default=1000,
+    default=50,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -52,8 +52,6 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 300
-e["Problem"]["Policy Testing Episodes"] = 40
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -119,7 +117,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 250
 
 ### Setting file output configuration
 
@@ -130,16 +127,10 @@ e["Console Output"]["Verbosity"] = "Detailed"
 
 k.run(e)
 
-### Now we run a few test samples and check their reward
+### Checking if we reached a minimum performance
 
-e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(5))
-
-k.run(e)
-
-averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
-print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < 100):
- print("Cartpole example did not reach minimum testing average.")
+bestReward = e["Solver"]["Training"]["Best Reward"]
+if (bestReward < 400.0):
+ print("Cartpole example did not reach minimum trainig performance.")
  exit(-1)
 

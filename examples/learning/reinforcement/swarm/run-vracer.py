@@ -34,8 +34,6 @@ if found == True:
 ### Define Problem Configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lambda x : environment( args, x )
-e["Problem"]["Training Reward Threshold"] = math.inf
-e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Agents Per Environment"] = numIndividuals
 
 ### Define Agent Configuration 

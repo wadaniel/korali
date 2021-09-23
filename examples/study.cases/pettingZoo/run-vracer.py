@@ -7,12 +7,14 @@ from agent import *
 
 ####### Parsing arguments
 
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--dis', help='Sampling Distribution.', required=True)
+parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--run', help='Run Number', required=False, type=int, default = 0)
 args = parser.parse_args()
 print(args)
 

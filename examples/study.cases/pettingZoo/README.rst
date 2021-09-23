@@ -22,16 +22,19 @@ To run any of these, use the following example:
 
 .. code-block:: bash
 
-   python3 run-vracer.py --env Waterworld --dis 'Clipped Normal'
+   python run-vracer.py --env Waterworld 
 
 Producing a movie:
 -------------------------
 
-To generate a movie that displays the outcome of a particular trained policy, use the following command:
+To generate a movie that displays the outcome of a particular trained policy, use the following commands:
 
 .. code-block:: bash
-
-   python3 ./genMovie --env AntBulletEnv-v0 --input _result_vracer_AntBulletEnv-v0 --output myMovie
    
-The command will read the result of training an `AntBulletEnv-v0` environment from the `_result_vracer_AntBulletEnv` folder and output an `.mp4` movie in the `myMovie` folder.
+   mkdir images
+   python genMovie.py --env Waterworld --input _result_vracer_Waterworld_Clipped_Normal_0.0001_0.1_0.0
+   cd images
+   ffmpeg -framerate 180 -i image_%d.png output.mp4
+   
+The command will read the result of training an `Waterworld` environment from the `_result_vracer_Waterworld_Clipped_Normal_0.0001_0.1_0.0` folder and store images `.png` in the `images` folder and afterwards we animate the images with the last command.
 

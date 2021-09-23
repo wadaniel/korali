@@ -6,11 +6,11 @@ sys.path.append('_model')
 from agent import *
 
 ####### Parsing arguments
-
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--input', help='Specifies the result folder to load the best policy from.', required=True)
-parser.add_argument('--output', help='Specifies the output folder for the movie.', required=True)
+
 args = parser.parse_args()
 
 ####### Defining Korali Problem
@@ -21,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results
 
-initEnvironment(e, args.env, args.output)
+initEnvironment(e, args.env)
 found = e.loadState(args.input  + '/latest');
 
 if (found == False): 

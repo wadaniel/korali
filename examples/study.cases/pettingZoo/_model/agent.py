@@ -3,13 +3,18 @@
 import math
 import pdb
 import numpy as np
+import os
+from PIL import Image
 
 def initEnvironment(e, envName, moviePath = ''):
 
  # Creating environment 
  if (envName ==  'Waterworld'):
     from pettingzoo.sisl import waterworld_v3
+    
+    
     env = waterworld_v3.env()
+
     stateVariableCount = 242
     actionVariableCount = 2
     eps = 10 ** (-20)
@@ -20,18 +25,13 @@ def initEnvironment(e, envName, moviePath = ''):
     numIndividuals = 5
  
  
-  
- # Re-wrapping if saving a movie
- '''
- if (moviePath != ''):
-  env = gym.wrappers.Monitor(env, moviePath, force=True)
- '''
  
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
  e["Problem"]["Training Reward Threshold"] = math.inf
+ e["Problem"]["Testing Frequency"] = 201
  e["Problem"]["Policy Testing Episodes"] = 20
  e["Problem"]["Agents Per Environment"] = numIndividuals
  
@@ -68,6 +68,7 @@ def agent(s, env):
   printStep = False
  
  env.reset()
+ 
  states = []
  
  for ag in env.agents:
@@ -82,6 +83,9 @@ def agent(s, env):
  cumulativeReward = 0.0
  
  overSteps = 0
+ if s["Mode"] == "Testing":
+   image_count = 0
+
   
  while not done and step < 500:
 
@@ -93,13 +97,19 @@ def agent(s, env):
   
   actions = s["Action"]
   rewards = []
+  
   for ag in env.agents:
+   if s["Mode"] == "Testing":
+      obs=env.env.env.env.render('rgb_array')
+      im = Image.fromarray(obs)
+      fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images/","image_{0}.png".format(image_count))
+      im.save(fname)
+      image_count += 1
    observation, reward, done, info = env.last()
    rewards.append(reward)
-   if done == True:
-    continue
    action = actions.pop(0)   
    env.step(np.array(action,dtype= 'float32'))
+   
 
 
   # Getting Reward
@@ -122,3 +132,5 @@ def agent(s, env):
  else:
   s["Termination"] = "Truncated"
 
+ if s["Mode"] == "Testing":
+   env.close()

@@ -63,7 +63,7 @@ e["Solver"]["Mini Batch"]["Size"] = 64
 ### Normalization Configuration
 
 e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
-e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["State Rescaling"]["Enabled"] = True 
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers

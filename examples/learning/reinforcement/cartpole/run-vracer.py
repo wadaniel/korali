@@ -51,6 +51,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Environment Count"] = 3
 e["Problem"]["Training Reward Threshold"] = 495
 e["Problem"]["Policy Testing Episodes"] = 30
 e["Problem"]["Actions Between Policy Updates"] = 5
@@ -89,7 +90,7 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 
@@ -117,7 +118,8 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 100
 
 ### Running Experiment
 

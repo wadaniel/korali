@@ -456,7 +456,7 @@ class Agent : public Solver
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
   cBuffer<std::vector<float>> _truncatedStateVector;
- 
+
   /**
    * @brief Contains the environment id of every experience
    */

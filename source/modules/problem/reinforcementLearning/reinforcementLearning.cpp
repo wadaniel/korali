@@ -27,7 +27,7 @@ solver::Agent *_agent;
 /**
  * @brief Pointer to the engine's conduit
  */
-Conduit* _conduit;
+Conduit *_conduit;
 
 /**
   * @brief Stores the environment thread (coroutine).
@@ -52,8 +52,8 @@ void ReinforcementLearning::initialize()
 
   _actionVectorSize = _actionVectorIndexes.size();
   _stateVectorSize = _stateVectorIndexes.size();
-  
-  if( _environmentCount == 0 ) KORALI_LOG_ERROR("Environment Count must be larger than 0 (is %zu).\n", _environmentCount);
+
+  if (_environmentCount == 0) KORALI_LOG_ERROR("Environment Count must be larger than 0 (is %zu).\n", _environmentCount);
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
@@ -122,13 +122,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
-   finalizeEnvironment();
-   return;
+    finalizeEnvironment();
+    return;
   }
 
   // If multiple Enviroments, get the environment Id from each agent
   std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
-  if( _environmentCount > 1 ) {
+  if (_environmentCount > 1)
+  {
     // Parsing environment Id while ensuring compatibility with single agent
     if (_agentsPerEnvironment == 1)
     {
@@ -145,7 +146,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
       auto envId = agent["Environment Id"][i].get<size_t>();
-      if (std::isfinite(envId) == false || _environmentCount <= envId ) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
+      if (std::isfinite(envId) == false || _environmentCount <= envId) KORALI_LOG_ERROR("Agent %lu Environment Id returned an invalid value: %f\n", i, envId);
       environmentId[i] = agent["Environment Id"][i];
     }
   }
@@ -245,8 +246,8 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
-   finalizeEnvironment();
-   return;
+    finalizeEnvironment();
+    return;
   }
 
   // Running environment using the last policy only

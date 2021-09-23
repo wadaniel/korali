@@ -69,23 +69,6 @@ e["File Output"]["Enabled"] = False
 
 k.run(e)
 
-### If this is test mode, we run a few test samples and check their reward
-
-performTest = False
-if len(sys.argv) == 2:
- if sys.argv[1] == '--test':
-  performTest = True
-
-if (performTest == False): exit(0)
-
-e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
-e["File Output"]["Enabled"] = False
-
-### Running Experiment
-
-k.run(e)
-
 ### Checking if we reached a minimum performance
 
 bestReward = e["Solver"]["Training"]["Best Reward"]

@@ -120,7 +120,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   runEnvironment(agent);
 
   // If this is not the leader rank within the worker group, return immediately
-  if (_k->_engine->_conduit->isWorkerLeadRank() == false) { finalizeEnvironment(); return; }
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false) finalizeEnvironment();
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false) return;
 
   // If multiple Enviroments, get the environment Id from each agent
   std::vector<size_t> environmentId(_agentsPerEnvironment, 0);
@@ -240,7 +241,8 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   runEnvironment(agent);
 
   // If this is not the leader rank within the worker group, return immediately
-  if (_k->_engine->_conduit->isWorkerLeadRank() == false) { finalizeEnvironment(); return; }
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false) finalizeEnvironment();
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false) return;
 
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")

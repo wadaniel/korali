@@ -141,6 +141,7 @@ namespace
 
   // Case testing with testing best curPolicy empty
   a->_mode = "Testing";
+  a->_testingSampleIds = std::vector<size_t>();
   ASSERT_ANY_THROW(a->initialize()); // No sample ids defined
 
   a->_testingSampleIds = std::vector<size_t>({1});
@@ -392,6 +393,16 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["Experience Count Per Environment"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Experience Count Per Environment"] = std::vector<size_t>({1});
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["Experience Count"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -408,6 +419,16 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Reward"]["Outbound Penalization"]["Count"] = 1;
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sigma"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sigma"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -834,6 +855,16 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["Training"]["Environment Id History"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Training"]["Environment Id History"] = std::vector<size_t>({1});
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["Training"].erase("Average Depth");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -1031,6 +1062,16 @@ namespace
    a->_normalGenerator->applyModuleDefaults(normalDistroJs);
    a->_normalGenerator->setConfiguration(normalDistroJs);
 
+   // Creating uniform generator
+   knlohmann::json uniformDistroJs;
+   uniformDistroJs["Type"] = "Univariate/Uniform";
+   uniformDistroJs["Minimum"] = -1.0;
+   uniformDistroJs["Maximum"] = +1.0;
+   a->_uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+   a->_uniformGenerator->applyVariableDefaults();
+   a->_uniformGenerator->applyModuleDefaults(uniformDistroJs);
+   a->_uniformGenerator->setConfiguration(uniformDistroJs);
+
    // Backup the correct base configuration
    auto baseOptJs = agentJs;
    auto baseExpJs = experimentJs;
@@ -1051,6 +1092,18 @@ namespace
    ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
    ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
    ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+
+   a->_policyDistribution = "Clipped Normal";
+   a->_actionLowerBounds = std::vector<float>({0.0});
+   a->_actionUpperBounds = std::vector<float>({1.0});
+   ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
+
+   a->_policyDistribution = "Truncated Normal";
+   ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
 
    a->_policyDistribution = "Beta";
    a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});

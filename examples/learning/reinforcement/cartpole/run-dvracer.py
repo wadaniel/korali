@@ -31,11 +31,6 @@ parser.add_argument(
     help='Number of environments to run concurrently',
     default=1,
     required=False)
-parser.add_argument(
-    '--testRewardThreshold',
-    help='Threshold for the testing MSE, under which the run will report an error',
-    default=150,
-    required=False)
 args = parser.parse_args()
 
 print("Running Cartpole example with arguments:")
@@ -127,10 +122,16 @@ e["Console Output"]["Verbosity"] = "Detailed"
 
 k.run(e)
 
-### Checking if we reached a minimum performance
+### Now we run a few test samples and check their reward
 
-bestReward = e["Solver"]["Training"]["Best Reward"]
-if (bestReward < 400.0):
- print("Cartpole example did not reach minimum trainig performance.")
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = list(range(5))
+
+k.run(e)
+
+averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
+print("Average Reward: " + str(averageTestReward))
+if (averageTestReward < 150):
+ print("Cartpole example did not reach minimum testing average.")
  exit(-1)
 

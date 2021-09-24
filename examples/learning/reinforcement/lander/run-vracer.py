@@ -58,7 +58,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
 ### Setting file output configuration
 
@@ -69,9 +69,23 @@ e["File Output"]["Enabled"] = False
 
 k.run(e)
 
-### Checking if we reached a minimum performance
+### If this is test mode, we run a few test samples and check their reward
 
-bestReward = e["Solver"]["Training"]["Best Reward"]
-if (bestReward < 3.0):
- print("Lander example did not reach minimum training performance.")
+performTest = False
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  performTest = True
+
+if (performTest == False): exit(0)
+
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
+e["File Output"]["Enabled"] = False
+
+k.run(e)
+
+averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
+print("Average Reward: " + str(averageTestReward))
+if (averageTestReward < -8.0):
+ print("Landar example did not reach minimum testing average.")
  exit(-1)

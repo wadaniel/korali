@@ -14,7 +14,7 @@ parser.add_argument(
 parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
-    default=100,
+    default=30,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -121,6 +121,9 @@ e["Console Output"]["Verbosity"] = "Detailed"
 ### Running Experiment
 
 k.run(e)
+
+bestReward = float(e["Solver"]["Training"]["Best Reward"])
+print(bestReward)
 
 ### Now we run a few test samples and check their reward
 

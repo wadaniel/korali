@@ -232,7 +232,7 @@ for launch in range(args.launchNum):
 
     ### Defining results folder and loading previous results, if any
 
-    e.loadState(dirfiles["Results"] + '/latest');
+    #e.loadState(dirfiles["Results"] + '/latest');
 
     ### Initializing openAI Gym environment
 

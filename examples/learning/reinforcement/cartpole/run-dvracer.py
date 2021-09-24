@@ -14,7 +14,7 @@ parser.add_argument(
 parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
-    default=50,
+    default=100,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -131,7 +131,7 @@ k.run(e)
 
 averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
 print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < 150):
+if (averageTestReward < 100):
  print("Cartpole example did not reach minimum testing average.")
  exit(-1)
 

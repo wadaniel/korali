@@ -24,7 +24,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 ####### Parsing arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument(-"-env", help="Specifies which environment to run.", required=True)
+parser.add_argument("--env", help="Specifies which environment to run.", required=True)
 parser.add_argument("--dis", help="Sampling Distribution.", required=True)
 parser.add_argument("--l2", help="L2 Regularization.", required=False, type=float, default = 0.)
 parser.add_argument("--opt", help="Off Policy Target.", required=False, type=float, default = 0.1)
@@ -78,6 +78,8 @@ if rank == 0:
         fhandle.write(infores+"\n")
         
 import korali
+
+envName = args.env
         
 for launch in range(args.launchNum):
 

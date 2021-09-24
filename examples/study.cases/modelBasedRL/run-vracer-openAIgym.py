@@ -26,7 +26,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 parser = argparse.ArgumentParser()
 parser.add_argument(-"-env", help="Specifies which environment to run.", required=True)
 parser.add_argument("--dis", help="Sampling Distribution.", required=True)
-parser.add_argument("--l2", help=L2 "Regularization.", required=False, type=float, default = 0.)
+parser.add_argument("--l2", help="L2 Regularization.", required=False, type=float, default = 0.)
 parser.add_argument("--opt", help="Off Policy Target.", required=False, type=float, default = 0.1)
 parser.add_argument("--lrRL", help="Learning Rate.", required=False, type=float, default = 0.0001)
 parser.add_argument("--lr", type=float, default=1e-2, help="Initial learning rate surrogate nets")
@@ -61,7 +61,7 @@ now = datetime.now()
 if args.m == "":
     args.m = "Results/" + now.strftime("%Y%m%d%H%M%S") + "/"
 else:
-    args.m = "Results/" + args.env + "_" + args.m
+    args.m = "Results/" + args.env + "_" + args.m  + "/"
 
 if rank == 0:
     if not os.path.exists("Results/"): os.makedirs("Results/")
@@ -232,7 +232,7 @@ for launch in range(args.launchNum):
 
     ### Defining results folder and loading previous results, if any
 
-    #e.loadState(dirfiles["Results"] + '/latest');
+    e.loadState(dirfiles["Results"] + '/latest');
 
     ### Initializing openAI Gym environment
 

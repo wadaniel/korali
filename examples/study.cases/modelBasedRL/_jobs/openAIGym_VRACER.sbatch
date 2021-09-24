@@ -43,26 +43,6 @@ opt=0.1
 # learning rate
 lrRL=0.0001
 
-parser.add_argument("--lr", type=float, default=1e-2, help="Initial learning rate surrogate nets")
-parser.add_argument("--batch", type=int, default=8, help="Batch size")
-parser.add_argument("--epoch", type=int, default=100, help="Total number of epochs to train the surrogate nets")
-parser.add_argument("--hid", nargs="+", type=int, help="Specify integers for list of hidden sizes, starting ith input size to first hidden layer and finishing with output size of last layer")
-parser.add_argument("--ws", type=float, default=4.0, help="Weight parameter for GaussianNLLLoss of reward (scalar)")
-parser.add_argument("--conf", type=float, default=0.9500, help="Confidence Hyperparameter")
-parser.add_argument("--m", type=str, default="", help="Prefix results and directories")
-parser.add_argument("--dumpBestTrajectory", action='store_true', help="Dump best trajectory")
-parser.add_argument("--trRewTh", type=int, default=495, help="trainingRewardThreshold")
-parser.add_argument("--tarAvRew", type=int, default=495, help="targetAverageReward")
-parser.add_argument("--maxGen", type=int, default=1000, help="maximumGenerations")
-parser.add_argument("--epPerGen", type=int, default=1, help="episodesPerGeneration")
-parser.add_argument("--testFreq", type=int, default=100, help="testingFrequency")
-parser.add_argument("--polTestEp", type=int, default=20, help="policyTestingEpisodes")
-parser.add_argument("--expBetPolUp", type=float, default=1, help="Experiences Between Policy Updates")
-parser.add_argument("--maxPolUp", type=float, default=0, help="Maximum Policy Updates")
-parser.add_argument("--maxSize", type=float, default=262144, help="Maximum size of memory for experience replay")
-parser.add_argument("--launchNum", type=int, default=1, help="Number of times to run vracer.")
-parser.add_argument("--iniRetrain", type=int, default=65536, help="Initial retraining sample data points.")
-parser.add_argument("--retrain", type=int, default=50000, help="Retraining sample data points.")
 # surrogate and korali arguments
 lr=0.01
 batch=128

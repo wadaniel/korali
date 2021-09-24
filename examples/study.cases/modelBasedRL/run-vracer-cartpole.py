@@ -71,6 +71,8 @@ if rank == 0:
     infores = "#bestTestingEpisodeId,averageTrainingReward,finalGenerationRes,previousDataUsage,usagesurrogateModel,averageTestReward,numberInteractionsWithReal,numberInteractionsWithSurr,totalNumberInteractionsWithEnv,interactionsRealWarmUp,ratioExperiences,policyUpdateCount,iterationsUsed"
     with open(fname, "w") as fhandle:
         fhandle.write(infores+"\n")
+        
+import korali
             
 for launch in range(args.launchNum):
 
@@ -215,7 +217,8 @@ for launch in range(args.launchNum):
 
     ####### Defining Korali Problem
 
-    import korali
+    #TODO: moved import outside launch loop
+    #import korali
     k = korali.Engine()
     e = korali.Experiment()
 

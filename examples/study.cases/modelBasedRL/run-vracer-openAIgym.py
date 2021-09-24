@@ -289,7 +289,7 @@ for launch in range(args.launchNum):
     e["Console Output"]["Verbosity"] = "Detailed"
     e["File Output"]["Enabled"] = True
     e["File Output"]["Frequency"] = 200
-    e["File Output"]["Path"] = resultFolder
+    e["File Output"]["Path"] = dirfiles["Results"]
     
     if maxPolicyUpdates != 0:
         e["Solver"]["Termination Criteria"]["Max Policy Updates"] = maxPolicyUpdates

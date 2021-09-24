@@ -160,7 +160,7 @@ for launch in range(args.launchNum):
 
     # Instantiate model
     alphaDropout = True
-    model = Net(hyperparams.hidden_size, alphaDropout, inputNumber, outputNumberState)
+    model = Net(hyperparams.hidden_size, inputNumber, outputNumberState, alphaDropout)
     
     # Optimizer
     opt = AdaBelief(model.parameters(), lr=hyperparams.lr, eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False, print_change_log=False)
@@ -171,7 +171,7 @@ for launch in range(args.launchNum):
     
     models={}
     for r in range(1, net_config.num_procs):
-        models[r] = Net(net_config.hyperparams.hidden_size, alphaDropout, inputNumber, outputNumberState)
+        models[r] = Net(net_config.hyperparams.hidden_size, inputNumber, outputNumberState, alphaDropout)
     #if rank == 0:
     #    print(models)
     

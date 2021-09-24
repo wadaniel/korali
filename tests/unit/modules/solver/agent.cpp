@@ -423,6 +423,16 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = std::vector<float>({1.0});
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Sigma"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 

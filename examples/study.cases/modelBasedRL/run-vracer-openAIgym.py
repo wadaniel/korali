@@ -61,7 +61,7 @@ now = datetime.now()
 if args.m == "":
     args.m = "Results/" + now.strftime("%Y%m%d%H%M%S") + "/"
 else:
-    args.m = "Results/" + args.env + "_" + args.m  + "/"
+    args.m = "Results/" + args.m  + "/"
 
 if rank == 0:
     if not os.path.exists("Results/"): os.makedirs("Results/")

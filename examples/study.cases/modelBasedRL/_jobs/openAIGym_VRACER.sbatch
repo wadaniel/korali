@@ -61,7 +61,7 @@ pushd ..
 cat run-vracer-openAIgym.py
 
 #expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env/$SLURM_JOB_ID
-expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env/Results/$m
+expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env
 mkdir -p $expDir
 cp run-vracer-openAIgym.py $expDir
 cp -r _model_openAIgym $expDir

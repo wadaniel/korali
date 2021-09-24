@@ -144,7 +144,7 @@ void Agent::initialize()
     _maxGenerations = _k->_currentGeneration + 1;
 
     // Setting testing policy to best testing hyperparameters if not custom-set by the user
-    if (_trainingCurrentPolicy.empty()) _testingCurrentPolicy = _trainingCurrentPolicy;
+    if (_testingCurrentPolicy.empty()) _testingCurrentPolicy = _trainingCurrentPolicy;
 
     // Checking if there's testing samples defined
     if (_testingSampleIds.size() == 0)

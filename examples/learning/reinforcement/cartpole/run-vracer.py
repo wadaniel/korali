@@ -106,7 +106,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 150
 
 ### Setting file output configuration
 
@@ -125,7 +125,7 @@ k.run(e)
 
 averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
 print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < 150):
+if (averageTestReward < 100):
  print("Cartpole example did not reach minimum testing average.")
  exit(-1)
 

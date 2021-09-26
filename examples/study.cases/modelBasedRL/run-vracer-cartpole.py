@@ -9,7 +9,8 @@ import argparse
 from datetime import datetime
 from mpi4py import MPI
 
-sys.path.append('./_modelCoord')
+#sys.path.append('./_modelCoord')
+sys.path.append('./_model_cartpole')
 from env import *
 from model import Net, Hyperparams, NetConfig, trainEnsemble, predictEnsembleSerial, GaussianNLLLoss, VisualizationNetResults
 

@@ -222,7 +222,8 @@ class ObjectiveFactory:
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
     dhat = self.dhat + cs
     #dhat = np.clip(action[2], a_min=1, a_max=3)
-    
+    cu = np.clip(action[2], a_min=0.0, a_max=1.0)
+
     # Calc weighted mean and cov
     y = (self.population[:self.mu]-self.mean)/self.scale
     weightedMeanOfBest = np.average(y, weights=self.weights, axis=0)
@@ -252,7 +253,8 @@ class ObjectiveFactory:
     dhsig = min((1.-hsig)*self.cc*(2.-self.cc),1.0)
 
     self.pathc = (1-self.cc)*self.pathc+np.sqrt(self.cc*(2.-self.cc)*self.ueff)*weightedMeanOfBest
-    self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
+    #self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
+    self.cov = (1.-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
 
     # Resample
     self.population = np.random.multivariate_normal(self.mean, self.scale**2*self.cov, self.populationSize)

@@ -71,8 +71,8 @@ e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Environment Count"] = environmentCount
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
-e["Problem"]["Policy Testing Episodes"] = 10
-e["Problem"]["Actions Between Policy Updates"] = 0.2
+e["Problem"]["Policy Testing Episodes"] = 50
+e["Problem"]["Actions Between Policy Updates"] = 1.0
 
 if version == 0:
     i = 0
@@ -120,12 +120,12 @@ e["Variables"][i]["Upper Bound"] = +1.0
 e["Variables"][i]["Initial Exploration Noise"] = 0.2
 i += 1
 
-#e["Variables"][i]["Name"] = "Damping param"
-#e["Variables"][i]["Type"] = "Action"
-#e["Variables"][i]["Lower Bound"] = 1
-#e["Variables"][i]["Upper Bound"] = 3
-#e["Variables"][i]["Initial Exploration Noise"] = 0.2
-#i += 1
+e["Variables"][i]["Name"] = "Cov Adaption"
+e["Variables"][i]["Type"] = "Action"
+e["Variables"][i]["Lower Bound"] = 0.0
+e["Variables"][i]["Upper Bound"] = 1.0
+e["Variables"][i]["Initial Exploration Noise"] = 0.2
+i += 1
 
 
 ### Defining Agent Configuration 
@@ -152,13 +152,13 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 256
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 512
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 256
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 512
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

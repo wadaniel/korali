@@ -362,7 +362,11 @@ void Agent::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
+
+      bool storeEpisode = message["Store Episode"];
+
       // Process every episode received and its experiences (add them to replay memory)
+      if (storeEpisode)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
         processEpisode(episodeId, message["Episodes"][i]);
@@ -376,6 +380,7 @@ void Agent::attendAgent(size_t agentId)
       KORALI_WAIT(_agents[agentId]);
 
       // Getting the training reward of the latest episodes
+      if (storeEpisode)
       for (size_t i = 0; i < message["Episodes"].size(); i++)
       {
         _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
@@ -394,6 +399,7 @@ void Agent::attendAgent(size_t agentId)
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
+      if (storeEpisode)
       if (_agents[agentId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;

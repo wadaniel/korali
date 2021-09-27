@@ -150,11 +150,11 @@ class ObjectiveFactory:
  
     elif self.objective == "fparabr":
         self.zero += 0
-        self.function = lambda x : -x[0]+100*np.sum(np.power(x[1:]-self.zero,2))
+        self.function = lambda x : x[0]**2+100*np.sum(np.power(x[1:]-self.zero,2))
  
     elif self.objective == "fsharpr":
         self.zero += 0
-        self.function = lambda x : -x[0]+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
+        self.function = lambda x : x[0]**2+100*np.sqrt(np.sum(np.power(x[1:]-self.zero,2)))
 
     elif self.objective == "fdiffpow":
         self.zero += 0

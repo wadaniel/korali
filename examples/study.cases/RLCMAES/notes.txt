@@ -101,3 +101,9 @@ Finding:
 
 # Run 20
 version 1, added rosenbrock, NN 256
+
+# Run 21
+version 1, added ridge functions, NN 256
+
+# Run 22
+redo run 21, starting dum 8, I think I messed up sth before

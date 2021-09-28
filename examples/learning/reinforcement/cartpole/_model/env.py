@@ -39,3 +39,5 @@ def env(s):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
+
+ s["Store Episode"] = (sampleId % 2) == 0

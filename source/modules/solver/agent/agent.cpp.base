@@ -482,6 +482,8 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
     if (isDefined(episode["Experiences"][expId], "Policy", "Distribution Parameters"))
       expPolicy.distributionParameters = episode["Experiences"][expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
 
+    if (isDefined(episode["Experiences"][expId], "Policy", "Action Probabilities"))
+      expPolicy.actionProbabilities = episode["Experiences"][expId]["Policy"]["Action Probabilities"].get<std::vector<float>>();
     if (isDefined(episode["Experiences"][expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode["Experiences"][expId]["Policy"]["Action Index"].get<size_t>();
 
@@ -956,6 +958,8 @@ void __className__::deserializeExperienceReplay()
     curPolicy.actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"].get<size_t>();
     curPolicy.unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"].get<std::vector<float>>();
     _curPolicyVector.add(curPolicy);
+
+    // TODO: adapt serialization for DVRACER
   }
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling

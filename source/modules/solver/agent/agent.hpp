@@ -200,6 +200,10 @@ class Agent : public Solver
   */
    float _rewardOutboundPenalizationFactor;
   /**
+  * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
+  */
+   size_t _policyParameterCount;
+  /**
   * @brief [Internal Use] Lower bounds for actions.
   */
    std::vector<float> _actionLowerBounds;

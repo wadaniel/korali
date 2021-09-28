@@ -3,7 +3,8 @@ import os
 import sys
 import argparse
 sys.path.append('_model')
-from agent import *
+from dagent import *
+import pdb
 
 ####### Parsing arguments
 
@@ -38,7 +39,7 @@ initEnvironment(e, args.env, args.model)
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Type"] = "Agent / Discrete / dVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
@@ -55,7 +56,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
 
-e["Solver"]["Policy"]["Distribution"] = args.dis
+
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
   

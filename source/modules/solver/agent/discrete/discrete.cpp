@@ -81,15 +81,9 @@ void Discrete::getAction(korali::Sample &sample)
 
 float Discrete::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
-  const auto &pVectorCurPolicy = curPolicy.actionProbabilities;
-  const auto &pVectorOldPolicy = oldPolicy.actionProbabilities;
-  auto actionIdx = oldPolicy.actionIndex;
-
-  // Getting probability density of action for current policy
-  float pCurPolicy = pVectorCurPolicy[actionIdx];
-
-  // Getting probability density of action for old policy
-  float pOldPolicy = pVectorOldPolicy[actionIdx];
+  const auto oldActionIdx = oldPolicy.actionIndex;
+  const auto pCurPolicy = curPolicy.actionProbabilities[oldActionIdx];
+  const auto pOldPolicy = oldPolicy.actionProbabilities[oldActionIdx];
 
   // Now calculating importance weight for the old s,a experience
   float constexpr epsilon = 0.00000001f;
@@ -107,8 +101,15 @@ std::vector<float> Discrete::calculateImportanceWeightGradient(const policy_t &c
   std::vector<float> grad(_problem->_possibleActions.size() + 1, 0.0);
 
   const float invTemperature = curPolicy.distributionParameters[_problem->_possibleActions.size()];
+  const auto &curDistParams = curPolicy.distributionParameters;
+  
   const size_t oldActionIdx = oldPolicy.actionIndex;
-  float importanceWeight = curPolicy.actionProbabilities[oldActionIdx] / oldPolicy.actionProbabilities[oldActionIdx];
+  const auto pCurPolicy = curPolicy.actionProbabilities[oldActionIdx];
+  const auto pOldPolicy = oldPolicy.actionProbabilities[oldActionIdx];
+
+  // Now calculating importance weight for the old s,a experience
+  float constexpr epsilon = 0.00000001f;
+  float importanceWeight = pCurPolicy / (pOldPolicy + epsilon);
 
   // Safety checks
   if (importanceWeight > 1024.0f) importanceWeight = 1024.0f;

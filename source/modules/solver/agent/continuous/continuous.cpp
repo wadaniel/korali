@@ -50,7 +50,7 @@ void Continuous::initializeAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       auto varIdx = _problem->_actionVectorIndexes[i];
-      float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+      const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
       if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
@@ -79,7 +79,7 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];
+      const size_t varIdx = _problem->_actionVectorIndexes[i];
       const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration

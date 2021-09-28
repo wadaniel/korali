@@ -127,19 +127,19 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
       {
-        float nextExpVtbc = _retraceValueVector[expId + 1];
+        const float nextExpVtbc = _retraceValueVector[expId + 1];
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // If experience is truncated, add truncated state value
       if (_terminationVector[expId] == e_truncated)
       {
-        float nextExpVtbc = _truncatedStateValueVector[expId];
+        const float nextExpVtbc = _truncatedStateValueVector[expId];
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // Compute Off-Policy Objective (eq. 5)
-      float lossOffPolicy = Qret - V;
+      const float lossOffPolicy = Qret - V;
 
       // Compute Policy Gradient wrt Params
       auto polGrad = calculateImportanceWeightGradient(curPolicy, expPolicy);
@@ -208,7 +208,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
       // Computing e^(Q(s,a_i) - maxq)
-      float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+      const float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
 
       // Computing Sum_i(e^Q(s,a_i)/e^maxq)
       sumExpQVal += expCurQVal;
@@ -218,7 +218,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     }
 
     // Calculating inverse of Sum_i(e^Q(s,a_i))
-    float invSumExpQVal = 1.0f / sumExpQVal;
+    const float invSumExpQVal = 1.0f / sumExpQVal;
 
     // Normalizing action probabilities
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)

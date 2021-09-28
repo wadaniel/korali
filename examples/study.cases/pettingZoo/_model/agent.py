@@ -4,6 +4,7 @@ import math
 import pdb
 import numpy as np
 import os
+import sys
 from PIL import Image
 import matplotlib.pyplot as plt
 
@@ -33,6 +34,9 @@ def initEnvironment(e, envName, model = ''):
     ac_low = -1 
     numIndividuals = 3
 
+ else:
+   print("Environment '{}' not recognized! Exit..".format(envName))
+   sys.exit()
  
  
  

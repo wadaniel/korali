@@ -4,6 +4,7 @@ import math
 import pdb
 import numpy as np
 import os
+import sys
 from PIL import Image
 import matplotlib.pyplot as plt
 
@@ -21,6 +22,9 @@ def initEnvironment(e, envName, model = ''):
     obs_low = 0
     numIndividuals = 8
 
+ else:
+    print("Environment '{}' not recognized! Exit..".format(envName))
+    sys.exit()
  
  
  

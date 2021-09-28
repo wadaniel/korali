@@ -7,6 +7,10 @@ Pre-Requisites:
 ------------------
 None.
 
+Installation:
+------------------
+./install_deps.sh
+
 Running an environment:
 -------------------------
 

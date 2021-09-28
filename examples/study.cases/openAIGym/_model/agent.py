@@ -116,3 +116,4 @@ def agent(s, env):
  else:
   s["Termination"] = "Truncated"
 
+ s["Store Episode"] = True

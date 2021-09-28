@@ -10,37 +10,26 @@ import matplotlib.pyplot as plt
 def initEnvironment(e, envName, model = ''):
 
  # Creating environment 
- if (envName ==  'Waterworld'):
-    from pettingzoo.sisl import waterworld_v3
+ if (envName ==  'Pursuit'):
+    from pettingzoo.sisl import pursuit_v3
     
-    env = waterworld_v3.env()
-    stateVariableCount = 242
-    actionVariableCount = 2
-    obs_upper = 2 * math.sqrt(2)
-    obs_low = -1 * math.sqrt(2)
-    ac_upper = 0.01 
-    ac_low = -0.01 
-    numIndividuals = 5
-
- elif (envName == 'Multiwalker'):
-    from pettingzoo.sisl import multiwalker_v7
-    env = multiwalker_v7.env()
-    stateVariableCount = 31
-    actionVariableCount = 4
-    obs_upper =  math.inf
-    obs_low = -1 * math.inf
-    ac_upper = 1 
-    ac_low = -1 
-    numIndividuals = 3
+    env = pursuit_v3.env()
+    stateVariableCount = 147
+    actionVariableCount = 1
+    
+    obs_upper = 30
+    obs_low = 0
+    numIndividuals = 8
 
  
  
  
  ### Defining problem configuration for openAI Gym environments
- e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
+ e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
  e["Problem"]["Training Reward Threshold"] = math.inf
+ e["Problem"]["Possible Actions"] = [ [0], [1], [2], [3], [4] ]
  #e["Problem"]["Testing Frequency"] = 2
  e["Problem"]["Policy Testing Episodes"] = 20
  e["Problem"]["Agents Per Environment"] = numIndividuals
@@ -55,21 +44,17 @@ def initEnvironment(e, envName, model = ''):
   e["Variables"][i]["Type"] = "State"
   e["Variables"][i]["Lower Bound"] = float(obs_low)
   e["Variables"][i]["Upper Bound"] = float(obs_upper)
-
  if model == '1' :
-   e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
-   e["Variables"][stateVariableCount ]["Type"] = "State"
-   stateVariableCount += 1
-
+  e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
+  e["Variables"][stateVariableCount ]["Type"] = "State"
+  stateVariableCount += 1
   
  # Defining Action Variables
  
  for i in range(actionVariableCount):
   e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
   e["Variables"][stateVariableCount + i]["Type"] = "Action"
-  e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ac_low)
-  e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ac_upper)
-  e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2)
+
  
  ### Defining Termination Criteria
 
@@ -89,11 +74,11 @@ def agent(s, env, model = ''):
  states = []
  
  for ag in env.agents:
-  state = env.observe(ag).tolist()
+  state = env.observe(ag)
+  state = state.reshape(147)
+  state = state.tolist()
   if model == '1':
-   #pdb.set_trace()
-   #float(ag[-1])
-   state.append(float(ag[-1]))
+    state.append(float(ag[-1]))
   states.append(state)
  s["State"] = states
  
@@ -120,31 +105,21 @@ def agent(s, env, model = ''):
   rewards = []
   
   for ag in env.agents:
-   if s["Mode"] == "Testing" and (env.env.env.metadata['name']== 'waterworld_v3'):
+   if s["Mode"] == "Testing":
+      pdb.set_trace()
       obs=env.env.env.env.render('rgb_array')
       im = Image.fromarray(obs)
-      fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images/","image_{0}.png".format(image_count))
-      im.save(fname)
-      image_count += 1
-   elif s["Mode"] == "Testing" and ( env.env.env.metadata['name']== 'multiwalker_v7'):
-      
-      #pdb.set_trace()
-      
-      obs = env.env.env.render('rgb_array')
-      im = Image.fromarray(obs)
-      fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images_multiwalker/","image_{0}.png".format(image_count))
+      fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images/images_pursuit/","image_{0}.png".format(image_count))
       im.save(fname)
       image_count += 1
       
       
-
    observation, reward, done, info = env.last()
    rewards.append(reward)
+   #pdb.set_trace()
    action = actions.pop(0)
+   env.step(action[0])
    
-   if done and (env.env.env.metadata['name']== 'multiwalker_v7'):
-    continue
-   env.step(np.array(action,dtype= 'float32'))
    
 
 
@@ -155,9 +130,11 @@ def agent(s, env, model = ''):
   states = []
  
   for ag in env.agents:
-   state = env.observe(ag).tolist()
+   state = env.observe(ag)
+   state = state.reshape(147)
+   state = state.tolist()
    if model == '1':
-      state.append(float(ag[-1]))
+    state.append(float(ag[-1]))
    states.append(state)
   s["State"] = states
    

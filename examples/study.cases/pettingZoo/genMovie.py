@@ -7,9 +7,11 @@ from agent import *
 
 ####### Parsing arguments
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--input', help='Specifies the result folder to load the best policy from.', required=True)
+parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
 
 args = parser.parse_args()
 
@@ -22,7 +24,9 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results
 
 initEnvironment(e, args.env)
-found = e.loadState(args.input  + '/latest');
+dis_dir = args.dis.replace(" ","_")
+resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.input) +'/'
+found = e.loadState(resultFolder  + '/latest');
 
 if (found == False): 
  print('Error: could not find results in folder: ' + args.input)

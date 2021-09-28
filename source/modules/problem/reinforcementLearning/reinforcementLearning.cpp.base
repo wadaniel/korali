@@ -156,6 +156,8 @@ void __className__::runTrainingEpisode(Sample &agent)
         (actionCount % _actionsBetweenPolicyUpdates == 0)) requestNewPolicy(agent);
   }
 
+  bool storeEpisode = KORALI_GET(bool, agent, "Store Episode");
+
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
 
@@ -212,6 +214,7 @@ void __className__::runTrainingEpisode(Sample &agent)
   message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episodes;
+  message["Store Episode"] = storeEpisode;
   KORALI_SEND_MSG_TO_ENGINE(message);
 
   // Adding profiling information to agent

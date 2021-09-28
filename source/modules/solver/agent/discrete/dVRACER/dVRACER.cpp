@@ -30,7 +30,7 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _problem->_possibleActions.size();
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 2 + _problem->_possibleActions.size(); // The value function, action probabilities, and inverse temperature
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
@@ -85,12 +85,12 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Getting experience policy data
     const auto &expPolicy = _expPolicyVector[expId];
-    const auto &expPvals = expPolicy.distributionParameters;
+    const auto &expDistParams = expPolicy.distributionParameters;
     const auto &expActionIdx = expPolicy.actionIndex;
 
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
-    const auto &curPvals = curPolicy.distributionParameters;
+    const auto &curDistParams = curPolicy.distributionParameters;
 
     // Getting value evaluation
     const float V = _stateValueVector[expId];
@@ -126,10 +126,10 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       float lossOffPolicy = Qret - V;
 
       // Compute Policy Gradient wrt Params
-      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
+      auto polGrad = calculateImportanceWeightGradient(curPolicy, expPolicy);
 
       // Set Gradient of Loss wrt Params
-      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+      for (size_t i = 0; i < _problem->_possibleActions.size() + 1; i++)
       {
         // '-' because the optimizer is maximizing
         gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
@@ -137,9 +137,9 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expPvals, curPvals);
+    auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
 
-    for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    for (size_t i = 0; i < _problem->_possibleActions.size() + 1; i++)
     {
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
       gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
@@ -173,13 +173,16 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     // Storage for action probabilities
     float maxq = -korali::Inf;
     std::vector<float> qval(_problem->_possibleActions.size());
-    std::vector<float> pActions(_problem->_possibleActions.size());
+    std::vector<float> pActionsAndTemp(_problem->_possibleActions.size() + 1);
+
+    // Get the inverse of the temperature for the softmax distribution  
+    const float invTemperature = evaluation[b][1 + _problem->_possibleActions.size()];
 
     // Iterating all Q(s,a)
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
       // Computing Q(s,a_i)
-      qval[i] = evaluation[b][1 + i];
+      qval[i] = evaluation[b][1 + i] * invTemperature;
 
       // Extracting max Q(s,a_i)
       if (qval[i] > maxq) maxq = qval[i];
@@ -197,7 +200,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
       sumExpQVal += expCurQVal;
 
       // Storing partial value of the probability of the action
-      pActions[i] = expCurQVal;
+      pActionsAndTemp[i] = expCurQVal;
     }
 
     // Calculating inverse of Sum_i(e^Q(s,a_i))
@@ -205,10 +208,13 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
 
     // Normalizing action probabilities
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-      pActions[i] *= invSumExpQVal;
+      pActionsAndTemp[i] *= invSumExpQVal;
+
+    // Set inverse temperature parameter
+    pActionsAndTemp[_problem->_possibleActions.size()] = invTemperature;
 
     // Storing the action probabilities into the policy
-    policyVector[b].distributionParameters = pActions;
+    policyVector[b].distributionParameters = pActionsAndTemp;
   }
 
   return policyVector;

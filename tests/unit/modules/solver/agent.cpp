@@ -1494,8 +1494,8 @@ namespace
 
    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
    ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
 
    // Testing mandatory parameters
 

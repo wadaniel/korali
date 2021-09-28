@@ -11,7 +11,6 @@ import pdb
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
@@ -29,8 +28,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-dis_dir = args.dis.replace(" ","_")
-resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.run) +'/'
+resultFolder = 'results/_result_vracer_' + args.env + '_' + str(args.run) +'/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment

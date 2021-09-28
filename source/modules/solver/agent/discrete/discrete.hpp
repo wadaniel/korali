@@ -29,10 +29,6 @@ namespace agent
 class Discrete : public Agent
 {
   public: 
-  /**
-  * @brief Specifies the probability of taking a random action for the epsilon-greedy strategy.
-  */
-   float _randomActionProbability;
   
  
   /**
@@ -75,7 +71,7 @@ class Discrete : public Agent
    * @param oldPvalues todo
    * @return gradient of importance weight wrt NN output
    */
-  std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
+  std::vector<float> calculateImportanceWeightGradient(const policy_t &curPolicy, const policy_t &oldPolicy);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
@@ -83,7 +79,7 @@ class Discrete : public Agent
    * @param curPvalues todo
    * @return gradient of KL wrt curParamsOne and curParamsTwo
    */
-  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
+  std::vector<float> calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy);
 
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent() override;

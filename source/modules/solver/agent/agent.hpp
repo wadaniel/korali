@@ -187,7 +187,11 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief If enabled, it penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
+  * @brief If enabled, the learner averages the rewards for each experience across agents. Such that each agent receives the same reward at the t-th step of each episode.
+  */
+   int _rewardAveragingEnabled;
+  /**
+  * @brief If enabled, the learner penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
   */
    int _rewardOutboundPenalizationEnabled;
   /**
@@ -625,6 +629,12 @@ class Agent : public Solver
    * @param normalizationSteps How many normalization steps to perform (and grab the average)
    */
   void normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
+
+  /**
+  * @brief Average rewards across agents per experience in multi agent framework.
+  * @param message A json object containing all experiences from all agents.
+  */
+  void averageRewardsAcrossAgents(knlohmann::json &message);
 
   /**
   * @brief Additional post-processing of episode after episode terminated.

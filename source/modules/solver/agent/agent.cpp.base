@@ -168,6 +168,9 @@ void __className__::initialize()
     // Prepare storage for rewards from tested samples
     _testingReward.resize(_testingSampleIds.size());
   }
+
+  if (_problem->_agentsPerEnvironment == 1 && _rewardAveragingEnabled)
+      KORALI_LOG_ERROR("Reward averaging is only meaningful in multi agent reinforcement learning. Set ['Reward']['Averaging']['Enabled'] to false");
 }
 
 void __className__::runGeneration()
@@ -358,6 +361,13 @@ void __className__::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
+
+      // Average the rewards agross agents
+      if(_rewardAveragingEnabled)
+      {
+        averageRewardsAcrossAgents(message);
+      }
+
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
@@ -431,6 +441,24 @@ void __className__::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
+void __className__::averageRewardsAcrossAgents(knlohmann::json &message)
+{
+#pragma omp parallel for
+    // Iterate over all experiences from each agent
+    for(size_t expId = 0; expId < message["Episodes"][0]["Experiences"].size(); ++expId)
+    {
+        float cumulativeRewardOfAgents = 0.0;
+        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+            cumulativeRewardOfAgents += message["Episodes"][i]["Experiences"][expId]["Reward"].get<float>();
+
+        const float averageRewardPerExp = cumulativeRewardOfAgents / _problem->_agentsPerEnvironment;
+        // Set the reward to the average reward of all agents
+        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+            message["Episodes"][i]["Experiences"][expId]["Reward"] = averageRewardPerExp;
+    }
+}
+
+
 void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
   /*********************************************************************
@@ -440,6 +468,7 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
+#pragma omp parallel for
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
     // Getting state

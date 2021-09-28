@@ -172,6 +172,9 @@ void Agent::initialize()
     // Prepare storage for rewards from tested samples
     _testingReward.resize(_testingSampleIds.size());
   }
+
+  if (_problem->_agentsPerEnvironment == 1 && _rewardAveragingEnabled)
+      KORALI_LOG_ERROR("Reward averaging is only meaningful in multi agent reinforcement learning. Set ['Reward']['Averaging']['Enabled'] to false");
 }
 
 void Agent::runGeneration()
@@ -362,6 +365,13 @@ void Agent::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
+
+      // Average the rewards agross agents
+      if(_rewardAveragingEnabled)
+      {
+        averageRewardsAcrossAgents(message);
+      }
+
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
@@ -435,6 +445,24 @@ void Agent::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
+void Agent::averageRewardsAcrossAgents(knlohmann::json &message)
+{
+#pragma omp parallel for
+    // Iterate over all experiences from each agent
+    for(size_t expId = 0; expId < message["Episodes"][0]["Experiences"].size(); ++expId)
+    {
+        float cumulativeRewardOfAgents = 0.0;
+        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+            cumulativeRewardOfAgents += message["Episodes"][i]["Experiences"][expId]["Reward"].get<float>();
+
+        const float averageRewardPerExp = cumulativeRewardOfAgents / _problem->_agentsPerEnvironment;
+        // Set the reward to the average reward of all agents
+        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+            message["Episodes"][i]["Experiences"][expId]["Reward"] = averageRewardPerExp;
+    }
+}
+
+
 void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
   /*********************************************************************
@@ -444,6 +472,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
+#pragma omp parallel for
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
     // Getting state
@@ -1591,6 +1620,15 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Rescaling']['Enabled'] required by agent.\n"); 
 
+ if (isDefined(js, "Reward", "Averaging", "Enabled"))
+ {
+ try { _rewardAveragingEnabled = js["Reward"]["Averaging"]["Enabled"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Averaging']['Enabled']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Averaging", "Enabled");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Averaging']['Enabled'] required by agent.\n"); 
+
  if (isDefined(js, "Reward", "Outbound Penalization", "Enabled"))
  {
  try { _rewardOutboundPenalizationEnabled = js["Reward"]["Outbound Penalization"]["Enabled"].get<int>();
@@ -1693,6 +1731,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experiences Between Policy Updates"] = _experiencesBetweenPolicyUpdates;
    js["State Rescaling"]["Enabled"] = _stateRescalingEnabled;
    js["Reward"]["Rescaling"]["Enabled"] = _rewardRescalingEnabled;
+   js["Reward"]["Averaging"]["Enabled"] = _rewardAveragingEnabled;
    js["Reward"]["Outbound Penalization"]["Enabled"] = _rewardOutboundPenalizationEnabled;
    js["Reward"]["Outbound Penalization"]["Factor"] = _rewardOutboundPenalizationFactor;
    js["Termination Criteria"]["Max Episodes"] = _maxEpisodes;
@@ -1742,7 +1781,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

@@ -312,6 +312,12 @@ class __className__ : public __parentClassName__
   void normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
 
   /**
+  * @brief Average rewards across agents per experience in multi agent framework.
+  * @param message A json object containing all experiences from all agents.
+  */
+  void averageRewardsAcrossAgents(knlohmann::json &message);
+
+  /**
   * @brief Additional post-processing of episode after episode terminated.
   * @param episodeId The unique identifier of the provided episode
   * @param episode A vector of experiences pertaining to the episode.

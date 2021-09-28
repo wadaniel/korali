@@ -32,10 +32,10 @@ def initEnvironment(e, envName, model = ''):
  e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
- e["Problem"]["Training Reward Threshold"] = math.inf
+ #e["Problem"]["Training Reward Threshold"] = math.inf
  e["Problem"]["Possible Actions"] = [ [0], [1], [2], [3], [4] ]
  #e["Problem"]["Testing Frequency"] = 2
- e["Problem"]["Policy Testing Episodes"] = 20
+ #e["Problem"]["Policy Testing Episodes"] = 20
  e["Problem"]["Agents Per Environment"] = numIndividuals
  
  # Generating state variable index list
@@ -62,7 +62,7 @@ def initEnvironment(e, envName, model = ''):
  
  ### Defining Termination Criteria
 
- e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
+ #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
  
 
 def agent(s, env, model = ''):

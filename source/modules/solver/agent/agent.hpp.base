@@ -26,7 +26,7 @@ enum termination_t
   e_terminal = 1,
 
   /**
-   * @brief This is the terminal experience in a truncated episode
+   * @brief This is the terminal experience in a truncated episode.
    *        (i.e., should have continued, but it was artificially truncated to limit running time)
    */
   e_truncated = 2
@@ -45,17 +45,22 @@ struct policy_t
   /**
   * @brief Contains the parameters that define the policy distribution used to produced the action.
   *        For continuous policies, it depends on the distribution selected.
-  *        For discrete policies, it contains the categorical probability of every action.
+  *        For discrete policies, the q-values of every action and the temperature parameter for the softMax function.
   */
   std::vector<float> distributionParameters;
 
   /**
-  * @brief [Discrete] Stores the index of the selected experience
+  * @brief [Discrete] Stores the index of the selected experience.
   */
   size_t actionIndex;
-
+ 
   /**
-   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
+  * @brief [Discrete] Stores the action probabilities of the categorial distribution.
+  */
+  std::vector<float> actionProbabilities;
+  
+  /**
+   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution.
    */
   std::vector<float> unboundedAction;
 };
@@ -179,7 +184,12 @@ class __className__ : public __parentClassName__
   cBuffer<std::vector<float>> _truncatedStateVector;
 
   /**
-   * @brief Contains the rewards for every experience
+   * @brief Contains the environment id of every experience
+   */
+  cBuffer<size_t> _environmentIdVector;
+
+  /**
+   * @brief Contains the rewards of every experience
    */
   cBuffer<float> _rewardVector;
 
@@ -414,15 +424,16 @@ class __className__ : public __parentClassName__
 
   /**
    * @brief Rescales a given reward by the square root of the sum of squarred rewards
+   * @param environmentId The id of the environment to which this reward belongs
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const size_t environmentId, const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward for environment %lu is non finite: %f  (Sigma: %f)\n", environmentId, rescaledReward, _rewardRescalingSigma[environmentId]);
 
     return rescaledReward;
   }

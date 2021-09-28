@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-source ../settings.sh
+source ../settings_openAIgym.sh
 
 echo $ENV
 echo $DIS
@@ -27,17 +27,17 @@ mkdir -p \$RUNPATH
 
 pushd ..
 
-cat run-vracer.py
+cat run-vracer-openAIgym.py
 
-cp run-vracer.py \$RUNPATH
-cp settings.sh \$RUNPATH
-cp -r _model/ \$RUNPATH
+cp run-vracer-openAIgym.py \$RUNPATH
+cp settings_openAIgym.sh \$RUNPATH
+cp -r _model_openAIgym/ \$RUNPATH
 
 popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR
+OMP_NUM_THREADS=12 python3 run-vracer-openAIgym.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR
 
 resdir=\$(ls -d _result_vracer_*)
 python3 -m korali.rlview --dir \$resdir --output vracer.png

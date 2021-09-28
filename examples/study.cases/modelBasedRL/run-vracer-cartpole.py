@@ -325,13 +325,14 @@ for launch in range(args.launchNum):
         
         finalGenerationRes = e["Current Generation"]
         
-        policyUpdateCount = e["Solver"]["Policy Update Count"]
+        #policyUpdateCount = e["Solver"]["Policy Update Count"]
         
         realRewardHistoryGenNum = []
         realRewardHistoryAverage = []
         realRewardHistoryStdev = []
         realRewardHistoryBest = []
         realRewardHistoryWorst = []
+        policyUpdateCounts = []
         for genNum in range(testingFrequency,finalGenerationRes+1,testingFrequency):
             with open(trainingResultsPath + f"/gen{genNum:08d}.json") as fgen:
                 dataGen = json.load(fgen)
@@ -340,8 +341,9 @@ for launch in range(args.launchNum):
                 realRewardHistoryStdev.append(dataGen["Solver"]["Testing"]["Stdev Reward"])
                 realRewardHistoryBest.append(dataGen["Solver"]["Testing"]["Best Reward"])
                 realRewardHistoryWorst.append(dataGen["Solver"]["Testing"]["Worst Reward"])
-        realRewardHistory = np.transpose(np.array([realRewardHistoryGenNum, realRewardHistoryAverage, realRewardHistoryStdev, realRewardHistoryBest, realRewardHistoryWorst]))
-        info_rew = "Generation,Average,Stdev,Best,Worst"
+                policyUpdateCounts.append(dataGen["Solver"]["Policy Update Count"])
+        realRewardHistory = np.transpose(np.array([realRewardHistoryGenNum, realRewardHistoryAverage, realRewardHistoryStdev, realRewardHistoryBest, realRewardHistoryWorst, policyUpdateCounts]))
+        info_rew = "Generation,Average,Stdev,Best,Worst,PolUpCount"
         np.savetxt(dirfiles["Real Testing Rewards"], realRewardHistory, delimiter=",", header=info_rew)#, fmt='%.5f')
         
         ignoreText = ""
@@ -354,6 +356,10 @@ for launch in range(args.launchNum):
         for r in range(1, net_config.num_procs):
             comm.send(argsEnv.keep_retraining, dest=r, tag=tags["tag_keep_retraining"])
             comm.send(argsEnv.iterationSurrogate, dest=r, tag=tags["tag_iter_surr"])
+            
+        bestTestingEpisodeId = e["Solver"]["Testing"]["Best Episode Id"]
+        averageTrainingReward = e["Solver"]["Training"]["Average Reward"]
+        rewardHistory = e["Solver"]["Training"]["Reward History"]
         
         print("[Korali] Target reached !!! (Stopping execution)")
         print(f"[Korali|Ensemble] Data Usage: {previousDataUsage}")
@@ -368,6 +374,7 @@ for launch in range(args.launchNum):
         numberInteractionsWithSurr = argsEnv.interactionsWithSurr
         totalNumberInteractionsWithEnv = argsEnv.totalInteractionsWithEnv
         ratioExperiences = numberInteractionsWithReal / (numberInteractionsWithReal + numberInteractionsWithSurr)
+        policyUpdateCount = policyUpdateCounts[bestTestingEpisodeId-1]
         print(f"[Korali|Ensemble] Number Interactions With Real: {numberInteractionsWithReal}")
         print(f"[Korali|Ensemble] Number Interactions With Surr: {numberInteractionsWithSurr}")
         print(f"[Korali|Ensemble] Total Number Interactions With Env: {totalNumberInteractionsWithEnv}")
@@ -397,10 +404,6 @@ for launch in range(args.launchNum):
         e["Solver"]["Testing"]["Sample Ids"] = list(range(100))
 
         k.run(e)
-        
-        bestTestingEpisodeId = e["Solver"]["Testing"]["Best Episode Id"]
-        averageTrainingReward = e["Solver"]["Training"]["Average Reward"]
-        rewardHistory = e["Solver"]["Training"]["Reward History"]
         
         total_data_X_train = np.genfromtxt(dirfiles["Total Dataset Train"], delimiter=",", skip_header=1, usecols=(2,3,4,5,6))
         total_data_y_train_state = np.genfromtxt(dirfiles["Total Dataset Train"], delimiter=",", skip_header=1, usecols=(7,8,9,10))

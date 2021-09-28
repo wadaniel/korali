@@ -288,8 +288,9 @@ for launch in range(args.launchNum):
     e["Solver"]["Experience Replay"]["Serialize"] = True
     e["Console Output"]["Verbosity"] = "Detailed"
     e["File Output"]["Enabled"] = True
-    e["File Output"]["Frequency"] = 200
+    e["File Output"]["Frequency"] = args.testFreq
     e["File Output"]["Path"] = dirfiles["Results"]
+
     
     if maxPolicyUpdates != 0:
         e["Solver"]["Termination Criteria"]["Max Policy Updates"] = maxPolicyUpdates

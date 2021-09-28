@@ -42,6 +42,8 @@ e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 
+e["Problem"]["Testing Frequency"] = 100
+
 ### Setting Experience Replay and REFER settings
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072

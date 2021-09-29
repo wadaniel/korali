@@ -40,6 +40,7 @@ parser.add_argument("--dumpBestTrajectory", action='store_true', help="Dump best
 parser.add_argument("--trRewTh", type=int, default=495, help="trainingRewardThreshold")
 parser.add_argument("--tarAvRew", type=int, default=495, help="targetAverageReward")
 parser.add_argument("--maxGen", type=int, default=1000, help="maximumGenerations")
+parser.add_argument("--maxExp", type=int, default=10e6, help="maximumExperiences")
 parser.add_argument("--epPerGen", type=int, default=1, help="episodesPerGeneration")
 parser.add_argument("--testFreq", type=int, default=100, help="testingFrequency")
 parser.add_argument("--polTestEp", type=int, default=20, help="policyTestingEpisodes")
@@ -284,7 +285,7 @@ for launch in range(args.launchNum):
 
     ### Setting file output configuration
 
-    e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
+    e["Solver"]["Termination Criteria"]["Max Experiences"] = args.maxExp#10e6
     e["Solver"]["Experience Replay"]["Serialize"] = True
     e["Console Output"]["Verbosity"] = "Detailed"
     e["File Output"]["Enabled"] = True

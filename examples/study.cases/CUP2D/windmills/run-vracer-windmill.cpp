@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
   N = N - 1; // Minus one for Korali's engine
 
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/";
-  std::string testingResultsPath = "_results_windmill_testing/";
+  std::string trainingResultsPath = "../_results_windmill_training/";
+  std::string testingResultsPath = "../_results_windmill_testing/";
   
   // Creating Korali experiment
   auto e = korali::Experiment();

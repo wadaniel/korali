@@ -21,6 +21,10 @@ from adabelief_pytorch import AdaBelief
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+#TODO: eliminate output variables that are 0. !!
+# y_train_state -> eliminate idxs=4,5,10 (starting from 0 to 10)
+#               -> get IDXS=[0,1,2,3,6,7,8,9]
+
 ####### Parsing arguments
 
 parser = argparse.ArgumentParser()
@@ -163,7 +167,7 @@ for launch in range(args.launchNum):
 
     # Instantiate model
     alphaDropout = True
-    model = Net(hyperparams.hidden_size, inputNumber, outputNumberState, alphaDropout)
+    model = Net(hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout)
     
     # Optimizer
     opt = AdaBelief(model.parameters(), lr=hyperparams.lr, eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False, print_change_log=False)
@@ -174,7 +178,7 @@ for launch in range(args.launchNum):
     
     models={}
     for r in range(1, net_config.num_procs):
-        models[r] = Net(net_config.hyperparams.hidden_size, inputNumber, outputNumberState, alphaDropout)
+        models[r] = Net(net_config.hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout)
     #if rank == 0:
     #    print(models)
     
@@ -433,7 +437,7 @@ for launch in range(args.launchNum):
                 # retrain
                 datasetKorali = dirfiles["Previous Dataset Train Korali"]
                     
-                textPrint = trainEnsemble(net_config=net_config, datasetKorali=datasetKorali, iteration=retraining_iter, dirfiles=dirfiles)
+                textPrint = trainEnsemble(net_config=net_config, datasetKorali=datasetKorali, iteration=retraining_iter, dirfiles=dirfiles, envName=envName)
                 
                 PATH_curr = dirfiles[f"Current Model {rank}"]
                 PATH_prev = dirfiles[f"Previous Model {rank}"]

@@ -73,7 +73,7 @@ def initEnvironment(e, envName, model = ''):
   e["Variables"][stateVariableCount + i]["Type"] = "Action"
   e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ac_low)
   e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ac_upper)
-  e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2)
+  e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2) * (ac_upper - ac_low)
  
  ### Defining Termination Criteria
 

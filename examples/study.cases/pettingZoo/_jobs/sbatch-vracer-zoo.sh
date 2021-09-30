@@ -1,13 +1,14 @@
 #!/bin/bash -l
 
-source ../settings.sh
+source settings.sh
 
-echo $ENV
-echo $MODEL
-echo $DIS
-echo $L2
-echo $OPT
-echo $LR
+echo "Environment:"         $ENV
+echo "Model:"               $MODEL
+echo "Policy distribution:" $DIS
+echo "L2 Regularizer:"      $L2
+echo "Off-policy target:"   $OPT
+echo "Learning rate:"       $LR
+echo "NN size:"             $NN
 
 cat > run.sbatch <<EOF
 #!/bin/bash -l
@@ -38,7 +39,7 @@ popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model $model
+OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --run 0
 
 cd results
 resdir=\$(ls -d _result_vracer_*)

@@ -1,12 +1,12 @@
 #!/bin/bash -l
 #SBATCH --job-name="zoo_VRACER"
 #SBATCH --output=zoo_VRACER_%j.out
-#SBATCH --time=00:30:00
+#SBATCH --time=12:00:00
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-core=12
+#SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=12
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
@@ -33,6 +33,9 @@ opt=0.1
 # Set learning rate
 lr=0.0001
 
+# Set nn width
+nn=128
+
 pushd ..
 
 cat run-vracer.py
@@ -48,7 +51,7 @@ popd
 pushd $RUNPATH
 
 # Run RL
-OMP_NUM_THREADS=12 python3 run-vracer.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lr $lr --model $model --run 0
+OMP_NUM_THREADS=12 python3 run-vracer.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lr $lr --nn $nn --model $model --run 0
 
 cd results
 

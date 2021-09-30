@@ -14,6 +14,7 @@ parser.add_argument('--dis', help='Sampling Distribution.', required=False,type 
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 #model '0' or '' first model, all agents the same, model '1' has agent id as additional input
@@ -67,13 +68,13 @@ e["Solver"]["L2 Regularization"]["Enabled"] = args.l2 > 0.
 e["Solver"]["L2 Regularization"]["Importance"] = args.l2
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = args.nn
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = args.nn
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

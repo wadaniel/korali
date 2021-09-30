@@ -1,16 +1,18 @@
 #!/bin/bash -l
 
-source ../settings.sh
+# Read Settings file
+source settings.sh
 
-echo $ENV
-echo $MODEL
-echo $L2
-echo $OPT
-echo $LR
+echo "Environment:"         $ENV
+echo "Model:"               $MODEL
+echo "L2 Regularizer:"      $L2
+echo "Off-policy target:"   $OPT
+echo "Learning rate:"       $LR
+echo "NN size:"             $NN
 
 cat > run.sbatch <<EOF
 #!/bin/bash -l
-#SBATCH --job-name=zoo_VRACER_${ENV}
+#SBATCH --job-name=zoo_DVRACER_${ENV}
 #SBATCH --output=zoo_${ENV}_%j.out
 #SBATCH --error=zoo_${ENV}_err_%j.out
 #SBATCH --time=12:00:00
@@ -27,9 +29,9 @@ mkdir -p \$RUNPATH
 
 pushd ..
 
-cat run-vracer.py
+cat run-dvracer.py
 
-cp run-vracer.py \$RUNPATH
+cp run-dvracer.py \$RUNPATH
 cp _jobs/settings.sh \$RUNPATH
 cp -r _model/ \$RUNPATH
 
@@ -37,7 +39,7 @@ popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --run 0
+OMP_NUM_THREADS=12 python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --nn $NN --run 0
 
 cd results
 resdir=\$(ls -d _result_dvracer_*)

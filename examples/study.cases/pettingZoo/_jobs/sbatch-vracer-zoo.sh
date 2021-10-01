@@ -39,7 +39,9 @@ popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --run 0
+export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
+echo "OMP_NUM_THREADS:" \$OMP_NUM_THREADS 
+python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --run 0
 
 cd results
 resdir=\$(ls -d _result_vracer_*)

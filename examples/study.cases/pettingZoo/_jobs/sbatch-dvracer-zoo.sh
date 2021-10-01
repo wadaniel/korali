@@ -39,7 +39,9 @@ popd
 
 pushd \$RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --nn $NN --run 0
+export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
+echo "OMP_NUM_THREADS:" \$OMP_NUM_THREADS 
+python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model $MODEL --nn $NN --run 0
 
 cd results
 resdir=\$(ls -d _result_dvracer_*)

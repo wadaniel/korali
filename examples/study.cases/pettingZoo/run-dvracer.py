@@ -29,7 +29,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = 'results/_result_dvracer_' + args.env + '_' + str(args.run) +'/'
+resultFolder = 'results/_result_dvracer_' + args.env + '_' + str(args.nn)+ '_'+ str(args.run) +'/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -90,3 +90,7 @@ e["File Output"]["Path"] = resultFolder
 ### Running Experiment
 
 k.run(e)
+
+file = open(resultFolder + 'args.txt',"w")
+file.write(str(args))
+file.close()

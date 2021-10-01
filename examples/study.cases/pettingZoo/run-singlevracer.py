@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 sys.path.append('_model')
-from agent import *
+from agent_single import *
 import pdb
 
 ####### Parsing arguments
@@ -15,10 +15,10 @@ parser.add_argument('--dis', help='Sampling Distribution.', required=False,type 
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
-parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-#model '0' or '' first model, all agents the same, model '1' has agent id as additional input
+#model  '' 1 agent 1 action , model '1' 5 agents with [oi,o0,o1,o2,o3,o4] as input, model '2' [o_i, random]
+parser.add_argument('--num_layers', help='Hidden Layer Number', required=False, type=int, default = 128)
 args = parser.parse_args()
 print(args)
 
@@ -31,12 +31,16 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_'+ str(args.nn)+ '_' + str(args.run) +'/'
+resultFolder = 'results/_result_vracer_single' + args.env + '_' + dis_dir + '_' + str(args.num_layers)+ '_' + str(args.run) +'/'
 e.loadState(resultFolder + '/latest');
+
 
 ### Initializing openAI Gym environment
 
 initEnvironment(e, args.env, args.model)
+
+###make text file to write used args
+
 
 ### Defining Agent Configuration 
 
@@ -60,6 +64,8 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
 e["Solver"]["Policy"]["Distribution"] = args.dis
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+
+
   
 ### Configuring the neural network and its hidden layers
 
@@ -69,13 +75,13 @@ e["Solver"]["L2 Regularization"]["Enabled"] = args.l2 > 0.
 e["Solver"]["L2 Regularization"]["Importance"] = args.l2
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = args.nn
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = args.num_layers
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = args.nn
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = args.num_layers
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
@@ -86,7 +92,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 150
+e["File Output"]["Frequency"] = 100
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

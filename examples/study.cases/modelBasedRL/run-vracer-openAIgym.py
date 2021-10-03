@@ -405,9 +405,10 @@ for launch in range(args.launchNum):
         #if (averageTestReward < 150):
         #    print("Cartpole example did not reach minimum testing average.")
             
+        #TODO: correct
         totalCountVar = 0
         onesCountVar = 0
-        for idx in range(bestTestingEpisodeId):
+        for idx in range(bestTestingEpisodeId-argsEnv.discardedNum[bestTestingEpisodeId]):
             l = argsEnv.surrUsage[idx]
             totalCountVar += len(l)
             onesCountVar += sum(l)

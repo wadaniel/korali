@@ -51,7 +51,9 @@ args = parser.parse_args()
 
 comm = MPI.COMM_WORLD   # define communicator for the solver for surrogate model parallel training and predicting (Korali in serial mode)
 rank = comm.Get_rank()
+print("Rank:",rank)
 num_procs = comm.Get_size()
+rint("Num procs:",num_procs)
 tags = {"tag_keep_retraining": 11, "tag_iter_surr": 12, "tag_retrained_ready": 13}
 
 now = datetime.now()
@@ -256,6 +258,7 @@ for launch in range(args.launchNum):
     e["Solver"]["Mode"] = "Training" # Learns a policy for the reinforcement learning problem (other: "Testing" -> Tests the policy with a learned policy)
     e["Solver"]["Experiences Between Policy Updates"] = experiencesBetweenPolicyUpdates #was 10 # The number of experiences to receive before training/updating (real number, may be less than < 1.0, for more than one update per experience).
     e["Solver"]["Episodes Per Generation"] = episodesPerGeneration #was 1 # (= default) Indicates the how many finished episodes to receive in a generation (checkpoints are generated between generations).
+    e["Solver"]["Concurrent Environments"] = 1
 
     # Off/On-policy RL
     # Note: Remember and Forget Experience Replay (ReF-ER), a novel method that can en- hance RL algorithms with parameterized policies (based on that)

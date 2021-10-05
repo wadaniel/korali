@@ -2,8 +2,8 @@
 
 #dims=(2 4 8 16 32 64)
 #pops=(8 16 32 64 128 256)
-#dim=2
-#pop=8
+dim=2
+pop=8
 #dim=4
 #pop=16
 #dim=8
@@ -14,19 +14,18 @@
 #pop=128
 #dim=64
 #pop=256
-dim=128
-pop=512
+#dim=128
+#pop=512
 
 
 run=0
 noise=0.0
 obj="random"
-exp=3000000
+exp=5000000
 reps=100
 version=1
 outdir="figures"
 
-objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
 
 cat > run.sh <<EOF
 #!/bin/bash -l
@@ -61,13 +60,15 @@ python -m korali.rlview --dir "_vracer_${obj}_${dim}_${pop}_${noise}_${run}/" --
 
 python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --eval --reps $reps --version=$version
 
-for o in "${objectives[@]}";
+objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
+
+for o in "\${objectives[@]}";
 do
-    python run-env-cmaes.py --noise $noise --obj $o --dim ${dim} --pop ${pop} --run $run --eval --reps $reps; 
-    vracerfile="history_vracer_${o}_${dim}_${pop}_${noise}_${run}.npz"
-    cmaesfile="history_cmaes_${o}_${dim}_${pop}_${noise}_${run}.npz"
-    outfile="${outdir}/history_${o}_${dim}_${pop}_${noise}_${run}.png"
-    python read-history.py --files ${vracerfile} ${cmaesfile} --out ${outfile}
+    python run-env-cmaes.py --noise $noise --obj \$o --dim $dim --pop $pop --run $run --eval --reps $reps;
+    vracerfile="history_vracer_\${o}_${dim}_${pop}_${noise}_${run}.npz"
+    cmaesfile="history_cmaes_\${o}_${dim}_${pop}_${noise}_${run}.npz"
+    outfile="${outdir}/history_\${o}_${dim}_${pop}_${noise}_${run}.png"
+    python read-history.py --files \${vracerfile} \${cmaesfile} --out \${outfile}
 done;
 
 

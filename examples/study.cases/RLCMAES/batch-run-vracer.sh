@@ -11,10 +11,8 @@ obj="random"
 #pops=(14 16 18)
 exp=5000000
 
-#dims=(2 4 8 16) #32 64)
-#pops=(8 16 32 64) #128 256)
-dims=(32 64)
-pops=(128 256)
+dims=(2 4 8 16 32 64 128) 
+pops=(8 16 32 64 128 256 512)
 
 objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
 

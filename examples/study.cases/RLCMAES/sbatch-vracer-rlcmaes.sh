@@ -2,6 +2,10 @@
 
 #dims=(2 4 8 16 32 64)
 #pops=(8 16 32 64 128 256)
+#dim=2
+#pop=8
+#dim=4
+#pop=16
 #dim=8
 #pop=32
 #dim=16
@@ -17,7 +21,7 @@ pop=512
 run=0
 noise=0.0
 obj="random"
-exp=5000000
+exp=3000000
 reps=100
 version=1
 outdir="figures"
@@ -38,7 +42,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMAES/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/RLCMAESX/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py

@@ -72,7 +72,7 @@ e["Problem"]["Environment Count"] = environmentCount
 e["Problem"]["Testing Frequency"] = 500
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 50
-e["Problem"]["Actions Between Policy Updates"] = 1.0
+e["Problem"]["Experiences Between Policy Updates"] = 1.0
 
 if version == 0:
     i = 0
@@ -140,7 +140,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 128
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
@@ -152,13 +152,13 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 512
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 256
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 512
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 256
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

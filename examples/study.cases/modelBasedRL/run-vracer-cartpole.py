@@ -53,7 +53,7 @@ comm = MPI.COMM_WORLD   # define communicator for the solver for surrogate model
 rank = comm.Get_rank()
 print("Rank:",rank)
 num_procs = comm.Get_size()
-rint("Num procs:",num_procs)
+print("Num procs:",num_procs)
 tags = {"tag_keep_retraining": 11, "tag_iter_surr": 12, "tag_retrained_ready": 13}
 
 now = datetime.now()

@@ -321,6 +321,7 @@ void Agent::rescaleStates()
   for (size_t i = 0; i < _stateVector.size(); ++i)
     for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
+  
 }
 
 void Agent::attendAgent(size_t agentId)

@@ -1,4 +1,4 @@
-#include "modules/neuralNetwork/layer/linear/linear.hpp"
+#include "modules/neuralNetwork/layer/convolution/convolution.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_CUDNN
@@ -21,17 +21,47 @@ namespace layer
 {
 ;
 
-void Linear::initialize()
+void Convolution::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 
   // Checking position
-  if (_index == 0) KORALI_LOG_ERROR("Feed Forward layers cannot be the starting layer of the NN\n");
-  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Feed Forward layers cannot be the last layer of the NN\n");
+  if (_index == 0) KORALI_LOG_ERROR("Convolutional layers cannot be the starting layer of the NN\n");
+  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Convolutional layers cannot be the last layer of the NN\n");
+
+  // Precalculating values for the convolution operation
+  N = _batchSize;
+  IH = _imageHeight;
+  IW = _imageWidth;
+  KH = _kernelHeight;
+  KW = _kernelWidth;
+
+  SV = _verticalStride;
+  SH = _horizontalStride;
+  PT = _paddingTop;
+  PL = _paddingLeft;
+  PB = _paddingBottom;
+  PR = _paddingRight;
+
+  // Check for non zeros
+   if (IH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for convolutional layer.\n");
+   if (IW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for convolutional layer.\n");
+   if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for convolutional layer.\n");
+   if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for convolutional layer.\n");
+   if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for convolutional layer.\n");
+   if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for convolutional layer.\n");
+
+  // Check whether the output channels of the previous layer is divided by the height and width
+  if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _prevLayer->_outputChannels, IH, IW);
+  IC = _prevLayer->_outputChannels / (IH * IW);
+
+  OC = _outputChannels;
+  OH = std::floor((IH - (KH - (PR + PL)))/SH) + 1;
+  OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
 }
 
-std::vector<float> Linear::generateInitialHyperparameters()
+std::vector<float> Convolution::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -54,57 +84,28 @@ std::vector<float> Linear::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void Linear::createHyperparameterMemory()
+void Convolution::createHyperparameterMemory()
 {
-  // Checking Layer sizes
-  ssize_t OC = _outputChannels;
-  ssize_t IC = _prevLayer->_outputChannels;
-
   // Setting hyperparameter count
-  _hyperparameterCount = IC * OC + OC;
-
-  if (_nn->_engine == "Korali")
-  {
-    _weightValues = (float *)malloc(IC * OC * sizeof(float));
-    _biasValues = (float *)malloc(OC * sizeof(float));
-  }
+  _hyperparameterCount = IC * OC * KH * KW + OC;
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    memory::dims weightDims = {OC, IC};
-    auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+    memory::dims weightDims = {OC, IC, KH, KW};
+    auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::oihw);
     _weightsMem = memory(weightMemDesc, _nn->_dnnlEngine);
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
     _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
-    cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
-    cudaErrCheck(cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)));
-
-    cudnnErrCheck(cudnnCreateTensorDescriptor(&_biasTensorDesc));
-    cudnnErrCheck(cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1));
-    cudaErrCheck(cudaMalloc((void **)&_biasTensor, OC * sizeof(float)));
-  }
-#endif
 }
 
-void Linear::copyHyperparameterPointers(Layer *dstLayer)
+void Convolution::copyHyperparameterPointers(Layer *dstLayer)
 {
-  Linear *dstPtr = dynamic_cast<Linear *>(dstLayer);
+  Convolution *dstPtr = dynamic_cast<Convolution *>(dstLayer);
   dstPtr->_hyperparameterCount = _hyperparameterCount;
-
-  if (_nn->_engine == "Korali")
-  {
-    dstPtr->_weightValues = _weightValues;
-    dstPtr->_biasValues = _biasValues;
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -113,189 +114,117 @@ void Linear::copyHyperparameterPointers(Layer *dstLayer)
     dstPtr->_biasMem = _biasMem;
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    dstPtr->_weightsFilterDesc = _weightsFilterDesc;
-    dstPtr->_weightsFilter = _weightsFilter;
-    dstPtr->_biasTensorDesc = _biasTensorDesc;
-    dstPtr->_biasTensor = _biasTensor;
-  }
-#endif
 }
 
-void Linear::createForwardPipeline()
+void Convolution::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
 
+  if (_nn->_engine == "Korali") KORALI_LOG_ERROR("Convolutional Layers still not supported in Korali's NN backend. Use OneDNN.\n");
+  if (_nn->_engine == "CuDNN") KORALI_LOG_ERROR("Convolutional Layers still not supported in CuDNNbackend. Use OneDNN.\n");
+
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    // We create the inner product (Wx + b) operation
-    auto inner_product_d = inner_product_forward::desc(_propKind, _prevLayer->_outputMem[0].get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _outputMem[0].get_desc());
+    // Creating memory descriptor mappings for input memory
+    _srcMemDesc = memory::desc({N, IC, IH, IW}, memory::data_type::f32, memory::format_tag::nchw);
+    _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
+
+    // Creating padding dims
+    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims PTL = {PT, PL}; // Top Left
+    memory::dims PBR = {PB, PR}; // Bottom Right
+
+    // We create the convolution operation
+    auto convolution_d = convolution_forward::desc(_propKind, algorithm::convolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
 
     // Create inner product primitive descriptor.
-    dnnl::primitive_attr forwardPrimitiveAttributes;
-    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_dnnlEngine);
+    dnnl::primitive_attr convolutionPrimitiveAttributes;
+    _forwardConvolutionPrimitiveDesc = convolution_forward::primitive_desc(convolution_d, convolutionPrimitiveAttributes, _nn->_dnnlEngine);
 
     // Create the weights+bias primitive.
-    _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
+    _forwardConvolutionPrimitive = convolution_forward(_forwardConvolutionPrimitiveDesc);
   }
 #endif
 
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    // Creating convolution operator
-    cudnnErrCheck(cudnnCreateConvolutionDescriptor(&_convolutionDesc));
-    cudnnErrCheck(cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
-    cudnnErrCheck(cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_outputTensorDesc, _weightsFilterDesc, _convolutionDesc, _outputTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize));
-
-    _convolutionWorkspace.resize(_nn->_timestepCount);
-    for (size_t t = 0; t < _nn->_timestepCount; t++)
-      cudaErrCheck(cudaMalloc((void **)&_convolutionWorkspace[t], _convolutionWorkspaceSize * sizeof(float)));
-  }
-#endif
 }
 
-void Linear::createBackwardPipeline()
+void Convolution::createBackwardPipeline()
 {
-  /*********************************************************************************
-  *  Initializing memory objects and primitives for BACKWARD propagation
-  *********************************************************************************/
-
-  // Checking Layer sizes
-  ssize_t OC = _outputChannels;
-  ssize_t IC = _prevLayer->_outputChannels;
+  //  Initializing memory objects and primitives for BACKWARD propagation
 
   // Calling base layer function
   Layer::createBackwardPipeline();
 
-  if (_nn->_engine == "Korali")
-  {
-    _weightGradient = (float *)malloc(IC * OC * sizeof(float));
-    _biasGradient = (float *)malloc(OC * sizeof(float));
-  }
-
-// Creating backward propagation primitives
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+    // Creating memory descriptor mappings for input memory
+    _srcMemDesc = memory::desc({N, IC, IH, IW}, memory::data_type::f32, memory::format_tag::nchw);
+    _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
+
+    // Creating padding dims
+    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims PTL = {PT, PL}; // Top Left
+    memory::dims PBR = {PB, PR}; // Bottom Right
+
+    // Setting strides and padding configuration
     _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
     _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
 
-    auto backwardDataDesc = inner_product_backward_data::desc(
-      _prevLayer->_outputGradientMem[0].get_desc(),
+    auto backwardDataDesc = convolution_backward_data::desc(
+      algorithm::convolution_direct,
+      _srcMemDesc,
       _weightsMem.get_desc(),
-      _outputGradientMem[0].get_desc());
+      _dstMemDesc,
+      ST,
+      PTL,
+      PBR);
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardInnerProductPrimitiveDesc);
-    _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = convolution_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
+    _backwardDataPrimitive = convolution_backward_data(backwardDataPrimitiveDesc);
 
-    auto backwardWeightsDesc = inner_product_backward_weights::desc(
-      _prevLayer->_outputMem[0].get_desc(),
+    auto backwardWeightsDesc = convolution_backward_weights::desc(
+      algorithm::convolution_direct,
+      _srcMemDesc,
       _weightsMem.get_desc(),
       _biasMem.get_desc(),
-      _outputGradientMem[0].get_desc());
+      _dstMemDesc,
+      ST,
+      PTL,
+      PBR);
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardInnerProductPrimitiveDesc);
-    _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
-    cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
+    auto backwardWeightsPrimitiveDesc = convolution_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
+    _backwardWeightsPrimitive = convolution_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif
 }
 
-void Linear::forwardData(const size_t t)
+void Convolution::forwardData(const size_t t)
 {
-  size_t N = _batchSize;
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
-  if (_nn->_engine == "Korali")
-  {
-    // Performing Wx computation
-    Map<MatrixXf> matA(_weightValues, IC, OC);
-    Map<MatrixXf> matB(_prevLayer->_outputValues, IC, N);
-    Map<MatrixXf> matC(_outputValues, OC, N);
-
-    matC = matA.transpose() * matB;
-
-    // Adding Bias
-    for (size_t i = 0; i < N; i++)
-      for (size_t j = 0; j < OC; j++)
-        _outputValues[i * OC + j] += _biasValues[j];
-  }
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     // Arguments to the inner product operation
-    std::unordered_map<int, dnnl::memory> forwardInnerProductArgs;
-    forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
-    forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
-    forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
-    forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem[t];
+    std::unordered_map<int, dnnl::memory> forwardConvolutionArgs;
+    forwardConvolutionArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
+    forwardConvolutionArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
+    forwardConvolutionArgs[DNNL_ARG_BIAS] = _biasMem;
+    forwardConvolutionArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _forwardInnerProductPrimitive.execute(_nn->_dnnlStream, forwardInnerProductArgs);
+    _forwardConvolutionPrimitive.execute(_nn->_dnnlStream, forwardConvolutionArgs);
   }
 #endif
 
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    float alpha1 = 1.0f;
-    float alpha2 = 0.0f;
-    cudnnErrCheck(cudnnConvolutionForward(
-      _nn->_cuDNNHandle,
-      &alpha1,
-      _prevLayer->_outputTensorDesc,
-      _prevLayer->_outputTensor[t],
-      _weightsFilterDesc,
-      _weightsFilter,
-      _convolutionDesc,
-      CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
-      _convolutionWorkspace[t],
-      _convolutionWorkspaceSize,
-      &alpha2,
-      _outputTensorDesc,
-      _outputTensor[t]));
-
-    float alpha = 1.0f;
-    float beta = 1.0f;
-    cudnnAddTensor(_nn->_cuDNNHandle, &alpha, _biasTensorDesc, _biasTensor, &beta, _outputTensorDesc, _outputTensor[t]);
-  }
-#endif
 }
 
-void Linear::backwardData(const size_t t)
+void Convolution::backwardData(const size_t t)
 {
-  int N = _batchSize;
-  int IC = _prevLayer->_outputChannels;
-  int OC = _outputChannels;
-
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
-
-  if (_nn->_engine == "Korali")
-  {
-    // Backward propagating Wx+b operation
-    Map<MatrixXf> matA(_weightValues, IC, OC);
-    Map<MatrixXf> matB(_outputGradient, OC, N);
-    Map<MatrixXf> matC(_prevLayer->_outputGradient, IC, N);
-
-    matC = matA * matB;
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -307,53 +236,12 @@ void Linear::backwardData(const size_t t)
     _backwardDataPrimitive.execute(_nn->_dnnlStream, _backwardDataArgs);
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    float alpha = 1.0f;
-    float beta = 0.0f;
-    cudnnErrCheck(cudnnConvolutionBackwardData(
-      _nn->_cuDNNHandle,
-      &alpha,
-      _weightsFilterDesc,
-      _weightsFilter,
-      _outputTensorDesc,
-      _outputGradientTensor[t],
-      _convolutionDesc,
-      CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
-      _convolutionWorkspace[t],
-      _convolutionWorkspaceSize,
-      &beta,
-      _prevLayer->_outputTensorDesc,
-      _prevLayer->_outputGradientTensor[t]));
-  }
-#endif
 }
 
-void Linear::backwardHyperparameters(size_t t)
+void Convolution::backwardHyperparameters(size_t t)
 {
-  const size_t N = _batchSize;
-  const size_t IC = _prevLayer->_outputChannels;
-  const size_t OC = _outputChannels;
-
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
-
-  if (_nn->_engine == "Korali")
-  {
-    // Performing Weight gradient calculation
-    Map<MatrixXf> matA(_prevLayer->_outputValues, IC, N);
-    Map<MatrixXf> matB(_outputGradient, OC, N);
-    Map<MatrixXf> matC(_weightGradient, IC, OC);
-
-    matC = matA * matB.transpose();
-
-    // Setting the bias values to all minibatch inputs
-    for (size_t j = 0; j < OC; j++) _biasGradient[j] = _outputGradient[0 * OC + j];
-    for (size_t i = 1; i < N; i++)
-      for (size_t j = 0; j < OC; j++) _biasGradient[j] += _outputGradient[i * OC + j];
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -369,49 +257,12 @@ void Linear::backwardHyperparameters(size_t t)
   }
 #endif
 
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    float alpha = 1.0f;
-    float beta = 0.0f;
-
-    cudnnErrCheck(cudnnConvolutionBackwardBias(
-      _nn->_cuDNNHandle,
-      &alpha,
-      _outputTensorDesc,
-      _outputGradientTensor[t],
-      &beta,
-      _biasTensorDesc,
-      _biasGradientTensor));
-
-    cudnnErrCheck(cudnnConvolutionBackwardFilter(
-      _nn->_cuDNNHandle,
-      &alpha,
-      _prevLayer->_outputTensorDesc,
-      _prevLayer->_outputTensor[t],
-      _outputTensorDesc,
-      _outputGradientTensor[t],
-      _convolutionDesc,
-      CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
-      _convolutionWorkspace[t],
-      _convolutionWorkspaceSize,
-      &beta,
-      _weightsFilterDesc,
-      _weightsGradientFilter));
-  }
-#endif
 }
 
-void Linear::setHyperparameters(float *hyperparameters)
+void Convolution::setHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(_weightValues, &hyperparameters[0], IC * OC * sizeof(float));
-    memcpy(_biasValues, &hyperparameters[IC * OC], OC * sizeof(float));
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -420,26 +271,12 @@ void Linear::setHyperparameters(float *hyperparameters)
     write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    cudaErrCheck(cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice));
-    cudaErrCheck(cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice));
-  }
-#endif
 }
 
-void Linear::getHyperparameters(float *hyperparameters)
+void Convolution::getHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(&hyperparameters[0], _weightValues, IC * OC * sizeof(float));
-    memcpy(&hyperparameters[IC * OC], _biasValues, OC * sizeof(float));
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -448,26 +285,12 @@ void Linear::getHyperparameters(float *hyperparameters)
     read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    cudaErrCheck(cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
-    cudaErrCheck(cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
-  }
-#endif
 }
 
-void Linear::getHyperparameterGradients(float *gradient)
+void Convolution::getHyperparameterGradients(float *gradient)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(&gradient[0], _weightGradient, IC * OC * sizeof(float));
-    memcpy(&gradient[IC * OC], _biasGradient, OC * sizeof(float));
-  }
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -476,34 +299,126 @@ void Linear::getHyperparameterGradients(float *gradient)
     read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
   }
 #endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CuDNN")
-  {
-    cudaErrCheck(cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
-    cudaErrCheck(cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
-  }
-#endif
 }
 
-void Linear::setConfiguration(knlohmann::json& js) 
+void Convolution::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
+ if (isDefined(js, "Image Height"))
+ {
+ try { _imageHeight = js["Image Height"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Image Height']\n%s", e.what()); } 
+   eraseValue(js, "Image Height");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Height'] required by convolution.\n"); 
+
+ if (isDefined(js, "Image Width"))
+ {
+ try { _imageWidth = js["Image Width"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Image Width']\n%s", e.what()); } 
+   eraseValue(js, "Image Width");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Width'] required by convolution.\n"); 
+
+ if (isDefined(js, "Kernel Height"))
+ {
+ try { _kernelHeight = js["Kernel Height"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Kernel Height']\n%s", e.what()); } 
+   eraseValue(js, "Kernel Height");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Height'] required by convolution.\n"); 
+
+ if (isDefined(js, "Kernel Width"))
+ {
+ try { _kernelWidth = js["Kernel Width"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Kernel Width']\n%s", e.what()); } 
+   eraseValue(js, "Kernel Width");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Width'] required by convolution.\n"); 
+
+ if (isDefined(js, "Vertical Stride"))
+ {
+ try { _verticalStride = js["Vertical Stride"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Vertical Stride']\n%s", e.what()); } 
+   eraseValue(js, "Vertical Stride");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Vertical Stride'] required by convolution.\n"); 
+
+ if (isDefined(js, "Horizontal Stride"))
+ {
+ try { _horizontalStride = js["Horizontal Stride"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Horizontal Stride']\n%s", e.what()); } 
+   eraseValue(js, "Horizontal Stride");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Horizontal Stride'] required by convolution.\n"); 
+
+ if (isDefined(js, "Padding Left"))
+ {
+ try { _paddingLeft = js["Padding Left"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Left']\n%s", e.what()); } 
+   eraseValue(js, "Padding Left");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Left'] required by convolution.\n"); 
+
+ if (isDefined(js, "Padding Right"))
+ {
+ try { _paddingRight = js["Padding Right"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Right']\n%s", e.what()); } 
+   eraseValue(js, "Padding Right");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Right'] required by convolution.\n"); 
+
+ if (isDefined(js, "Padding Top"))
+ {
+ try { _paddingTop = js["Padding Top"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Top']\n%s", e.what()); } 
+   eraseValue(js, "Padding Top");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Top'] required by convolution.\n"); 
+
+ if (isDefined(js, "Padding Bottom"))
+ {
+ try { _paddingBottom = js["Padding Bottom"].get<ssize_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Bottom']\n%s", e.what()); } 
+   eraseValue(js, "Padding Bottom");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Bottom'] required by convolution.\n"); 
+
  Layer::setConfiguration(js);
- _type = "layer/linear";
+ _type = "layer/convolution";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
- if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: linear: \n%s\n", js.dump(2).c_str());
+ if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: convolution: \n%s\n", js.dump(2).c_str());
 } 
 
-void Linear::getConfiguration(knlohmann::json& js) 
+void Convolution::getConfiguration(knlohmann::json& js) 
 {
 
  js["Type"] = _type;
+   js["Image Height"] = _imageHeight;
+   js["Image Width"] = _imageWidth;
+   js["Kernel Height"] = _kernelHeight;
+   js["Kernel Width"] = _kernelWidth;
+   js["Vertical Stride"] = _verticalStride;
+   js["Horizontal Stride"] = _horizontalStride;
+   js["Padding Left"] = _paddingLeft;
+   js["Padding Right"] = _paddingRight;
+   js["Padding Top"] = _paddingTop;
+   js["Padding Bottom"] = _paddingBottom;
  Layer::getConfiguration(js);
 } 
 
-void Linear::applyModuleDefaults(knlohmann::json& js) 
+void Convolution::applyModuleDefaults(knlohmann::json& js) 
 {
 
  std::string defaultString = "{}";
@@ -512,7 +427,7 @@ void Linear::applyModuleDefaults(knlohmann::json& js)
  Layer::applyModuleDefaults(js);
 } 
 
-void Linear::applyVariableDefaults() 
+void Convolution::applyVariableDefaults() 
 {
 
  Layer::applyVariableDefaults();

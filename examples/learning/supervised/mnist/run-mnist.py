@@ -83,22 +83,35 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 784
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 1024
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+  
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Convolution"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 256
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Height"] = 8
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Width"] = 8
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Kernel Height"] = 8
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Kernel Width"] = 8
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Vertical Stride"] = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Horizontal Stride"] = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Left"] = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Right"] = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Top"] = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Bottom"] = 0
 
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 800
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"] = 256
 
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Output Channels"] = 10
+e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][5]["Output Channels"] = 10
 
-e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"] = "Softmax"
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Function"] = "Softmax"
 
 ### Configuring output
 

@@ -3,11 +3,11 @@
 */
 
 /** \file
-* @brief Header file for module: Linear.
+* @brief Header file for module: Convolution.
 */
 
-/** \dir neuralNetwork/layer/linear
-* @brief Contains code, documentation, and scripts for module: Linear.
+/** \dir neuralNetwork/layer/convolution
+* @brief Contains code, documentation, and scripts for module: Convolution.
 */
 
 #pragma once
@@ -23,11 +23,51 @@ namespace layer
 ;
 
 /**
-* @brief Class declaration for module: Linear.
+* @brief Class declaration for module: Convolution.
 */
-class Linear : public Layer
+class Convolution : public Layer
 {
   public: 
+  /**
+  * @brief Height of the incoming 2D image.
+  */
+   ssize_t _imageHeight;
+  /**
+  * @brief Width of the incoming 2D image.
+  */
+   ssize_t _imageWidth;
+  /**
+  * @brief Height of the incoming 2D image.
+  */
+   ssize_t _kernelHeight;
+  /**
+  * @brief Width of the incoming 2D image.
+  */
+   ssize_t _kernelWidth;
+  /**
+  * @brief Strides for the image on the vertical dimension.
+  */
+   ssize_t _verticalStride;
+  /**
+  * @brief Strides for the image on the horizontal dimension.
+  */
+   ssize_t _horizontalStride;
+  /**
+  * @brief Paddings for the image left side.
+  */
+   ssize_t _paddingLeft;
+  /**
+  * @brief Paddings for the image right side.
+  */
+   ssize_t _paddingRight;
+  /**
+  * @brief Paddings for the image top side.
+  */
+   ssize_t _paddingTop;
+  /**
+  * @brief Paddings for the image Bottom side.
+  */
+   ssize_t _paddingBottom;
   
  
   /**
@@ -55,27 +95,93 @@ class Linear : public Layer
  * Engine specific members
  *******************************************************/
 
-  /**
-* @brief Contains the values of the weights
-*/
-  float *_weightValues;
+ /**
+ * @brief Pre-calculated value for Mini-Batch Size
+ */
+ ssize_t N;
 
-  /**
-* @brief Contains the gradients of the weights
-*/
-  float *_weightGradient;
+ /**
+  * @brief Pre-calculated value for Input Channels
+  */
+ ssize_t IC;
 
-  /**
-* @brief Contains the values of the bias
-*/
-  float *_biasValues;
+ /**
+  * @brief Pre-calculated value for Input Image Height
+  */
+ ssize_t IH;
 
-  /**
-* @brief Contains the gradients of the bias
-*/
-  float *_biasGradient;
+ /**
+  * @brief Pre-calculated value for Input Image Width
+  */
+ ssize_t IW;
+
+ /**
+  * @brief Pre-calculated value for Output Channels
+  */
+ ssize_t OC;
+
+ /**
+  * @brief Pre-calculated value for Output Image Height
+  */
+ ssize_t OH;
+
+ /**
+  * @brief Pre-calculated value for Output Image Width
+  */
+ ssize_t OW;
+
+ /**
+  * @brief Pre-calculated value for Kernel Image Height
+  */
+ ssize_t KH;
+
+ /**
+  * @brief Pre-calculated value for Kernel Image Width
+  */
+ ssize_t KW;
+
+ /**
+  * @brief Pre-calculated values for padding left
+  */
+ ssize_t PL;
+
+ /**
+  * @brief Pre-calculated values for padding right
+  */
+ ssize_t PR;
+
+ /**
+  * @brief Pre-calculated values for padding top
+  */
+ ssize_t PT;
+
+ /**
+  * @brief Pre-calculated values for padding bottom
+  */
+ ssize_t PB;
+
+ /**
+  * @brief Pre-calculated values for horizontal stride
+  */
+ ssize_t SH;
+
+ /**
+  * @brief Pre-calculated values for vertical stride
+  */
+ ssize_t SV;
 
 #ifdef _KORALI_USE_ONEDNN
+
+ /**
+  * @brief Memory descriptor for the 2D mapping of the scalar input channels
+  */
+  dnnl::memory::desc _srcMemDesc;
+
+  /**
+   * @brief Memory descriptor for the 2D mapping of the scalar output channels
+   */
+  dnnl::memory::desc _dstMemDesc;
+
   /**
  * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
  */
@@ -102,14 +208,14 @@ class Linear : public Layer
   dnnl::memory _biasGradientMem;
 
   /**
- * @brief oneDNN primitive attributes that describe the full forward propagation primitive
+ * @brief oneDNN primitive attributes that describe the forward convolution primitive
  */
-  dnnl::inner_product_forward::primitive_desc _forwardInnerProductPrimitiveDesc;
+  dnnl::convolution_forward::primitive_desc _forwardConvolutionPrimitiveDesc;
 
   /**
  * @brief oneDNN primitive to run the inner product + bias addition operation
  */
-  dnnl::primitive _forwardInnerProductPrimitive;
+  dnnl::primitive _forwardConvolutionPrimitive;
 
   /**
  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
@@ -125,55 +231,6 @@ class Linear : public Layer
  * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
  */
   dnnl::primitive _backwardWeightsPrimitive;
-
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-  /**
- * @brief cuDNN Descriptor for the filter weights
- */
-  cudnnFilterDescriptor_t _weightsFilterDesc;
-
-  /**
- * @brief cuDNN Device memory pointer for the filter weights
- */
-  void *_weightsFilter;
-
-  /**
- * @brief cuDNN Device memory pointer for the filter weights gradients
- */
-  void *_weightsGradientFilter;
-
-  /**
- * @brief cuDNN Descriptor for the bias memory
- */
-  cudnnTensorDescriptor_t _biasTensorDesc;
-
-  /**
- * @brief cuDNN Device memory pointer for the bias tensor
- */
-  void *_biasTensor;
-
-  /**
- * @brief cuDNN Device memory pointer for the bias gradients
- */
-  void *_biasGradientTensor;
-
-  /**
- * @brief cuDNN Descriptor for the convolution operation
- */
-  cudnnConvolutionDescriptor_t _convolutionDesc;
-
-  /**
- * @brief cuDNN Placeholder for the convolution workspace size (bytes)
- */
-  size_t _convolutionWorkspaceSize;
-
-  /**
- * @brief cuDNN Device memory pointer for the convolution workspace
- */
-  std::vector<void *> _convolutionWorkspace;
 
 #endif
 

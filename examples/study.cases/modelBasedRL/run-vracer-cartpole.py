@@ -264,7 +264,7 @@ for launch in range(args.launchNum):
     # Note: Remember and Forget Experience Replay (ReF-ER), a novel method that can en- hance RL algorithms with parameterized policies (based on that)
     e["Solver"]["Experience Replay"]["Start Size"] = startSize #args.iniRetrain + args.retrain # The minimum number of experiences to gather before learning starts. - was 1000
     e["Solver"]["Experience Replay"]["Maximum Size"] = maxSize # The minimum number of experiences to accumulate before starting to forget.
-    e#["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0 # (default)
+    #e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0 # (default)
     #e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1 # (default)
     #e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 0.0 # (default)
     #e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3 # (default)
@@ -280,7 +280,7 @@ for launch in range(args.launchNum):
 
     e["Solver"]["State Rescaling"]["Enabled"] = False # Determines whether to use state scaling (done only once after the initial exploration phase).
     e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False # Determines whether to use reward scaling
-    e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000 # The number of policy updates between consecutive reward rescalings.
+    #e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000 # The number of policy updates between consecutive reward rescalings.
     e["Solver"]["Policy"]["Distribution"] = "Normal" #was "Squashed Normal" # default - Use the a normal distribution for the production of an action given lower and upper bounds with compensation for normal gradients. Based on work by Guido Novati.
 
     ### Configuring the neural network and its hidden layers

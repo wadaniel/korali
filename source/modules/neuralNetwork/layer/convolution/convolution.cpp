@@ -56,14 +56,20 @@ void Convolution::initialize()
   if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _prevLayer->_outputChannels, IH, IW);
   IC = _prevLayer->_outputChannels / (IH * IW);
 
-  OC = _outputChannels;
+  // Deriving output height and width
   OH = std::floor((IH - (KH - (PR + PL)))/SH) + 1;
   OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
+
+  // Check whether the output channels of the previous layer is divided by the height and width
+  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _outputChannels, OH, OW);
+  OC = _outputChannels / (OH * OW);
 }
 
 std::vector<float> Convolution::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
+  size_t weightCount = OC * IC * KH * KW;
+  size_t biasCount = OC;
 
   // If this is not the initial layer, calculate hyperparameters for weight and bias operation
   if (_prevLayer != nullptr)
@@ -72,12 +78,11 @@ std::vector<float> Convolution::generateInitialHyperparameters()
     float xavierConstant = std::sqrt(6.0f) / std::sqrt(_outputChannels + _prevLayer->_outputChannels);
 
     // Adding layer's weights hyperparameter values
-    for (size_t i = 0; i < _outputChannels; i++)
-      for (size_t j = 0; j < _prevLayer->_outputChannels; j++)
+    for (size_t i = 0; i < weightCount; i++)
         hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values
-    for (size_t i = 0; i < _outputChannels; i++)
+    for (size_t i = 0; i < biasCount; i++)
       hyperparameters.push_back(0.0f);
   }
 

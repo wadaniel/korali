@@ -145,7 +145,7 @@ void Convolution::createForwardPipeline()
     memory::dims PBR = {PB, PR}; // Bottom Right
 
     // We create the convolution operation
-    auto convolution_d = convolution_forward::desc(_propKind, algorithm::convolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
+    auto convolution_d = convolution_forward::desc(_propKind, algorithm::convolution_auto, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr convolutionPrimitiveAttributes;
@@ -182,7 +182,7 @@ void Convolution::createBackwardPipeline()
     _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
 
     auto backwardDataDesc = convolution_backward_data::desc(
-      algorithm::convolution_direct,
+      algorithm::convolution_auto,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _dstMemDesc,
@@ -195,7 +195,7 @@ void Convolution::createBackwardPipeline()
     _backwardDataPrimitive = convolution_backward_data(backwardDataPrimitiveDesc);
 
     auto backwardWeightsDesc = convolution_backward_weights::desc(
-      algorithm::convolution_direct,
+      algorithm::convolution_auto,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _biasMem.get_desc(),

@@ -10,6 +10,7 @@ if [ -d "$DIR" ]; then
     cd modelBasedRL
     cp Cartpole/model.py ../_model_cartpole/model.py
     cp Cartpole/env.py ../_model_cartpole/env.py
+    cp Cartpole/env_v2.py ../_model_cartpole/env_v2.py
     cp Cartpole/cartpole.py ../_model_cartpole/cartpole.py
     cp OpenAI/model.py ../_model_openAIgym/model.py
     cp OpenAI/agent.py ../_model_openAIgym/agent.py

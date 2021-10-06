@@ -11,7 +11,7 @@ from mpi4py import MPI
 
 #sys.path.append('./_modelCoord')
 sys.path.append('./_model_cartpole')
-from env import *
+from env_v2 import *
 from model import Net, Hyperparams, NetConfig, trainEnsemble, predictEnsembleSerial, GaussianNLLLoss, VisualizationNetResults
 
 import numpy as np
@@ -420,7 +420,7 @@ for launch in range(args.launchNum):
             
         totalCountVar = 0
         onesCountVar = 0
-        for idx in range(bestTestingEpisodeId):
+        for idx in range(bestTestingEpisodeId-argsEnv.discardedNum[bestTestingEpisodeId]):
             l = argsEnv.surrUsage[idx]
             totalCountVar += len(l)
             onesCountVar += sum(l)

@@ -101,17 +101,17 @@ class __className__ : public __parentClassName__
   /**
   * @brief Stores the state of the experience
   */
-  cBuffer<std::vector<float>> _stateVector;
+  cBuffer<std::vector<std::vector<float>>> _stateVector;
 
   /**
    * @brief Stores the action taken by the agent at the given state
    */
-  cBuffer<std::vector<float>> _actionVector;
+  cBuffer<std::vector<std::vector<float>>> _actionVector;
 
   /**
   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
   */
-  cBuffer<std::vector<float>> _stateTimeSequence;
+  cBuffer<std::vector<std::vector<float>>> _stateTimeSequence;
 
   /**
   * @brief Episode that experience belongs to
@@ -126,37 +126,37 @@ class __className__ : public __parentClassName__
   /**
    * @brief Contains the latest calculation of the experience's importance weight
    */
-  cBuffer<float> _importanceWeightVector;
+  cBuffer<std::vector<float>> _importanceWeightVector;
 
   /**
    * @brief Contains the latest calculation of the experience's truncated importance weight
    */
-  cBuffer<float> _truncatedImportanceWeightVector;
+  cBuffer<std::vector<float>> _truncatedImportanceWeightVector;
 
   /**
    * @brief For prioritized experience replay, this stores the experience's priority
    */
-  cBuffer<float> _priorityVector;
+  cBuffer<std::vector<float>> _priorityVector;
 
   /**
    * @brief For prioritized experience replay, this stores the experience's probability
    */
-  cBuffer<float> _probabilityVector;
+  cBuffer<std::vector<float>> _probabilityVector;
 
   /**
    * @brief Contains the most current policy information given the experience state
    */
-  cBuffer<policy_t> _curPolicyVector;
+  cBuffer<std::vector<policy_t>> _curPolicyVector;
 
   /**
    * @brief Contains the policy information produced at the moment of the action was taken
    */
-  cBuffer<policy_t> _expPolicyVector;
+  cBuffer<std::vector<policy_t>> _expPolicyVector;
 
   /**
    * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
    */
-  cBuffer<bool> _isOnPolicyVector;
+  cBuffer<std::vector<bool>> _isOnPolicyVector;
 
   /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.
@@ -166,27 +166,27 @@ class __className__ : public __parentClassName__
   /**
    * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
    */
-  cBuffer<float> _retraceValueVector;
+  cBuffer<std::vector<float>> _retraceValueVector;
 
   /**
    * @brief If this is a truncated terminal experience, this contains the state value for that state
    */
-  cBuffer<float> _truncatedStateValueVector;
+  cBuffer<std::vector<float>> _truncatedStateValueVector;
 
   /**
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
-  cBuffer<std::vector<float>> _truncatedStateVector;
+  cBuffer<std::vector<std::vector<float>>> _truncatedStateVector;
 
   /**
    * @brief Contains the rewards for every experience
    */
-  cBuffer<float> _rewardVector;
+  cBuffer<std::vector<float>> _rewardVector;
 
   /**
    * @brief Contains the state value evaluation for every experience
    */
-  cBuffer<float> _stateValueVector;
+  cBuffer<std::vector<float>> _stateValueVector;
 
   /**
   * @brief Stores the priority annealing rate.
@@ -363,14 +363,14 @@ class __className__ : public __parentClassName__
    * @param includeAction Specifies whether to include the experience's action in the sequence
    * @return The time step vector of states
    */
-  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction = false);
+  std::vector<std::vector<std::vector<std::vector<float>>>> getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction = false);
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
    * @param expId The index of the second-to-latest experience in the sequence
    * @return The time step vector of states, including the truncated state
    */
-  std::vector<std::vector<float>> getTruncatedStateSequence(size_t expId);
+  std::vector<std::vector<std::vector<float>>> getTruncatedStateSequence(size_t expId);
 
   /**
    * @brief Calculates importance weight of current action from old and new policies
@@ -379,7 +379,7 @@ class __className__ : public __parentClassName__
    * @param oldPolicy The old policy, the one used for take the action in the first place
    * @return The importance weight
    */
-  virtual float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) = 0;
+  virtual std::vector<float> calculateImportanceWeight(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy) = 0;
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed

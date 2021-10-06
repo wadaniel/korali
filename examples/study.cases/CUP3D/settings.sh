@@ -16,7 +16,7 @@ BC=${BC:-dirichlet}
 NU=${NU:-0.00004}
 
 # bottom fish
-# FACTORY="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=0.80 bFixToPlanar=1 bFixFrameOfRef=1 Correct=1 heightProfile=danio widthProfile=stefan
+FACTORY="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=0.80 bFixToPlanar=1 bFixFrameOfRef=1 Correct=1 heightProfile=danio widthProfile=stefan
 # "
 
 # plane 1 with 4 fish
@@ -60,7 +60,7 @@ FACTORY+="StefanFish L=0.2 T=1 xpos=1.50 ypos=1.00 zpos=1.10 bFixToPlanar=1 bFix
 "
 
 # top fish
-# FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=1.20 bFixToPlanar=1 bFixFrameOfRef=1 Correct=1 heightProfile=danio widthProfile=stefan
+FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=1.20 bFixToPlanar=1 bFixFrameOfRef=1 Correct=1 heightProfile=danio widthProfile=stefan
 # "
 
 OPTIONS=

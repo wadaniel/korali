@@ -61,7 +61,7 @@ void Convolution::initialize()
   OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
-  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _outputChannels, OH, OW);
+  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Convolutional layer contains a number of output channels (%lu) not divisible by the output image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _outputChannels, OH, OW, KH, KW);
   OC = _outputChannels / (OH * OW);
 }
 
@@ -92,7 +92,10 @@ std::vector<float> Convolution::generateInitialHyperparameters()
 void Convolution::createHyperparameterMemory()
 {
   // Setting hyperparameter count
-  _hyperparameterCount = IC * OC * KH * KW + OC;
+ size_t weightCount = OC * IC * KH * KW;
+ size_t biasCount = OC;
+
+ _hyperparameterCount = weightCount + biasCount;
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -266,9 +269,6 @@ void Convolution::backwardHyperparameters(size_t t)
 
 void Convolution::setHyperparameters(float *hyperparameters)
 {
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
@@ -294,9 +294,6 @@ void Convolution::getHyperparameters(float *hyperparameters)
 
 void Convolution::getHyperparameterGradients(float *gradient)
 {
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {

@@ -16,7 +16,7 @@ cat run-vracer-cartpole-v2.py
 
 expDir=$SCRATCH/Surrogate_Cartpole_v2_VRACER
 mkdir -p $expDir
-cp run-vracer-coord-v2.py $expDir
+cp run-vracer-cartpole-v2.py $expDir
 cp -r _model_cartpole $expDir
 
 popd

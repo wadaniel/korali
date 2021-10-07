@@ -163,16 +163,14 @@ void runEnvironment(korali::Sample &s)
       auto action = actions[agentID].get<std::vector<double>>();
 
       // Computing reward and assigning to container
-      for(size_t j = 0; j<3; j++)
-        rewards[agentID] += (action[j] - state[j]) * (action[j] - state[j]); // TODO, try different norm & weigths for p,u,v
+      for(size_t j = 0; j<3; ++j)
+        rewards[agentID] += - (action[j] - state[j]) * (action[j] - state[j]); // TODO, try different norm & weigths for p,u,v
       
       agentID++;
     }
     
     s["State"] = states;
     s["Reward"] = rewards;
-
-    std::cout<< s["State"] << std::endl;
 
     // Advancing to next step
     curStep++;

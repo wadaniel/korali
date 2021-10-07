@@ -26,11 +26,11 @@ void __className__::initializeAgent()
       // For bounded distributions, infinite bounds should result in an error message
       if (_policyDistribution == "Squashed Normal" || _policyDistribution == "Beta" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
       {
-        if (isfinite(_actionLowerBounds[d][i]) == false) //TODO: generally in this korali log error
-          KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[d][i], i, _policyDistribution.c_str());
+        if (isfinite(_actionLowerBounds[d][i]) == false) 
+          KORALI_LOG_ERROR("Provided lower bound (%f) for agent %a for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[d][i], d, i, _policyDistribution.c_str());
 
         if (isfinite(_actionUpperBounds[d][i]) == false)
-          KORALI_LOG_ERROR("Provided upper bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionUpperBounds[d][i], i, _policyDistribution.c_str());
+          KORALI_LOG_ERROR("Provided upper bound (%f) for agent %a for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionUpperBounds[d][i], d, i, _policyDistribution.c_str());
 
         _actionShifts[d][i] = (_actionUpperBounds[d][i] + _actionLowerBounds[d][i]) * 0.5f;
         _actionScales[d][i] = (_actionUpperBounds[d][i] - _actionLowerBounds[d][i]) * 0.5f;
@@ -60,7 +60,7 @@ void __className__::initializeAgent()
     for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
-        auto varIdx = _problem->_actionVectorIndexes[i]; //TODO: Generally this varIdx
+        auto varIdx = _problem->_actionVectorIndexes[i]; 
         float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
         // Checking correct noise configuration
@@ -98,7 +98,7 @@ void __className__::initializeAgent()
     for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
-        auto varIdx = _problem->_actionVectorIndexes[i];  //TODO: Again VarIdx
+        auto varIdx = _problem->_actionVectorIndexes[i];  
         const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
         // Checking correct noise configuration
@@ -131,7 +131,7 @@ void __className__::getAction(korali::Sample &sample)
   std::vector<std::vector<float>> action(_problem->_agentsPerEnvironment, std::vector<float>(_problem->_actionVectorSize));
 
   // Forward state sequence to get the Gaussian means and sigmas from policy
-  auto policy = runPolicy({_stateTimeSequence.getVector()})[0]; // TODO: Might be fishyy
+  auto policy = runPolicy({_stateTimeSequence.getVector()})[0]; 
 
   /*****************************************************************************
   * During Training we select action according to policy's probability

@@ -336,6 +336,7 @@ class __className__ : public __parentClassName__
   * @param miniBatch The mini batch of experience ids to update
   * @param policyData The policy to use to evaluate the experiences
   */
+  // TODO: most probably to vecor of vector of policy
   void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**
@@ -417,12 +418,12 @@ class __className__ : public __parentClassName__
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const float reward, const size_t agentIdx)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[agentIdx];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentIdx]);
 
     return rescaledReward;
   }

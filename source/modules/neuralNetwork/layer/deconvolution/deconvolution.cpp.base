@@ -1,4 +1,4 @@
-#include "modules/neuralNetwork/layer/convolution/convolution.hpp"
+#include "modules/neuralNetwork/layer/deconvolution/deconvolution.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_CUDNN
@@ -21,13 +21,13 @@ void __className__::initialize()
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 
   // Checking position
-  if (_index == 0) KORALI_LOG_ERROR("Convolutional layers cannot be the starting layer of the NN\n");
-  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Convolutional layers cannot be the last layer of the NN\n");
+  if (_index == 0) KORALI_LOG_ERROR("Deconvolutional layers cannot be the starting layer of the NN\n");
+  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Deconvolutional layers cannot be the last layer of the NN\n");
 
-  // Precalculating values for the convolution operation
+  // Precalculating values for the deconvolution operation
   N = _batchSize;
-  IH = _imageHeight;
-  IW = _imageWidth;
+  OH = _imageHeight;
+  OW = _imageWidth;
   KH = _kernelHeight;
   KW = _kernelWidth;
 
@@ -39,30 +39,30 @@ void __className__::initialize()
   PR = _paddingRight;
 
   // Check for non zeros
-   if (IH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for convolutional layer.\n");
-   if (IW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for convolutional layer.\n");
-   if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for convolutional layer.\n");
-   if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for convolutional layer.\n");
-   if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for convolutional layer.\n");
-   if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for convolutional layer.\n");
+  if (OH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for deconvolutional layer.\n");
+  if (OW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for deconvolutional layer.\n");
+  if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for deconvolutional layer.\n");
+  if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for deconvolutional layer.\n");
+  if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for deconvolutional layer.\n");
+  if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for deconvolutional layer.\n");
 
   // Several sanity checks
-  if (KH > IH) KORALI_LOG_ERROR("Kernel height cannot be larger than input image height.\n");
-  if (KW > IW) KORALI_LOG_ERROR("Kernel height cannot be larger than input image height.\n");
-  if (PR + PL > IW) KORALI_LOG_ERROR("L+R Paddings cannot exceed the width of the input image.\n");
-  if (PT + PB > IH) KORALI_LOG_ERROR("T+B Paddings cannot exceed the height of the input image.\n");
+  if (KH > OH) KORALI_LOG_ERROR("Kernel height cannot be larger than output image height.\n");
+  if (KW > OW) KORALI_LOG_ERROR("Kernel height cannot be larger than output image height.\n");
+  if (PR + PL > OW) KORALI_LOG_ERROR("L+R Paddings cannot exceed the width of the output image.\n");
+  if (PT + PB > OH) KORALI_LOG_ERROR("T+B Paddings cannot exceed the height of the output image.\n");
 
   // Check whether the output channels of the previous layer is divided by the height and width
-  if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _prevLayer->_outputChannels, IH, IW);
-  IC = _prevLayer->_outputChannels / (IH * IW);
+  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Deconvolutional layer contains a number of channels (%lu) not divisible by the 2D HxW setup (%lux%lu).\n", _outputChannels, OH, OW);
+  OC = _outputChannels / (OH * OW);
 
   // Deriving output height and width
-  OH = std::floor((IH - (KH - (PR + PL)))/SH) + 1;
-  OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
+  IH = std::floor((OH - (KH - (PR + PL)))/SH) + 1;
+  IW = std::floor((OW - (KW - (PT + PB)))/SV) + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
-  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Convolutional layer contains a number of output channels (%lu) not divisible by the output image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _outputChannels, OH, OW, KH, KW);
-  OC = _outputChannels / (OH * OW);
+  if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer to the convolutional layer contains a number of output channels (%lu) not divisible by the image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _prevLayer->_outputChannels, IH, IW, KH, KW);
+  IC = _prevLayer->_outputChannels / (IH * IW);
 }
 
 std::vector<float> __className__::generateInitialHyperparameters()
@@ -112,7 +112,7 @@ void __className__::createHyperparameterMemory()
 
 void __className__::copyHyperparameterPointers(Layer *dstLayer)
 {
-  Convolution *dstPtr = dynamic_cast<Convolution *>(dstLayer);
+  Deconvolution *dstPtr = dynamic_cast<Deconvolution *>(dstLayer);
   dstPtr->_hyperparameterCount = _hyperparameterCount;
 
 #ifdef _KORALI_USE_ONEDNN
@@ -129,8 +129,8 @@ void __className__::createForwardPipeline()
   // Calling base layer function
   Layer::createForwardPipeline();
 
-  if (_nn->_engine == "Korali") KORALI_LOG_ERROR("Convolutional Layers still not supported in Korali's NN backend. Use OneDNN.\n");
-  if (_nn->_engine == "CuDNN") KORALI_LOG_ERROR("Convolutional Layers still not supported in CuDNNbackend. Use OneDNN.\n");
+  if (_nn->_engine == "Korali") KORALI_LOG_ERROR("Deconvolutional Layers still not supported in Korali's NN backend. Use OneDNN.\n");
+  if (_nn->_engine == "CuDNN") KORALI_LOG_ERROR("Deconvolutional Layers still not supported in CuDNNbackend. Use OneDNN.\n");
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -144,15 +144,15 @@ void __className__::createForwardPipeline()
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
-    // We create the convolution operation
-    auto convolution_d = convolution_forward::desc(_propKind, algorithm::convolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
+    // We create the deconvolution operation
+    auto deconvolution_d = deconvolution_forward::desc(_propKind, algorithm::deconvolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
 
     // Create inner product primitive descriptor.
-    dnnl::primitive_attr convolutionPrimitiveAttributes;
-    _forwardConvolutionPrimitiveDesc = convolution_forward::primitive_desc(convolution_d, convolutionPrimitiveAttributes, _nn->_dnnlEngine);
+    dnnl::primitive_attr deconvolutionPrimitiveAttributes;
+    _forwardDeconvolutionPrimitiveDesc = deconvolution_forward::primitive_desc(deconvolution_d, deconvolutionPrimitiveAttributes, _nn->_dnnlEngine);
 
     // Create the weights+bias primitive.
-    _forwardConvolutionPrimitive = convolution_forward(_forwardConvolutionPrimitiveDesc);
+    _forwardDeconvolutionPrimitive = deconvolution_forward(_forwardDeconvolutionPrimitiveDesc);
   }
 #endif
 
@@ -181,8 +181,8 @@ void __className__::createBackwardPipeline()
     _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
     _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
 
-    auto backwardDataDesc = convolution_backward_data::desc(
-      algorithm::convolution_direct,
+    auto backwardDataDesc = deconvolution_backward_data::desc(
+      algorithm::deconvolution_direct,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _dstMemDesc,
@@ -191,11 +191,11 @@ void __className__::createBackwardPipeline()
       PBR);
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = convolution_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
-    _backwardDataPrimitive = convolution_backward_data(backwardDataPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = deconvolution_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardDeconvolutionPrimitiveDesc);
+    _backwardDataPrimitive = deconvolution_backward_data(backwardDataPrimitiveDesc);
 
-    auto backwardWeightsDesc = convolution_backward_weights::desc(
-      algorithm::convolution_direct,
+    auto backwardWeightsDesc = deconvolution_backward_weights::desc(
+      algorithm::deconvolution_direct,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _biasMem.get_desc(),
@@ -205,8 +205,8 @@ void __className__::createBackwardPipeline()
       PBR);
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = convolution_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
-    _backwardWeightsPrimitive = convolution_backward_weights(backwardWeightsPrimitiveDesc);
+    auto backwardWeightsPrimitiveDesc = deconvolution_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardDeconvolutionPrimitiveDesc);
+    _backwardWeightsPrimitive = deconvolution_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif
 }
@@ -217,13 +217,13 @@ void __className__::forwardData(const size_t t)
   if (_nn->_engine == "OneDNN")
   {
     // Arguments to the inner product operation
-    std::unordered_map<int, dnnl::memory> forwardConvolutionArgs;
-    forwardConvolutionArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
-    forwardConvolutionArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
-    forwardConvolutionArgs[DNNL_ARG_BIAS] = _biasMem;
-    forwardConvolutionArgs[DNNL_ARG_DST] = _outputMem[t];
+    std::unordered_map<int, dnnl::memory> forwardDeconvolutionArgs;
+    forwardDeconvolutionArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
+    forwardDeconvolutionArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
+    forwardDeconvolutionArgs[DNNL_ARG_BIAS] = _biasMem;
+    forwardDeconvolutionArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _forwardConvolutionPrimitive.execute(_nn->_dnnlStream, forwardConvolutionArgs);
+    _forwardDeconvolutionPrimitive.execute(_nn->_dnnlStream, forwardDeconvolutionArgs);
   }
 #endif
 

@@ -22,6 +22,7 @@
 #include "experiment/experiment.hpp"
 #include "neuralNetwork/layer/activation/activation.hpp"
 #include "neuralNetwork/layer/convolution/convolution.hpp"
+#include "neuralNetwork/layer/deconvolution/deconvolution.hpp"
 #include "neuralNetwork/layer/input/input.hpp"
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/layer/linear/linear.hpp"
@@ -160,6 +161,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
   if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();
   if (iCompare(moduleType, "Layer/Convolution")) module = new korali::neuralNetwork::layer::Convolution();
+  if (iCompare(moduleType, "Layer/Deconvolution")) module = new korali::neuralNetwork::layer::Deconvolution();
   if (iCompare(moduleType, "Layer/Recurrent/GRU")) module = new korali::neuralNetwork::layer::recurrent::GRU();
   if (iCompare(moduleType, "Layer/Recurrent/LSTM")) module = new korali::neuralNetwork::layer::recurrent::LSTM();
   if (iCompare(moduleType, "Layer/Input")) module = new korali::neuralNetwork::layer::Input();

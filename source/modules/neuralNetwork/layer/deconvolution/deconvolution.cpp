@@ -1,4 +1,4 @@
-#include "modules/neuralNetwork/layer/convolution/convolution.hpp"
+#include "modules/neuralNetwork/layer/deconvolution/deconvolution.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_CUDNN
@@ -21,19 +21,19 @@ namespace layer
 {
 ;
 
-void Convolution::initialize()
+void Deconvolution::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 
   // Checking position
-  if (_index == 0) KORALI_LOG_ERROR("Convolutional layers cannot be the starting layer of the NN\n");
-  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Convolutional layers cannot be the last layer of the NN\n");
+  if (_index == 0) KORALI_LOG_ERROR("Deconvolutional layers cannot be the starting layer of the NN\n");
+  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Deconvolutional layers cannot be the last layer of the NN\n");
 
-  // Precalculating values for the convolution operation
+  // Precalculating values for the deconvolution operation
   N = _batchSize;
-  IH = _imageHeight;
-  IW = _imageWidth;
+  OH = _imageHeight;
+  OW = _imageWidth;
   KH = _kernelHeight;
   KW = _kernelWidth;
 
@@ -45,33 +45,33 @@ void Convolution::initialize()
   PR = _paddingRight;
 
   // Check for non zeros
-   if (IH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for convolutional layer.\n");
-   if (IW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for convolutional layer.\n");
-   if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for convolutional layer.\n");
-   if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for convolutional layer.\n");
-   if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for convolutional layer.\n");
-   if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for convolutional layer.\n");
+  if (OH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for deconvolutional layer.\n");
+  if (OW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for deconvolutional layer.\n");
+  if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for deconvolutional layer.\n");
+  if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for deconvolutional layer.\n");
+  if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for deconvolutional layer.\n");
+  if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for deconvolutional layer.\n");
 
   // Several sanity checks
-  if (KH > IH) KORALI_LOG_ERROR("Kernel height cannot be larger than input image height.\n");
-  if (KW > IW) KORALI_LOG_ERROR("Kernel height cannot be larger than input image height.\n");
-  if (PR + PL > IW) KORALI_LOG_ERROR("L+R Paddings cannot exceed the width of the input image.\n");
-  if (PT + PB > IH) KORALI_LOG_ERROR("T+B Paddings cannot exceed the height of the input image.\n");
+  if (KH > OH) KORALI_LOG_ERROR("Kernel height cannot be larger than output image height.\n");
+  if (KW > OW) KORALI_LOG_ERROR("Kernel height cannot be larger than output image height.\n");
+  if (PR + PL > OW) KORALI_LOG_ERROR("L+R Paddings cannot exceed the width of the output image.\n");
+  if (PT + PB > OH) KORALI_LOG_ERROR("T+B Paddings cannot exceed the height of the output image.\n");
 
   // Check whether the output channels of the previous layer is divided by the height and width
-  if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer contains a number of channels (%lu) not divisible by the convolutional 2D HxW setup (%lux%lu).\n", _prevLayer->_outputChannels, IH, IW);
-  IC = _prevLayer->_outputChannels / (IH * IW);
+  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Deconvolutional layer contains a number of channels (%lu) not divisible by the 2D HxW setup (%lux%lu).\n", _outputChannels, OH, OW);
+  OC = _outputChannels / (OH * OW);
 
   // Deriving output height and width
-  OH = std::floor((IH - (KH - (PR + PL)))/SH) + 1;
-  OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
+  IH = std::floor((OH - (KH - (PR + PL)))/SH) + 1;
+  IW = std::floor((OW - (KW - (PT + PB)))/SV) + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
-  if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Convolutional layer contains a number of output channels (%lu) not divisible by the output image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _outputChannels, OH, OW, KH, KW);
-  OC = _outputChannels / (OH * OW);
+  if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer to the convolutional layer contains a number of output channels (%lu) not divisible by the image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _prevLayer->_outputChannels, IH, IW, KH, KW);
+  IC = _prevLayer->_outputChannels / (IH * IW);
 }
 
-std::vector<float> Convolution::generateInitialHyperparameters()
+std::vector<float> Deconvolution::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
   size_t weightCount = OC * IC * KH * KW;
@@ -95,7 +95,7 @@ std::vector<float> Convolution::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void Convolution::createHyperparameterMemory()
+void Deconvolution::createHyperparameterMemory()
 {
   // Setting hyperparameter count
  size_t weightCount = OC * IC * KH * KW;
@@ -116,9 +116,9 @@ void Convolution::createHyperparameterMemory()
 #endif
 }
 
-void Convolution::copyHyperparameterPointers(Layer *dstLayer)
+void Deconvolution::copyHyperparameterPointers(Layer *dstLayer)
 {
-  Convolution *dstPtr = dynamic_cast<Convolution *>(dstLayer);
+  Deconvolution *dstPtr = dynamic_cast<Deconvolution *>(dstLayer);
   dstPtr->_hyperparameterCount = _hyperparameterCount;
 
 #ifdef _KORALI_USE_ONEDNN
@@ -130,13 +130,13 @@ void Convolution::copyHyperparameterPointers(Layer *dstLayer)
 #endif
 }
 
-void Convolution::createForwardPipeline()
+void Deconvolution::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
 
-  if (_nn->_engine == "Korali") KORALI_LOG_ERROR("Convolutional Layers still not supported in Korali's NN backend. Use OneDNN.\n");
-  if (_nn->_engine == "CuDNN") KORALI_LOG_ERROR("Convolutional Layers still not supported in CuDNNbackend. Use OneDNN.\n");
+  if (_nn->_engine == "Korali") KORALI_LOG_ERROR("Deconvolutional Layers still not supported in Korali's NN backend. Use OneDNN.\n");
+  if (_nn->_engine == "CuDNN") KORALI_LOG_ERROR("Deconvolutional Layers still not supported in CuDNNbackend. Use OneDNN.\n");
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -150,21 +150,21 @@ void Convolution::createForwardPipeline()
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
-    // We create the convolution operation
-    auto convolution_d = convolution_forward::desc(_propKind, algorithm::convolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
+    // We create the deconvolution operation
+    auto deconvolution_d = deconvolution_forward::desc(_propKind, algorithm::deconvolution_direct, _srcMemDesc, _weightsMem.get_desc(), _biasMem.get_desc(), _dstMemDesc, ST, PTL, PBR);
 
     // Create inner product primitive descriptor.
-    dnnl::primitive_attr convolutionPrimitiveAttributes;
-    _forwardConvolutionPrimitiveDesc = convolution_forward::primitive_desc(convolution_d, convolutionPrimitiveAttributes, _nn->_dnnlEngine);
+    dnnl::primitive_attr deconvolutionPrimitiveAttributes;
+    _forwardDeconvolutionPrimitiveDesc = deconvolution_forward::primitive_desc(deconvolution_d, deconvolutionPrimitiveAttributes, _nn->_dnnlEngine);
 
     // Create the weights+bias primitive.
-    _forwardConvolutionPrimitive = convolution_forward(_forwardConvolutionPrimitiveDesc);
+    _forwardDeconvolutionPrimitive = deconvolution_forward(_forwardDeconvolutionPrimitiveDesc);
   }
 #endif
 
 }
 
-void Convolution::createBackwardPipeline()
+void Deconvolution::createBackwardPipeline()
 {
   //  Initializing memory objects and primitives for BACKWARD propagation
 
@@ -187,8 +187,8 @@ void Convolution::createBackwardPipeline()
     _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
     _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
 
-    auto backwardDataDesc = convolution_backward_data::desc(
-      algorithm::convolution_direct,
+    auto backwardDataDesc = deconvolution_backward_data::desc(
+      algorithm::deconvolution_direct,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _dstMemDesc,
@@ -197,11 +197,11 @@ void Convolution::createBackwardPipeline()
       PBR);
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = convolution_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
-    _backwardDataPrimitive = convolution_backward_data(backwardDataPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = deconvolution_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardDeconvolutionPrimitiveDesc);
+    _backwardDataPrimitive = deconvolution_backward_data(backwardDataPrimitiveDesc);
 
-    auto backwardWeightsDesc = convolution_backward_weights::desc(
-      algorithm::convolution_direct,
+    auto backwardWeightsDesc = deconvolution_backward_weights::desc(
+      algorithm::deconvolution_direct,
       _srcMemDesc,
       _weightsMem.get_desc(),
       _biasMem.get_desc(),
@@ -211,31 +211,31 @@ void Convolution::createBackwardPipeline()
       PBR);
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = convolution_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardConvolutionPrimitiveDesc);
-    _backwardWeightsPrimitive = convolution_backward_weights(backwardWeightsPrimitiveDesc);
+    auto backwardWeightsPrimitiveDesc = deconvolution_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardDeconvolutionPrimitiveDesc);
+    _backwardWeightsPrimitive = deconvolution_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif
 }
 
-void Convolution::forwardData(const size_t t)
+void Deconvolution::forwardData(const size_t t)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     // Arguments to the inner product operation
-    std::unordered_map<int, dnnl::memory> forwardConvolutionArgs;
-    forwardConvolutionArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
-    forwardConvolutionArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
-    forwardConvolutionArgs[DNNL_ARG_BIAS] = _biasMem;
-    forwardConvolutionArgs[DNNL_ARG_DST] = _outputMem[t];
+    std::unordered_map<int, dnnl::memory> forwardDeconvolutionArgs;
+    forwardDeconvolutionArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
+    forwardDeconvolutionArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
+    forwardDeconvolutionArgs[DNNL_ARG_BIAS] = _biasMem;
+    forwardDeconvolutionArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _forwardConvolutionPrimitive.execute(_nn->_dnnlStream, forwardConvolutionArgs);
+    _forwardDeconvolutionPrimitive.execute(_nn->_dnnlStream, forwardDeconvolutionArgs);
   }
 #endif
 
 }
 
-void Convolution::backwardData(const size_t t)
+void Deconvolution::backwardData(const size_t t)
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
@@ -252,7 +252,7 @@ void Convolution::backwardData(const size_t t)
 #endif
 }
 
-void Convolution::backwardHyperparameters(size_t t)
+void Deconvolution::backwardHyperparameters(size_t t)
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
@@ -273,7 +273,7 @@ void Convolution::backwardHyperparameters(size_t t)
 
 }
 
-void Convolution::setHyperparameters(float *hyperparameters)
+void Deconvolution::setHyperparameters(float *hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -284,7 +284,7 @@ void Convolution::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Convolution::getHyperparameters(float *hyperparameters)
+void Deconvolution::getHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -298,7 +298,7 @@ void Convolution::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Convolution::getHyperparameterGradients(float *gradient)
+void Deconvolution::getHyperparameterGradients(float *gradient)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -309,7 +309,7 @@ void Convolution::getHyperparameterGradients(float *gradient)
 #endif
 }
 
-void Convolution::setConfiguration(knlohmann::json& js) 
+void Deconvolution::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
@@ -317,99 +317,99 @@ void Convolution::setConfiguration(knlohmann::json& js)
  {
  try { _imageHeight = js["Image Height"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Image Height']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Image Height']\n%s", e.what()); } 
    eraseValue(js, "Image Height");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Height'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Height'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Image Width"))
  {
  try { _imageWidth = js["Image Width"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Image Width']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Image Width']\n%s", e.what()); } 
    eraseValue(js, "Image Width");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Width'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Image Width'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Kernel Height"))
  {
  try { _kernelHeight = js["Kernel Height"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Kernel Height']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Kernel Height']\n%s", e.what()); } 
    eraseValue(js, "Kernel Height");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Height'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Height'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Kernel Width"))
  {
  try { _kernelWidth = js["Kernel Width"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Kernel Width']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Kernel Width']\n%s", e.what()); } 
    eraseValue(js, "Kernel Width");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Width'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Kernel Width'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Vertical Stride"))
  {
  try { _verticalStride = js["Vertical Stride"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Vertical Stride']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Vertical Stride']\n%s", e.what()); } 
    eraseValue(js, "Vertical Stride");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Vertical Stride'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Vertical Stride'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Horizontal Stride"))
  {
  try { _horizontalStride = js["Horizontal Stride"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Horizontal Stride']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Horizontal Stride']\n%s", e.what()); } 
    eraseValue(js, "Horizontal Stride");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Horizontal Stride'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Horizontal Stride'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Padding Left"))
  {
  try { _paddingLeft = js["Padding Left"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Left']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Padding Left']\n%s", e.what()); } 
    eraseValue(js, "Padding Left");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Left'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Left'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Padding Right"))
  {
  try { _paddingRight = js["Padding Right"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Right']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Padding Right']\n%s", e.what()); } 
    eraseValue(js, "Padding Right");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Right'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Right'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Padding Top"))
  {
  try { _paddingTop = js["Padding Top"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Top']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Padding Top']\n%s", e.what()); } 
    eraseValue(js, "Padding Top");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Top'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Top'] required by deconvolution.\n"); 
 
  if (isDefined(js, "Padding Bottom"))
  {
  try { _paddingBottom = js["Padding Bottom"].get<ssize_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ convolution ] \n + Key:    ['Padding Bottom']\n%s", e.what()); } 
+ { KORALI_LOG_ERROR(" + Object: [ deconvolution ] \n + Key:    ['Padding Bottom']\n%s", e.what()); } 
    eraseValue(js, "Padding Bottom");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Bottom'] required by convolution.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Padding Bottom'] required by deconvolution.\n"); 
 
  Layer::setConfiguration(js);
- _type = "layer/convolution";
+ _type = "layer/deconvolution";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
- if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: convolution: \n%s\n", js.dump(2).c_str());
+ if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: deconvolution: \n%s\n", js.dump(2).c_str());
 } 
 
-void Convolution::getConfiguration(knlohmann::json& js) 
+void Deconvolution::getConfiguration(knlohmann::json& js) 
 {
 
  js["Type"] = _type;
@@ -426,7 +426,7 @@ void Convolution::getConfiguration(knlohmann::json& js)
  Layer::getConfiguration(js);
 } 
 
-void Convolution::applyModuleDefaults(knlohmann::json& js) 
+void Deconvolution::applyModuleDefaults(knlohmann::json& js) 
 {
 
  std::string defaultString = "{}";
@@ -435,7 +435,7 @@ void Convolution::applyModuleDefaults(knlohmann::json& js)
  Layer::applyModuleDefaults(js);
 } 
 
-void Convolution::applyVariableDefaults() 
+void Deconvolution::applyVariableDefaults() 
 {
 
  Layer::applyVariableDefaults();

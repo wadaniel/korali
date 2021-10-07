@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
   // Configuring problem (for test eliminate after)
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 8.0;
-  e["Problem"]["Policy Testing Episodes"] = 5;
+  // e["Problem"]["Training Reward Threshold"] = 8.0;
+  // e["Problem"]["Policy Testing Episodes"] = 5;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;

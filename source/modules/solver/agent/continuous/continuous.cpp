@@ -460,10 +460,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
       const float unboundedAction = oldPolicy.unboundedAction[i];
 
-      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
-      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
-
       // Deviation from expAction and current Mean
       const float curActionDif = unboundedAction - curMu;
 
@@ -475,10 +471,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
       // Gradient with respect to Sigma
       importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.0f / curSigma;
-
+ 
       // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMu, curSigma);
-      logpOldPolicy += normalLogDensity(oldPolicy.unboundedAction[i], oldMu, oldSigma);
+      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
+      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;

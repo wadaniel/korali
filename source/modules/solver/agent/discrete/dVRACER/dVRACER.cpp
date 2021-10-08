@@ -54,15 +54,14 @@ void dVRACER::initializeAgent()
   }
 
   // Transofrmation for the inverse temperature
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][1 + _problem->_possibleActions.size() ] = 1.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_possibleActions.size() ] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_possibleActions.size() ] = "Sigmoid";
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][1 + _problem->_possibleActions.size()] = 1.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_possibleActions.size()] = 0.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_possibleActions.size()] = "Sigmoid";
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
-
 }
 
 void dVRACER::trainPolicy()
@@ -164,7 +163,6 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
-
 }
 
 std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
@@ -189,7 +187,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     std::vector<float> pActions(_problem->_possibleActions.size());
     std::vector<float> qValAndInvTemp(_policyParameterCount);
 
-    // Get the inverse of the temperature for the softmax distribution  
+    // Get the inverse of the temperature for the softmax distribution
     const float invTemperature = evaluation[b][_policyParameterCount];
 
     // Iterating all Q(s,a)

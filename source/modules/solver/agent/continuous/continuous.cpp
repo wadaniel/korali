@@ -79,7 +79,7 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];
+      const size_t varIdx = _problem->_actionVectorIndexes[i];
       const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -397,7 +397,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (std::isfinite(logImportanceWeight) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
 
   // Calculating actual importance weight by exp
-  const float importanceWeight = std::exp(logImportanceWeight);
+  const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
   return importanceWeight;
 }
@@ -438,8 +438,8 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
     }
 
-    float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    float importanceWeight = std::exp(logImportanceWeight);
+    const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) importanceWeightGradients[i] *= importanceWeight;
@@ -482,7 +482,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -557,7 +557,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -643,7 +643,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -953,14 +953,6 @@ void Continuous::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Action Scales");
  }
 
- if (isDefined(js, "Policy", "Parameter Count"))
- {
- try { _policyParameterCount = js["Policy"]["Parameter Count"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ continuous ] \n + Key:    ['Policy']['Parameter Count']\n%s", e.what()); } 
-   eraseValue(js, "Policy", "Parameter Count");
- }
-
  if (isDefined(js, "Policy", "Parameter Transformation Masks"))
  {
  try { _policyParameterTransformationMasks = js["Policy"]["Parameter Transformation Masks"].get<std::vector<std::string>>();
@@ -1020,7 +1012,6 @@ void Continuous::getConfiguration(knlohmann::json& js)
  if(_normalGenerator != NULL) _normalGenerator->getConfiguration(js["Normal Generator"]);
    js["Action Shifts"] = _actionShifts;
    js["Action Scales"] = _actionScales;
-   js["Policy"]["Parameter Count"] = _policyParameterCount;
    js["Policy"]["Parameter Transformation Masks"] = _policyParameterTransformationMasks;
    js["Policy"]["Parameter Scaling"] = _policyParameterScaling;
    js["Policy"]["Parameter Shifting"] = _policyParameterShifting;

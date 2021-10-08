@@ -42,7 +42,7 @@ enum termination_t
   e_terminal = 1,
 
   /**
-   * @brief This is the terminal experience in a truncated episode
+   * @brief This is the terminal experience in a truncated episode.
    *        (i.e., should have continued, but it was artificially truncated to limit running time)
    */
   e_truncated = 2
@@ -61,17 +61,22 @@ struct policy_t
   /**
   * @brief Contains the parameters that define the policy distribution used to produced the action.
   *        For continuous policies, it depends on the distribution selected.
-  *        For discrete policies, it contains the categorical probability of every action.
+  *        For discrete policies, the q-values of every action and the temperature parameter for the softMax function.
   */
   std::vector<float> distributionParameters;
 
   /**
-  * @brief [Discrete] Stores the index of the selected experience
+  * @brief [Discrete] Stores the index of the selected experience.
   */
   size_t actionIndex;
-
+ 
   /**
-   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
+  * @brief [Discrete] Stores the action probabilities of the categorial distribution.
+  */
+  std::vector<float> actionProbabilities;
+  
+  /**
+   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution.
    */
   std::vector<float> unboundedAction;
 };
@@ -194,6 +199,10 @@ class Agent : public Solver
   * @brief The factor (f) by which te reward is scaled down. R = f * R
   */
    float _rewardOutboundPenalizationFactor;
+  /**
+  * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
+  */
+   size_t _policyParameterCount;
   /**
   * @brief [Internal Use] Lower bounds for actions.
   */

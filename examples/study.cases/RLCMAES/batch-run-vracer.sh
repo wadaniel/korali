@@ -1,6 +1,6 @@
 #!/bin/bash
 
-run=21
+run=22
 noise=0.0
 reps=100
 version=1
@@ -11,12 +11,10 @@ obj="random"
 #pops=(14 16 18)
 exp=5000000
 
-#dims=(2 4 8 16 32 64)
-#pops=(8 16 32 64 128 256)
-#dims=(32 64)
-#pops=(128 256)
-dims=(2 4 8)
-pops=(8 16 32)
+#dims=(2 4 8 16) #32 64)
+#pops=(8 16 32 64) #128 256)
+dims=(32 64)
+pops=(128 256)
 
 objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
 

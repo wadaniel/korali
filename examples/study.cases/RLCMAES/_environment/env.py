@@ -12,7 +12,7 @@ def env(s, objective, dim, populationSize, noise, version):
 
  # Selecting environment
  if objective == "random":
-     envId = s["Sample Id"] % 8
+     envId = s["Sample Id"] % len(objectiveList)
      s["Environment Id"] = envId
      objective = objectiveList[envId]
 

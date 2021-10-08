@@ -45,7 +45,7 @@ version = args.version
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
 if objective == "random":
-    environmentCount = 8
+    environmentCount = 10
 else:
     environmentCount = 1
 

@@ -14,7 +14,7 @@ void Discrete::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
-    
+
   _policyParameterCount = _problem->_possibleActions.size() + 1; // q values and inverseTemperature
 }
 
@@ -106,7 +106,7 @@ std::vector<float> Discrete::calculateImportanceWeightGradient(const policy_t &c
 
   const float invTemperature = curPolicy.distributionParameters[_problem->_possibleActions.size()];
   const auto &curDistParams = curPolicy.distributionParameters;
-  
+
   const size_t oldActionIdx = oldPolicy.actionIndex;
   const auto pCurPolicy = curPolicy.actionProbabilities[oldActionIdx];
   const auto pOldPolicy = oldPolicy.actionProbabilities[oldActionIdx];
@@ -134,7 +134,6 @@ std::vector<float> Discrete::calculateImportanceWeightGradient(const policy_t &c
   // calculate gradient of importance weight wrt. inverse temperature
   grad[_problem->_possibleActions.size()] = importanceWeight * (curDistParams[oldActionIdx] - qpSum);
 
-
   return grad;
 }
 
@@ -142,9 +141,9 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const policy_t &oldPo
 {
   const float invTemperature = curPolicy.distributionParameters[_problem->_possibleActions.size()];
   const auto &curDistParams = curPolicy.distributionParameters;
-  
+
   std::vector<float> klGrad(_problem->_possibleActions.size() + 1, 0.0);
-  
+
   // Gradient wrt NN output i (qvalue i)
   for (size_t i = 0; i < _problem->_possibleActions.size(); ++i)
   {
@@ -157,14 +156,14 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const policy_t &oldPo
         klGrad[i] += invTemperature * oldPolicy.actionProbabilities[j] * curPolicy.actionProbabilities[i];
     }
   }
- 
+
   float qpSum = 0.;
   for (size_t j = 0; j < _problem->_possibleActions.size(); ++j)
     qpSum += curDistParams[j] * curPolicy.actionProbabilities[j];
 
   // Gradient wrt inverse temperature parameter
   for (size_t j = 0; j < _problem->_possibleActions.size(); ++j)
-    klGrad[_problem->_possibleActions.size()] -= oldPolicy.actionProbabilities[j] * (curDistParams[j] - qpSum); 
+    klGrad[_problem->_possibleActions.size()] -= oldPolicy.actionProbabilities[j] * (curDistParams[j] - qpSum);
 
   return klGrad;
 }

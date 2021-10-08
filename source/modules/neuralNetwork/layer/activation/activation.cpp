@@ -185,7 +185,7 @@ void Activation::forwardData(const size_t t)
     if (_function == "Elementwise/SoftReLU")
     {
       for (size_t i = 0; i < N * OC; i++)
-          _outputValues[i] = std::log(1.0f + std::exp(_prevLayer->_outputValues[i]));
+        _outputValues[i] = std::log(1.0f + std::exp(_prevLayer->_outputValues[i]));
     }
 
     if (_function == "Elementwise/Tanh")
@@ -298,7 +298,7 @@ void Activation::backwardData(const size_t t)
     if (_function == "Elementwise/SoftReLU")
       for (size_t i = 0; i < N * OC; i++)
       {
-        const float expOutVal = std::exp( _outputValues[i] );
+        const float expOutVal = std::exp(_outputValues[i]);
         _prevLayer->_outputGradient[i] = _outputGradient[i] * (expOutVal - 1.0f) / expOutVal;
       }
 

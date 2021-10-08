@@ -122,8 +122,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
-   finalizeEnvironment();
-   return;
+    finalizeEnvironment();
+    return;
   }
 
   // If multiple Enviroments, get the environment Id from each agent
@@ -246,8 +246,8 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
-   finalizeEnvironment();
-   return;
+    finalizeEnvironment();
+    return;
   }
 
   // Running environment using the last policy only

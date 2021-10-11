@@ -35,6 +35,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  colCurrIndex = 0.0
 
  ## Checking for multi envs and splitting results
+ envIds = None
  environmentCount = results[0][-1]["Problem"]["Environment Count"]
  if environmentCount > 1:
     if len(results) > 1:
@@ -50,6 +51,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         splittedResults.append([res])
 
     results = splittedResults
+
+ envIds = [str(idx) for idx in envIds]
 
  ## Reading the individual results
  unpackedResults = []
@@ -123,7 +126,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=envIds[resId]) 
 
   # Plotting confidence intervals
   if showCI > 0.:

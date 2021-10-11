@@ -41,7 +41,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMAESX/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/RLCMAESA/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py
@@ -60,7 +60,8 @@ python -m korali.rlview --dir "_vracer_${obj}_${dim}_${pop}_${noise}_${run}/" --
 
 python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --eval --reps $reps --version=$version
 
-objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
+#objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
+objectives=("fsphere" "felli" "fparabr" "booth" "rosenbrock" "dixon" "ackley" "levi" "rastrigin")
 
 for o in "\${objectives[@]}";
 do

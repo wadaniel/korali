@@ -53,7 +53,7 @@ for idx, filename in enumerate(args.files):
     ax1.fill_between(gens, objectiveHistoryLowerQuantile, objectiveHistoryUpperQuantile, color=col, alpha=0.2)
 
     # action plot
-    ax2.plot(gens, actionHistory, c=col, linestyle='solid', linewidth=0.5)
+    ax2.plot(gens, actionHistory, c=col, linestyle='solid', linewidth=0.5, label=["cs", "cm", "cu"]) # cs, cm, cu
     #ax2.plot(gens, actionHistoryUpperQuantile, c=col, linestyle='solid', linewidth=0.5)
     #ax2.plot(gens, actionHistoryLowerQuantile, c=col, linestyle='solid', linewidth=0.5)
 

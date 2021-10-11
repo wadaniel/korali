@@ -6,7 +6,8 @@ from objective import *
 
 maxSteps = 100
 
-objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
+#objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
+objectiveList = ["fsphere", "felli", "fparabr", "booth", "rosenbrock", "dixon", "ackley", "levi", "rastrigin" ]
  
 def env(s, objective, dim, populationSize, noise, version):
 

@@ -83,6 +83,12 @@ class ObjectiveFactory:
         self.a += -7
         self.b += -5
         self.function = lambda x : (np.sum(x[:int(self.dim/2)])+np.sum(x[int(self.dim/2):])*2+self.a)**2 + (np.sum(x[:int(self.dim/2):])*2+np.sum(x[int(self.dim/2):])+self.b)**2
+ 
+    elif self.objective == "dixon":
+        # zero at (1,3)
+        self.a += -1
+        self.b += +2
+        self.function = lambda x : (x[0]+self.a)**2 + np.sum(np.array(range(2,self.dim))*(self.b*x[2:]**2-x[1:-1])**2)
 
     elif self.objective == "rosenbrock":
         # zero at b
@@ -117,6 +123,12 @@ class ObjectiveFactory:
         self.a += 20
         self.b += 0
         self.function = lambda x : -self.a*np.exp(-0.2*np.sqrt(1/self.dim*np.sum(np.power(x-self.b, 2))))-np.exp(1/self.dim*np.sum(np.cos(2.*np.pi*(x-self.b)))) + self.a + np.exp(1)
+ 
+    elif self.objective == "rastrigin":
+        # zero at b
+        self.a += 10
+        self.b += 0
+        self.function = lambda x : self.a*self.dim+np.sum(x**2-self.a*np.cos(2*np.pi*x))
  
     elif self.objective == "bukin":
         # zero at (0.1*b, 0.1*b, .., -b)

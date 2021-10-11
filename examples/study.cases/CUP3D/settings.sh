@@ -50,7 +50,7 @@ FACTORY+="StefanFish L=0.2 T=1 xpos=1.80 ypos=1.00 zpos=1.00 bFixToPlanar=1 bFix
 "
 
 # plane 3 with 4 fish
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=1.00 zpos=1.10 bFixToPlanar=1 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
+FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=1.00 zpos=1.10 bFixToPlanar=1 bFixFrameOfRef=1 Correct=1 heightProfile=danio widthProfile=stefan
 "
 FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=0.90 zpos=1.10 bFixToPlanar=1 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
 "

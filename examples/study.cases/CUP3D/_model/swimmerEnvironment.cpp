@@ -203,9 +203,6 @@ void runEnvironment(korali::Sample &s)
       // Check termination because leaving margins
       for( size_t i = 0; i<nAgents; i++ )
         done = ( done || isTerminal( agents[i] ) );
-
-      // Allreduce for termination
-      MPI_Allreduce( MPI_IN_PLACE, &done, 1, MPI_C_BOOL, MPI_LOR, comm );
     }
 
     // Get and store state and action

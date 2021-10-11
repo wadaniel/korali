@@ -280,6 +280,7 @@ void runEnvironment(korali::Sample &s)
     fclose(logFile);
 
   // delete simulation class
+  MPI_Barrier(comm);
   if( rank == 0 )
     delete _environment;
 

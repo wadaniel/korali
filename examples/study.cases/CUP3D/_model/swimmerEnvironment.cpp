@@ -170,12 +170,10 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // Broadcast action(s) to all ranks
-    MPI_Bcast( actions.data(), actions.size()*actions[0].size(), MPI_DOUBLE, 0, comm );
-
-    // Apply action
+    // Broadcast and apply action(s) [Careful, hardcoded the number of action(s)!]
     for( size_t i = 0; i<nAgents; i++ )
     {
+      MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
       // std::cout << "Applying action(" << t<< ") = [ ";
       // for( size_t j = 0; j<actions[i].size(); j++ )
       //   std::cout << actions[i][j] << " ";

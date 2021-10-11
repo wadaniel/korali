@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-run-vracer-predict.sh RUNNAME"
+	echo "Usage: ./sbatch-run-vracer-prediction.sh RUNNAME"
 	exit 1
 fi
 if [ $# -gt 0 ] ; then
@@ -14,7 +14,7 @@ NNODES=16
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
-cp run-vracer-predict ${RUNPATH}
+cp run-vracer-prediction ${RUNPATH}
 cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
 
@@ -34,7 +34,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 export OMP_NUM_THREADS=12
-srun ./run-vracer-predict ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
+srun ./run-vracer-prediction ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
 EOF
 
 chmod 755 daint_sbatch

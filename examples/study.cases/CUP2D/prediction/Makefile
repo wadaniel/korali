@@ -1,4 +1,4 @@
-PREDICT = run-vracer-predict
+PREDICTION = run-vracer-prediction
 KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -8,11 +8,11 @@ CUBISMLIBS= ${CUPFOLDER}/makefiles/libcup.a $(shell cat ${CUPFOLDER}/makefiles/c
 
 .SECONDARY:
 .PHONY: all
-all: predict
+all: prediction
 
-predict: $(PREDICT)
+prediction: $(PREDICTION)
 
-$(PREDICT): %: %.o predictionEnvironment.o ${CUPFOLDER}/makefiles/libcup.a
+$(PREDICTION): %: %.o predictionEnvironment.o ${CUPFOLDER}/makefiles/libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp
@@ -23,4 +23,4 @@ predictionEnvironment.o: _model/predictionEnvironment.cpp
 
 .PHONY: clean
 clean:
-	$(RM) $(PREDICT) *.txt *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(PREDICTION) *.txt *.o *.ti *.optrpt *.h5 *.dat *.xmf

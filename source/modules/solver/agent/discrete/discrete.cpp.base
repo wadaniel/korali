@@ -21,8 +21,12 @@ void __className__::getAction(korali::Sample &sample)
 
   // Getting the probability of the actions given by the agent's policy
   auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
-  // TODO: for loop over p actions but runPolicy needs to be defined
-  const auto &pActions = policy.distributionParameters;
+  
+  std::vector<std::vector<float>> distParams (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].distributionParameters.size()));
+  for ( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+    distParams[d] = policy[d].distributionParameters;
+
+  const auto &pActions = distParams;
 
   // Storage for the action index to use
   std::vector<size_t> actionIdx (_problem->_agentsPerEnvironment,0);
@@ -53,9 +57,9 @@ void __className__::getAction(korali::Sample &sample)
       {
         // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
         float curSum = 0.0;
-        for (actionIdx[d] = 0; actionIdx[d] < pActions.size() - 1; actionIdx[d]++)
+        for (actionIdx[d] = 0; actionIdx[d] < pActions[d].size() - 1; actionIdx[d]++)
         {
-          curSum += pActions[actionIdx[d]];
+          curSum += pActions[d][actionIdx[d]];
           if (x < curSum) break;
         }
 
@@ -75,7 +79,7 @@ void __className__::getAction(korali::Sample &sample)
     for ( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       
-      actionIdx[d] = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      actionIdx[d] = std::distance(pActions[d].begin(), std::max_element(pActions[d].begin(), pActions[d].end()));
     }
     /*****************************************************************************
   * Storing the action itself
@@ -84,11 +88,17 @@ void __className__::getAction(korali::Sample &sample)
   // Storing action itself, its idx, and probabilities
   sample["Policy"]["Distribution Parameters"] = pActions;
   sample["Policy"]["Action Index"] = actionIdx;
-  sample["Policy"]["State Value"] = policy.stateValue;
+
+  std::vector<std::vector<float>> act (_problem->_agentsPerEnvironment, std::vector<float>((_problem->_possibleActions[actionIdx[0]]).size()));
+  std::vector<float> stValue (_problem->_agentsPerEnvironment);
 
   for ( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    sample["Action"][d] = _problem->_possibleActions[actionIdx[d]]; 
-  
+  {
+    act[d] = _problem->_possibleActions[actionIdx[d]]; 
+    stValue[d] = policy[d].stateValue;
+  }
+  sample["Action"] = act;
+  sample["Policy"]["State Value"] = stValue;
 }
 
 std::vector<float> __className__::calculateImportanceWeight(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy)
@@ -144,7 +154,7 @@ std::vector<std::vector<float>> __className__::calculateImportanceWeightGradient
 
   return grad;
 }
-
+//TODO: may be problematic
 std::vector<std::vector<float>>__className__::calculateKLDivergenceGradient(const std::vector<std::vector<float>> &oldPvalues, const std::vector<std::vector<float>> &curPvalues)
 {
   std::vector<std::vector<float>> klGrad(_problem->_agentsPerEnvironment,std::vector<float> (_problem->_possibleActions.size(), 0.0));

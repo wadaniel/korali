@@ -36,7 +36,7 @@ class __className__ : public __parentClassName__
    */
   void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
 
-  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+  std::vector<std::vector<policy_t>> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -166,7 +166,7 @@ namespace
   episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
   a->_rewardVector.clear();
   ASSERT_NO_THROW(a->processEpisode(0, episode));
-  ASSERT_EQ(a->_rewardVector[0], 0.5f);
+  ASSERT_EQ(a->_rewardVector[0], std::vector<float>({0.5f}));
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
@@ -1180,13 +1180,13 @@ namespace
    auto baseExpJs = experimentJs;
 
    // Testing distribution corner cases
-   policy_t curPolicy;
-   policy_t prevPolicy;
-   curPolicy.distributionParameters = std::vector<float>({0.0, 1.0});
-   prevPolicy.distributionParameters = std::vector<float>({0.0, 0.5});
-   curPolicy.unboundedAction = std::vector<float>({0.1f});
-   prevPolicy.unboundedAction = std::vector<float>({0.1f});
-   auto testAction = std::vector<float>({0.1f});
+   std::vector<policy_t> curPolicy (1);
+   std::vector<policy_t> prevPolicy(1);
+   curPolicy[0].distributionParameters = std::vector<float>({0.0, 1.0});
+   prevPolicy[0].distributionParameters = std::vector<float>({0.0, 0.5});
+   curPolicy[0].unboundedAction = std::vector<float>({0.1f});
+   prevPolicy[0].unboundedAction = std::vector<float>({0.1f});
+   auto testAction = std::vector<std::vector<float>>(1,std::vector<float>({0.1f}));
 
    a->_policyDistribution = "Normal";
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
@@ -1197,19 +1197,19 @@ namespace
    ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
 
    a->_policyDistribution = "Beta";
-   a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});
-   a->_actionUpperBounds = std::vector<float>({1.0f});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-std::numeric_limits<float>::infinity()}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<float>({0.0f});
-   a->_actionUpperBounds = std::vector<float>({+std::numeric_limits<float>::infinity()});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({0.0f}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({+std::numeric_limits<float>::infinity()}));
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<float>({-1.0f});
-   a->_actionUpperBounds = std::vector<float>({1.0f});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-1.0f}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
    ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   curPolicy.distributionParameters = std::vector<float>({0.5, 0.2236});
+   curPolicy[0].distributionParameters = std::vector<float>({0.5, 0.2236});
    ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
 
    ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
@@ -1225,16 +1225,16 @@ namespace
    a->_policyDistribution = "Squashed Normal";
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});
-   a->_actionUpperBounds = std::vector<float>({1.0f});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-std::numeric_limits<float>::infinity()}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<float>({0.0f});
-   a->_actionUpperBounds = std::vector<float>({+std::numeric_limits<float>::infinity()});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({+std::numeric_limits<float>::infinity()}));
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<float>({0.0f});
-   a->_actionUpperBounds = std::vector<float>({1.0f});
+   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({0.0f}));
+   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
    ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
    ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
@@ -1255,7 +1255,7 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
-   agentJs["Action Shifts"] = std::vector<float>({0.0});
+   agentJs["Action Shifts"] = std::vector<std::vector<float>>(1,std::vector<float>({0.0}));
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
    agentJs = baseOptJs;
@@ -1265,7 +1265,7 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
-   agentJs["Action Scales"] = std::vector<float>({0.0});
+   agentJs["Action Scales"] = std::vector<std::vector<float>>(1,std::vector<float>({0.0}));
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
    agentJs = baseOptJs;
@@ -1558,19 +1558,21 @@ namespace
    auto baseExpJs = experimentJs;
 
    // Testing distribution corner cases
-   policy_t curPolicy;
-   policy_t prevPolicy;
-   curPolicy.distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
-   curPolicy.actionIndex = 0;
-   prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
-   prevPolicy.actionIndex = 0;
-   size_t testActionIdx = 0;
-   auto testAction = std::vector<float>({-10.0f});
+   std::vector<policy_t> curPolicy(1);
+   std::vector<policy_t> prevPolicy(1);
+   curPolicy[0].distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
+   std::vector<std::vector<float>>curPvalues (1, curPolicy[0].distributionParameters);
+   curPolicy[0].actionIndex = 0;
+   prevPolicy[0].distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
+   prevPolicy[0].actionIndex = 0;
+   std::vector<std::vector<float>> oldPvalues (1, prevPolicy[0].distributionParameters);
+   std::vector<size_t> testActionIdx = std::vector<size_t>({0});
+   auto testAction = std::vector<std::vector<float>>(1,std::vector<float>({-10.0f}));
 
    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
    ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPvalues, oldPvalues));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPvalues, oldPvalues));
 
    // Testing mandatory parameters
 

@@ -112,8 +112,8 @@ void __className__::runTrainingEpisode(Sample &agent)
     getAction(agent);
 
     // Store the current state in the experience
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["State"] = agent["State"][i];
+    
+    episodes["Experiences"][actionCount]["State"] = agent["State"];
 
     // Storing the current action
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -140,8 +140,7 @@ void __className__::runTrainingEpisode(Sample &agent)
 
     // If the episodes was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
-      for (size_t i = 0; i < _agentsPerEnvironment; i++)
-        episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
+      episodes["Experiences"][actionCount]["Truncated State"] = agent["State"];
 
     // Adding to cumulative training rewards
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -275,8 +274,8 @@ void __className__::initializeEnvironment(Sample &agent)
   _agent->resetTimeSequence();
 
   // Define state rescaling variables
-  _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
-  _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
+  _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
+  _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
 
   // Appending any user-defined settings
   agent["Custom Settings"] = _customSettings;
@@ -342,9 +341,9 @@ void __className__::runEnvironment(Sample &agent)
   // In case of this being a single agent, support returning state as only vector
   if (_agentsPerEnvironment == 1)
   {
-    auto state = KORALI_GET(std::vector<float>, agent, "State");
+    auto state = KORALI_GET(std::vector<std::vector<float>>, agent, "State");
     agent._js.getJson().erase("State");
-    agent["State"][0] = state;
+    agent["State"] = state;
   }
 
   // Checking correct format of state
@@ -368,7 +367,7 @@ void __className__::runEnvironment(Sample &agent)
 
     // Scale the state
     for (size_t d = 0; d < _stateVectorSize; ++d)
-      state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
+      state[d] = (state[d] - _stateRescalingMeans[i][d]) / _stateRescalingSdevs[i][d];
 
     // Re-storing state into agent
     agent["State"][i] = state;

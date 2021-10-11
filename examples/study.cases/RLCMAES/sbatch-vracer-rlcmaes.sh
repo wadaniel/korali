@@ -21,7 +21,7 @@ pop=8
 run=0
 noise=0.0
 obj="random"
-exp=5000000
+exp=10000000
 reps=100
 version=1
 outdir="figures"
@@ -41,7 +41,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMAESA/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/RLCMAESD/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py

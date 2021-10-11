@@ -58,6 +58,7 @@ for idx, filename in enumerate(args.files):
     #ax2.plot(gens, actionHistoryLowerQuantile, c=col, linestyle='solid', linewidth=0.5)
 
 ax1.legend()
+ax2.legend()
 plt.title("Median of scale (dotted), best objective (solid), and mu-objective (dashed)")
 plt.tight_layout()
 plt.savefig(args.out, format='png')

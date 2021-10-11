@@ -4,10 +4,11 @@ from objective import *
 
 ######## Defining Environment Storage
 
-maxSteps = 100
+maxSteps = 500
 
 #objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
-objectiveList = ["fsphere", "felli", "fparabr", "booth", "rosenbrock", "dixon", "ackley", "levi", "rastrigin" ]
+#objectiveList = ["fsphere", "felli", "fparabr", "booth", "rosenbrock", "dixon", "ackley", "levi", "rastrigin" ]
+objectiveList = ["fsphere", "felli", "rosenbrock", "dixon", "ackley", "levi"]
  
 def env(s, objective, dim, populationSize, noise, version):
 

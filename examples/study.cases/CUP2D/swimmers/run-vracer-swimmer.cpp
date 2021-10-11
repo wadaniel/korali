@@ -46,13 +46,11 @@ int main(int argc, char *argv[])
   #ifdef MULTITASK
   e["Problem"]["Environment Count"] = 3;
   #endif
-  e["Problem"]["Training Reward Threshold"] = 100.0;
-  e["Problem"]["Policy Testing Episodes"] = 5;
-  // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path and dumping frequency in CUP
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
+  // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the state variables
   #ifdef NOSENSOR

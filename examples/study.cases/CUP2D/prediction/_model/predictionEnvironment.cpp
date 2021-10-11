@@ -100,7 +100,7 @@ void runEnvironment(korali::Sample &s)
     // Checking termination (not implemented)
     done = (done || isTerminal());
 
-    // Setting action
+    // Setting reward
     std::vector<double> rewards(nAgents, 0);
 
     // Getting block information
@@ -163,9 +163,12 @@ void runEnvironment(korali::Sample &s)
       auto action = actions[agentID].get<std::vector<double>>();
 
       // Computing reward and assigning to container
-      for(size_t j = 0; j<3; ++j)
+      for(size_t j = 0; j<3; ++j){
         rewards[agentID] -= (action[j] - state[j]) * (action[j] - state[j]); // TODO, try different norm & weigths for p,u,v
-      
+        // std::cout << "action_j: " << action[j] << std::endl;
+        // std::cout << "state_j: " << state[j] << std::endl;
+        // std::cout << "rewards[agentID]: " << rewards[agentID] << std::endl;
+      }
       agentID++;
     }
     

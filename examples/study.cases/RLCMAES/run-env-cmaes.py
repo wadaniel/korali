@@ -36,7 +36,7 @@ reps=args.reps
 
 resultdir = "_env_cmaes_{}_{}_{}_{}".format(objective, dim, populationSize, noise, args.run)
  
-maxSteps = 100
+maxSteps = 500
 
 # Calculate defaults to define cs and cm
 mu = int(populationSize/2)

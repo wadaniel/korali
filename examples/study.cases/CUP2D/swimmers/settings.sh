@@ -9,7 +9,7 @@ CTOL=${CTOL-1}
 EXTENT=${EXTENT:-2}
 CFL=${CFL:-0.4}
 PT=${PT:-1e-7}
-PTR=${PTR:-1e-4}
+PTR=${PTR:-0}
 PR=${PR:-100}
 
 # Defaults for follower

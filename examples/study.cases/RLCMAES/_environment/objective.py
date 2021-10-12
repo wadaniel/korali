@@ -41,8 +41,8 @@ class ObjectiveFactory:
 
     # Initialize variable params
     self.scale = self.cs
-    #self.mean = np.zeros(self.dim)
-    self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
+    self.mean = np.zeros(self.dim)
+    #self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
     self.cov = np.diag(np.ones(self.dim))
     self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)

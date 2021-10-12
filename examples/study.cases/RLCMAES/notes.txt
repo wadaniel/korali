@@ -5,6 +5,9 @@ RLCMAESB: results with 3 different objective types (random mean at 0)
 RLCMAESC: results with 3 different objective types, increased 500 steps and 10e6 exp (random mean at 0)
 
 
+RLCMAESE: results with 3 different objective types, increased 500 steps and 10e6 exp (random mean at 0)
+RLCMAESF: results with 3 different objective types, increased 500 steps and 10e6 exp (mean at 0)
+
 # Run 5
 standard setup
 running 2,4,8 dimension w 1e7 experiences

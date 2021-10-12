@@ -14,10 +14,25 @@ void __className__::getAction(korali::Sample &sample)
   // Get action for all the agents in the environment
   
   // Getting current state
-  auto state = sample["State"].get<std::vector<std::vector<float>>>();
 
-  // Adding state to the state time sequence
+
+  //if (_problem->_agentsPerEnvironment ==1 )
+  //{
+  //  auto temp = sample["State"].get<std::vector<float>>();
+  //  std::vector<std::vector<float>> state (1,temp);
+  //  _stateTimeSequence.add(state);
+  //}
+  //else{
+  //  auto state = sample["State"].get<std::vector<std::vector<float>>>();
+  //  _stateTimeSequence.add(state);
+  //}
+  
+  std::vector<std::vector<float>> state;
+  for(size_t i = 0; i<_problem->_agentsPerEnvironment; i++) {
+    state.push_back(sample["State"][i].get<std::vector<float>>());
+  }
   _stateTimeSequence.add(state);
+
 
   // Getting the probability of the actions given by the agent's policy
   auto policy = runPolicy({_stateTimeSequence.getVector()})[0];

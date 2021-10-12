@@ -55,6 +55,7 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 300
 e["Problem"]["Policy Testing Episodes"] = 40
 e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Agents Per Environment"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -91,7 +92,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = [0.3]
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["State Rescaling"]["Enabled"] = True

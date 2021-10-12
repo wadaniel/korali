@@ -190,6 +190,7 @@ void __className__::runGeneration()
 
 void __className__::trainingGeneration()
 {
+
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Setting generation-specific timers
@@ -200,6 +201,7 @@ void __className__::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
+
 
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
@@ -216,6 +218,7 @@ void __className__::trainingGeneration()
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
         KORALI_START(_agents[agentId]);
+
         _isAgentRunning[agentId] = true;
       }
 
@@ -229,7 +232,7 @@ void __className__::trainingGeneration()
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
-    {
+    { 
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
@@ -284,6 +287,7 @@ void __className__::trainingGeneration()
    *********************************************************************/
 
   // Updating average cumulative reward statistics
+
   _trainingAverageReward = 0.0f;
   ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
   ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
@@ -449,6 +453,7 @@ void __className__::attendAgent(size_t agentId)
       // Increasing session episode count
       _sessionEpisodeCount++;
     }
+    
   }
 
   auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling

@@ -105,7 +105,10 @@ void runEnvironment(korali::Sample &s)
     const double dt = _environment->calcMaxTimestep();
 
     // Advancing simulation
-    _environment->advance(dt); // updates t
+    _environment->advance(dt);
+
+    t += dt;
+
     }
 
     // Checking termination (not implemented)

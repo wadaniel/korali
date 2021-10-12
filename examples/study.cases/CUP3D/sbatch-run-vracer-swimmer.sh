@@ -12,10 +12,10 @@ fi
 NAGENTS=14
 
 # number of workers
-NWORKER=16
+NWORKER=1
 
 # number of nodes per worker
-NRANKS=16
+NRANKS=64
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))

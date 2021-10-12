@@ -42,6 +42,9 @@ void __className__::initializeAgent()
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mus and Sigmas
 
+
+    //TODO: If changed back to vector of vector already ready
+    /*
     // Allocating space for the required transformations
     _policyParameterTransformationMasks.resize(_problem->_agentsPerEnvironment);
     _policyParameterScaling.resize(_problem->_agentsPerEnvironment);
@@ -54,34 +57,39 @@ void __className__::initializeAgent()
       _policyParameterShifting[d].resize(_policyParameterCount);
     
     }
+    */
 
+    _policyParameterTransformationMasks.resize(_policyParameterCount);
+    _policyParameterScaling.resize(_policyParameterCount);
+    _policyParameterShifting.resize(_policyParameterCount);
 
     // Establishing transformations for the Normal policy
-    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        auto varIdx = _problem->_actionVectorIndexes[i]; 
-        float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+    //TODO: ADD back a foor loop  ofer agents if back to vector of vectpr
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      auto varIdx = _problem->_actionVectorIndexes[i]; 
+      float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
-        // Checking correct noise configuration
-        if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+      // Checking correct noise configuration
+      if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
-        // Identity mask for Means
-        _policyParameterScaling[d][i] = 1.0; //_actionScales[i];
-        _policyParameterShifting[d][i] = _actionShifts[d][i];
-        _policyParameterTransformationMasks[d][i] = "Identity";
+      // Identity mask for Means
+      _policyParameterScaling[i] = 1.0; //_actionScales[i];
+      //since eitherway all agents homogen at the moment
+      _policyParameterShifting[i] = _actionShifts[0][i];
+      _policyParameterTransformationMasks[i] = "Identity";
 
-        // Softplus mask for Sigmas
-        _policyParameterScaling[d][_problem->_actionVectorSize + i] = 2.0f * sigma;
-        _policyParameterShifting[d][_problem->_actionVectorSize + i] = 0.0f;
-        _policyParameterTransformationMasks[d][_problem->_actionVectorSize + i] = "Softplus";
-      }
+      // Softplus mask for Sigmas
+      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
+      _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus";
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mu and Variance
-
+    /* TODO: ADD BACK IF VECTOR OF VECTOR
     // Allocating space for the required transformations
     _policyParameterTransformationMasks.resize(_problem->_agentsPerEnvironment);
     _policyParameterScaling.resize(_problem->_agentsPerEnvironment);
@@ -93,27 +101,32 @@ void __className__::initializeAgent()
       _policyParameterScaling[d].resize(_policyParameterCount);
       _policyParameterShifting[d].resize(_policyParameterCount);
     }
+    */
+    _policyParameterTransformationMasks.resize(_policyParameterCount);
+    _policyParameterScaling.resize(_policyParameterCount);
+    _policyParameterShifting.resize(_policyParameterCount);
 
     // Establishing transformations for the Normal policy
-    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        auto varIdx = _problem->_actionVectorIndexes[i];  
-        const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+    // TODO: add back for loop
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      auto varIdx = _problem->_actionVectorIndexes[i];  
+      const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
-        // Checking correct noise configuration
-        if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+      // Checking correct noise configuration
+      if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
-        // Identity mask for Means
-        _policyParameterScaling[d][i] = 1.0f;
-        _policyParameterShifting[d][i] = _actionShifts[d][i];
-        _policyParameterTransformationMasks[d][i] = "Identity";
+      // Identity mask for Means
+      _policyParameterScaling[i] = 1.0f;
+      // since all agents homogen choose 0
+      _policyParameterShifting[i] = _actionShifts[0][i];
+      _policyParameterTransformationMasks[i] = "Identity";
 
-        // Sigmoid Mask for Variance
-        _policyParameterTransformationMasks[d][_problem->_actionVectorSize + i] = "Sigmoid";
-        _policyParameterScaling[d][_problem->_actionVectorSize + i] = 2.0f * sigma;
-        _policyParameterShifting[d][_problem->_actionVectorSize + i] = 0.0f;
-      }
+      // Sigmoid Mask for Variance
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Sigmoid";
+      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
+      _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
+    }
   }
 }
 //TODO: I don't know what : removed for loop combined problem up until approx 300

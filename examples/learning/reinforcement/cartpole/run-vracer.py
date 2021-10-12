@@ -4,6 +4,7 @@ import sys
 sys.path.append('./_model')
 from env import *
 import argparse
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -83,6 +84,7 @@ e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"][0]= 0.1
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = float(args.learningRate)

@@ -189,7 +189,6 @@ void __className__::runTrainingEpisode(Sample &agent)
   
   if (runTest)
   {
-    KORALI_LOG_ERROR("HERE2\n");
     float averageTestingReward = 0.0;
     float stdevTestingReward = 0.0;
     float bestTestingReward = -Inf;

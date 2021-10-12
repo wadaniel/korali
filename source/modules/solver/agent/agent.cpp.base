@@ -98,8 +98,8 @@ void __className__::initialize()
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
       KORALI_LOG_ERROR("Experience Replay Cutoff Scale must be larger 0.0");
 
-    std::vector<size_t> _experienceReplayOffPolicyCount(_problem->_agentsPerEnvironment, 0);
-    std::vector<float> _experienceReplayOffPolicyRatio (_problem->_agentsPerEnvironment, 0.0f);
+    _experienceReplayOffPolicyCount = std::vector<size_t> (_problem->_agentsPerEnvironment, 0);
+    _experienceReplayOffPolicyRatio = std::vector<float>  (_problem->_agentsPerEnvironment, 0.0f);
 
     float _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
 
@@ -108,9 +108,8 @@ void __className__::initialize()
     // Rescaling information
     _stateRescalingMeans = std::vector<std::vector<float>> (_problem->_agentsPerEnvironment, std::vector<float>(_problem->_stateVectorSize, 0.0f));
     _stateRescalingSigmas = std::vector<std::vector<float>> (_problem->_agentsPerEnvironment, std::vector<float>(_problem->_stateVectorSize, 1.0f));
-
-    std::vector<float> _rewardRescalingSigma (_problem->_agentsPerEnvironment, 1.0f);
-    std::vector<float> _rewardRescalingSumSquaredRewards (_problem->_agentsPerEnvironment, 0.0f);
+    _rewardRescalingSigma = std::vector<float> (_problem->_agentsPerEnvironment, 1.0f);
+    _rewardRescalingSumSquaredRewards = std::vector<float> (_problem->_agentsPerEnvironment, 0.0f);
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
@@ -388,19 +387,22 @@ void __className__::attendAgent(size_t agentId)
       }
 
       // Process every episode received and its experiences (add them to replay memory)
-      for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
-      {
-        processEpisode(episodeId, message["Episodes"][i]);
 
-        // Increasing total experience counters
-        _experienceCount += message["Episodes"][i]["Experiences"].size();
-        _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
-      }
+      processEpisode(episodeId, message["Episodes"]);
+
+      // Increasing total experience counters
+      _experienceCount += message["Episodes"]["Experiences"].size();
+      _sessionExperienceCount += message["Episodes"]["Experiences"].size();
+      
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
 
       // Getting the training reward of the latest episodes
+      //TODO: CHECK THIS MESS removed for loop 
+
+      if(message["Episodes"].size()>= 2) KORALI_LOG_ERROR("M had a bad feeling about this\n");
+      /*
       for (size_t i = 0; i < message["Episodes"].size(); i++)
       {
         _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
@@ -417,6 +419,21 @@ void __className__::attendAgent(size_t agentId)
         _trainingRewardHistory.push_back(_trainingLastReward);
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
       }
+      */
+
+      
+      _trainingLastReward = _agents[agentId]["Training Rewards"][agentId].get<float>();
+      // Keeping training statistics. Updating if exceeded best training policy so far.
+      if (_trainingLastReward > _trainingBestReward)
+      {
+        _trainingBestReward = _trainingLastReward;
+        _trainingBestEpisodeId = episodeId;
+        _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+      }
+
+      // Storing bookkeeping information
+      _trainingRewardHistory.push_back(_trainingLastReward);
+      _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
       // If the policy has exceeded the threshold during training, we gather its statistics
       if (_agents[agentId]["Tested Policy"] == true)
@@ -453,7 +470,7 @@ void __className__::attendAgent(size_t agentId)
       // Increasing session episode count
       _sessionEpisodeCount++;
     }
-    
+
   }
 
   auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
@@ -527,7 +544,9 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
           _rewardRescalingSumSquaredRewards[d] -= _rewardVector[0][d] * _rewardVector[0][d];
       }
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      { 
         _rewardRescalingSumSquaredRewards[d] += reward[d] * reward[d];
+      }
     }
 
     _rewardVector.add(reward);
@@ -552,14 +571,16 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
     _truncatedStateVector.add(truncatedState);
 
     // Getting policy information and state value
-    std::vector<policy_t> expPolicy;
-    std::vector<float> stateValue;
+    std::vector<policy_t> expPolicy(_problem->_agentsPerEnvironment);
+    std::vector<float> stateValue(_problem->_agentsPerEnvironment);
 
     if (isDefined(episode["Experiences"][expId], "Policy", "State Value")) //extension everywhere added std::vector
     {
       const auto state_value = episode["Experiences"][expId]["Policy"]["State Value"].get<std::vector<float>>();
       for (size_t d = 0; d < _problem->_agentsPerEnvironment;d++)
+      {
         expPolicy[d].stateValue = state_value[d];
+      }
       stateValue = episode["Experiences"][expId]["Policy"]["State Value"].get<std::vector<float>>();
     }
     else

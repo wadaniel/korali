@@ -13,24 +13,20 @@ def env(s):
  sampleId = s["Sample Id"]
  launchId = s["Launch Id"]
  cart.reset(sampleId * 1024 + launchId)
- print([(cart.getState()).tolist()])
  s["State"] =[(cart.getState()).tolist()]
  step = 0
  done = False
 
  while not done and step < maxSteps:
 
-  # Getting new action
-  pdb.set_trace()
   s.update()
   
   # Performing the action
-  
-  
   done = cart.advance(s["Action"][0])
   
   # Getting Reward
   s["Reward"] = [cart.getReward()]
+  
    
   # Storing New State
   s["State"] = [(cart.getState()).tolist()]
@@ -43,4 +39,3 @@ def env(s):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
- #pdb.set_trace()

@@ -41,8 +41,8 @@ class ObjectiveFactory:
 
     # Initialize variable params
     self.scale = self.cs
-    self.mean = np.zeros(self.dim)
-    #self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
+    #self.mean = np.zeros(self.dim)
+    self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
     self.cov = np.diag(np.ones(self.dim))
     self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)
@@ -247,7 +247,7 @@ class ObjectiveFactory:
 
     # Update mean
     prevMean = self.mean
-    self.mean += cm * self.scale * weightedMeanOfBest
+    self.mean = (1-cm) * self.mean + cm * self.scale * weightedMeanOfBest
 
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)

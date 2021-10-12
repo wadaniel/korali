@@ -23,6 +23,7 @@ noise=0.0
 obj="random"
 exp=10000000
 reps=100
+steps=100
 version=1
 outdir="figures"
 
@@ -41,7 +42,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMAESF/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/RLCMAESI/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py
@@ -55,10 +56,10 @@ pushd \$RUNPATH
 
 mkdir -p ${outdir}
 
-python run-vracer.py --noise $noise --obj $obj --dim $dim --pop $pop --run $run --exp $exp --version=$version
+python run-vracer.py --noise $noise --obj $obj --dim $dim --pop $pop --run $run --exp $exp --steps $steps --version=$version 
 python -m korali.rlview --dir "_vracer_${obj}_${dim}_${pop}_${noise}_${run}/" --out "${outdir}/${obj}_${dim}_${pop}_${run}.png"
 
-python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --eval --reps $reps --version=$version
+python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --steps $steps --eval --reps $reps --version=$version
 
 #objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
 #objectives=("fsphere" "felli" "fparabr" "booth" "rosenbrock" "dixon" "ackley" "levi" "rastrigin")
@@ -66,7 +67,7 @@ objectives=("fsphere" "felli" "rosenbrock" "dixon" "ackley" "levi")
 
 for o in "\${objectives[@]}";
 do
-    python run-env-cmaes.py --noise $noise --obj \$o --dim $dim --pop $pop --run $run --eval --reps $reps;
+    python run-env-cmaes.py --noise $noise --obj \$o --dim $dim --pop $pop --run $run --steps $steps --eval --reps $reps;
     vracerfile="history_vracer_\${o}_${dim}_${pop}_${noise}_${run}.npz"
     cmaesfile="history_cmaes_\${o}_${dim}_${pop}_${noise}_${run}.npz"
     outfile="${outdir}/history_\${o}_${dim}_${pop}_${noise}_${run}.png"

@@ -14,6 +14,7 @@ parser.add_argument('--pop', help='CMAES population size.', required=True, type=
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--feval', help='Evaluate stored policy.', required=False, type=str)
 parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=10, type=int)
+parser.add_argument('--steps', help='Number of optimization steps.', required=False, default=100, type=int)
 
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
@@ -39,6 +40,7 @@ populationSize = args.pop
 noise = args.noise
 maxExperiences = args.exp
 evaluation = args.eval
+steps = args.steps
 repetitions = args.reps
 version = args.version
 
@@ -64,14 +66,14 @@ if evaluation == True:
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s, fobjective, dim, populationSize, noise, version)
+lEnv = lambda s : env(s, fobjective, dim, populationSize, steps, noise, version)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Environment Count"] = environmentCount
-e["Problem"]["Testing Frequency"] = 500
+e["Problem"]["Testing Frequency"] = int(maxExperiences/(steps*200))
 e["Problem"]["Training Reward Threshold"] = np.inf
-e["Problem"]["Policy Testing Episodes"] = 50
+e["Problem"]["Policy Testing Episodes"] = 100
 
 if version == 0:
     i = 0

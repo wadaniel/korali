@@ -4,14 +4,15 @@ from objective import *
 
 ######## Defining Environment Storage
 
-maxSteps = 500
 
 #objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
 #objectiveList = ["fsphere", "felli", "fparabr", "booth", "rosenbrock", "dixon", "ackley", "levi", "rastrigin" ]
 objectiveList = ["fsphere", "felli", "rosenbrock", "dixon", "ackley", "levi"]
  
-def env(s, objective, dim, populationSize, noise, version):
+def env(s, objective, dim, populationSize, steps, noise, version):
 
+ maxSteps = steps
+ 
  # Selecting environment
  if objective == "random":
      envId = s["Sample Id"] % len(objectiveList)

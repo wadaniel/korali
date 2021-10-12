@@ -7,6 +7,9 @@ RLCMAESC: results with 3 different objective types, increased 500 steps and 10e6
 
 RLCMAESE: results with 3 different objective types, increased 500 steps and 10e6 exp (random mean at 0)
 RLCMAESF: results with 3 different objective types, increased 500 steps and 10e6 exp (mean at 0)
+RLCMAESG: results with 3 different objective types, increased testing frequency, increased 500 steps and 10e6 exp (mean at 0)
+RLCMAESH: results with 3 different objective types, increased testing frequency, 100 steps and 10e6 exp (mean at 0)
+RLCMAESI: results with 3 different objective types, increased testing frequency, 100 steps and 10e6 exp (random mean at 0)
 
 # Run 5
 standard setup

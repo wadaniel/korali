@@ -14,6 +14,7 @@ parser.add_argument('--pop', help='CMAES population size.', required=True, type=
 parser.add_argument('--obj', help='Objective function.', required=True, type=str)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=1, type=int)
+parser.add_argument('--steps', help='Number of optimization steps.', required=False, default=100, type=int)
 
 parser.add_argument('--noise', help='Noise level of objective function.', required=False, type=float, default=0.0)
 args = parser.parse_args()
@@ -32,11 +33,12 @@ dim = args.dim
 populationSize = args.pop
 noise = args.noise
 evaluation = args.eval
+steps = args.steps
 reps=args.reps
 
 resultdir = "_env_cmaes_{}_{}_{}_{}".format(objective, dim, populationSize, noise, args.run)
  
-maxSteps = 500
+maxSteps = steps
 
 # Calculate defaults to define cs and cm
 mu = int(populationSize/2)

@@ -1,15 +1,8 @@
-RLCMAESX: results from slides
-RLCMAESZ: results with 3 different objective types (wrong num envs)
-RLCMAESA: results with 3 different objective types (correct num envs)
-RLCMAESB: results with 3 different objective types (random mean at 0)
-RLCMAESC: results with 3 different objective types, increased 500 steps and 10e6 exp (random mean at 0)
-
-
-RLCMAESE: results with 3 different objective types, increased 500 steps and 10e6 exp (random mean at 0)
-RLCMAESF: results with 3 different objective types, increased 500 steps and 10e6 exp (mean at 0)
-RLCMAESG: results with 3 different objective types, increased testing frequency, increased 500 steps and 10e6 exp (mean at 0)
-RLCMAESH: results with 3 different objective types, increased testing frequency, 100 steps and 10e6 exp (mean at 0)
-RLCMAESI: results with 3 different objective types, increased testing frequency, 100 steps and 10e6 exp (random mean at 0)
+CMAESX: results from slides
+CMA: results with 3 different objective types (100 steps)
+CMA0: results with 3 different objective types (300 steps)
+CMA1: results with 3 different objective types (100 steps, random start)
+CMA2: results with 3 different objective types (300 steps, random start)
 
 # Run 5
 standard setup

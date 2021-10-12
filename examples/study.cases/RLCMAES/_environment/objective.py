@@ -41,8 +41,8 @@ class ObjectiveFactory:
 
     # Initialize variable params
     self.scale = self.cs
-    #self.mean = np.zeros(self.dim)
-    self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
+    self.mean = np.zeros(self.dim)
+    #self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
     self.cov = np.diag(np.ones(self.dim))
     self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)
@@ -251,7 +251,7 @@ class ObjectiveFactory:
 
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
-    self.scale *= np.exp(cs/dhat*(np.linalg.norm(self.paths)/self.chi-1))
+    self.scale *= np.exp((cs/dhat)*(np.linalg.norm(self.paths)/self.chi-1))
     
     if(self.scale < 1e-24):
         print("Warning: scale reaching lower bound")

@@ -54,7 +54,7 @@ In the figure below we see the evolution of the CMA-ES algorithm during 100 opti
 
 A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of :math:`| F - F_{best} |`.
 
-**Quadrant 2**: Objective Variables: This plot shows the evolution of the objective variables corresponding to the evaluation of :math:`|F|`. A line per each dimension of the optimization problem is plotted.
+**Quadrant 2**: Objective Variables: This plot shows a solid line for each objective variable corresponding to the evaluation of :math:`|F|` and a dashed line for each variable corresponding to :math:`F_{best}`.
 **Quadrant 3**: Square Root of Eigenvalues :math:`\mathbf{C}`: The square root of the Eigenvalues of :math:`\mathbf{C}` are the lengths of the axes of the (unscaled) covariance matrix. Optimally the lengths of the axes are of same magnitude.
 **Quadrant 4**: :math:`\sigma \sqrt{diag(\mathbf{C})}`: the square root of the diagonal elements of the (scaled) covariance matrix of the proposal distribution approximate the standard deviation of the parameters. Ideally the standard deviations of all coordinates are of same magnitude.
 

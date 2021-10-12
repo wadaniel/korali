@@ -93,9 +93,11 @@ void Agent::initialize()
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
     _currentLearningRate = _learningRate;
 
-    // Rescaling information
+    // State Rescaling information
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
     _stateRescalingSigmas = std::vector<float>(_problem->_stateVectorSize, 1.0);
+
+    // Reward Rescaling information
     _rewardRescalingSigma = std::vector<float>(_problem->_environmentCount, 1.0f);
     _rewardRescalingSumSquaredRewards = std::vector<float>(_problem->_environmentCount, 0.0f);
     _experienceCountPerEnvironment.resize(_problem->_environmentCount, 0);
@@ -181,7 +183,7 @@ void Agent::trainingGeneration()
     for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
-        _agents[agentId]["Sample Id"] = _currentEpisode++;
+        _agents[agentId]["Sample Id"] = _currentSampleID++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
         _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
@@ -333,9 +335,6 @@ void Agent::attendAgent(size_t agentId)
   // Retrieving the experience, if any has arrived for the current agent.
   if (_agents[agentId].retrievePendingMessage(message))
   {
-    // Getting episode Id
-    size_t episodeId = message["Sample Id"];
-
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
       KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
@@ -345,34 +344,19 @@ void Agent::attendAgent(size_t agentId)
     {
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
-      {
-        processEpisode(episodeId, message["Episodes"][i]);
-
-        // Increasing total experience counters
-        _experienceCount += message["Episodes"][i]["Experiences"].size();
-        _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
-      }
+       processEpisode(message["Episodes"][i]);
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
 
-      // Getting the training reward of the latest episodes
-      for (size_t i = 0; i < message["Episodes"].size(); i++)
+      // Storing bookkeeping information
+      for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-        _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
-
-        // Keeping training statistics. Updating if exceeded best training policy so far.
-        if (_trainingLastReward > _trainingBestReward)
-        {
-          _trainingBestReward = _trainingLastReward;
-          _trainingBestEpisodeId = episodeId;
-          _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
-        }
-
-        // Storing bookkeeping information
-        _trainingRewardHistory.push_back(_trainingLastReward);
-        _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Experiences"][0]["Environment Id"]);
+        float cumulativeAgentReward = _agents[agentId]["Training Rewards"][i].get<float>();
+        _trainingRewardHistory.push_back(cumulativeAgentReward);
+        _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Environment Id"].get<size_t>());
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
+        _trainingLastReward = cumulativeAgentReward;
       }
 
       // Obtaining profiling information
@@ -385,9 +369,6 @@ void Agent::attendAgent(size_t agentId)
 
       // Set agent as finished
       _isAgentRunning[agentId] = false;
-
-      // Increasing session episode count
-      _sessionEpisodeCount++;
     }
   }
 
@@ -396,20 +377,26 @@ void Agent::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
+void Agent::processEpisode(knlohmann::json &episode)
 {
   /*********************************************************************
   * Adding episode's experiences into the replay memory
   *********************************************************************/
 
+  // Getting this episode's Id from the global counter
+  size_t episodeId = _currentEpisode;
+
+  // Getting experience count from the episode
+  size_t curExperienceCount = episode["Experiences"].size();
+
+  // Getting environment id
+  auto environmentId = episode["Environment Id"].get<size_t>();
+
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
-  for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
+  for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
-    // Getting environment id
-    auto environmentId = episode["Experiences"][expId]["Environment Id"].get<size_t>();
-
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<float>>());
 
@@ -437,21 +424,32 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-    if (_rewardRescalingEnabled)
+   // When adding a new experience, we need to keep per-environemnt rescaling sums updated
+   // Adding the squared reward for the new experiences on its corresponding environment Id
+   _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
+
+   // Keeping the count for the environment id
+   _experienceCountPerEnvironment[environmentId]++;
+
+   // If experience replay is full and we are evicting an old experience, then subtract its contribution to its corresponding environment id
+    if (_rewardVector.size() == _experienceReplayMaximumSize)
     {
-      if (_rewardVector.size() == _experienceReplayMaximumSize)
-      {
-        _rewardRescalingSumSquaredRewards[_environmentIdVector[0]] -= _rewardVector[0] * _rewardVector[0];
-        _experienceCountPerEnvironment[_environmentIdVector[0]]--;
-      }
-      _rewardRescalingSumSquaredRewards[environmentId] += reward * reward;
-      _experienceCountPerEnvironment[environmentId]++;
+      const size_t evictedExperienceEnvironmentId = _environmentIdVector[0];
+      const float evictedExperienceReward = _rewardVector[0];
+
+      _rewardRescalingSumSquaredRewards[evictedExperienceEnvironmentId] -= evictedExperienceReward * evictedExperienceReward;
+
+      // Keeping the (decreasing) count for the environment id
+      _experienceCountPerEnvironment[evictedExperienceEnvironmentId]--;
     }
 
+    // Storing in the experience replay the environment id for the new experience
     _environmentIdVector.add(environmentId);
+
+    // Storing in the experience replay the reward of the new experience
     _rewardVector.add(reward);
 
-    // Keeping statistics
+    // Keeping global statistics on reward
     cumulativeReward += reward;
 
     // Checking experience termination status and truncated state
@@ -565,6 +563,14 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     for (size_t i = 0; i < _problem->_environmentCount; ++i)
       _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / ((float)_experienceCountPerEnvironment[i] + 1e-9)) + 1e-9;
   }
+
+  // Increasing episode counters
+  _sessionEpisodeCount++;
+  _currentEpisode++;
+
+  // Increasing total experience counters
+  _experienceCount += curExperienceCount;
+  _sessionExperienceCount += curExperienceCount;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

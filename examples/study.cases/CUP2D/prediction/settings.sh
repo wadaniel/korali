@@ -11,11 +11,11 @@ CFL=${CFL:-0.1}
 PT=${PT:-1e-10}
 PTR=${PTR:-0}
 # Defaults for Objects
-XPOS=${XPOS:-0.25}
+XPOS=${XPOS:-0.2}
 XVEL=${XVEL:-0.2}
 RADIUS=${RADIUS:-0.1}
 ## to compare against "High-resolution simulations of the flow around an impulsively started cylinder using vortex methods" By P. KOUMOUTSAKOST AND A. LEONARD ##
 # Re=40 <-> NU=0.01
-NU=${NU:-0.01}
+NU=${NU:-0.001}
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0 -nu $NU -tend 0 -muteAll 0 -verbose 0 -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 1"
 OBJECTS="disk radius=$RADIUS xpos=$XPOS bForced=1 bFixed=1 xvel=$XVEL tAccel=5"

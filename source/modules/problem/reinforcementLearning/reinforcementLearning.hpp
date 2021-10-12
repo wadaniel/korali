@@ -33,7 +33,7 @@ class ReinforcementLearning : public Problem
   */
    size_t _agentsPerEnvironment;
   /**
-  * @brief Number of concurrent environments to run.
+  * @brief Maximum number of different types of environments.
   */
    size_t _environmentCount;
   /**

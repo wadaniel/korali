@@ -597,10 +597,9 @@ class Agent : public Solver
 
   /**
   * @brief Additional post-processing of episode after episode terminated.
-  * @param episodeId The unique identifier of the provided episode
   * @param episode A vector of experiences pertaining to the episode.
   */
-  void processEpisode(size_t episodeId, knlohmann::json &episode);
+  void processEpisode(knlohmann::json &episode);
 
   /**
   * @brief Generates an experience mini batch from the replay memory

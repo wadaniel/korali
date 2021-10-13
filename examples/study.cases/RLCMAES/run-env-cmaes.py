@@ -50,6 +50,8 @@ cm = 1
 cu =  max(min(1-c1, 2*(ueff-2+1/ueff)/((dim+2)**2+ueff)),0)
 action = [cs, cm, cu]
 
+print("Running with cs: {}, cm: {}, cu: {}".format(cs, cm, cu))
+
 outfile = "history_cmaes_{}_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise, args.run)
 objective = ObjectiveFactory(objective, dim, populationSize)
 

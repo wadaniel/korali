@@ -90,6 +90,23 @@ if version == 0:
     e["Variables"][i]["Name"] = "Best Ever Evaluation"
     e["Variables"][i]["Type"] = "State"
     i += 1
+
+elif version == 1:
+    i = 0
+    for j in range(dim):
+        e["Variables"][i]["Name"] = "Mu Cov {}".format(j)
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+        
+    for j in range(mu):
+        e["Variables"][i]["Name"] = "Evaluation"
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+
+    e["Variables"][i]["Name"] = "Best Ever Evaluation"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+
 else:
     i = 0
     for j in range(dim):
@@ -101,6 +118,10 @@ else:
         e["Variables"][i]["Name"] = "Evaluation"
         e["Variables"][i]["Type"] = "State"
         i += 1
+ 
+    e["Variables"][i]["Name"] = "Path L2 Norm"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
 
     e["Variables"][i]["Name"] = "Best Ever Evaluation"
     e["Variables"][i]["Type"] = "State"

@@ -5,9 +5,8 @@ from objective import *
 ######## Defining Environment Storage
 
 
-#objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
-#objectiveList = ["fsphere", "felli", "fparabr", "booth", "rosenbrock", "dixon", "ackley", "levi", "rastrigin" ]
-objectiveList = ["fsphere", "felli", "rosenbrock", "dixon", "ackley", "levi"]
+objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
+#objectiveList = ["fsphere", "felli", "rosenbrock", "dixon", "ackley", "levi"]
  
 def env(s, objective, dim, populationSize, steps, noise, version):
 

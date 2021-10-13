@@ -27,7 +27,7 @@ class ObjectiveFactory:
     self.dhat = 1. + 2. * max(0, np.sqrt((self.ueff-1)/(self.dim+1))-1.) # d - cs
     self.cc = (4.+self.ueff/self.dim)/(self.dim+4.+2.*self.ueff/self.dim)
     self.c1 = 2./((self.dim+1.3)**2+self.ueff)
-    self.cu = min(1.-self.c1, 2.*(self.ueff-2+1/self.ueff)/((self.dim+2)**2+2.*self.ueff/2))
+    self.cu = min(1.-self.c1, 2.*(self.ueff-2+1/self.ueff)/((self.dim+2)**2+self.ueff))
    
     self.cs = (self.ueff+2.)/(self.dim+self.ueff+5)
     self.cm = 1.
@@ -41,8 +41,8 @@ class ObjectiveFactory:
 
     # Initialize variable params
     self.scale = self.cs
-    self.mean = np.zeros(self.dim)
-    #self.mean = np.random.uniform(low=-1., high=1., size=self.dim)
+    #self.mean = np.zeros(self.dim)
+    self.mean = np.random.uniform(low=-5., high=5., size=self.dim)
     self.cov = np.diag(np.ones(self.dim))
     self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)
@@ -288,12 +288,20 @@ class ObjectiveFactory:
         state[-1] = self.bestEver/self.curEf # relative function eval
         assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
 
-    else:
+    elif self.version == 1:
         state = np.zeros(self.dim+self.mu+1)
         state[:self.dim] = np.diag(self.covMu)
         state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
         state[-1] = self.bestEver/self.curEf
-    
+
+    else:
+        state = np.zeros(self.dim+self.mu+2)
+        state[:self.dim] = np.diag(self.covMu)
+        state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
+        state[-2] = np.linalg.norm(self.paths)
+        state[-1] = self.bestEver/self.curEf
+
+   
     return state
 
 

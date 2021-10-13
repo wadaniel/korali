@@ -83,6 +83,10 @@ void runEnvironment(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
+  double t = 0;
+  // const double t_start = 5; // set to tAccel (from Cubism) plus some time to allow information propagation (to predict steady-state)
+  double tNextAct = 0;
+  const double dtNextAct = 0.1;
   while(curStep < maxSteps && done == false){
 
     // Getting new actions
@@ -91,11 +95,21 @@ void runEnvironment(korali::Sample &s)
     // Reading new action(s)
     auto actions = s["Action"];
 
-    // Running one step of the simulation
+    // Updating time to the next action
+    tNextAct += dtNextAct;
+
+    // Running simulation until predefined time
+    while(t < tNextAct){
+
+    // Computing CFD timestep
     const double dt = _environment->calcMaxTimestep();
 
     // Advancing simulation
     _environment->advance(dt);
+
+    t += dt;
+
+    }
 
     // Checking termination (not implemented)
     done = (done || isTerminal());
@@ -123,7 +137,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     size_t agentID = 0;
-    // Explore field and build state vector given candidate stencil
+    // Exploring field and building state vector given candidate stencil
     for (int a = 0; a<nBlocks; a++){
     
       // Setting container for state
@@ -164,10 +178,7 @@ void runEnvironment(korali::Sample &s)
 
       // Computing reward and assigning to container
       for(size_t j = 0; j<3; ++j){
-        rewards[agentID] -= (action[j] - state[j]) * (action[j] - state[j]); // TODO, try different norm & weigths for p,u,v
-        // std::cout << "action_j: " << action[j] << std::endl;
-        // std::cout << "state_j: " << state[j] << std::endl;
-        // std::cout << "rewards[agentID]: " << rewards[agentID] << std::endl;
+        rewards[agentID] -= (action[j] - state[j]) * (action[j] - state[j]) / nAgents; // TODO, try different norm & weigths for p,u,v
       }
       agentID++;
     }
@@ -179,10 +190,10 @@ void runEnvironment(korali::Sample &s)
     curStep++;
   }
 
-  // Flush CUP logger
+  // Flushing CUP logger
   logger.flush();
 
-  // delete simulation class
+  // Deleting simulation class
   delete _environment;
 
   // Setting finalization status

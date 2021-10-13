@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Concurrent Environments"] = N;
-  e["Solver"]["Experiences Between Policy Updates"] = nAgents; // try with 1
+  e["Solver"]["Experiences Between Policy Updates"] = nAgents;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;

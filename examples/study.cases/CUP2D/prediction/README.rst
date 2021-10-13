@@ -20,11 +20,13 @@ Running the code
 The application is launched locally (or on an interactive node on Piz Daint) using 
 
 .. code-block:: bash
+
 	./run-vracer-prediction.sh
 
 If you are ready for production you can submit a job to the batch-system using
 
 .. code-block:: bash
+
 	./sbatch-run-vracer-prediction.sh
 
 Here you can change the number of parallel agents by changing the NNODES variable.

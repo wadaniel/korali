@@ -203,7 +203,7 @@ for epoch in range(epochs):
  print("[Korali] Epoch: " + str(epoch) + "/" + str(epochs))
  print("[Korali] Learning Rate: " + str(learningRate))
  print('[Korali] Current Training Loss: ' + str(e["Solver"]["Current Loss"])) 
-    
+
  # Evaluating testing set
  testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
  

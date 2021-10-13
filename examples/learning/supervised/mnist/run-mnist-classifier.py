@@ -80,7 +80,7 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 
-### Defining the shape of the neural network [pure convolutional version of LeNet-1 - http://yann.lecun.com/exdb/publis/pdf/lecun-90c.pdf (fig. 2)]
+### Defining the shape of the neural network [LeNet-1 - http://yann.lecun.com/exdb/publis/pdf/lecun-90c.pdf (fig. 2)]
 ## Convolutional Layer with tanh activation function [1x28x28] -> [6x28x28]
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Convolution"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Image Height"]      = 28
@@ -98,9 +98,9 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"]   = 4*24*24
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-## Non-Learnable Pooling Layer [4x24x24] -> [4x12x12]
+## Pooling Layer [4x24x24] -> [4x12x12]
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Pooling"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Function"]          = "Max"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Function"]          = "Exclusive Average"
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Height"]      = 24
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Width"]       = 24
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Kernel Height"]     = 2
@@ -113,7 +113,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Top"]       = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Bottom"]    = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"]   = 4*12*12
 
-## Convolutional Layer with tanh activation function [1x28x28] -> [6x28x28]
+## Convolutional Layer with tanh activation function [4x12x12] -> [12x8x8]
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Convolution"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Image Height"]      = 12
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Image Width"]       = 12
@@ -127,22 +127,12 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Top"]       = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Bottom"]    = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"]   = 12*8*8
 
-## Learnable Pooling Layer [12x8x8] -> [12x4x4]
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Convolution"
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Image Height"]      = 8
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Image Width"]       = 8
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Kernel Height"]     = 2
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Kernel Width"]      = 2
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Vertical Stride"]   = 2
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Horizontal Stride"] = 2
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Padding Left"]      = 0
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Padding Right"]     = 0
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Padding Top"]       = 0
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Padding Bottom"]    = 0
-e["Solver"]["Neural Network"]["Hidden Layers"][4]["Output Channels"]   = 12*4*4
+e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/Tanh"
 
-## Added Deconvolution Layer
-e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Deconvolution"
+## Pooling Layer [12x8x8] -> [12x4x4]
+e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Pooling"
+e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"]          = "Exclusive Average"
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Image Height"]      = 8
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Image Width"]       = 8
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Kernel Height"]     = 2
@@ -153,10 +143,24 @@ e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Left"]      = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Right"]     = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Top"]       = 0
 e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Bottom"]    = 0
-e["Solver"]["Neural Network"]["Hidden Layers"][5]["Output Channels"]   = 12*8*8
+e["Solver"]["Neural Network"]["Hidden Layers"][5]["Output Channels"]   = 12*4*4
 
-e["Solver"]["Neural Network"]["Hidden Layers"][6]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][6]["Function"] = "Softmax"
+## Convolutional Fully Connected Output Layer [12x4x4] -> [10x1x1]
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Type"] = "Layer/Convolution"
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Height"]      = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Width"]       = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Kernel Height"]     = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Kernel Width"]      = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Vertical Stride"]   = 1
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Horizontal Stride"] = 1
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Left"]      = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Right"]     = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Top"]       = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Bottom"]    = 0
+e["Solver"]["Neural Network"]["Hidden Layers"][6]["Output Channels"]   = 10*1*1
+
+e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Softmax"
 
 ### Configuring output
 

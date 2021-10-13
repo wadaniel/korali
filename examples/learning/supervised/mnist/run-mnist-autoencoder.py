@@ -30,20 +30,6 @@ testingImages, testingLabels = mndata.load_testing()
 trainingImageVector = [ [ x ] for x in trainingImages ]
 testingImageVector = [ [ x ] for x in testingImages ]
 
-### Converting label data to one-hot vectors
-
-trainingLabelVector = [ ]
-for l in trainingLabels:
- newtrainingLabel = np.zeros(10).tolist()
- newtrainingLabel[l] = 1
- trainingLabelVector.append(newtrainingLabel)
-
-testingLabelVector = [ ]
-for l in testingLabels:
- newLabel = np.zeros(10).tolist()
- newLabel[l] = 1
- testingLabelVector.append(newLabel)
-
 ### Shuffling training data set for stochastic gradient descent training
 
 jointSet = list(zip(trainingImageVector, trainingLabelVector))
@@ -277,22 +263,12 @@ for epoch in range(epochs):
  # Getting MSE loss for testing set
  squaredMeanError = 0.0
  for i, res in enumerate(testingInferredVector):
-  sol = testingLabelVector[i]
+  sol = testingImageVector[i]
   for j, s in enumerate(sol):
-   diff = res[j] - sol[j]
+   diff = res[j] - s
    squaredMeanError += diff * diff 
  squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
  print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
-
- # Getting prediction accuracy on testing dataset
- count = 0
- for i, res in enumerate(testingInferredVector):
-  correctLabel = np.argmax(testingLabelVector[i])
-  bestGuess    = np.argmax(res)
-  if correctLabel == bestGuess:
-   count += 1
- accuracy = count / testingBatchSize
- print('[Korali] Current Testing Accuracy:  ' + str(accuracy))
  
  # Adjusting learning rate via decay
  learningRate = learningRate * (1.0 / (1.0 + decay * (epoch+1)));

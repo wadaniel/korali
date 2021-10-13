@@ -52,7 +52,7 @@ e["Problem"]["Max Timesteps"] = 1
 e["Problem"]["Training Batch Size"] = trainingBatchSize
 e["Problem"]["Inference Batch Size"] = testingBatchSize
 e["Problem"]["Input"]["Size"] = len(trainingImages[0])
-e["Problem"]["Solution"]["Size"] = 10
+e["Problem"]["Solution"]["Size"] = len(trainingImages[0])
 
 ### Using a neural network solver (deep learning) for inference
 
@@ -175,8 +175,8 @@ e["Solver"]["Neural Network"]["Hidden Layers"][8]["Output Channels"]   = 12*8*8
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Type"] = "Layer/Deconvolution"
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Image Height"]      = 12
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Image Width"]       = 12
-e["Solver"]["Neural Network"]["Hidden Layers"][9]["Kernel Height"]     = 4
-e["Solver"]["Neural Network"]["Hidden Layers"][9]["Kernel Width"]      = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][9]["Kernel Height"]     = 5
+e["Solver"]["Neural Network"]["Hidden Layers"][9]["Kernel Width"]      = 5
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Vertical Stride"]   = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Horizontal Stride"] = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][9]["Padding Left"]      = 0
@@ -203,8 +203,8 @@ e["Solver"]["Neural Network"]["Hidden Layers"][10]["Output Channels"]   = 4*24*2
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Type"] = "Layer/Deconvolution"
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Image Height"]      = 28
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Image Width"]       = 28
-e["Solver"]["Neural Network"]["Hidden Layers"][11]["Kernel Height"]     = 4
-e["Solver"]["Neural Network"]["Hidden Layers"][11]["Kernel Width"]      = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][11]["Kernel Height"]     = 5
+e["Solver"]["Neural Network"]["Hidden Layers"][11]["Kernel Width"]      = 5
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Vertical Stride"]   = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Horizontal Stride"] = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][11]["Padding Left"]      = 0
@@ -235,11 +235,12 @@ for epoch in range(epochs):
  for step in range(stepsPerEpoch):
  
   # Creating minibatch
-  miniBatchInput = trainingImageVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
+  miniBatchInput = trainingImageVector[step * trainingBatchSize : (step+1) * trainingBatchSize] # N x T x C
+  miniBatchSolution = [ x[0] for x in miniBatchInput ] # N x C
   
   # Passing minibatch to Korali
   e["Problem"]["Input"]["Data"] = miniBatchInput
-  e["Problem"]["Solution"]["Data"] = miniBatchInput
+  e["Problem"]["Solution"]["Data"] = miniBatchSolution
  
   # Reconfiguring solver
   e["Solver"]["Learning Rate"] = learningRate

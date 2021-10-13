@@ -22,8 +22,8 @@ epochs = 90
 
 mndata = MNIST('./_data')
 mndata.gz = True
-trainingImages, trainingLabels = mndata.load_training()
-testingImages, testingLabels = mndata.load_testing()
+trainingImages, _ = mndata.load_training()
+testingImages, _ = mndata.load_testing()
 
 ### Converting images to Korali form (requires a time dimension)
 
@@ -32,14 +32,12 @@ testingImageVector = [ [ x ] for x in testingImages ]
 
 ### Shuffling training data set for stochastic gradient descent training
 
-jointSet = list(zip(trainingImageVector, trainingLabelVector))
-random.shuffle(jointSet)
-trainingImageVector, trainingLabelVector = zip(*jointSet)
+random.shuffle(trainingImageVector)
 
 ### Calculating Derived Values
 
 stepsPerEpoch = int(len(trainingImageVector) / trainingBatchSize)
-testingBatchSize = len(testingLabelVector)
+testingBatchSize = len(testingImageVector)
  
 ### If this is test mode, run only one epoch
 if len(sys.argv) == 2:
@@ -238,11 +236,10 @@ for epoch in range(epochs):
  
   # Creating minibatch
   miniBatchInput = trainingImageVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
-  miniBatchSolution = trainingLabelVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
   
   # Passing minibatch to Korali
   e["Problem"]["Input"]["Data"] = miniBatchInput
-  e["Problem"]["Solution"]["Data"] = miniBatchSolution
+  e["Problem"]["Solution"]["Data"] = miniBatchInput
  
   # Reconfiguring solver
   e["Solver"]["Learning Rate"] = learningRate

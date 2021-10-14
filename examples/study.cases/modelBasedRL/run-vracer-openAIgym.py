@@ -171,7 +171,7 @@ for launch in range(args.launchNum):
 
     # Instantiate model
     alphaDropout = True
-    model = Net(hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout, p=net_config.hyperparams.p)
+    model = Net(hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout, p=hyperparams.p)
     
     # Optimizer
     opt = AdaBelief(model.parameters(), lr=hyperparams.lr, eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False, print_change_log=False)

@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH --job-name="surr_openAIGym_VRACER"
 #SBATCH --output=surr_openAIGym_VRACER_%j.out
-#SBATCH --time=00:20:00
-#SBATCH --nodes=2
+#SBATCH --time=12:00:00
+#SBATCH --nodes=3
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929
@@ -18,8 +18,8 @@
 #env=HumanoidStandup-v2
 #env=InvertedDoublePendulum-v2
 #env=InvertedPendulum-v2
-env=Reacher-v2
-#env=Swimmer-v2
+#env=Reacher-v2
+env=Swimmer-v2
 #env=Walker2d-v2
 
 #env=AntBulletEnv-v0
@@ -44,17 +44,21 @@ opt=0.1
 lrRL=0.0001
 
 # surrogate and korali arguments
-lr=0.01
-batch=128
+lr=0.001
+batch=512
 epoch=100
-hid=(15 15)
-ws=1.0
-conf=0.95
+layers=3
+units=512
+p=0.0
+ws=0.5
+conf=0.90
 m="TestNet$SLURM_JOB_ID"
 expBetPolUp=1
-iniRetrain=65536
-retrain=50000
+iniRetrain=5000000
+retrain=500000
 launchNum=1
+testFreq=100
+maxExp=20000000
 
 pushd ..
 
@@ -70,7 +74,7 @@ popd
 
 pushd $expDir
 
-OMP_NUM_THREADS=12 srun python3 run-vracer-openAIgym.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lrRL $lrRL --lr $lr --batch $batch --epoch $epoch --hid $hid --ws $ws --conf $conf --m "$m" --dumpBestTrajectory --iniRetrain $iniRetrain --retrain $retrain --expBetPolUp $expBetPolUp --launchNum $launchNum
+OMP_NUM_THREADS=12 srun python3 run-vracer-openAIgym.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lrRL $lrRL --lr $lr --batch $batch --epoch $epoch --layers $layers --units $units --p $p --ws $ws --conf $conf --m "$m" --maxExp $maxExp --testFreq $testFreq --dumpBestTrajectory --iniRetrain $iniRetrain --retrain $retrain --expBetPolUp $expBetPolUp --launchNum $launchNum
 resdir=$(ls -d _result_vracer_*)
 
 python3 -m korali.rlview --dir $resdir --output vracer.png

@@ -36,7 +36,10 @@ parser.add_argument("--lrRL", help="Learning Rate.", required=False, type=float,
 parser.add_argument("--lr", type=float, default=1e-2, help="Initial learning rate surrogate nets")
 parser.add_argument("--batch", type=int, default=8, help="Batch size")
 parser.add_argument("--epoch", type=int, default=100, help="Total number of epochs to train the surrogate nets")
-parser.add_argument("--hid", nargs="+", type=int, help="Specify integers for list of hidden sizes, starting ith input size to first hidden layer and finishing with output size of last layer")
+#parser.add_argument("--hid", nargs="+", type=int, help="Specify integers for list of hidden sizes, starting ith input size to first hidden layer and finishing with output size of last layer")
+parser.add_argument("--layers", type=int, default=3, help="layers")
+parser.add_argument("--units", type=int, default=512, help="units")
+parser.add_argument("--p", type=float, default=0.0, help="p of Alpha Dropout")
 parser.add_argument("--ws", type=float, default=4.0, help="Weight parameter for GaussianNLLLoss of reward (scalar)")
 parser.add_argument("--conf", type=float, default=0.9500, help="Confidence Hyperparameter")
 parser.add_argument("--m", type=str, default="", help="Prefix results and directories")
@@ -55,6 +58,7 @@ parser.add_argument("--launchNum", type=int, default=1, help="Number of times to
 parser.add_argument("--iniRetrain", type=int, default=65536, help="Initial retraining sample data points.")
 parser.add_argument("--retrain", type=int, default=50000, help="Retraining sample data points.")
 args = parser.parse_args()
+args.hid = args.layers*[args.units]
 print(args)
 
 comm = MPI.COMM_WORLD   # define communicator for the solver for surrogate model parallel training and predicting (Korali in serial mode)
@@ -131,7 +135,7 @@ for launch in range(args.launchNum):
     # Initialize the hyperparameters of the problem
     scale = True
     scaleIO = True
-    hyperparams = Hyperparams(lr=args.lr, batch_size=args.batch, epoch_number=args.epoch, hidden_size=args.hid, weight_loss_scalar=args.ws, shuffle=True, confidence=args.conf, scaleData=scale, patience=8, lr_reduction_factor=0.2)
+    hyperparams = Hyperparams(lr=args.lr, batch_size=args.batch, epoch_number=args.epoch, hidden_size=args.hid, weight_loss_scalar=args.ws, shuffle=True, confidence=args.conf, scaleData=scale, p=args.p, patience=8, lr_reduction_factor=0.2)
 
     if rank == 0:
         print(f"[Korali] Maximum Number of Generations = {args.maxGen}")
@@ -167,7 +171,7 @@ for launch in range(args.launchNum):
 
     # Instantiate model
     alphaDropout = True
-    model = Net(hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout)
+    model = Net(hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout, p=net_config.hyperparams.p)
     
     # Optimizer
     opt = AdaBelief(model.parameters(), lr=hyperparams.lr, eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False, print_change_log=False)
@@ -178,7 +182,7 @@ for launch in range(args.launchNum):
     
     models={}
     for r in range(1, net_config.num_procs):
-        models[r] = Net(net_config.hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout)
+        models[r] = Net(net_config.hyperparams.hidden_size, inputNumber, outputNumberStateNN(envName, outputNumberState), alphaDropout, p=net_config.hyperparams.p)
     #if rank == 0:
     #    print(models)
     

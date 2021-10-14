@@ -95,8 +95,6 @@ def agent(s, env, model = ''):
  for ag in env.agents:
   state = env.observe(ag).tolist()
   if model == '1':
-   #pdb.set_trace()
-   #float(ag[-1])
    state.append(float(ag[-1]))
   states.append(state)
  s["State"] = states
@@ -119,7 +117,7 @@ def agent(s, env, model = ''):
   # Printing step information    
   if (printStep):  print('[Korali] Frame ' + str(step), end = '')
   
-  
+  #pdb.set_trace()
   actions = s["Action"]
   rewards = []
   
@@ -131,9 +129,6 @@ def agent(s, env, model = ''):
       im.save(fname)
       image_count += 1
    elif s["Mode"] == "Testing" and ( env.env.env.metadata['name']== 'multiwalker_v7'):
-      
-      #pdb.set_trace()
-      
       obs = env.env.env.render('rgb_array')
       im = Image.fromarray(obs)
       fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images_multiwalker/","image_{0}.png".format(image_count))

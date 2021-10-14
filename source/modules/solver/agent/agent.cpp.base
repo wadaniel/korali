@@ -212,6 +212,7 @@ void __className__::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
+        //TODO: Give correct state Rescaling means and std maybe also training CurrentPol
         _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
@@ -310,6 +311,7 @@ void __className__::testingGeneration()
     testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
+    //TODO: also check state rescale means and std
     testingAgents[agentId]["Policy Hyperparameters"] = _testingCurrentPolicy;
     testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
@@ -387,6 +389,7 @@ void __className__::attendAgent(size_t agentId)
       }
 
       // Process every episode received and its experiences (add them to replay memory)
+      //DIFF: somewhat differenz
 
       processEpisode(episodeId, message["Episodes"]);
 
@@ -505,12 +508,11 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Storage for the episode's cumulative reward
   std::vector<float> cumulativeReward (_problem->_agentsPerEnvironment,0.0f);
 
-#pragma omp parallel for
+
   for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
   {
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<std::vector<float>>>());
-
     // Getting action
     const auto action = episode["Experiences"][expId]["Action"].get<std::vector<std::vector<float>>>();
     _actionVector.add(action);
@@ -659,7 +661,15 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
     auto expTruncatedStateSequence = getTruncatedStateSequence(endId);
 
     // Calculating the state value function of the truncated state
-    auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+
+    //RESHAPE TRUNCATED STATE VALUES
+    std::vector<std::vector<std::vector<float>>> inputVector (expTruncatedStateSequence.size() * expTruncatedStateSequence[0].size(),std::vector<std::vector<float>> (1,std::vector<float>(expTruncatedStateSequence[0][0].size())));
+    for(size_t b= 0; b< expTruncatedStateSequence.size(); b++)
+      for(size_t d = 0; d < expTruncatedStateSequence[0].size(); d++)
+        inputVector[b * expTruncatedStateSequence[0].size() + d][0] = expTruncatedStateSequence[b][d];
+
+    //auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+    auto truncatedPolicy = runPolicy({inputVector})[0];
 
     std::vector<float> truncatedV(_problem->_agentsPerEnvironment);
 
@@ -737,9 +747,8 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
                     initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
 
   std::vector<int> offPolicyCountDelta (_problem->_agentsPerEnvironment,0);
-//TODO: this line is wierd due to offPolicyCountDelta being a vector now
-#pragma omp parallel for reduction(vec_int_plus: offPolicyCountDelta) 
 
+#pragma omp parallel for reduction(vec_int_plus: offPolicyCountDelta) 
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -810,7 +819,15 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
     if (_terminationVector[expId] == e_truncated)
     {
       auto truncatedState = getTruncatedStateSequence(expId);
-      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
+
+      //RESHAPE TRUNCATED STATE VALUES
+      std::vector<std::vector<std::vector<float>>> inputVector (truncatedState.size() * truncatedState[0].size(),std::vector<std::vector<float>> (1,std::vector<float>(truncatedState[0][0].size())));
+      for(size_t b= 0; b< truncatedState.size(); b++)
+        for(size_t d = 0; d < truncatedState[0].size(); d++)
+          inputVector[b * truncatedState[0].size() + d][0] = truncatedState[b][d];
+
+      //auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
+      auto truncatedPolicy = runPolicy({inputVector})[0];
       
       std::vector<float> truncStateValue(_problem->_agentsPerEnvironment,0.0f);
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -942,8 +959,11 @@ std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSeq
     // Calculating time sequence length
     const size_t T = expId - startId + 1;
 
+
     // Resizing state sequence vector to the correct time sequence length
-    stateSequence[b].resize(T);
+    //stateSequence[b].resize(T);
+    for( size_t d = 0; d<_problem->_agentsPerEnvironment; d++ )
+      stateSequence[b*_problem->_agentsPerEnvironment + d].resize(T);
 
     // Now adding states (and actions, if required)
     for (size_t t = 0; t < T; t++)
@@ -1014,32 +1034,57 @@ void __className__::serializeExperienceReplay()
 
   // Serializing agent's database into the JSON storage
   for (size_t i = 0; i < _stateVector.size(); i++)
-    for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
     {
       stateJson["Experience Replay"][i]["Episode Id"] = _episodeIdVector[i];
       stateJson["Experience Replay"][i]["Episode Pos"] = _episodePosVector[i];
-      stateJson["Experience Replay"][i][j]["State"] = _stateVector[i][j];
-      stateJson["Experience Replay"][i][j]["Action"] = _actionVector[i][j];
+      stateJson["Experience Replay"][i]["State"] = _stateVector[i];
+      //printf("%lu\n", stateJson["Experience Replay"][i]["State"][0].size() );
+      stateJson["Experience Replay"][i]["Action"] = _actionVector[i];
       stateJson["Experience Replay"][i]["Reward"] = _rewardVector[i];
       stateJson["Experience Replay"][i]["State Value"] = _stateValueVector[i];
       stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
       stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
       stateJson["Experience Replay"][i]["Truncated Importance Weight"] = _truncatedImportanceWeightVector[i];
       stateJson["Experience Replay"][i]["Is On Policy"] = _isOnPolicyVector[i];
-      stateJson["Experience Replay"][i][j]["Truncated State"] = _truncatedStateVector[i][j];
+      stateJson["Experience Replay"][i]["Truncated State"] = _truncatedStateVector[i];
       stateJson["Experience Replay"][i]["Truncated State Value"] = _truncatedStateValueVector[i];
       stateJson["Experience Replay"][i]["Termination"] = _terminationVector[i];
 
-      stateJson["Experience Replay"][i][j]["Experience Policy"]["State Value"] = _expPolicyVector[i][j].stateValue;
-      stateJson["Experience Replay"][i][j]["Experience Policy"]["Distribution Parameters"] = _expPolicyVector[i][j].distributionParameters;
-      stateJson["Experience Replay"][i][j]["Experience Policy"]["Action Index"] = _expPolicyVector[i][j].actionIndex;
-      stateJson["Experience Replay"][i][j]["Experience Policy"]["Unbounded Action"] = _expPolicyVector[i][j].unboundedAction;
 
-      stateJson["Experience Replay"][i][j]["Current Policy"]["State Value"] = _curPolicyVector[i][j].stateValue;
-      stateJson["Experience Replay"][i][j]["Current Policy"]["Distribution Parameters"] = _curPolicyVector[i][j].distributionParameters;
-      stateJson["Experience Replay"][i][j]["Current Policy"]["Action Index"] = _curPolicyVector[i][j].actionIndex;
-      stateJson["Experience Replay"][i][j]["Current Policy"]["Unbounded Action"] = _curPolicyVector[i][j].unboundedAction;
+      std::vector<float> expStateValue (_problem->_agentsPerEnvironment,0.0f);
+      std::vector<std::vector<float>> expDistributionParameter (_problem->_agentsPerEnvironment, std::vector<float> (_expPolicyVector[0][0].distributionParameters.size()));
+      std::vector<size_t> expActionIdx (_problem->_agentsPerEnvironment,0);
+      std::vector<std::vector<float>> expUnboundedAct (_problem->_agentsPerEnvironment, std::vector<float> (_expPolicyVector[0][0].unboundedAction.size()));
+
+      std::vector<float> curStateValue (_problem->_agentsPerEnvironment,0.0f);
+      std::vector<std::vector<float>> curDistributionParameter (_problem->_agentsPerEnvironment, std::vector<float> (_curPolicyVector[0][0].distributionParameters.size()));
+      std::vector<size_t> curActionIdx (_problem->_agentsPerEnvironment,0);
+      std::vector<std::vector<float>> curUnboundedAct (_problem->_agentsPerEnvironment, std::vector<float> (_curPolicyVector[0][0].unboundedAction.size()));
+
+
+      for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
+      {
+
+        expStateValue[j] = _expPolicyVector[i][j].stateValue;
+        expDistributionParameter[j] = _expPolicyVector[i][j].distributionParameters;
+        expActionIdx[j]= _expPolicyVector[i][j].actionIndex;
+        expUnboundedAct[j] = _expPolicyVector[i][j].unboundedAction;
+        
+        curStateValue[j]= _curPolicyVector[i][j].stateValue;
+        curDistributionParameter[j] = _curPolicyVector[i][j].distributionParameters;
+        curActionIdx[j] = _curPolicyVector[i][j].actionIndex;
+        curUnboundedAct[j] = _curPolicyVector[i][j].unboundedAction;
       }
+      stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = expStateValue;
+      stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"] = expDistributionParameter;
+      stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = expActionIdx;
+      stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"] = expUnboundedAct;
+      
+      stateJson["Experience Replay"][i]["Current Policy"]["State Value"] = curStateValue;
+      stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"] = curDistributionParameter;
+      stateJson["Experience Replay"][i]["Current Policy"]["Action Index"] = curActionIdx;
+      stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = curUnboundedAct;
+    }
 
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
@@ -1109,18 +1154,19 @@ void __className__::deserializeExperienceReplay()
 
     std::vector<policy_t> expPolicy;
     std::vector<policy_t> curPolicy;
+    //TODO: not 100% that this is correct
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
 
-      expPolicy[d].stateValue = stateJson["Experience Replay"][i][d]["Experience Policy"]["State Value"].get<float>();
-      expPolicy[d].distributionParameters = stateJson["Experience Replay"][i][d]["Experience Policy"]["Distribution Parameters"].get<std::vector<float>>();
-      expPolicy[d].unboundedAction = stateJson["Experience Replay"][i][d]["Experience Policy"]["Unbounded Action"].get<std::vector<float>>();
-      expPolicy[d].actionIndex = stateJson["Experience Replay"][i][d]["Experience Policy"]["Action Index"].get<size_t>();
+      expPolicy[d].stateValue = stateJson["Experience Replay"][i]["Experience Policy"]["State Value"][d].get<float>();
+      expPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"][d].get<std::vector<float>>();
+      expPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"][d].get<std::vector<float>>();
+      expPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"][d].get<size_t>();
       
-      curPolicy[d].stateValue = stateJson["Experience Replay"][i][d]["Current Policy"]["State Value"].get<float>();
-      curPolicy[d].distributionParameters = stateJson["Experience Replay"][i][d]["Current Policy"]["Distribution Parameters"].get<std::vector<float>>();
-      curPolicy[d].actionIndex = stateJson["Experience Replay"][i][d]["Current Policy"]["Action Index"].get<size_t>();
-      curPolicy[d].unboundedAction = stateJson["Experience Replay"][i][d]["Current Policy"]["Unbounded Action"].get<std::vector<float>>();
+      curPolicy[d].stateValue = stateJson["Experience Replay"][i]["Current Policy"]["State Value"][d].get<float>();
+      curPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"][d].get<std::vector<float>>();
+      curPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"][d].get<size_t>();
+      curPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"][d].get<std::vector<float>>();
     }
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(curPolicy);

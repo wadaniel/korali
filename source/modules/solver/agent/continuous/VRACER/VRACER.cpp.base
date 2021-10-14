@@ -21,8 +21,9 @@ void __className__::initializeAgent()
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize *_problem->_agentsPerEnvironment;
+  //TODO: maybe * numAgents
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = _problem->_agentsPerEnvironment;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
@@ -85,6 +86,7 @@ void __className__::trainPolicy()
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
+
   const auto policyInfo = runPolicy(stateSequence);
 
   // Using policy information to update experience's metadata
@@ -210,6 +212,7 @@ std::vector<std::vector<policy_t>> __className__::runPolicy(const std::vector<st
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
+  
 
   // Storage for policy
   std::vector<policy_t> policyVector(batchSize);
@@ -258,14 +261,15 @@ void __className__::setAgentPolicy(const knlohmann::json &hyperparameters)
 }
 
 void __className__::printAgentInformation()
-{
+{  
+  //TODO: now fixed to print agent nr 0
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
+    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[0][i], _maxMiniBatchPolicyStdDev[0][i]);
   _k->_logger->logInfo("Detailed", " + [VRACER] Min Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _minMiniBatchPolicyMean[i], _minMiniBatchPolicyStdDev[i]);
+    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _minMiniBatchPolicyMean[0][i], _minMiniBatchPolicyStdDev[0][i]);
 }
 
 __moduleAutoCode__;

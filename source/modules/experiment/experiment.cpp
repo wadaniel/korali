@@ -18,23 +18,23 @@ namespace korali
 {
 ;
 /**
-  * @brief Pointer to the current experiment in execution
+ * @brief Pointer to the current experiment in execution
  */
 Experiment *__expPointer;
 
 /**
-  * @brief Pointer to the calling thread
+ * @brief Pointer to the calling thread
  */
 cothread_t __returnThread;
 
 /**
-  * @brief Function for the initialization of new coroutine threads.
+ * @brief Function for the initialization of new coroutine threads.
  */
 void threadWrapper()
 {
   auto e = __expPointer;
   e->run();
-  
+
   co_switch(e->_engine->_thread);
   KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
 }

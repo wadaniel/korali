@@ -25,13 +25,13 @@ size_t __envFunctionId;
 solver::Agent *_agent;
 
 /**
-  * @brief Stores the environment thread (coroutine).
-  */
+ * @brief Stores the environment thread (coroutine).
+ */
 cothread_t _envThread;
 
 /**
-  * @brief Stores the current launch Id for the current sample
-  */
+ * @brief Stores the current launch Id for the current sample
+ */
 size_t _launchId;
 
 void ReinforcementLearning::initialize()
@@ -109,30 +109,23 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
-
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from the agent's policy
     getAction(agent);
 
-
     // Store the current state in the experience
-    
+
     episodes["Experiences"][actionCount]["State"] = agent["State"];
-    
 
     // Storing the current action
-    
+
     episodes["Experiences"][actionCount]["Action"] = agent["Action"];
-    
 
     // Storing the experience's policy
-    
-    episodes["Experiences"][actionCount]["Policy"] = agent["Policy"];
-    
-    
 
+    episodes["Experiences"][actionCount]["Policy"] = agent["Policy"];
 
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
@@ -140,17 +133,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
-    
 
     // Storing experience's reward
-    
+
     episodes["Experiences"][actionCount]["Reward"] = agent["Reward"];
-    
 
     // Storing termination status
-    
-    episodes["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
+    episodes["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
     // If the episodes was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
@@ -162,16 +152,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       trainingRewards[i] += agent["Reward"][i].get<float>();
 
-
     // Increasing counter for generated actions
     actionCount++;
 
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
     if ((_actionsBetweenPolicyUpdates > 0) &&
         (agent["Termination"] == "Non Terminal") &&
-        (actionCount % _actionsBetweenPolicyUpdates == 0)) 
-    { 
-
+        (actionCount % _actionsBetweenPolicyUpdates == 0))
+    {
       requestNewPolicy(agent);
     }
   }
@@ -189,7 +177,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   bool runTest = false;
   for (size_t i = 0; i < _agentsPerEnvironment; i++) runTest |= trainingRewards[i] > _trainingRewardThreshold;
   runTest |= (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
-  
+
   if (runTest)
   {
     float averageTestingReward = 0.0;
@@ -255,8 +243,6 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
-  
-
 
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
@@ -381,7 +367,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     for (size_t j = 0; j < _stateVectorSize; j++)
       if (std::isfinite(agent["State"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
   }
-  
+
   // Normalizing State
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {

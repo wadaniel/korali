@@ -832,8 +832,8 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _variableCount, _variableCount);
 
   /* On output the diagonal and lower triangular part of the
-     * input matrix A contain the matrix L, while the upper triangular part
-     * contains the original matrix. */
+   * input matrix A contain the matrix L, while the upper triangular part
+   * contains the original matrix. */
 
   gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
 

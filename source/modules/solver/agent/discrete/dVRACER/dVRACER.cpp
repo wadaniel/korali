@@ -22,8 +22,8 @@ void dVRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 
   /*********************************************************************
- * Initializing Critic/Policy Neural Network Optimization Experiment
- *********************************************************************/
+   * Initializing Critic/Policy Neural Network Optimization Experiment
+   *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
@@ -88,17 +88,14 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
 
-
     // Getting value evaluation
     const std::vector<float> V = _stateValueVector[expId];
     const std::vector<float> expVtbc = _retraceValueVector[expId];
 
-    
-
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       // Storage for the update gradient
-      std::vector<float> gradientLoss(1 + _problem->_possibleActions.size(),0.0f);
+      std::vector<float> gradientLoss(1 + _problem->_possibleActions.size(), 0.0f);
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
       gradientLoss[0] = expVtbc[d] - V[d];
@@ -107,7 +104,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       if (_isOnPolicyVector[expId][d])
       {
         // Qret for terminal state is just reward
-        float Qret = getScaledReward(_rewardVector[expId][d],d);
+        float Qret = getScaledReward(_rewardVector[expId][d], d);
 
         // If experience is non-terminal, add Vtbc
         if (_terminationVector[expId] == e_nonTerminal)
@@ -136,7 +133,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
           gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
         }
       }
-      
+
       // Compute derivative of kullback-leibler divergence wrt current distribution params
       auto klGrad = calculateKLDivergenceGradient(expPolicy[d].distributionParameters, curPolicy[d].distributionParameters);
 
@@ -149,11 +146,8 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
       }
 
-      _criticPolicyProblem->_solutionData[b* _problem->_agentsPerEnvironment + d] = gradientLoss;
-
+      _criticPolicyProblem->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
     }
-    
-    
   }
 
   // Compute average action stadard deviation

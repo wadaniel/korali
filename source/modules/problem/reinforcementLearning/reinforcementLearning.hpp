@@ -161,13 +161,13 @@ class ReinforcementLearning : public Problem
   double _agentPolicyEvaluationTime;
 
   /**
-  * @brief [Profiling] Stores environment evaluation time per episode
-  */
+   * @brief [Profiling] Stores environment evaluation time per episode
+   */
   double _agentComputationTime;
 
   /**
-  * @brief [Profiling] Stores communication time per episode
-  */
+   * @brief [Profiling] Stores communication time per episode
+   */
   double _agentCommunicationTime;
 };
 

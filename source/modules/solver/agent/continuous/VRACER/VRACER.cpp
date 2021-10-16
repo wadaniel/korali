@@ -24,8 +24,8 @@ void VRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 
   /*********************************************************************
- * Initializing Critic/Policy Neural Network Optimization Experiment
- *********************************************************************/
+   * Initializing Critic/Policy Neural Network Optimization Experiment
+   *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
@@ -76,12 +76,6 @@ void VRACER::initializeAgent()
     _minMiniBatchPolicyMean[d].resize(_problem->_actionVectorSize);
     _minMiniBatchPolicyStdDev[d].resize(_problem->_actionVectorSize);
   }
-
-
-
-
-
-
 }
 
 void VRACER::trainPolicy()
@@ -146,14 +140,14 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       // Storage for the update gradient
-      std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize,0.0f);
+      std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
       gradientLoss[0] = expVtbc[d] - V[d];
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
       {
         // Qret for terminal state is just reward
-        float Qret = getScaledReward(_rewardVector[expId][d],d);
+        float Qret = getScaledReward(_rewardVector[expId][d], d);
 
         // If experience is non-terminal, add Vtbc
         if (_terminationVector[expId] == e_nonTerminal)
@@ -185,28 +179,24 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta[d]);
 
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      { 
+      {
         gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
-        gradientLoss[1 + i+ _problem->_actionVectorSize] += klGradMultiplier * klGrad[i + _problem->_actionVectorSize];
+        gradientLoss[1 + i + _problem->_actionVectorSize] += klGradMultiplier * klGrad[i + _problem->_actionVectorSize];
 
         if (expPolicy[d].distributionParameters[i] > _maxMiniBatchPolicyMean[d][i]) _maxMiniBatchPolicyMean[d][i] = expPolicy[d].distributionParameters[i];
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] > _maxMiniBatchPolicyStdDev[d][i]) _maxMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
         if (expPolicy[d].distributionParameters[i] < _minMiniBatchPolicyMean[d][i]) _minMiniBatchPolicyMean[d][i] = expPolicy[d].distributionParameters[i];
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[d][i]) _minMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
 
-        if (std::isfinite(gradientLoss[i+ 1]) == false)
+        if (std::isfinite(gradientLoss[i + 1]) == false)
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
-        if (std::isfinite(gradientLoss[i+ 1 + _problem->_actionVectorSize]) == false)
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1+ _problem->_actionVectorSize]);
-
+        if (std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
+          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
       }
 
       // Set Gradient of Loss as Solution
-      _criticPolicyProblem->_solutionData[b* _problem->_agentsPerEnvironment + d] = gradientLoss;
-
-
+      _criticPolicyProblem->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
     }
-        
   }
 
   // Compute average action stadard deviation
@@ -217,7 +207,6 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
-  
 
   // Storage for policy
   std::vector<policy_t> policyVector(batchSize);
@@ -251,8 +240,8 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 }
 
 void VRACER::printAgentInformation()
-{  
-  //TODO: now fixed to print agent nr 0
+{
+  // TODO: now fixed to print agent nr 0
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)

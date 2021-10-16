@@ -18,17 +18,15 @@ void Discrete::initializeAgent()
 void Discrete::getAction(korali::Sample &sample)
 {
   // Get action for all the agents in the environment
-  
+
   // Getting current state
-  
-  for(size_t i = 0; i<_problem->_agentsPerEnvironment; i++) 
+
+  for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
   {
     // Getting current state
     auto state = sample["State"][i].get<std::vector<float>>();
-  
-  
-    _stateTimeSequence.add(state);
 
+    _stateTimeSequence.add(state);
 
     // Getting the probability of the actions given by the agent's policy
     auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
@@ -38,11 +36,11 @@ void Discrete::getAction(korali::Sample &sample)
     size_t actionIdx = 0;
 
     /*****************************************************************************
-    * During training, we follow the Epsilon-greedy strategy. Choose, given a
-    * probability (pEpsilon), one from the following:
-    *  - Uniformly random action among all possible actions
-    *  - Sample action guided by the policy's probability distribution
-    ****************************************************************************/
+     * During training, we follow the Epsilon-greedy strategy. Choose, given a
+     * probability (pEpsilon), one from the following:
+     *  - Uniformly random action among all possible actions
+     *  - Sample action guided by the policy's probability distribution
+     ****************************************************************************/
 
     if (sample["Mode"] == "Training")
     {
@@ -71,20 +69,19 @@ void Discrete::getAction(korali::Sample &sample)
         // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
       }
     }
-  
 
     /*****************************************************************************
-    * During testing, we just select the action with the largest probability
-    * given by the policy.
-    ****************************************************************************/
+     * During testing, we just select the action with the largest probability
+     * given by the policy.
+     ****************************************************************************/
 
     // Finding the best action index from the probabilities
     if (sample["Mode"] == "Testing")
       actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
-    
+
     /*****************************************************************************
-    * Storing the action itself
-    ****************************************************************************/
+     * Storing the action itself
+     ****************************************************************************/
 
     // Storing action itself, its idx, and probabilities
     sample["Policy"]["Distribution Parameters"][i] = pActions;
@@ -116,7 +113,6 @@ float Discrete::calculateImportanceWeight(const std::vector<float> &action, cons
 
   return importanceWeight;
 }
-
 
 std::vector<float> Discrete::calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
 {

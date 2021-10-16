@@ -20,13 +20,13 @@ void Continuous::initializeAgent()
   // Obtaining action shift and scales for bounded distributions
   _actionShifts.resize(_problem->_actionVectorSize);
   _actionScales.resize(_problem->_actionVectorSize);
-  
+
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     // For bounded distributions, infinite bounds should result in an error message
     if (_policyDistribution == "Squashed Normal" || _policyDistribution == "Beta" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
     {
-      if (isfinite(_actionLowerBounds[i]) == false) 
+      if (isfinite(_actionLowerBounds[i]) == false)
         KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
 
       if (isfinite(_actionUpperBounds[i]) == false)
@@ -49,7 +49,7 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i]; 
+      auto varIdx = _problem->_actionVectorIndexes[i];
       float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -77,7 +77,7 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];  
+      auto varIdx = _problem->_actionVectorIndexes[i];
       const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -100,9 +100,9 @@ void Continuous::getAction(korali::Sample &sample)
 {
   // Get action for all the agents in the environment
   for (size_t i = 0; i < sample["State"].size(); i++)
-    {
+  {
     // Getting current state
-    
+
     auto state = sample["State"][i];
 
     // Adding state to the state time sequence
@@ -113,29 +113,26 @@ void Continuous::getAction(korali::Sample &sample)
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
 
-    
-
-    auto policy = runPolicy({_stateTimeSequence.getVector()})[0]; 
-     
+    auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
 
     /*****************************************************************************
-    * During Training we select action according to policy's probability
-    * distribution
-    ****************************************************************************/
+     * During Training we select action according to policy's probability
+     * distribution
+     ****************************************************************************/
 
     if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
 
     /*****************************************************************************
-    * During testing, we select the means (point of highest density) for all
-    * elements of the action vector
-    ****************************************************************************/
+     * During testing, we select the means (point of highest density) for all
+     * elements of the action vector
+     ****************************************************************************/
 
     if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
 
     /*****************************************************************************
-    * Storing the action and its policy
-    ****************************************************************************/
-  
+     * Storing the action and its policy
+     ****************************************************************************/
+
     /*
     std::vector<std::vector<float>> distParams (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].distributionParameters.size()));
     std::vector<std::vector<float>> unbAct (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].unboundedAction.size()));
@@ -146,7 +143,7 @@ void Continuous::getAction(korali::Sample &sample)
       unbAct[d] = policy[d].unboundedAction;
       stValue[d] = policy[d].stateValue;
     }
-    
+
     sample["Policy"]["Distribution Parameters"] = distParams;
     sample["Policy"]["State Value"] = stValue;
     sample["Policy"]["Unbounded Action"] = unbAct;
@@ -156,7 +153,6 @@ void Continuous::getAction(korali::Sample &sample)
     sample["Policy"]["State Value"][i] = policy.stateValue;
     sample["Policy"]["Unbounded Action"][i] = policy.unboundedAction;
     sample["Action"][i] = action;
-  
   }
 }
 
@@ -301,7 +297,6 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
   return action;
 }
 
-
 float Continuous::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   float logpCurPolicy = 0.0f;
@@ -422,7 +417,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   return importanceWeight;
 }
-
 
 std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {

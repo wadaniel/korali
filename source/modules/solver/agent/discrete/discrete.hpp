@@ -62,8 +62,8 @@ class Discrete : public Agent
   
 
   /**
- * @brief Storage for the pointer to the (discrete) learning problem
- */
+   * @brief Storage for the pointer to the (discrete) learning problem
+   */
   problem::reinforcementLearning::Discrete *_problem;
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
@@ -76,7 +76,6 @@ class Discrete : public Agent
    * @return gradient of importance weight wrt NN output
    */
 
-  
   std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
   /**

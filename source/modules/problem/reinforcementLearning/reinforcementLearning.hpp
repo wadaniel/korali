@@ -148,12 +148,12 @@ class ReinforcementLearning : public Problem
   /**
    * @brief Contains the state rescaling means
    */
-  std::vector<float> _stateRescalingMeans;
+  std::vector<std::vector<float>> _stateRescalingMeans;
 
   /**
    * @brief Contains the state rescaling sigmas
    */
-  std::vector<float> _stateRescalingSdevs;
+  std::vector<std::vector<float>> _stateRescalingSdevs;
 
   /**
    * @brief [Profiling] Stores policy evaluation time per episode

@@ -9,11 +9,11 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
- * @brief Storage for the pointer to the (discrete) learning problem
- */
+   * @brief Storage for the pointer to the (discrete) learning problem
+   */
   problem::reinforcementLearning::Discrete *_problem;
 
-  std::vector<float> calculateImportanceWeight(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy) override;
+  float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output
@@ -23,8 +23,7 @@ class __className__ : public __parentClassName__
    * @return gradient of importance weight wrt NN output
    */
 
-  
-  std::vector<std::vector<float>> calculateImportanceWeightGradient(const std::vector<size_t> actionIdx, const std::vector<std::vector<float>> &curPvalues, const std::vector<std::vector<float>> &oldPvalues);
+  std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
@@ -32,7 +31,7 @@ class __className__ : public __parentClassName__
    * @param curPvalues todo
    * @return gradient of KL wrt curParamsOne and curParamsTwo
    */
-  std::vector<std::vector<float>> calculateKLDivergenceGradient(const std::vector<std::vector<float>> &oldPvalues, const std::vector<std::vector<float>> &curPvalues);
+  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
 
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent() override;

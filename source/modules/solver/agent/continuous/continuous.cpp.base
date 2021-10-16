@@ -12,62 +12,38 @@ void __className__::initializeAgent()
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
   // Obtaining action shift and scales for bounded distributions
-  _actionShifts.resize(_problem->_agentsPerEnvironment);
-  _actionScales.resize(_problem->_agentsPerEnvironment);
-  for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+  _actionShifts.resize(_problem->_actionVectorSize);
+  _actionScales.resize(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    _actionShifts[d].resize(_problem->_actionVectorSize);
-    _actionScales[d].resize(_problem->_actionVectorSize);
-  }
-
-  for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    // For bounded distributions, infinite bounds should result in an error message
+    if (_policyDistribution == "Squashed Normal" || _policyDistribution == "Beta" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
     {
-      // For bounded distributions, infinite bounds should result in an error message
-      if (_policyDistribution == "Squashed Normal" || _policyDistribution == "Beta" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
-      {
-        if (isfinite(_actionLowerBounds[d][i]) == false) 
-          KORALI_LOG_ERROR("Provided lower bound (%f) for agent %a for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[d][i], d, i, _policyDistribution.c_str());
+      if (isfinite(_actionLowerBounds[i]) == false)
+        KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
 
-        if (isfinite(_actionUpperBounds[d][i]) == false)
-          KORALI_LOG_ERROR("Provided upper bound (%f) for agent %a for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionUpperBounds[d][i], d, i, _policyDistribution.c_str());
+      if (isfinite(_actionUpperBounds[i]) == false)
+        KORALI_LOG_ERROR("Provided upper bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionUpperBounds[i], i, _policyDistribution.c_str());
 
-        _actionShifts[d][i] = (_actionUpperBounds[d][i] + _actionLowerBounds[d][i]) * 0.5f;
-        _actionScales[d][i] = (_actionUpperBounds[d][i] - _actionLowerBounds[d][i]) * 0.5f;
-      }
+      _actionShifts[i] = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5f;
+      _actionScales[i] = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5f;
     }
+  }
 
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)
   if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mus and Sigmas
 
-
-    //TODO: If changed back to vector of vector already ready
-    /*
-    // Allocating space for the required transformations
-    _policyParameterTransformationMasks.resize(_problem->_agentsPerEnvironment);
-    _policyParameterScaling.resize(_problem->_agentsPerEnvironment);
-    _policyParameterShifting.resize(_problem->_agentsPerEnvironment);
-
-    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      _policyParameterTransformationMasks[d].resize(_policyParameterCount);
-      _policyParameterScaling[d].resize(_policyParameterCount);
-      _policyParameterShifting[d].resize(_policyParameterCount);
-    
-    }
-    */
-
     _policyParameterTransformationMasks.resize(_policyParameterCount);
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
 
     // Establishing transformations for the Normal policy
-    //TODO: ADD back a foor loop  ofer agents if back to vector of vectpr
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i]; 
+      auto varIdx = _problem->_actionVectorIndexes[i];
       float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -75,8 +51,7 @@ void __className__::initializeAgent()
 
       // Identity mask for Means
       _policyParameterScaling[i] = 1.0; //_actionScales[i];
-      //since eitherway all agents homogen at the moment
-      _policyParameterShifting[i] = _actionShifts[0][i];
+      _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
       // Softplus mask for Sigmas
@@ -89,28 +64,14 @@ void __className__::initializeAgent()
   if (_policyDistribution == "Beta")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mu and Variance
-    /* TODO: ADD BACK IF VECTOR OF VECTOR
-    // Allocating space for the required transformations
-    _policyParameterTransformationMasks.resize(_problem->_agentsPerEnvironment);
-    _policyParameterScaling.resize(_problem->_agentsPerEnvironment);
-    _policyParameterShifting.resize(_problem->_agentsPerEnvironment);
-
-    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      _policyParameterTransformationMasks[d].resize(_policyParameterCount);
-      _policyParameterScaling[d].resize(_policyParameterCount);
-      _policyParameterShifting[d].resize(_policyParameterCount);
-    }
-    */
     _policyParameterTransformationMasks.resize(_policyParameterCount);
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
 
     // Establishing transformations for the Normal policy
-    // TODO: add back for loop
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];  
+      auto varIdx = _problem->_actionVectorIndexes[i];
       const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -118,8 +79,7 @@ void __className__::initializeAgent()
 
       // Identity mask for Means
       _policyParameterScaling[i] = 1.0f;
-      // since all agents homogen choose 0
-      _policyParameterShifting[i] = _actionShifts[0][i];
+      _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
       // Sigmoid Mask for Variance
@@ -133,897 +93,838 @@ void __className__::initializeAgent()
 void __className__::getAction(korali::Sample &sample)
 {
   // Get action for all the agents in the environment
-  
-  // Getting current state
-  auto state = sample["State"];
-
-  // Adding state to the state time sequence
-  _stateTimeSequence.add(state);
-
-  // Storage for the action to select
-  std::vector<std::vector<float>> action(_problem->_agentsPerEnvironment, std::vector<float>(_problem->_actionVectorSize));
-
-  // Forward state sequence to get the Gaussian means and sigmas from policy
-
-  //RESHAPE INPUT VALUES
-  auto temp = _stateTimeSequence.getVector();
-  std::vector<std::vector<std::vector<float>>> inputVector (temp.size() * temp[0].size(),std::vector<std::vector<float>> (1,std::vector<float>(temp[0][0].size())));
-  for(size_t b= 0; b< temp.size(); b++)
-    for(size_t d = 0; d < temp[0].size(); d++)
-      inputVector[b * temp[0].size() + d][0] = temp[b][d];
-
-  //auto policy = runPolicy({_stateTimeSequence.getVector()})[0]; 
-  auto policy = runPolicy({inputVector})[0]; 
-
-  /*****************************************************************************
-  * During Training we select action according to policy's probability
-  * distribution
-  ****************************************************************************/
-
-  if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
-
-  /*****************************************************************************
-  * During testing, we select the means (point of highest density) for all
-  * elements of the action vector
-  ****************************************************************************/
-
-  if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
-
-  /*****************************************************************************
-  * Storing the action and its policy
-  ****************************************************************************/
-  
-
-  std::vector<std::vector<float>> distParams (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].distributionParameters.size()));
-  std::vector<std::vector<float>> unbAct (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].unboundedAction.size()));
-  std::vector<float> stValue (_problem->_agentsPerEnvironment);
-  for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+  for (size_t i = 0; i < sample["State"].size(); i++)
   {
-    distParams[d] = policy[d].distributionParameters;
-    unbAct[d] = policy[d].unboundedAction;
-    stValue[d] = policy[d].stateValue;
-  }
+    // Getting current state
 
-  sample["Policy"]["Distribution Parameters"] = distParams;
-  sample["Policy"]["State Value"] = stValue;
-  sample["Policy"]["Unbounded Action"] = unbAct;
-  sample["Action"] = action;
-  
+    auto state = sample["State"][i];
+
+    // Adding state to the state time sequence
+    _stateTimeSequence.add(state);
+
+    // Storage for the action to select
+    std::vector<float> action(_problem->_actionVectorSize);
+
+    // Forward state sequence to get the Gaussian means and sigmas from policy
+
+    auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+
+    /*****************************************************************************
+     * During Training we select action according to policy's probability
+     * distribution
+     ****************************************************************************/
+
+    if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
+
+    /*****************************************************************************
+     * During testing, we select the means (point of highest density) for all
+     * elements of the action vector
+     ****************************************************************************/
+
+    if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
+
+    /*****************************************************************************
+     * Storing the action and its policy
+     ****************************************************************************/
+
+    /*
+    std::vector<std::vector<float>> distParams (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].distributionParameters.size()));
+    std::vector<std::vector<float>> unbAct (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].unboundedAction.size()));
+    std::vector<float> stValue (_problem->_agentsPerEnvironment);
+    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+    {
+      distParams[d] = policy[d].distributionParameters;
+      unbAct[d] = policy[d].unboundedAction;
+      stValue[d] = policy[d].stateValue;
+    }
+
+    sample["Policy"]["Distribution Parameters"] = distParams;
+    sample["Policy"]["State Value"] = stValue;
+    sample["Policy"]["Unbounded Action"] = unbAct;
+    sample["Action"] = action;
+    */
+    sample["Policy"]["Distribution Parameters"][i] = policy.distributionParameters;
+    sample["Policy"]["State Value"][i] = policy.stateValue;
+    sample["Policy"]["Unbounded Action"][i] = policy.unboundedAction;
+    sample["Action"][i] = action;
+  }
 }
 
-std::vector<std::vector<float>> __className__::generateTrainingAction(std::vector<policy_t> &curPolicy)
+std::vector<float> __className__::generateTrainingAction(policy_t &curPolicy)
 {
-  std::vector<std::vector<float>> action(_problem->_agentsPerEnvironment, std::vector<float> (_problem->_actionVectorSize));
+  std::vector<float> action(_problem->_actionVectorSize);
 
   // Creating the action based on the selected policy
   if (_policyDistribution == "Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mean = curPolicy[d].distributionParameters[i];
-        const float sigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        action[d][i] = mean + sigma * _normalGenerator->getRandomNumber();
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float mean = curPolicy.distributionParameters[i];
+      const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      action[i] = mean + sigma * _normalGenerator->getRandomNumber();
+    }
   }
 
   if (_policyDistribution == "Squashed Normal")
   {
-    std::vector<std::vector<float>> unboundedAction(_problem->_agentsPerEnvironment, std::vector<float> (_problem->_actionVectorSize));
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
+    std::vector<float> unboundedAction(_problem->_actionVectorSize);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mu = curPolicy[d].distributionParameters[i];
-        const float sigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float scale = _actionScales[d][i];
-        const float shift = _actionShifts[d][i];
+      const float mu = curPolicy.distributionParameters[i];
+      const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float scale = _actionScales[i];
+      const float shift = _actionShifts[i];
 
-        unboundedAction[d][i] = mu + sigma * _normalGenerator->getRandomNumber();
-        action[d][i] = (std::tanh(unboundedAction[d][i]) * scale) + shift;
+      unboundedAction[i] = mu + sigma * _normalGenerator->getRandomNumber();
+      action[i] = (std::tanh(unboundedAction[i]) * scale) + shift;
 
-        // Safety check
-        if (action[d][i] >= _actionUpperBounds[d][i]) action[d][i] = _actionUpperBounds[d][i];
-        if (action[d][i] <= _actionLowerBounds[d][i]) action[d][i] = _actionLowerBounds[d][i];
-      }
-      curPolicy[d].unboundedAction = unboundedAction[d];
+      // Safety check
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
+    curPolicy.unboundedAction = unboundedAction;
   }
 
   if (_policyDistribution == "Clipped Normal")
-  { 
-    for(size_t d = 0 ; d < _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mu = curPolicy[d].distributionParameters[i];
-        const float sigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        action[d][i] = mu + sigma * _normalGenerator->getRandomNumber();
+  {
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float mu = curPolicy.distributionParameters[i];
+      const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      action[i] = mu + sigma * _normalGenerator->getRandomNumber();
 
-        if (action[d][i] >= _actionUpperBounds[d][i]) action[d][i] = _actionUpperBounds[d][i];
-        if (action[d][i] <= _actionLowerBounds[d][i]) action[d][i] = _actionLowerBounds[d][i];
-      }
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+    }
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mu = curPolicy[d].distributionParameters[i];
-        const float sigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float mu = curPolicy.distributionParameters[i];
+      const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        const float alpha = (_actionLowerBounds[d][i] - mu) / sigma;
-        const float beta = (_actionUpperBounds[d][i] - mu) / sigma;
+      const float alpha = (_actionLowerBounds[i] - mu) / sigma;
+      const float beta = (_actionUpperBounds[i] - mu) / sigma;
 
-        // Sampling via naive inverse sampling (not the safest approach due to numerical precision)
-        const float u = _uniformGenerator->getRandomNumber();
-        const float z = u * normalCDF(beta, 0.f, 1.f) + (1. - u) * normalCDF(alpha, 0.f, 1.f);
-        action[d][i] = mu + M_SQRT2 * ierf(2. * z - 1.) * sigma;
+      // Sampling via naive inverse sampling (not the safest approach due to numerical precision)
+      const float u = _uniformGenerator->getRandomNumber();
+      const float z = u * normalCDF(beta, 0.f, 1.f) + (1. - u) * normalCDF(alpha, 0.f, 1.f);
+      action[i] = mu + M_SQRT2 * ierf(2. * z - 1.) * sigma;
 
-        // Safety check
-        if (action[d][i] >= _actionUpperBounds[d][i]) action[d][i] = _actionUpperBounds[d][i];
-        if (action[d][i] <= _actionLowerBounds[d][i]) action[d][i] = _actionLowerBounds[d][i];
-      }
+      // Safety check
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curVariance = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        action[d][i] = ranBetaAlt(_normalGenerator->_range, curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      action[i] = ranBetaAlt(_normalGenerator->_range, curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
+    }
   }
 
   return action;
 }
 
-std::vector<std::vector<float>> __className__::generateTestingAction(const std::vector<policy_t> &curPolicy)
+std::vector<float> __className__::generateTestingAction(const policy_t &curPolicy)
 {
-  std::vector<std::vector<float>> action(_problem->_agentsPerEnvironment, std::vector<float> (_problem->_actionVectorSize));
+  std::vector<float> action(_problem->_actionVectorSize);
 
   if (_policyDistribution == "Normal")
   {
     // Take only the means without noise
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        action[d][i] = curPolicy[d].distributionParameters[i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      action[i] = curPolicy.distributionParameters[i];
   }
 
   if (_policyDistribution == "Squashed Normal")
   {
     // Take only the transformed means without noise
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mu = curPolicy[d].distributionParameters[i];
-        const float scale = _actionScales[d][i];
-        const float shift = _actionShifts[d][i];
-        action[d][i] = (std::tanh(mu) * scale) + shift;
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float mu = curPolicy.distributionParameters[i];
+      const float scale = _actionScales[i];
+      const float shift = _actionShifts[i];
+      action[i] = (std::tanh(mu) * scale) + shift;
+    }
   }
 
   if (_policyDistribution == "Clipped Normal")
   {
     // Take only the modes of the Clipped Normal without noise
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        action[d][i] = curPolicy[d].distributionParameters[i];
-        // Clip mode to bounds
-        if (action[d][i] >= _actionUpperBounds[d][i]) action[d][i] = _actionUpperBounds[d][i];
-        if (action[d][i] <= _actionLowerBounds[d][i]) action[d][i] = _actionLowerBounds[d][i];
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      action[i] = curPolicy.distributionParameters[i];
+      // Clip mode to bounds
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+    }
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
     // Take only the modes of the Truncated Normal noise
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        action[d][i] = curPolicy[d].distributionParameters[i];
-        // Clip mode to bounds
-        if (action[d][i] >= _actionUpperBounds[d][i]) action[d][i] = _actionUpperBounds[d][i];
-        if (action[d][i] <= _actionLowerBounds[d][i]) action[d][i] = _actionLowerBounds[d][i];
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      action[i] = curPolicy.distributionParameters[i];
+      // Clip mode to bounds
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
     // Take only the modes without noise
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        action[d][i] = _actionLowerBounds[d][i] + 2.0f * _actionScales[d][i] * curPolicy[d].distributionParameters[i];
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      action[i] = _actionLowerBounds[i] + 2.0f * _actionScales[i] * curPolicy.distributionParameters[i];
+    }
   }
 
   return action;
 }
 
-std::vector<float> __className__::calculateImportanceWeight(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy)
+float __className__::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
-  std::vector<float> logpCurPolicy(_problem->_agentsPerEnvironment,0.0f);
-  std::vector<float> logpOldPolicy(_problem->_agentsPerEnvironment,0.0f);
+  float logpCurPolicy = 0.0f;
+  float logpOldPolicy = 0.0f;
 
   if (_policyDistribution == "Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < action.size(); i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMean = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMean = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMean = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMean = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        logpCurPolicy[d] += normalLogDensity(action[d][i], curMean, curSigma);
-        logpOldPolicy[d] += normalLogDensity(action[d][i], oldMean, oldSigma);
-      }
+      logpCurPolicy += normalLogDensity(action[i], curMean, curSigma);
+      logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
+    }
   }
 
   if (_policyDistribution == "Squashed Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < action.size(); i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-        logpCurPolicy[d] += normalLogDensity(oldPolicy[d].unboundedAction[i], curMu, curSigma);
-        logpOldPolicy[d] += normalLogDensity(oldPolicy[d].unboundedAction[i], oldMu, oldSigma);
-      }
+      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
+      logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMu, curSigma);
+      logpOldPolicy += normalLogDensity(oldPolicy.unboundedAction[i], oldMu, oldSigma);
+    }
   }
 
   if (_policyDistribution == "Clipped Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < action.size(); i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        if (action[d][i] <= _actionLowerBounds[d][i])
-        {
-          logpCurPolicy[d] += normalLogCDF(_actionLowerBounds[d][i], curMu, curSigma);
-          logpOldPolicy[d] += normalLogCDF(_actionLowerBounds[d][i], oldMu, oldSigma);
-        }
-        else if (_actionUpperBounds[d][i] <= action[d][i])
-        {
-          logpCurPolicy[d] += normalLogCCDF(_actionUpperBounds[d][i], curMu, curSigma);
-          logpOldPolicy[d] += normalLogCCDF(_actionUpperBounds[d][i], oldMu, oldSigma);
-        }
-        else
-        {
-          logpCurPolicy[d] += normalLogDensity(action[d][i], curMu, curSigma);
-          logpOldPolicy[d] += normalLogDensity(action[d][i], oldMu, oldSigma);
-        }
+      if (action[i] <= _actionLowerBounds[i])
+      {
+        logpCurPolicy += normalLogCDF(_actionLowerBounds[i], curMu, curSigma);
+        logpOldPolicy += normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma);
       }
+      else if (_actionUpperBounds[i] <= action[i])
+      {
+        logpCurPolicy += normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
+        logpOldPolicy += normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma);
+      }
+      else
+      {
+        logpCurPolicy += normalLogDensity(action[i], curMu, curSigma);
+        logpOldPolicy += normalLogDensity(action[i], oldMu, oldSigma);
+      }
+    }
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < action.size(); i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        const float oldInvSig = 1.f / oldSigma;
-        const float curInvSig = 1.f / curSigma;
+      const float oldInvSig = 1.f / oldSigma;
+      const float curInvSig = 1.f / curSigma;
 
-        const float oldAlpha = (_actionLowerBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
-        const float oldBeta = (_actionUpperBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
+      const float oldAlpha = (_actionLowerBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
+      const float oldBeta = (_actionUpperBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
 
-        const float curAlpha = (_actionLowerBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
-        const float curBeta = (_actionUpperBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
+      const float curAlpha = (_actionLowerBounds[i] - curMu) * curInvSig * M_SQRT1_2;
+      const float curBeta = (_actionUpperBounds[i] - curMu) * curInvSig * M_SQRT1_2;
 
-        // log of normalization constants
-        const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-        const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
+      // log of normalization constants
+      const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
+      const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
 
-        logpCurPolicy[d] += lCq - std::log(curSigma) - 0.5 * (action[d][i] - curMu) * (action[d][i] - curMu) * curInvSig * curInvSig;
-        logpOldPolicy[d] += lCp - std::log(oldSigma) - 0.5 * (action[d][i] - oldMu) * (action[d][i] - oldMu) * oldInvSig * oldInvSig;
-      }
+      logpCurPolicy += lCq - std::log(curSigma) - 0.5 * (action[i] - curMu) * (action[i] - curMu) * curInvSig * curInvSig;
+      logpOldPolicy += lCp - std::log(oldSigma) - 0.5 * (action[i] - oldMu) * (action[i] - oldMu) * oldInvSig * oldInvSig;
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
-    for(size_t d = 0 ; d< _problem->_agentsPerEnvironment;d++)
-      for (size_t i = 0; i < action.size(); i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldVariance = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curVariance = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldVariance = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        logpCurPolicy[d] += betaLogDensityAlt(action[d][i], curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
-        logpOldPolicy[d] += betaLogDensityAlt(action[d][i], oldMu, oldVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
-      }
+      logpCurPolicy += betaLogDensityAlt(action[i], curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
+      logpOldPolicy += betaLogDensityAlt(action[i], oldMu, oldVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
+    }
   }
 
   // Calculating log importance weight
-  std::vector<float> logImportanceWeight(_problem->_agentsPerEnvironment);
-  std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-  
+  float logImportanceWeight = logpCurPolicy - logpOldPolicy;
 
   // Normalizing extreme values to prevent loss of precision
-  for(size_t d = 0 ; d < _problem->_agentsPerEnvironment; d++)
-    {
-      logImportanceWeight[d] = logpCurPolicy[d] - logpOldPolicy[d];
-      if (logImportanceWeight[d] > +7.f) logImportanceWeight[d] = +7.f;
-      if (logImportanceWeight[d] < -7.f) logImportanceWeight[d] = -7.f;
-      if (std::isfinite(logImportanceWeight[d]) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
-      importanceWeight[d] = std::exp(logImportanceWeight[d]);
-    }
+  if (logImportanceWeight > +7.f) logImportanceWeight = +7.f;
+  if (logImportanceWeight < -7.f) logImportanceWeight = -7.f;
+  if (std::isfinite(logImportanceWeight) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
+
+  // Calculating actual importance weight by exp
+  const float importanceWeight = std::exp(logImportanceWeight);
 
   return importanceWeight;
 }
 
-std::vector<std::vector<float>> __className__::calculateImportanceWeightGradient(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy)
+std::vector<float> __className__::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   // Storage for importance weight gradients
-  std::vector<std::vector<float>> importanceWeightGradients (_problem->_agentsPerEnvironment, std::vector<float> (2 * _problem->_actionVectorSize, 0.));
+  std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.);
 
   if (_policyDistribution == "Normal")
   {
-    std::vector<float> logpCurPolicy(_problem->_agentsPerEnvironment,0.0f);
-    std::vector<float> logpOldPolicy(_problem->_agentsPerEnvironment,0.0f);
-    
+    float logpCurPolicy = 0.f;
+    float logpOldPolicy = 0.f;
 
     // ParamsOne are the Means, ParamsTwo are the Sigmas
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMean = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMean = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-
-        // Deviation from expAction and current Mean
-        const float curActionDif = action[d][i] - curMean;
-
-        // Inverse Variances
-        const float curInvVar = 1.f / (curSigma * curSigma);
-
-        // Gradient with respect to Mean
-        importanceWeightGradients[d][i] = curActionDif * curInvVar;
-
-        // Gradient with respect to Sigma
-        importanceWeightGradients[d][_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.f / curSigma;
-
-        // Calculate importance weight
-        logpCurPolicy[d] += normalLogDensity(action[d][i], curMean, curSigma);
-        logpOldPolicy[d] += normalLogDensity(action[d][i], oldMean, oldSigma);
-      }
-
-    std::vector<float> logImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-  
-    for(size_t d = 0 ; d < _problem->_agentsPerEnvironment; d++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      logImportanceWeight[d] = logpCurPolicy[d] - logpOldPolicy[d];
-      importanceWeight[d] = std::exp(logImportanceWeight[d]);
+      // Getting parameters from the new and old policies
+      const float oldMean = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMean = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      // Deviation from expAction and current Mean
+      const float curActionDif = action[i] - curMean;
+
+      // Inverse Variances
+      const float curInvVar = 1.f / (curSigma * curSigma);
+
+      // Gradient with respect to Mean
+      importanceWeightGradients[i] = curActionDif * curInvVar;
+
+      // Gradient with respect to Sigma
+      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.f / curSigma;
+
+      // Calculate importance weight
+      logpCurPolicy += normalLogDensity(action[i], curMean, curSigma);
+      logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
     }
 
+    float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    float importanceWeight = std::exp(logImportanceWeight);
+
     // Scale by importance weight to get gradient
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) 
-        importanceWeightGradients[d][i] *= importanceWeight[d];
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) importanceWeightGradients[i] *= importanceWeight;
   }
 
   if (_policyDistribution == "Squashed Normal")
   {
-    std::vector<float> logpCurPolicy(_problem->_agentsPerEnvironment,0.0f);
-    std::vector<float> logpOldPolicy(_problem->_agentsPerEnvironment,0.0f);
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    float logpCurPolicy = 0.f;
+    float logpOldPolicy = 0.f;
 
-        // Deviation from expAction and current Mean
-        
-        const float curActionDif = oldPolicy[d].unboundedAction[i] - curMu;
-
-        // Inverse Variance
-        const float curInvVar = 1. / (curSigma * curSigma);
-
-        // Gradient with respect to Mean
-        importanceWeightGradients[d][i] = curActionDif * curInvVar;
-
-        // Gradient with respect to Sigma
-        importanceWeightGradients[d][_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.0f / curSigma;
-
-        // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-        logpCurPolicy[d] += normalLogDensity(oldPolicy[d].unboundedAction[i], curMu, curSigma);
-        logpOldPolicy[d] += normalLogDensity(oldPolicy[d].unboundedAction[i], oldMu, oldSigma);
-      }
-
-    std::vector<float> logImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-  
-    for(size_t d = 0 ; d < _problem->_agentsPerEnvironment; d++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      logImportanceWeight[d] = logpCurPolicy[d] - logpOldPolicy[d];
-      importanceWeight[d] = std::exp(logImportanceWeight[d]);
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      const float unboundedAction = oldPolicy.unboundedAction[i];
+
+      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
+      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
+      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
+
+      // Deviation from expAction and current Mean
+      const float curActionDif = unboundedAction - curMu;
+
+      // Inverse Variance
+      const float curInvVar = 1. / (curSigma * curSigma);
+
+      // Gradient with respect to Mean
+      importanceWeightGradients[i] = curActionDif * curInvVar;
+
+      // Gradient with respect to Sigma
+      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.0f / curSigma;
     }
 
+    const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    const float importanceWeight = std::exp(logImportanceWeight);
+
     // Scale by importance weight to get gradient
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-        importanceWeightGradients[d][i] *= importanceWeight[d];
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+      importanceWeightGradients[i] *= importanceWeight;
   }
 
   if (_policyDistribution == "Clipped Normal")
   {
-    std::vector<float> logpCurPolicy(_problem->_agentsPerEnvironment,0.0f);
-    std::vector<float> logpOldPolicy(_problem->_agentsPerEnvironment,0.0f);
+    float logpCurPolicy = 0.f;
+    float logpOldPolicy = 0.f;
 
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-
-        const float curInvSig = 1.f / curSigma;
-
-        // Deviation from expAction and current Mu
-        const float curActionDif = (action[d][i] - curMu);
-
-        if (action[d][i] <= _actionLowerBounds[d][i])
-        {
-          const float curNormalLogPdfLower = normalLogDensity(_actionLowerBounds[d][i], curMu, curSigma);
-          const float curNormalLogCdfLower = normalLogCDF(_actionLowerBounds[d][i], curMu, curSigma);
-          const float pdfCdfRatio = std::exp(curNormalLogPdfLower - curNormalLogCdfLower);
-
-          // Grad wrt. curMu
-          importanceWeightGradients[d][i] = -pdfCdfRatio;
-
-          // Grad wrt. curSigma
-          importanceWeightGradients[d][_problem->_actionVectorSize + i] = -curActionDif * curInvSig * pdfCdfRatio;
-
-          // Calculate importance weight
-          logpCurPolicy[d] += curNormalLogCdfLower;
-          logpOldPolicy[d] += normalLogCDF(_actionLowerBounds[d][i], oldMu, oldSigma);
-        }
-        else if (_actionUpperBounds[d][i] <= action[d][i])
-        {
-          const float curNormalLogPdfUpper = normalLogDensity(_actionUpperBounds[d][i], curMu, curSigma);
-          const float curNormalLogCCdfUpper = normalLogCCDF(_actionUpperBounds[d][i], curMu, curSigma);
-          const float pdfCCdfRatio = std::exp(curNormalLogPdfUpper - curNormalLogCCdfUpper);
-
-          // Grad wrt. curMu
-          importanceWeightGradients[d][i] = pdfCCdfRatio;
-
-          // Grad wrt. curSigma
-          importanceWeightGradients[d][_problem->_actionVectorSize + i] = curActionDif * curInvSig * pdfCCdfRatio;
-
-          // Calculate importance weight
-          logpCurPolicy[d] += curNormalLogCCdfUpper;
-          logpOldPolicy[d] += normalLogCCDF(_actionUpperBounds[d][i], oldMu, oldSigma);
-        }
-        else
-        {
-          // Inverse Variance
-          const float curInvSig3 = curInvSig * curInvSig * curInvSig;
-
-          // Grad wrt. curMu
-          importanceWeightGradients[d][i] = curActionDif * curInvSig * curInvSig;
-
-          // Grad wrt. curSigma
-          importanceWeightGradients[d][_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvSig3 - curInvSig;
-
-          // Calculate importance weight
-          logpCurPolicy[d] += normalLogDensity(action[d][i], curMu, curSigma);
-          logpOldPolicy[d] += normalLogDensity(action[d][i], oldMu, oldSigma);
-        }
-      }
-
-    std::vector<float> logImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-  
-    for(size_t d = 0 ; d < _problem->_agentsPerEnvironment; d++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      logImportanceWeight[d] = logpCurPolicy[d] - logpOldPolicy[d];
-      importanceWeight[d] = std::exp(logImportanceWeight[d]);
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      const float curInvSig = 1.f / curSigma;
+
+      // Deviation from expAction and current Mu
+      const float curActionDif = (action[i] - curMu);
+
+      if (action[i] <= _actionLowerBounds[i])
+      {
+        const float curNormalLogPdfLower = normalLogDensity(_actionLowerBounds[i], curMu, curSigma);
+        const float curNormalLogCdfLower = normalLogCDF(_actionLowerBounds[i], curMu, curSigma);
+        const float pdfCdfRatio = std::exp(curNormalLogPdfLower - curNormalLogCdfLower);
+
+        // Grad wrt. curMu
+        importanceWeightGradients[i] = -pdfCdfRatio;
+
+        // Grad wrt. curSigma
+        importanceWeightGradients[_problem->_actionVectorSize + i] = -curActionDif * curInvSig * pdfCdfRatio;
+
+        // Calculate importance weight
+        logpCurPolicy += curNormalLogCdfLower;
+        logpOldPolicy += normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma);
+      }
+      else if (_actionUpperBounds[i] <= action[i])
+      {
+        const float curNormalLogPdfUpper = normalLogDensity(_actionUpperBounds[i], curMu, curSigma);
+        const float curNormalLogCCdfUpper = normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
+        const float pdfCCdfRatio = std::exp(curNormalLogPdfUpper - curNormalLogCCdfUpper);
+
+        // Grad wrt. curMu
+        importanceWeightGradients[i] = pdfCCdfRatio;
+
+        // Grad wrt. curSigma
+        importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curInvSig * pdfCCdfRatio;
+
+        // Calculate importance weight
+        logpCurPolicy += curNormalLogCCdfUpper;
+        logpOldPolicy += normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma);
+      }
+      else
+      {
+        // Inverse Variance
+        const float curInvSig3 = curInvSig * curInvSig * curInvSig;
+
+        // Grad wrt. curMu
+        importanceWeightGradients[i] = curActionDif * curInvSig * curInvSig;
+
+        // Grad wrt. curSigma
+        importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvSig3 - curInvSig;
+
+        // Calculate importance weight
+        logpCurPolicy += normalLogDensity(action[i], curMu, curSigma);
+        logpOldPolicy += normalLogDensity(action[i], oldMu, oldSigma);
+      }
     }
 
+    const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    const float importanceWeight = std::exp(logImportanceWeight);
+
     // Scale by importance weight to get gradient
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-        importanceWeightGradients[d][i] *= importanceWeight[d];
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+      importanceWeightGradients[i] *= importanceWeight;
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
-    std::vector<float> logpCurPolicy(_problem->_agentsPerEnvironment,0.0f);
-    std::vector<float> logpOldPolicy(_problem->_agentsPerEnvironment,0.0f);
+    float logpCurPolicy = 0.f;
+    float logpOldPolicy = 0.f;
 
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      const float oldInvSig = 1. / oldSigma;
+      const float oldInvVar = oldInvSig * oldInvSig;
+
+      const float curInvSig = 1. / curSigma;
+      const float curInvVar = curInvSig * curInvSig;
+
+      // Action differences to mu
+      const float curActionDif = action[i] - curMu;
+      const float oldActionDif = action[i] - oldMu;
+
+      // Scaled upper and lower bound distances from mu
+      const float oldAlpha = (_actionLowerBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
+      const float oldBeta = (_actionUpperBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
+
+      const float curAlpha = (_actionLowerBounds[i] - curMu) * curInvSig * M_SQRT1_2;
+      const float curBeta = (_actionUpperBounds[i] - curMu) * curInvSig * M_SQRT1_2;
+
+      // log of normalization constantsa
+      const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
+      const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
+
+      // precomputing log values
+      const float lPi2 = 0.5 * std::log(2. * M_PI);
+      const float lCurSig = std::log(curSigma);
+      const float lOldSig = std::log(oldSigma);
+
+      // log of normalized gradients of normalization constants
+      float ldCqMu = lCq - lPi2 - lCurSig;
+      float dCqMu;
+
+      const float curBeta2 = curBeta * curBeta;
+      const float curAlpha2 = curAlpha * curAlpha;
+      const float eps = 1e-7;
+
+      if (definitelyLessThan(-curBeta2, -curAlpha2, eps))
       {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-
-        const float oldInvSig = 1. / oldSigma;
-        const float oldInvVar = oldInvSig * oldInvSig;
-
-        const float curInvSig = 1. / curSigma;
-        const float curInvVar = curInvSig * curInvSig;
-
-        // Action differences to mu
-        const float curActionDif = action[d][i] - curMu;
-        const float oldActionDif = action[d][i] - oldMu;
-
-        // Scaled upper and lower bound distances from mu
-        const float oldAlpha = (_actionLowerBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
-        const float oldBeta = (_actionUpperBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
-
-        const float curAlpha = (_actionLowerBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
-        const float curBeta = (_actionUpperBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
-
-        // log of normalization constantsa
-        const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-        const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-
-        // precomputing log values
-        const float lPi2 = 0.5 * std::log(2. * M_PI);
-        const float lCurSig = std::log(curSigma);
-        const float lOldSig = std::log(oldSigma);
-
-        // log of normalized gradients of normalization constants
-        float ldCqMu = lCq - lPi2 - lCurSig;
-        float dCqMu;
-
-        const float curBeta2 = curBeta * curBeta;
-        const float curAlpha2 = curAlpha * curAlpha;
-        const float eps = 1e-7;
-
-        if (definitelyLessThan(-curBeta2, -curAlpha2, eps))
-        {
-          ldCqMu += safeLogMinus(-curAlpha2, -curBeta2);
-          dCqMu = -std::exp(ldCqMu);
-        }
-        else if (definitelyLessThan(-curAlpha2, -curBeta2, eps))
-        {
-          ldCqMu += safeLogMinus(-curBeta2, -curAlpha2);
-          dCqMu = std::exp(ldCqMu);
-        }
-        else
-        {
-          ldCqMu = -100;
-          dCqMu = 0.;
-        }
-
-        float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[d][i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[d][i] - curMu);
-
-        // Gradient with respect to Mean
-        importanceWeightGradients[d][i] = (curActionDif * curInvVar + dCqMu);
-        assert(isfinite(importanceWeightGradients[d][i]));
-
-        // Gradient with respect to Sigma
-        importanceWeightGradients[d][_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvVar * curInvSig - curInvSig + dCqSig;
-        assert(isfinite(importanceWeightGradients[d][_problem->_actionVectorSize + i]));
-
-        // Calculate Importance Weight
-        logpCurPolicy[d] += lCq - lCurSig - 0.5 * curActionDif * curActionDif * curInvVar;
-        logpOldPolicy[d] += lCp - lOldSig - 0.5 * oldActionDif * oldActionDif * oldInvVar;
+        ldCqMu += safeLogMinus(-curAlpha2, -curBeta2);
+        dCqMu = -std::exp(ldCqMu);
+      }
+      else if (definitelyLessThan(-curAlpha2, -curBeta2, eps))
+      {
+        ldCqMu += safeLogMinus(-curBeta2, -curAlpha2);
+        dCqMu = std::exp(ldCqMu);
+      }
+      else
+      {
+        ldCqMu = -100;
+        dCqMu = 0.;
       }
 
-    std::vector<float> logImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-  
-    for(size_t d = 0 ; d < _problem->_agentsPerEnvironment; d++)
-    {
-      logImportanceWeight[d] = logpCurPolicy[d] - logpOldPolicy[d];
-      importanceWeight[d] = std::exp(logImportanceWeight[d]);
+      float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[i] - curMu);
+
+      // Gradient with respect to Mean
+      importanceWeightGradients[i] = (curActionDif * curInvVar + dCqMu);
+      assert(isfinite(importanceWeightGradients[i]));
+
+      // Gradient with respect to Sigma
+      importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvVar * curInvSig - curInvSig + dCqSig;
+      assert(isfinite(importanceWeightGradients[_problem->_actionVectorSize + i]));
+
+      // Calculate Importance Weight
+      logpCurPolicy += lCq - lCurSig - 0.5 * curActionDif * curActionDif * curInvVar;
+      logpOldPolicy += lCp - lOldSig - 0.5 * oldActionDif * oldActionDif * oldInvVar;
     }
 
+    const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    const float importanceWeight = std::exp(logImportanceWeight);
+
     // Scale by importance weight to get gradient
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-      {
-        importanceWeightGradients[d][i] *= importanceWeight[d];
-        assert(isfinite(importanceWeightGradients[d][i]));
-      }
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+    {
+      importanceWeightGradients[i] *= importanceWeight;
+      assert(isfinite(importanceWeightGradients[i]));
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldVariance = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curVariance = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldVariance = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        float alphaCur;
-        float betaCur;
-        std::tie(alphaCur, betaCur) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      float alphaCur;
+      float betaCur;
+      std::tie(alphaCur, betaCur) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        float alphaOld;
-        float betaOld;
-        std::tie(alphaOld, betaOld) = betaParamTransformAlt(oldMu, oldVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      float alphaOld;
+      float betaOld;
+      std::tie(alphaOld, betaOld) = betaParamTransformAlt(oldMu, oldVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        // Log probability of action with old policy params
-        const float logpOldPolicy = betaLogDensityAlt(action[d][i], oldMu, oldVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
-        const float invpOldPolicy = std::exp(-logpOldPolicy);
+      // Log probability of action with old policy params
+      const float logpOldPolicy = betaLogDensityAlt(action[i], oldMu, oldVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
+      const float invpOldPolicy = std::exp(-logpOldPolicy);
 
-        // Variable preparation
-        const float Bab = gsl_sf_beta(alphaCur, betaCur);
+      // Variable preparation
+      const float Bab = gsl_sf_beta(alphaCur, betaCur);
 
-        const float psiAb = gsl_sf_psi(alphaCur + betaCur);
+      const float psiAb = gsl_sf_psi(alphaCur + betaCur);
 
-        const float actionRange = _actionUpperBounds[d][i] - _actionLowerBounds[d][i];
-        const float logscale = std::log(actionRange);
-        const float powscale = std::pow(actionRange, -betaCur - alphaCur + 1.f);
-        const float factor = -1.f * std::pow(action[d][i] - _actionLowerBounds[d][i], alphaCur - 1.f) * powscale * std::pow(_actionUpperBounds[d][i] - action[d][i], betaCur - 1.f) * invpOldPolicy / Bab;
+      const float actionRange = _actionUpperBounds[i] - _actionLowerBounds[i];
+      const float logscale = std::log(actionRange);
+      const float powscale = std::pow(actionRange, -betaCur - alphaCur + 1.f);
+      const float factor = -1.f * std::pow(action[i] - _actionLowerBounds[i], alphaCur - 1.f) * powscale * std::pow(_actionUpperBounds[i] - action[i], betaCur - 1.f) * invpOldPolicy / Bab;
 
-        // Rho Grad wrt alpha and beta
-        const float daBab = gsl_sf_psi(alphaCur) - psiAb;
-        const float drhoda = ((logscale - std::log(action[d][i] - _actionLowerBounds[d][i])) + daBab) * factor;
-        const float dbBab = gsl_sf_psi(betaCur) - psiAb;
-        const float drhodb = (logscale - std::log(_actionUpperBounds[d][i] - action[d][i]) + dbBab) * factor;
+      // Rho Grad wrt alpha and beta
+      const float daBab = gsl_sf_psi(alphaCur) - psiAb;
+      const float drhoda = ((logscale - std::log(action[i] - _actionLowerBounds[i])) + daBab) * factor;
+      const float dbBab = gsl_sf_psi(betaCur) - psiAb;
+      const float drhodb = (logscale - std::log(_actionUpperBounds[i] - action[i]) + dbBab) * factor;
 
-        // Derivatives of alpha and beta wrt mu and varc
-        float dadmu, dadvarc, dbdmu, dbdvarc;
-        std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      // Derivatives of alpha and beta wrt mu and varc
+      float dadmu, dadvarc, dbdmu, dbdvarc;
+      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        // Rho Grad wrt mu and varc
-        importanceWeightGradients[d][i] = drhoda * dadmu + drhodb * dbdmu;
-        importanceWeightGradients[d][_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
-      }
+      // Rho Grad wrt mu and varc
+      importanceWeightGradients[i] = drhoda * dadmu + drhodb * dbdmu;
+      importanceWeightGradients[_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
+    }
   }
 
   return importanceWeightGradients;
 }
 
-std::vector<std::vector<float>> __className__::calculateKLDivergenceGradient(const std::vector<policy_t> &oldPolicy, const std::vector<policy_t> &curPolicy)
+std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
 {
   // Storage for KL Divergence Gradients
-  std::vector<std::vector<float>> KLDivergenceGradients(_problem->_agentsPerEnvironment, std::vector<float> (2.0 * _problem->_actionVectorSize, 0.0));
+  std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
 
   if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMean = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMean = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMean = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMean = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        const float curInvSig = 1. / curSigma;
-        const float curInvVar = 1. / (curSigma * curSigma);
-        const float curInvSig3 = 1. / (curSigma * curSigma * curSigma);
-        const float actionDiff = (curMean - oldMean);
+      const float curInvSig = 1. / curSigma;
+      const float curInvVar = 1. / (curSigma * curSigma);
+      const float curInvSig3 = 1. / (curSigma * curSigma * curSigma);
+      const float actionDiff = (curMean - oldMean);
 
-        // KL-Gradient with respect to Mean
-        KLDivergenceGradients[d][i] = actionDiff * curInvVar;
+      // KL-Gradient with respect to Mean
+      KLDivergenceGradients[i] = actionDiff * curInvVar;
 
-        // Contribution to Sigma from Trace
-        const float gradTr = -curInvSig3 * oldSigma * oldSigma;
+      // Contribution to Sigma from Trace
+      const float gradTr = -curInvSig3 * oldSigma * oldSigma;
 
-        // Contribution to Sigma from Quadratic term
-        const float gradQuad = -(actionDiff * actionDiff) * curInvSig3;
+      // Contribution to Sigma from Quadratic term
+      const float gradQuad = -(actionDiff * actionDiff) * curInvSig3;
 
-        // Contribution to Sigma from Determinant
-        const float gradDet = curInvSig;
+      // Contribution to Sigma from Determinant
+      const float gradDet = curInvSig;
 
-        // KL-Gradient with respect to Sigma
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;
-      }
+      // KL-Gradient with respect to Sigma
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;
+    }
   }
 
   if (_policyDistribution == "Clipped Normal")
   {
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        // Precompute often used constant terms
-        const float oldVar = oldSigma * oldSigma;
-        const float oldInvSig = 1.f / oldSigma;
-        const float curInvSig = 1.f / curSigma;
-        const float curInvVar = 1.f / (curSigma * curSigma);
-        const float curInvSig3 = 1.f / (curSigma * curSigma * curSigma);
-        const float muDif = (oldMu - curMu);
+      // Precompute often used constant terms
+      const float oldVar = oldSigma * oldSigma;
+      const float oldInvSig = 1.f / oldSigma;
+      const float curInvSig = 1.f / curSigma;
+      const float curInvVar = 1.f / (curSigma * curSigma);
+      const float curInvSig3 = 1.f / (curSigma * curSigma * curSigma);
+      const float muDif = (oldMu - curMu);
 
-        const float invSqrt2Pi = M_SQRT1_2 * std::sqrt(M_1_PI);
+      const float invSqrt2Pi = M_SQRT1_2 * std::sqrt(M_1_PI);
 
-        const float oldAdjustedLb = (_actionLowerBounds[d][i] - oldMu) * oldInvSig;
-        const float oldAdjustedUb = (_actionUpperBounds[d][i] - oldMu) * oldInvSig;
+      const float oldAdjustedLb = (_actionLowerBounds[i] - oldMu) * oldInvSig;
+      const float oldAdjustedUb = (_actionUpperBounds[i] - oldMu) * oldInvSig;
 
-        const float curAdjustedLb = (_actionLowerBounds[d][i] - curMu) * curInvSig;
-        const float curAdjustedUb = (_actionUpperBounds[d][i] - curMu) * curInvSig;
+      const float curAdjustedLb = (_actionLowerBounds[i] - curMu) * curInvSig;
+      const float curAdjustedUb = (_actionUpperBounds[i] - curMu) * curInvSig;
 
-        const float erfLb = std::erf(M_SQRT1_2 * oldAdjustedLb);
-        const float erfUb = std::erf(M_SQRT1_2 * oldAdjustedUb);
+      const float erfLb = std::erf(M_SQRT1_2 * oldAdjustedLb);
+      const float erfUb = std::erf(M_SQRT1_2 * oldAdjustedUb);
 
-        const float expLb = std::exp(-0.5f * oldAdjustedLb * oldAdjustedLb);
-        const float expUb = std::exp(-0.5f * oldAdjustedUb * oldAdjustedUb);
+      const float expLb = std::exp(-0.5f * oldAdjustedLb * oldAdjustedLb);
+      const float expUb = std::exp(-0.5f * oldAdjustedUb * oldAdjustedUb);
 
-        const float cdfRatiosA = std::exp(normalLogCDF(_actionLowerBounds[d][i], oldMu, oldSigma) + normalLogDensity(_actionLowerBounds[d][i], curMu, curSigma) - normalLogCDF(_actionLowerBounds[d][i], curMu, curSigma));
-        const float ccdfRatiosB = std::exp(normalLogCCDF(_actionUpperBounds[d][i], oldMu, oldSigma) + normalLogDensity(_actionUpperBounds[d][i], curMu, curSigma) - normalLogCCDF(_actionUpperBounds[d][i], curMu, curSigma));
+      const float cdfRatiosA = std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma) + normalLogDensity(_actionLowerBounds[i], curMu, curSigma) - normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
+      const float ccdfRatiosB = std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma) + normalLogDensity(_actionUpperBounds[i], curMu, curSigma) - normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
 
-        // KL-Gradient with respect to Mean
-        KLDivergenceGradients[d][i] = cdfRatiosA;
-        KLDivergenceGradients[d][i] -= 0.5f * muDif * curInvVar * (erfUb - erfLb);
-        KLDivergenceGradients[d][i] += invSqrt2Pi * oldSigma * curInvVar * (expUb - expLb);
-        KLDivergenceGradients[d][i] -= ccdfRatiosB;
+      // KL-Gradient with respect to Mean
+      KLDivergenceGradients[i] = cdfRatiosA;
+      KLDivergenceGradients[i] -= 0.5f * muDif * curInvVar * (erfUb - erfLb);
+      KLDivergenceGradients[i] += invSqrt2Pi * oldSigma * curInvVar * (expUb - expLb);
+      KLDivergenceGradients[i] -= ccdfRatiosB;
 
-        // KL-Gradient with respect to Sigma
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] = curAdjustedLb * cdfRatiosA;
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] += 0.5f * (curInvSig - muDif * muDif * curInvSig3 - oldVar * curInvSig3) * (erfUb - erfLb);
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] += invSqrt2Pi * curInvSig3 * (oldVar * oldAdjustedUb + 2.f * oldSigma * muDif) * expUb;
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] -= invSqrt2Pi * curInvSig3 * (oldVar * oldAdjustedLb + 2.f * oldSigma * muDif) * expLb;
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] -= curAdjustedUb * ccdfRatiosB;
-      }
+      // KL-Gradient with respect to Sigma
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = curAdjustedLb * cdfRatiosA;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5f * (curInvSig - muDif * muDif * curInvSig3 - oldVar * curInvSig3) * (erfUb - erfLb);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi * curInvSig3 * (oldVar * oldAdjustedUb + 2.f * oldSigma * muDif) * expUb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= invSqrt2Pi * curInvSig3 * (oldVar * oldAdjustedLb + 2.f * oldSigma * muDif) * expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= curAdjustedUb * ccdfRatiosB;
+    }
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      // Precompute often used constant terms
+      const float oldVar = oldSigma * oldSigma;
+      const float oldInvSig = 1.f / oldSigma;
+
+      const float curInvSig = 1.f / curSigma;
+      const float curInvVar = curInvSig * curInvSig;
+      const float curInvSig3 = curInvSig * curInvVar;
+      const float muDif = (oldMu - curMu);
+
+      // old scaled upper and lower bound distances from mu
+      const float oldAlpha = (_actionLowerBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
+      const float oldBeta = (_actionUpperBounds[i] - oldMu) * oldInvSig * M_SQRT1_2;
+
+      // current scaled upper and lower bound distances from mu
+      const float curAlpha = (_actionLowerBounds[i] - curMu) * curInvSig * M_SQRT1_2;
+      const float curBeta = (_actionUpperBounds[i] - curMu) * curInvSig * M_SQRT1_2;
+
+      // log of normalization constantsa
+      const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
+      const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
+
+      // precomputing log values
+      const float lPi2 = 0.5 * std::log(2. * M_PI);
+      const float lCurSig = std::log(curSigma);
+      const float lOldSig = std::log(oldSigma);
+
+      // log of normalized gradients of normalization constants
+      float ldCqMu = lCq - lPi2 - lCurSig;
+      float dCqMu;
+
+      float lCps = lCp - 0.5 * lPi2 + lOldSig - lCurSig;
+      float Cps;
+
+      const float curBeta2 = curBeta * curBeta;
+      const float curAlpha2 = curAlpha * curAlpha;
+      const float eps = 1e-6;
+
+      if (definitelyLessThan(-curBeta2, -curAlpha2, eps))
       {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldSigma = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curSigma = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-
-        // Precompute often used constant terms
-        const float oldVar = oldSigma * oldSigma;
-        const float oldInvSig = 1.f / oldSigma;
-
-        const float curInvSig = 1.f / curSigma;
-        const float curInvVar = curInvSig * curInvSig;
-        const float curInvSig3 = curInvSig * curInvVar;
-        const float muDif = (oldMu - curMu);
-
-        // old scaled upper and lower bound distances from mu
-        const float oldAlpha = (_actionLowerBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
-        const float oldBeta = (_actionUpperBounds[d][i] - oldMu) * oldInvSig * M_SQRT1_2;
-
-        // current scaled upper and lower bound distances from mu
-        const float curAlpha = (_actionLowerBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
-        const float curBeta = (_actionUpperBounds[d][i] - curMu) * curInvSig * M_SQRT1_2;
-
-        // log of normalization constantsa
-        const float lCq = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-curBeta), gsl_sf_log_erfc(-curAlpha));
-        const float lCp = M_LN2 - safeLogMinus(gsl_sf_log_erfc(-oldBeta), gsl_sf_log_erfc(-oldAlpha));
-
-        // precomputing log values
-        const float lPi2 = 0.5 * std::log(2. * M_PI);
-        const float lCurSig = std::log(curSigma);
-        const float lOldSig = std::log(oldSigma);
-
-        // log of normalized gradients of normalization constants
-        float ldCqMu = lCq - lPi2 - lCurSig;
-        float dCqMu;
-
-        float lCps = lCp - 0.5 * lPi2 + lOldSig - lCurSig;
-        float Cps;
-
-        const float curBeta2 = curBeta * curBeta;
-        const float curAlpha2 = curAlpha * curAlpha;
-        const float eps = 1e-6;
-
-        if (definitelyLessThan(-curBeta2, -curAlpha2, eps))
-        {
-          const float logDif = safeLogMinus(-curAlpha2, -curBeta2);
-          ldCqMu += logDif;
-          dCqMu = -std::exp(ldCqMu);
-          lCps += logDif;
-          Cps = -std::exp(lCps);
-        }
-        else if (definitelyLessThan(-curAlpha2, -curBeta2, eps))
-        {
-          const float logDif = safeLogMinus(-curBeta2, -curAlpha2);
-          ldCqMu += logDif;
-          dCqMu = std::exp(ldCqMu);
-          lCps += logDif;
-          Cps = std::exp(lCps);
-        }
-        else
-        {
-          ldCqMu = -100;
-          dCqMu = 0.;
-          Cps = 0.;
-        }
-
-        float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[d][i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[d][i] - curMu);
-
-        // KL-Gradient with respect to Mu
-        KLDivergenceGradients[d][i] = -dCqMu - muDif * curInvVar + Cps;
-
-        // Precompute some terms
-        const float sb = oldSigma * curInvSig3 * (_actionUpperBounds[d][i] + oldMu - 2. * curMu);
-        const float sa = oldSigma * curInvSig3 * (_actionLowerBounds[d][i] + oldMu - 2. * curMu);
-
-        const float lCpb = lCp - oldBeta * oldBeta - lPi2;
-        const float lCpa = lCp - oldAlpha * oldAlpha - lPi2;
-
-        const float Cpb = std::exp(lCpb);
-        const float Cpa = std::exp(lCpa);
-
-        // KL-Gradient with respect to Sigma
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] = -muDif * muDif * curInvSig3 + curInvSig - dCqSig - oldVar * curInvSig3 + Cpb * sb - Cpa * sa;
+        const float logDif = safeLogMinus(-curAlpha2, -curBeta2);
+        ldCqMu += logDif;
+        dCqMu = -std::exp(ldCqMu);
+        lCps += logDif;
+        Cps = -std::exp(lCps);
       }
+      else if (definitelyLessThan(-curAlpha2, -curBeta2, eps))
+      {
+        const float logDif = safeLogMinus(-curBeta2, -curAlpha2);
+        ldCqMu += logDif;
+        dCqMu = std::exp(ldCqMu);
+        lCps += logDif;
+        Cps = std::exp(lCps);
+      }
+      else
+      {
+        ldCqMu = -100;
+        dCqMu = 0.;
+        Cps = 0.;
+      }
+
+      float dCqSig = std::exp(lCq - lPi2 - 2. * lCurSig - curAlpha2) * (curMu - _actionLowerBounds[i]) + std::exp(lCq - lPi2 - 2. * lCurSig - curBeta2) * (_actionUpperBounds[i] - curMu);
+
+      // KL-Gradient with respect to Mu
+      KLDivergenceGradients[i] = -dCqMu - muDif * curInvVar + Cps;
+
+      // Precompute some terms
+      const float sb = oldSigma * curInvSig3 * (_actionUpperBounds[i] + oldMu - 2. * curMu);
+      const float sa = oldSigma * curInvSig3 * (_actionLowerBounds[i] + oldMu - 2. * curMu);
+
+      const float lCpb = lCp - oldBeta * oldBeta - lPi2;
+      const float lCpa = lCp - oldAlpha * oldAlpha - lPi2;
+
+      const float Cpb = std::exp(lCpb);
+      const float Cpa = std::exp(lCpa);
+
+      // KL-Gradient with respect to Sigma
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = -muDif * muDif * curInvSig3 + curInvSig - dCqSig - oldVar * curInvSig3 + Cpb * sb - Cpa * sa;
+    }
   }
 
   if (_policyDistribution == "Beta")
   {
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
-      {
-        // Getting parameters from the new and old policies
-        const float oldMu = oldPolicy[d].distributionParameters[i];
-        const float oldVariance = oldPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-        const float curMu = curPolicy[d].distributionParameters[i];
-        const float curVariance = curPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMu = oldPolicy.distributionParameters[i];
+      const float oldVariance = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMu = curPolicy.distributionParameters[i];
+      const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-        float alphaCur;
-        float betaCur;
-        std::tie(alphaCur, betaCur) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      float alphaCur;
+      float betaCur;
+      std::tie(alphaCur, betaCur) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        float alphaOld;
-        float betaOld;
-        std::tie(alphaOld, betaOld) = betaParamTransformAlt(oldMu, oldVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      float alphaOld;
+      float betaOld;
+      std::tie(alphaOld, betaOld) = betaParamTransformAlt(oldMu, oldVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        // Constants involving psi function
-        const float psiAbCur = gsl_sf_psi(alphaCur + betaCur);
-        const float psiAbOld = gsl_sf_psi(alphaOld + betaOld);
+      // Constants involving psi function
+      const float psiAbCur = gsl_sf_psi(alphaCur + betaCur);
+      const float psiAbOld = gsl_sf_psi(alphaOld + betaOld);
 
-        const float actionRange = _actionUpperBounds[d][i] - _actionLowerBounds[d][i];
+      const float actionRange = _actionUpperBounds[i] - _actionLowerBounds[i];
 
-        // KL Grad wrt alpha
-        const float dklda = (gsl_sf_psi(alphaCur) - psiAbCur - gsl_sf_psi(alphaOld) - psiAbOld) / actionRange;
+      // KL Grad wrt alpha
+      const float dklda = (gsl_sf_psi(alphaCur) - psiAbCur - gsl_sf_psi(alphaOld) - psiAbOld) / actionRange;
 
-        // KL Grad wrt beta
-        const float dkldb = (gsl_sf_psi(betaCur) - psiAbCur - gsl_sf_psi(betaOld) - psiAbOld) / actionRange;
+      // KL Grad wrt beta
+      const float dkldb = (gsl_sf_psi(betaCur) - psiAbCur - gsl_sf_psi(betaOld) - psiAbOld) / actionRange;
 
-        // Derivatives of alpha and beta wrt mu and varc
-        float dadmu, dadvarc, dbdmu, dbdvarc;
-        std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(curMu, curVariance, _actionLowerBounds[d][i], _actionUpperBounds[d][i]);
+      // Derivatives of alpha and beta wrt mu and varc
+      float dadmu, dadvarc, dbdmu, dbdvarc;
+      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-        // KL Grad wrt mu and varc
-        KLDivergenceGradients[d][i] = dklda * dadmu + dkldb * dbdmu;
-        KLDivergenceGradients[d][_problem->_actionVectorSize + i] = dklda * dadvarc + dkldb * dbdvarc;
-      }
+      // KL Grad wrt mu and varc
+      KLDivergenceGradients[i] = dklda * dadmu + dkldb * dbdmu;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = dklda * dadvarc + dkldb * dbdvarc;
+    }
   }
 
   return KLDivergenceGradients;

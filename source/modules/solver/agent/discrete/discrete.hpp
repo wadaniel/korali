@@ -75,6 +75,8 @@ class Discrete : public Agent
    * @param oldPvalues todo
    * @return gradient of importance weight wrt NN output
    */
+
+  
   std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
   /**

@@ -34,6 +34,7 @@ void threadWrapper()
 {
   auto e = __expPointer;
   e->run();
+  
   co_switch(e->_engine->_thread);
   KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
 }

@@ -96,22 +96,22 @@ class VRACER : public Continuous
   /**
    * @brief [Statistics] Keeps track of the max policy mu of the current minibatch for each action variable
    */
-  std::vector<float> _maxMiniBatchPolicyMean;
+  std::vector<std::vector<float>> _maxMiniBatchPolicyMean;
 
   /**
    * @brief [Statistics] Keeps track of the max policy sigma of the current minibatch for each action variable
    */
-  std::vector<float> _maxMiniBatchPolicyStdDev;
+  std::vector<std::vector<float>> _maxMiniBatchPolicyStdDev;
 
   /**
    * @brief [Statistics] Keeps track of the min policy mu of the current minibatch for each action variable
    */
-  std::vector<float> _minMiniBatchPolicyMean;
+  std::vector<std::vector<float>> _minMiniBatchPolicyMean;
 
   /**
    * @brief [Statistics] Keeps track of the min policy sigma of the current minibatch for each action variable
    */
-  std::vector<float> _minMiniBatchPolicyStdDev;
+  std::vector<std::vector<float>> _minMiniBatchPolicyStdDev;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

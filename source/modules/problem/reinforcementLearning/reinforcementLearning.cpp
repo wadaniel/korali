@@ -109,23 +109,30 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Getting first state
   runEnvironment(agent);
 
+
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from the agent's policy
     getAction(agent);
 
+
     // Store the current state in the experience
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["State"] = agent["State"][i];
+    
+    episodes["Experiences"][actionCount]["State"] = agent["State"];
+    
 
     // Storing the current action
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
+    
+    episodes["Experiences"][actionCount]["Action"] = agent["Action"];
+    
 
     // Storing the experience's policy
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
+    
+    episodes["Experiences"][actionCount]["Policy"] = agent["Policy"];
+    
+    
+
 
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
@@ -133,23 +140,28 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
+    
 
     // Storing experience's reward
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
+    
+    episodes["Experiences"][actionCount]["Reward"] = agent["Reward"];
+    
 
     // Storing termination status
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Termination"] = agent["Termination"];
+    
+    episodes["Experiences"][actionCount]["Termination"] = agent["Termination"];
+
 
     // If the episodes was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
-      for (size_t i = 0; i < _agentsPerEnvironment; i++)
-        episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
+    {
+      episodes["Experiences"][actionCount]["Truncated State"] = agent["State"];
+    }
 
     // Adding to cumulative training rewards
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       trainingRewards[i] += agent["Reward"][i].get<float>();
+
 
     // Increasing counter for generated actions
     actionCount++;
@@ -157,7 +169,11 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
     if ((_actionsBetweenPolicyUpdates > 0) &&
         (agent["Termination"] == "Non Terminal") &&
-        (actionCount % _actionsBetweenPolicyUpdates == 0)) requestNewPolicy(agent);
+        (actionCount % _actionsBetweenPolicyUpdates == 0)) 
+    { 
+
+      requestNewPolicy(agent);
+    }
   }
 
   // Setting cumulative reward
@@ -173,7 +189,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   bool runTest = false;
   for (size_t i = 0; i < _agentsPerEnvironment; i++) runTest |= trainingRewards[i] > _trainingRewardThreshold;
   runTest |= (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
-
+  
   if (runTest)
   {
     float averageTestingReward = 0.0;
@@ -239,6 +255,8 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
+  
+
 
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
@@ -279,8 +297,8 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   _agent->resetTimeSequence();
 
   // Define state rescaling variables
-  _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
-  _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
+  _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
+  _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
 
   // Appending any user-defined settings
   agent["Custom Settings"] = _customSettings;
@@ -319,7 +337,6 @@ void ReinforcementLearning::requestNewPolicy(Sample &agent)
   // If requested new policy, wait for incoming message containing new hyperparameters
   agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
   _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
-
   auto t1 = std::chrono::steady_clock::now();                                                       // Profiling
   _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 }
@@ -364,7 +381,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     for (size_t j = 0; j < _stateVectorSize; j++)
       if (std::isfinite(agent["State"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
   }
-
+  
   // Normalizing State
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
@@ -372,7 +389,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
     // Scale the state
     for (size_t d = 0; d < _stateVectorSize; ++d)
-      state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
+      state[d] = (state[d] - _stateRescalingMeans[i][d]) / _stateRescalingSdevs[i][d];
 
     // Re-storing state into agent
     agent["State"][i] = state;

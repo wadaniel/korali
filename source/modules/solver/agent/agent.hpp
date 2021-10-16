@@ -173,7 +173,7 @@ class Agent : public Solver
   /**
   * @brief Initial value for the penalisation coefficient for off-policiness. (beta in https://arxiv.org/abs/1807.05827)
   */
-   float _experienceReplayOffPolicyREFERBeta;
+   std::vector<float> _experienceReplayOffPolicyREFERBeta;
   /**
   * @brief The number of experiences to receive before training/updating (real number, may be less than < 1.0, for more than one update per experience).
   */
@@ -285,11 +285,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
-   size_t _experienceReplayOffPolicyCount;
+   std::vector<size_t> _experienceReplayOffPolicyCount;
   /**
   * @brief [Internal Use] Current off policy ratio in the experience replay.
   */
-   float _experienceReplayOffPolicyRatio;
+   std::vector<float> _experienceReplayOffPolicyRatio;
   /**
   * @brief [Internal Use] Indicates the current cutoff to classify experiences as on- or off-policy 
   */
@@ -317,11 +317,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
-   float _rewardRescalingSigma;
+   std::vector<float> _rewardRescalingSigma;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
-   float _rewardRescalingSumSquaredRewards;
+   std::vector<float> _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
   */
@@ -329,11 +329,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
-   std::vector<float> _stateRescalingMeans;
+   std::vector<std::vector<float>> _stateRescalingMeans;
   /**
   * @brief [Internal Use] Contains the standard deviations of the states. They will be scaled by this value in order to normalize the state distribution in the RM.
   */
-   std::vector<float> _stateRescalingSigmas;
+   std::vector<std::vector<float>> _stateRescalingSigmas;
   /**
   * @brief [Termination Criteria] The solver will stop when the given number of episodes have been run.
   */
@@ -420,12 +420,12 @@ class Agent : public Solver
   /**
   * @brief Stores the state of the experience
   */
-  cBuffer<std::vector<float>> _stateVector;
+  cBuffer<std::vector<std::vector<float>>> _stateVector;
 
   /**
    * @brief Stores the action taken by the agent at the given state
    */
-  cBuffer<std::vector<float>> _actionVector;
+  cBuffer<std::vector<std::vector<float>>> _actionVector;
 
   /**
   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
@@ -445,37 +445,37 @@ class Agent : public Solver
   /**
    * @brief Contains the latest calculation of the experience's importance weight
    */
-  cBuffer<float> _importanceWeightVector;
+  cBuffer<std::vector<float>> _importanceWeightVector;
 
   /**
    * @brief Contains the latest calculation of the experience's truncated importance weight
    */
-  cBuffer<float> _truncatedImportanceWeightVector;
+  cBuffer<std::vector<float>> _truncatedImportanceWeightVector;
 
   /**
    * @brief For prioritized experience replay, this stores the experience's priority
    */
-  cBuffer<float> _priorityVector;
+  cBuffer<std::vector<float>> _priorityVector;
 
   /**
    * @brief For prioritized experience replay, this stores the experience's probability
    */
-  cBuffer<float> _probabilityVector;
+  cBuffer<std::vector<float>> _probabilityVector;
 
   /**
    * @brief Contains the most current policy information given the experience state
    */
-  cBuffer<policy_t> _curPolicyVector;
+  cBuffer<std::vector<policy_t>> _curPolicyVector;
 
   /**
    * @brief Contains the policy information produced at the moment of the action was taken
    */
-  cBuffer<policy_t> _expPolicyVector;
+  cBuffer<std::vector<policy_t>> _expPolicyVector;
 
   /**
    * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
    */
-  cBuffer<bool> _isOnPolicyVector;
+  cBuffer<std::vector<bool>> _isOnPolicyVector;
 
   /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.
@@ -485,27 +485,27 @@ class Agent : public Solver
   /**
    * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
    */
-  cBuffer<float> _retraceValueVector;
+  cBuffer<std::vector<float>> _retraceValueVector;
 
   /**
    * @brief If this is a truncated terminal experience, this contains the state value for that state
    */
-  cBuffer<float> _truncatedStateValueVector;
+  cBuffer<std::vector<float>> _truncatedStateValueVector;
 
   /**
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
-  cBuffer<std::vector<float>> _truncatedStateVector;
+  cBuffer<std::vector<std::vector<float>>> _truncatedStateVector;
 
   /**
    * @brief Contains the rewards for every experience
    */
-  cBuffer<float> _rewardVector;
+  cBuffer<std::vector<float>> _rewardVector;
 
   /**
    * @brief Contains the state value evaluation for every experience
    */
-  cBuffer<float> _stateValueVector;
+  cBuffer<std::vector<float>> _stateValueVector;
 
   /**
   * @brief Stores the priority annealing rate.
@@ -655,6 +655,7 @@ class Agent : public Solver
   * @param miniBatch The mini batch of experience ids to update
   * @param policyData The policy to use to evaluate the experiences
   */
+  // TODO: most probably to vecor of vector of policy
   void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**
@@ -689,7 +690,7 @@ class Agent : public Solver
    * @param expId The index of the second-to-latest experience in the sequence
    * @return The time step vector of states, including the truncated state
    */
-  std::vector<std::vector<float>> getTruncatedStateSequence(size_t expId);
+  std::vector<std::vector<float>> getTruncatedStateSequence(size_t expId, size_t agentId);
 
   /**
    * @brief Calculates importance weight of current action from old and new policies
@@ -736,12 +737,12 @@ class Agent : public Solver
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward)
+  inline float getScaledReward(const float reward, const size_t agentIdx)
   {
-    float rescaledReward = reward / _rewardRescalingSigma;
+    float rescaledReward = reward / _rewardRescalingSigma[agentIdx];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentIdx]);
 
     return rescaledReward;
   }

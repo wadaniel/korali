@@ -209,6 +209,7 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
   // Finding out pipeline corresponding to the input batch size id
   size_t N = inputValues.size();
   size_t batchSizeIdx = getBatchSizeIdx(N);
+  
 
   // Getting corresponding layer pipeline pointer
   layerPipeline_t *p = &_pipelines[curThread][batchSizeIdx];

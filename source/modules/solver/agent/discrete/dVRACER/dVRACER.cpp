@@ -27,7 +27,7 @@ void dVRACER::initializeAgent()
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _problem->_possibleActions.size();
@@ -85,68 +85,75 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Getting experience policy data
     const auto &expPolicy = _expPolicyVector[expId];
-    const auto &expPvals = expPolicy.distributionParameters;
-    const auto &expActionIdx = expPolicy.actionIndex;
-
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
-    const auto &curPvals = curPolicy.distributionParameters;
+
 
     // Getting value evaluation
-    const float V = _stateValueVector[expId];
-    const float expVtbc = _retraceValueVector[expId];
+    const std::vector<float> V = _stateValueVector[expId];
+    const std::vector<float> expVtbc = _retraceValueVector[expId];
 
-    // Storage for the update gradient
-    std::vector<float> gradientLoss(1 + _problem->_possibleActions.size());
+    
 
-    // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-    gradientLoss[0] = expVtbc - V;
-
-    // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (_isOnPolicyVector[expId])
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
-      // Qret for terminal state is just reward
-      float Qret = getScaledReward(_rewardVector[expId]);
+      // Storage for the update gradient
+      std::vector<float> gradientLoss(1 + _problem->_possibleActions.size(),0.0f);
 
-      // If experience is non-terminal, add Vtbc
-      if (_terminationVector[expId] == e_nonTerminal)
+      // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
+      gradientLoss[0] = expVtbc[d] - V[d];
+
+      // Compute policy gradient only if inside trust region (or offPolicy disabled)
+      if (_isOnPolicyVector[expId][d])
       {
-        float nextExpVtbc = _retraceValueVector[expId + 1];
-        Qret += _discountFactor * nextExpVtbc;
+        // Qret for terminal state is just reward
+        float Qret = getScaledReward(_rewardVector[expId][d],d);
+
+        // If experience is non-terminal, add Vtbc
+        if (_terminationVector[expId] == e_nonTerminal)
+        {
+          float nextExpVtbc = _retraceValueVector[expId + 1][d];
+          Qret += _discountFactor * nextExpVtbc;
+        }
+
+        // If experience is truncated, add truncated state value
+        if (_terminationVector[expId] == e_truncated)
+        {
+          float nextExpVtbc = _truncatedStateValueVector[expId][d];
+          Qret += _discountFactor * nextExpVtbc;
+        }
+
+        // Compute Off-Policy Objective (eq. 5)
+        float lossOffPolicy = Qret - V[d];
+
+        // Compute Policy Gradient wrt Params
+        auto polGrad = calculateImportanceWeightGradient(expPolicy[d].actionIndex, curPolicy[d].distributionParameters, expPolicy[d].distributionParameters);
+
+        // Set Gradient of Loss wrt Params
+        for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+        {
+          // '-' because the optimizer is maximizing
+          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+        }
       }
+      
+      // Compute derivative of kullback-leibler divergence wrt current distribution params
+      auto klGrad = calculateKLDivergenceGradient(expPolicy[d].distributionParameters, curPolicy[d].distributionParameters);
 
-      // If experience is truncated, add truncated state value
-      if (_terminationVector[expId] == e_truncated)
-      {
-        float nextExpVtbc = _truncatedStateValueVector[expId];
-        Qret += _discountFactor * nextExpVtbc;
-      }
-
-      // Compute Off-Policy Objective (eq. 5)
-      float lossOffPolicy = Qret - V;
-
-      // Compute Policy Gradient wrt Params
-      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
-
-      // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
       {
-        // '-' because the optimizer is maximizing
-        gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
+        // Step towards old policy (gradient pointing to larger difference between old and current policy)
+        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta[d]) * klGrad[i];
+
+        if (std::isfinite(gradientLoss[i]) == false)
+          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
       }
+
+      _criticPolicyProblem->_solutionData[b* _problem->_agentsPerEnvironment + d] = gradientLoss;
+
     }
-
-    // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expPvals, curPvals);
-
-    for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    {
-      // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
-    }
-
-    // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[b] = gradientLoss;
+    
+    
   }
 
   // Compute average action stadard deviation

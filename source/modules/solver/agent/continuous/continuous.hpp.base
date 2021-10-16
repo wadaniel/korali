@@ -21,7 +21,7 @@ class __className__ : public __parentClassName__
    * @param curPolicy The current policy for the given state
    * @return gradient of policy wrt curParamsOne and curParamsTwo
    */
-  std::vector<std::vector<float>> calculateImportanceWeightGradient(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy);
+  std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
@@ -29,23 +29,23 @@ class __className__ : public __parentClassName__
    * @param curPolicy The current policy for the given state
    * @return
    */
-  std::vector<std::vector<float>> calculateKLDivergenceGradient(const std::vector<policy_t> &oldPolicy, const std::vector<policy_t> &curPolicy);
+  std::vector<float> calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy);
 
   /**
-  * @brief Function to generate randomized actions from neural network output.
-  * @param curPolicy The current policy for the given state
-  * @return An action vector
-  */
-  std::vector<std::vector<float>> generateTrainingAction(std::vector<policy_t> &curPolicy);
+   * @brief Function to generate randomized actions from neural network output.
+   * @param curPolicy The current policy for the given state
+   * @return An action vector
+   */
+  std::vector<float> generateTrainingAction(policy_t &curPolicy);
 
   /**
-  * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
-  * @param curPolicy The current policy for the given state
-  * @return An action vector
-  */
-  std::vector<std::vector<float>> generateTestingAction(const std::vector<policy_t> &curPolicy);
+   * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
+   * @param curPolicy The current policy for the given state
+   * @return An action vector
+   */
+  std::vector<float> generateTestingAction(const policy_t &curPolicy);
 
-  std::vector<float> calculateImportanceWeight(const std::vector<std::vector<float>> &action, const std::vector<policy_t> &curPolicy, const std::vector<policy_t> &oldPolicy) override;
+  float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent() override;
 };

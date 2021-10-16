@@ -199,7 +199,7 @@ namespace
   a->processEpisode(0, episode);
   ASSERT_NO_THROW(a->processEpisode(0, episode));
   a->_timeSequenceLength = 2;
-  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1));
+  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1,0));
 
   // Triggering bad path in serialization routine
   e._fileOutputPath = "/dev/null/\%*Incorrect Path*";
@@ -243,7 +243,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Action Upper Bounds"] = std::vector<float>({0.0});
+  agentJs["Action Upper Bounds"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -1190,32 +1190,32 @@ namespace
 
    a->_policyDistribution = "Normal";
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
 
    a->_policyDistribution = "Beta";
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-std::numeric_limits<float>::infinity()}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
+   a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});
+   a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({0.0f}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({+std::numeric_limits<float>::infinity()}));
+   a->_actionLowerBounds = std::vector<float>({0.0f});
+   a->_actionUpperBounds = std::vector<float>({+std::numeric_limits<float>::infinity()});
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-1.0f}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
+   a->_actionLowerBounds = std::vector<float>({-1.0f});
+   a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
    curPolicy[0].distributionParameters = std::vector<float>({0.5, 0.2236});
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
 
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
 
    pC->_actionVectorIndexes[0] = 1;
    e._variables[1]->_initialExplorationNoise = -1.0f;
@@ -1225,22 +1225,22 @@ namespace
    a->_policyDistribution = "Squashed Normal";
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({-std::numeric_limits<float>::infinity()}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
+   a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});
+   a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({+std::numeric_limits<float>::infinity()}));
+   a->_actionLowerBounds = std::vector<float>({0.0f});
+   a->_actionUpperBounds = std::vector<float>({+std::numeric_limits<float>::infinity()});
    ASSERT_ANY_THROW(a->agent::Continuous::initializeAgent());
 
-   a->_actionLowerBounds = std::vector<std::vector<float>>(1,std::vector<float>({0.0f}));
-   a->_actionUpperBounds = std::vector<std::vector<float>>(1,std::vector<float>({1.0f}));
+   a->_actionLowerBounds = std::vector<float>({0.0f});
+   a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
 
    pC->_actionVectorIndexes[0] = 1;
    e._variables[1]->_initialExplorationNoise = -1.0f;
@@ -1255,7 +1255,7 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
-   agentJs["Action Shifts"] = std::vector<std::vector<float>>(1,std::vector<float>({0.0}));
+   agentJs["Action Shifts"] = std::vector<float>({0.0});
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
    agentJs = baseOptJs;
@@ -1265,7 +1265,7 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
-   agentJs["Action Scales"] = std::vector<std::vector<float>>(1,std::vector<float>({0.0}));
+   agentJs["Action Scales"] = std::vector<float>({0.0});
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
    agentJs = baseOptJs;
@@ -1570,9 +1570,9 @@ namespace
    auto testAction = std::vector<std::vector<float>>(1,std::vector<float>({-10.0f}));
 
    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPvalues, oldPvalues));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPvalues, oldPvalues));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx[0], curPvalues[0], oldPvalues[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPvalues[0], oldPvalues[0]));
 
    // Testing mandatory parameters
 

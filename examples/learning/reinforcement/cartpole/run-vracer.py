@@ -15,7 +15,7 @@ parser.add_argument(
 parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
-    default=1000,
+    default=10000,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -84,7 +84,7 @@ e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"][0]= 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= [0.1]
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = float(args.learningRate)
@@ -114,12 +114,12 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
 
 ### Running Experiment
 

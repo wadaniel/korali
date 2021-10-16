@@ -40,7 +40,7 @@ def initEnvironment(e, envName, model = ''):
  
  
  
- ### Defining problem configuration for openAI Gym environments
+ ### Defining problem configuration for pettingZoo environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"

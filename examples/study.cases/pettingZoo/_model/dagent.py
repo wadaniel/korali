@@ -28,7 +28,7 @@ def initEnvironment(e, envName, model = ''):
  
  
  
- ### Defining problem configuration for openAI Gym environments
+ ### Defining problem configuration for pettingZoo environments
  e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
@@ -60,6 +60,7 @@ def initEnvironment(e, envName, model = ''):
   e["Variables"][stateVariableCount + i]["Type"] = "Action"
 
  
+ 
  ### Defining Termination Criteria
 
  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
@@ -72,7 +73,6 @@ def agent(s, env, model = ''):
   printStep = True
  else:
   printStep = False
- 
  env.reset()
  
  states = []

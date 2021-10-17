@@ -1036,9 +1036,6 @@ void Agent::deserializeExperienceReplay()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
-  printf("abc\n");
-  fflush(stdout);
-
   // Creating JSON storage variable
   knlohmann::json stateJson;
 
@@ -1086,9 +1083,8 @@ void Agent::deserializeExperienceReplay()
     _truncatedStateValueVector.add(stateJson["Experience Replay"][i]["Truncated State Value"].get<std::vector<float>>());
     _terminationVector.add(stateJson["Experience Replay"][i]["Termination"].get<termination_t>());
 
-    std::vector<policy_t> expPolicy;
-    std::vector<policy_t> curPolicy;
-    // TODO: Try to load from saved serialization
+    std::vector<policy_t> expPolicy(_problem->_agentsPerEnvironment);
+    std::vector<policy_t> curPolicy(_problem->_agentsPerEnvironment);
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       expPolicy[d].stateValue = stateJson["Experience Replay"][i]["Experience Policy"]["State Value"][d].get<float>();

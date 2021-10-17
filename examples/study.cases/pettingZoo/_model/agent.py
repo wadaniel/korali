@@ -34,6 +34,16 @@ def initEnvironment(e, envName, model = ''):
     ac_low = -1 
     numIndividuals = 3
 
+ elif (envName ==  'Pursuit'):
+   from pettingzoo.sisl import pursuit_v3
+    
+   env = pursuit_v3.env()
+   stateVariableCount = 147
+   actionVariableCount = 1
+   obs_upper = 30
+   obs_low = 0
+   numIndividuals = 8
+
  else:
    print("Environment '{}' not recognized! Exit..".format(envName))
    sys.exit()
@@ -41,43 +51,83 @@ def initEnvironment(e, envName, model = ''):
  
  
  ### Defining problem configuration for pettingZoo environments
- e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
- e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
- e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
- e["Problem"]["Training Reward Threshold"] = math.inf
- #e["Problem"]["Testing Frequency"] = 2
- e["Problem"]["Policy Testing Episodes"] = 20
- e["Problem"]["Agents Per Environment"] = numIndividuals
- 
- # Generating state variable index list
- stateVariablesIndexes = range(stateVariableCount)
- 
- # Defining State Variables
- 
- for i in stateVariablesIndexes:
-  e["Variables"][i]["Name"] = "State Variable " + str(i)
-  e["Variables"][i]["Type"] = "State"
-  e["Variables"][i]["Lower Bound"] = float(obs_low)
-  e["Variables"][i]["Upper Bound"] = float(obs_upper)
+ if (envName == 'Waterworld') or (envName == 'Multiwalker'):
 
- if model == '1' :
-   e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
-   e["Variables"][stateVariableCount ]["Type"] = "State"
-   stateVariableCount += 1
+   e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
+   e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
+   e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
+   e["Problem"]["Training Reward Threshold"] = math.inf
+   #e["Problem"]["Testing Frequency"] = 2
+   e["Problem"]["Policy Testing Episodes"] = 20
+   e["Problem"]["Agents Per Environment"] = numIndividuals
+    
+   # Generating state variable index list
+   stateVariablesIndexes = range(stateVariableCount)
+    
+   # Defining State Variables
+    
+   for i in stateVariablesIndexes:
+      e["Variables"][i]["Name"] = "State Variable " + str(i)
+      e["Variables"][i]["Type"] = "State"
+      e["Variables"][i]["Lower Bound"] = float(obs_low)
+      e["Variables"][i]["Upper Bound"] = float(obs_upper)
 
+   if model == '1' :
+      e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
+      e["Variables"][stateVariableCount ]["Type"] = "State"
+      stateVariableCount += 1
+
+     
+   # Defining Action Variables
+    
+   for i in range(actionVariableCount):
+      e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
+      e["Variables"][stateVariableCount + i]["Type"] = "Action"
+      e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ac_low)
+      e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ac_upper)
+      e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2) * (ac_upper - ac_low)
+    
+   ### Defining Termination Criteria
+
+   e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
+
+ elif (envName ==  'Pursuit'):
+   ### Defining problem configuration for pettingZoo environments
+   e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
+   e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
+   e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
+   e["Problem"]["Training Reward Threshold"] = math.inf
+   e["Problem"]["Possible Actions"] = [ [0], [1], [2], [3], [4] ]
+   #e["Problem"]["Testing Frequency"] = 2
+   e["Problem"]["Policy Testing Episodes"] = 20
+   e["Problem"]["Agents Per Environment"] = numIndividuals
+ 
+   # Generating state variable index list
+   stateVariablesIndexes = range(stateVariableCount)
+ 
+   # Defining State Variables
+ 
+   for i in stateVariablesIndexes:
+      e["Variables"][i]["Name"] = "State Variable " + str(i)
+      e["Variables"][i]["Type"] = "State"
+      e["Variables"][i]["Lower Bound"] = float(obs_low)
+      e["Variables"][i]["Upper Bound"] = float(obs_upper)
+   if model == '1' :
+      e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
+      e["Variables"][stateVariableCount ]["Type"] = "State"
+      stateVariableCount += 1
   
- # Defining Action Variables
+   # Defining Action Variables
  
- for i in range(actionVariableCount):
-  e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
-  e["Variables"][stateVariableCount + i]["Type"] = "Action"
-  e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ac_low)
-  e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ac_upper)
-  e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2) * (ac_upper - ac_low)
- 
- ### Defining Termination Criteria
+   for i in range(actionVariableCount):
+      e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
+      e["Variables"][stateVariableCount + i]["Type"] = "Action"
 
- e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
+ 
+ 
+   ### Defining Termination Criteria
+
+   e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
  
 
 def agent(s, env, model = ''):
@@ -91,12 +141,23 @@ def agent(s, env, model = ''):
  env.reset()
  
  states = []
+
+
+ if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
+   for ag in env.agents:
+      state = env.observe(ag).tolist()
+      if model == '1':
+         state.append(float(ag[-1]))
+      states.append(state)
+ else:
+   for ag in env.agents:
+      state = env.observe(ag)
+      state = state.reshape(147)
+      state = state.tolist()
+      if model == '1':
+         state.append(float(ag[-1]))
+      states.append(state)
  
- for ag in env.agents:
-  state = env.observe(ag).tolist()
-  if model == '1':
-   state.append(float(ag[-1]))
-  states.append(state)
  s["State"] = states
  
  step = 0
@@ -117,7 +178,6 @@ def agent(s, env, model = ''):
   # Printing step information    
   if (printStep):  print('[Korali] Frame ' + str(step), end = '')
   
-  #pdb.set_trace()
   actions = s["Action"]
   rewards = []
   
@@ -128,14 +188,16 @@ def agent(s, env, model = ''):
       fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images/","image_{0}.png".format(image_count))
       im.save(fname)
       image_count += 1
+
+   '''
+   #Doesn't work without a monitor, cannot use on panda
    elif s["Mode"] == "Testing" and ( env.env.env.metadata['name']== 'multiwalker_v7'):
       obs = env.env.env.render('rgb_array')
       im = Image.fromarray(obs)
       fname = os.path.join("/scratch/mzeqiri/korali/examples/study.cases/pettingZoo/images_multiwalker/","image_{0}.png".format(image_count))
       im.save(fname)
       image_count += 1
-      
-      
+   '''
 
    observation, reward, done, info = env.last()
    rewards.append(reward)
@@ -143,21 +205,33 @@ def agent(s, env, model = ''):
    
    if done and (env.env.env.metadata['name']== 'multiwalker_v7'):
     continue
-   env.step(np.array(action,dtype= 'float32'))
    
-
-
+   if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
+      env.step(np.array(action,dtype= 'float32'))
+   else:
+      env.step(action[0])
+   
   # Getting Reward
   s["Reward"] = rewards
   
   # Storing New State
   states = []
  
-  for ag in env.agents:
-   state = env.observe(ag).tolist()
-   if model == '1':
-      state.append(float(ag[-1]))
-   states.append(state)
+  if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
+   for ag in env.agents:
+      state = env.observe(ag).tolist()
+      if model == '1':
+         state.append(float(ag[-1]))
+      states.append(state)
+  else:
+   for ag in env.agents:
+      state = env.observe(ag)
+      state = state.reshape(147)
+      state = state.tolist()
+      if model == '1':
+         state.append(float(ag[-1]))
+      states.append(state)
+
   s["State"] = states
    
   # Advancing step counter

@@ -49,20 +49,17 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 ### Setting Experience Replay and REFER settings
 
 if (args.env == 'Pursuit'):
-	numAg = 5
+	numAg = 8
 else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
-refer_beta = []
-for i in range(numAg):
-	refer_beta.append(0.3)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 #e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = refer_beta
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = [0.3] * numAg
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
 
 

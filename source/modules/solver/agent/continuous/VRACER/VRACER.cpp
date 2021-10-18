@@ -154,14 +154,11 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       float lossOffPolicy = Qret - V;
 
       // Compute IW Gradient wrt params if IW not clipped (otherwise constant)
-      if (_importanceWeightVector[expId] < 1.0)
-      {
-        auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
+      auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
 
-        // Set Gradient of Loss wrt Params
-        for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
-      }
+      // Set Gradient of Loss wrt Params
+      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+        gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params

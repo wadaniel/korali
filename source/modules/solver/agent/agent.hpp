@@ -152,6 +152,10 @@ class Agent : public Solver
   */
    float _discountFactor;
   /**
+  * @brief Represents the discount factor to weight future experiences.
+  */
+   float _importanceWeightTruncationLevel;
+  /**
   * @brief Indicates whether to serialize and store the experience replay after each generation. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
   */
    int _experienceReplaySerialize;

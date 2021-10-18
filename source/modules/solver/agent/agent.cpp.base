@@ -625,7 +625,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
 
     // Compute importance weight
     const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
-    const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+    const float truncatedImportanceWeight = std::min(_importanceWeightTruncationLevel, importanceWeight);
 
     // Sanity checks for state value
     if (std::isfinite(importanceWeight) == false)

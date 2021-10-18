@@ -572,6 +572,21 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Learning Rate"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs.erase("Importance Weight Truncation Level");
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Importance Weight Truncation Level"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Importance Weight Truncation Level"] = 1.0;
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -1456,6 +1471,7 @@ namespace
    agentJs["Experiences Between Policy Updates"] = 1;
    agentJs["Discount Factor"] = 0.99;
    agentJs["Learning Rate"] = 0.0001;
+   agentJs["Importance Weight Truncation Level"] = 0.0001;
    agentJs["Mini Batch"]["Size"] = 32;
    agentJs["Experience Replay"]["Start Size"] = 1000;
    agentJs["Experience Replay"]["Maximum Size"] = 10000;

@@ -93,13 +93,13 @@ void Agent::initialize()
     // Initializing REFER information
 
     // If cutoff scale is not defined, use a heuristic value
-    if (_experienceReplayOffPolicyCutoffScale <= 0.0f)
+    if (_experienceReplayOffPolicyCutoffScale < 0.0f)
       KORALI_LOG_ERROR("Experience Replay Cutoff Scale must be larger 0.0");
 
     _experienceReplayOffPolicyCount = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
     _experienceReplayOffPolicyRatio = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
 
-    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
+    float _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
 
     _currentLearningRate = _learningRate;
 
@@ -381,7 +381,6 @@ void Agent::attendAgent(size_t agentId)
       }
 
       // Process every episode received and its experiences (add them to replay memory)
-      // DIFF: somewhat differenz
 
       processEpisode(episodeId, message["Episodes"]);
 
@@ -453,7 +452,6 @@ void Agent::attendAgent(size_t agentId)
 
 void Agent::averageRewardsAcrossAgents(knlohmann::json &message)
 {
-#pragma omp parallel for
   // Iterate over all experiences from each agent
   for (size_t expId = 0; expId < message["Episodes"][0]["Experiences"].size(); ++expId)
   {
@@ -684,8 +682,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
-  // TODO: this is generally messy due to policy not a vector anymore
-
   // Creating a selection of unique experiences from the mini batch
   // Important: this assumes the minibatch ids are sorted.
   std::vector<size_t> updateBatch;
@@ -695,7 +691,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
 // Calculate offpolicy count difference in minibatch
 
-// TODO: check this
 #pragma omp declare reduction(vec_int_plus                                                                                          \
                               : std::vector <int>                                                                                   \
                               : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <int>())) \
@@ -719,7 +714,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       // Get state, action, mean, Sigma for this experience
       const auto &expAction = _actionVector[expId][d];
       const auto &expPolicy = _expPolicyVector[expId][d];
-      // TODO: This is same encoding as previously used, check
       const auto &curPolicy = policyData[batchId * _problem->_agentsPerEnvironment + d];
 
       stateValue[d] = curPolicy.stateValue;
@@ -895,6 +889,8 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
     // Calculating time sequence length
     const size_t T = expId - startId + 1;
 
+
+    
     // Resizing state sequence vector to the correct time sequence length
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
@@ -911,7 +907,6 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
       }
     }
   }
-
   return stateSequence;
 }
 

@@ -10,7 +10,8 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--input', help='Specifies the result folder to load the best policy from.', required=True)
+parser.add_argument('--run', help='Specifies the result folder to load the best policy from.', required=True)
+parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
 
 args = parser.parse_args()
@@ -25,7 +26,7 @@ e = korali.Experiment()
 
 initEnvironment(e, args.env)
 dis_dir = args.dis.replace(" ","_")
-resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.input) +'/'
+resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_'+ str(args.nn)+ '_' + str(args.run) +'/'
 found = e.loadState(resultFolder  + '/latest');
 
 if (found == False): 
@@ -40,7 +41,7 @@ e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
 
 e["Solver"]["Mode"] = "Testing"
 e["Solver"]["Testing"]["Sample Ids"] = [ 0 ]
-e["File Output"]["Path"] = args.input
+e["File Output"]["Path"] = resultFolder
 e["File Output"]["Enabled"] = False
 
 ### Running Experiment

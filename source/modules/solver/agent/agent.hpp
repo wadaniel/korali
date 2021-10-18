@@ -655,7 +655,6 @@ class Agent : public Solver
    * @param miniBatch The mini batch of experience ids to update
    * @param policyData The policy to use to evaluate the experiences
    */
-  // TODO: most probably to vecor of vector of policy
   void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**

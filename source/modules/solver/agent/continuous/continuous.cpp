@@ -133,22 +133,6 @@ void Continuous::getAction(korali::Sample &sample)
      * Storing the action and its policy
      ****************************************************************************/
 
-    /*
-    std::vector<std::vector<float>> distParams (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].distributionParameters.size()));
-    std::vector<std::vector<float>> unbAct (_problem->_agentsPerEnvironment, std::vector<float>(policy[0].unboundedAction.size()));
-    std::vector<float> stValue (_problem->_agentsPerEnvironment);
-    for( size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      distParams[d] = policy[d].distributionParameters;
-      unbAct[d] = policy[d].unboundedAction;
-      stValue[d] = policy[d].stateValue;
-    }
-
-    sample["Policy"]["Distribution Parameters"] = distParams;
-    sample["Policy"]["State Value"] = stValue;
-    sample["Policy"]["Unbounded Action"] = unbAct;
-    sample["Action"] = action;
-    */
     sample["Policy"]["Distribution Parameters"][i] = policy.distributionParameters;
     sample["Policy"]["State Value"][i] = policy.stateValue;
     sample["Policy"]["Unbounded Action"][i] = policy.unboundedAction;

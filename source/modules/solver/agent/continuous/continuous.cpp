@@ -405,7 +405,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   // Storage for importance weight gradients
-  std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.);
+  std::vector<float> importanceWeightGradients(_policyParameterCount, 0.);
 
   if (_policyDistribution == "Normal")
   {
@@ -556,7 +556,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
-    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+    for (size_t i = 0; i < _policyParameterCount; i++)
       importanceWeightGradients[i] *= importanceWeight;
   }
 
@@ -703,7 +703,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
 {
   // Storage for KL Divergence Gradients
-  std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
+  std::vector<float> KLDivergenceGradients(_policyParameterCount, 0.0);
 
   if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {

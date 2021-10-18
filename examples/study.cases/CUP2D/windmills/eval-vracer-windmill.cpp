@@ -13,25 +13,28 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // Storing parameters
-  _argc = argc-1;
-  char *_argv_[_argc];
-  for(int i = 0; i < _argc; ++i)
-  {
-    _argv_[i] = argv[i];
-  }
-  _argv = _argv_;
+  _argc = argc;
+  _argv = argv;
+
+  // // Storing parameters
+  // _argc = argc-1;
+  // char *_argv_[_argc];
+  // for(int i = 0; i < _argc; ++i)
+  // {
+  //   _argv_[i] = argv[i];
+  // }
+  // _argv = _argv_;
 
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  std::string folder = std::string(argv[_argc]);
+  //std::string folder = std::string(argv[_argc]);
 
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/" + folder;
-  std::string testingResultsPath = "_results_windmill_testing/" + folder;
+  std::string trainingResultsPath = "_trainingResults/";
+  std::string testingResultsPath = "_testingResults/";
   
   // Creating Korali experiment
   auto e = korali::Experiment();

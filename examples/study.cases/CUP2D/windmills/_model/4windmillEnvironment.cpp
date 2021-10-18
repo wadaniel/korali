@@ -34,6 +34,10 @@ void runEnvironment(korali::Sample &s)
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
+
+  // Creating simulation environment
+  Simulation *_environment = new Simulation(_argc, _argv);
+  _environment->init();
   ////////////////////////////////////////// setup stuff 
 
 
@@ -63,8 +67,8 @@ void runEnvironment(korali::Sample &s)
   _environment->startObstacles();
 
   // Set target
-  std::array<Real,2> target_pos{0.7,0.5};
-  std::vector<double> target_vel={0.0,0.0};
+  std::array<Real,2> target_pos{0.7,0.6};
+  std::array<double, 2> target_vel={0.0,0.0};
 
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();
@@ -88,10 +92,6 @@ void runEnvironment(korali::Sample &s)
 
   while (curStep < maxSteps)
   {
-
- // Getting initial time
-    auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
     // Getting new action
     s.update();
 
@@ -113,24 +113,18 @@ void runEnvironment(korali::Sample &s)
       t += dt;
 
       // Advance simulation and check whether it is correct
-      if (_environment->advance(dt))
-      {
-        fprintf(stderr, "Error during environment\n");
-        exit(-1);
-      }
+      _environment->advance(dt);
     }
 
     // reward( std::vector<double> target, std::vector<double> target_vel, double C = 10)
-    double C = 0.5e8;
-    double r1 = agent1->reward( target_pos, target_vel,  C);
-    double r2 = agent2->reward( target_pos, target_vel,  C);
-    double r3 = agent3->reward( target_pos, target_vel,  C);
-    double r4 = agent4->reward( target_pos, target_vel,  C);
-    double reward = (r1 + r2 + r3 + r4);
+    Real en = 0.0;
+    Real flow = 2.5;
 
-    // Getting ending time
-    auto endTime = std::chrono::steady_clock::now(); // Profiling
-    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
+    double r1 = agent1->reward( target_vel,  en, flow);
+    double r2 = agent2->reward( target_vel,  en, flow);
+    double r3 = agent3->reward( target_vel,  en, flow);
+    double r4 = agent4->reward( target_vel,  en, flow);
+    double reward = (r1 + r2 + r3 + r4);
 
     // Obtaining new agent state
     state1 = agent1->state();
@@ -150,9 +144,8 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
-    printf("[Korali] Previous Torque: [ %.8f, %.8f, %.8f, %.8f  ]\n", action[0], action[1], action[2], action[3]);
+    printf("[Korali] Action: [ %.8f, %.8f, %.8f, %.8f  ]\n", action[0], action[1], action[2], action[3]);
     printf("[Korali] Reward: %.3f\n", reward);
-    printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
 

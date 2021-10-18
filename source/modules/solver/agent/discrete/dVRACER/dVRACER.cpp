@@ -153,7 +153,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
     auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
-    
+
     const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta);
     for (size_t i = 0; i < _policyParameterCount; i++)
     {

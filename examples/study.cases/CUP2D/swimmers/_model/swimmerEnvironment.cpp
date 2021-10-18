@@ -370,14 +370,14 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
   if( nAgents == 1 ){
     xMin = 0.8;
     xMax = 1.4;
-    yMin = 0.8;
-    yMax = 1.2;
+    yMin = 0.3;
+    yMax = 0.7;
   }
   else if( nAgents == 3 ){
     xMin = 0.4;
     xMax = 1.4;
-    yMin = 0.7;
-    yMax = 1.3;
+    yMin = 0.2;
+    yMax = 0.3;
   }
   else if( nAgents == 8 ){
     xMin = 0.4;

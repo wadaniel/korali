@@ -146,12 +146,13 @@ void runEnvironment(korali::Sample &s)
   // filename<<"actions.txt";
   // ofstream myfile(filename.str().c_str());
 
+  // Careful, hardcoded the number of action(s)!
+  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
+
   // Starting main environment loop
   bool done = false;
   while ( curStep < maxSteps && done == false )
   {
-    // Careful, hardcoded the number of action(s)!
-    std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
     if( rank == 0 ) {
       // Getting new action(s)
       s.update();
@@ -169,12 +170,17 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // Broadcast action(s) to all ranks
-    MPI_Bcast( actions.data(), actions.size()*actions[0].size(), MPI_DOUBLE, 0, comm );
-
-    // Apply action
+    // Broadcast and apply action(s) [Careful, hardcoded the number of action(s)!]
     for( size_t i = 0; i<nAgents; i++ )
+    {
+      MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
+      // std::cout << "Applying action(" << t<< ") = [ ";
+      // for( size_t j = 0; j<actions[i].size(); j++ )
+      //   std::cout << actions[i][j] << " ";
+      // std::cout << "] for agent "<< i << "\n";
+      if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
+    }
 
     // Run the simulation until next action is required
     dtAct = 0.;
@@ -197,9 +203,6 @@ void runEnvironment(korali::Sample &s)
       // Check termination because leaving margins
       for( size_t i = 0; i<nAgents; i++ )
         done = ( done || isTerminal( agents[i] ) );
-
-      // Allreduce for termination
-      MPI_Allreduce( MPI_IN_PLACE, &done, 1, MPI_C_BOOL, MPI_LOR, comm );
     }
 
     // Get and store state and action
@@ -274,6 +277,7 @@ void runEnvironment(korali::Sample &s)
     fclose(logFile);
 
   // delete simulation class
+  MPI_Barrier(comm);
   if( rank == 0 )
     delete _environment;
 
@@ -340,17 +344,24 @@ bool isTerminal(StefanFish *agent)
 {
   double xMin = 0.4;
   double xMax = 2.0;
+  
   double yMin = 0.6;
   double yMax = 1.4;
 
+  double zMin = 0.6;
+  double zMax = 1.4;
+
   const double X = agent->position[0];
   const double Y = agent->position[1];
+  const double Z = agent->position[2];
 
   bool terminal = false;
   if (X < xMin) terminal = true;
   if (X > xMax) terminal = true;
   if (Y < yMin) terminal = true;
   if (Y > yMax) terminal = true;
+  if (Z < zMin) terminal = true;
+  if (Z > zMax) terminal = true;
 
   return terminal;
 }

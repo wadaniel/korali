@@ -8,12 +8,14 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
-# Number of agents
-NNODES=1
+# Number of parallel environments
+NNODES=16
 
-# setup run directory and copy necessary files
+# Setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
+# mkdir -p ${RUNPATH}
 cp eval-vracer-prediction ${RUNPATH}
+# cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
 
 source settings.sh
@@ -32,7 +34,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-export OMP_NUM_THREADS=12
+# export OMP_NUM_THREADS=12
 
 srun ./eval-vracer-prediction ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
 EOF

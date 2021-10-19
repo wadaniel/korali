@@ -963,7 +963,9 @@ void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sort
 
   // sort indexes based on comparing values in vec
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2)
-            { return vec[i1] > vec[i2]; });
+            {
+              return vec[i1] > vec[i2];
+            });
 }
 
 void CMAES::printGenerationBefore() { return; }

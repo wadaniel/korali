@@ -65,7 +65,9 @@ void GaussianProcess::initialize()
 
   // Creating evaluation lambda function for optimization
   auto evaluateProposal = [gp = _gp.get()](Sample &sample)
-  { runSample(sample, gp); };
+  {
+    runSample(sample, gp);
+  };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;

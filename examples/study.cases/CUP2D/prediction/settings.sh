@@ -14,6 +14,6 @@ PTR=${PTR:-0}
 XPOS=${XPOS:-0.2}
 XVEL=${XVEL:-0.15}
 RADIUS=${RADIUS:-0.0375}
-NU=${NU:-0.0001125}# Re=100 <-> NU=0.0001125
+NU=${NU:-0.0001125} # Re=100 <-> NU=0.0001125
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0 -nu $NU -tend 0 -muteAll 0 -verbose 0 -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 1"
 OBJECTS="disk radius=$RADIUS xpos=$XPOS bForced=1 bFixed=1 xvel=$XVEL tAccel=2"

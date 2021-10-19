@@ -8,7 +8,7 @@ int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
 
-inline std::vector<double> getBlockCenter(ScalarBlock &scalarBlock, BlockInfo &blockInfo){
+inline std::vector<double> getBlockCenter(ScalarBlock &scalarBlock, BlockInfo blockInfo){
 
   double p[2];
 
@@ -16,12 +16,10 @@ inline std::vector<double> getBlockCenter(ScalarBlock &scalarBlock, BlockInfo &b
   int iy = ScalarBlock::sizeY/2;
 
   blockInfo.pos(p, ix, iy);
-  double xcenter = p[0]-0.5*blockInfo.h;
-  double ycenter = p[1]-0.5*blockInfo.h;
 
   std::vector<double> center(2, 0);
-  center[0] = xcenter;
-  center[1] = ycenter;
+  center[0] = p[0]-0.5*blockInfo.h;
+  center[1] = p[1]-0.5*blockInfo.h;
 
   return center;
 }
@@ -94,7 +92,7 @@ void runEnvironment(korali::Sample &s)
   s["State"] = states;
 
   // Variables for time and step conditions
-  size_t curStep = 0;  // current step
+  size_t curStep = 0;
 
   // Setting maximum number of steps before truncation
   size_t maxSteps = 1000;
@@ -160,21 +158,21 @@ void runEnvironment(korali::Sample &s)
 
     // Getting individual block averages and centers for the entire field
     std::vector<std::vector<double>> fieldAvg(nBlocks, std::vector<double>(3, 0));
-    // std::vector<std::vector<double>> fieldCenter(nBlocks, std::vector<double>(2, 0));
-    for(int b=0; b<nBlocks; ++b){
+    std::vector<std::vector<double>> fieldCenter(nBlocks, std::vector<double>(2, 0));
+    for (int b=0; b<nBlocks; ++b){
     
     ScalarBlock & __restrict__ P = *(ScalarBlock*) presInfo[b].ptrBlock;
     VectorBlock & __restrict__ V = *(VectorBlock*)  velInfo[b].ptrBlock;
 
     auto blockAverage = getBlockAverage(P, V);
-    // auto blockCenter = getBlockCenter(P, presInfo[b]);
+    auto blockCenter  = getBlockCenter(P, presInfo[b]);
 
     fieldAvg[b] = blockAverage;
-    // fieldCenter[b] = blockCenter;
+    fieldCenter[b] = blockCenter;
     }
 
-    size_t agentID = 0;
     // Exploring field and building state vector given candidate stencil
+    size_t agentID = 0;
     for (int a = 0; a<nBlocks; a++){
     
       // Setting container for state
@@ -217,21 +215,22 @@ void runEnvironment(korali::Sample &s)
       for(size_t j = 0; j<3; ++j){
         rewards[agentID] -= (action[j] - state[j]) * (action[j] - state[j]); // / nAgents; // TODO, try different norm & weigths for p,u,v
       }
-      /*
+
       // Dump p, u, v. One .csv for each curStep, containing all field data for real/predicted quantities.
-      if(s["Mode"] == "Testing" && curStep % 5 == 0){
+      if (s["Mode"] == "Testing" && curStep % 5 == 0){
         
+        int numDigits = (int)(std::log10(maxSteps)+1);
         std::string curStepString = std::to_string(curStep);
-        std::string fileID = std::string(4 - curStepString.length(), '0') + curStepString;
+        std::string fileID = std::string(numDigits - curStepString.length(), '0') + curStepString;
 
         std::ofstream fields;
         fields.open(fileID + "fields.csv", std::ios_base::app);
         fields << curStep << "," << t << "," << fieldCenter[a][0] << "," << fieldCenter[a][1] << ","
                << fieldAvg[a][0] << "," << fieldAvg[a][1] << "," << fieldAvg[a][2] << ","
-               << action[0][0] << "," << action[1][0] << "," << action[2][0] << "\n";
+               << action[0] << "," << action[1] << "," << action[2] << "\n";
         fields.close();
       }
-      */
+
       agentID++;
     }
 

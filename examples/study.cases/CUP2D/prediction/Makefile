@@ -1,4 +1,4 @@
-PREDICTION = run-vracer-prediction
+PREDICTION = run-vracer-prediction eval-vracer-prediction
 KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

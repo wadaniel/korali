@@ -571,6 +571,21 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Learning Rate"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs.erase("Importance Weight Truncation Level");
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Importance Weight Truncation Level"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Importance Weight Truncation Level"] = 1.0;
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -1452,6 +1467,7 @@ namespace
    agentJs["Experiences Between Policy Updates"] = 1;
    agentJs["Discount Factor"] = 0.99;
    agentJs["Learning Rate"] = 0.0001;
+   agentJs["Importance Weight Truncation Level"] = 0.0001;
    agentJs["Mini Batch"]["Size"] = 32;
    agentJs["Experience Replay"]["Start Size"] = 1000;
    agentJs["Experience Replay"]["Maximum Size"] = 10000;
@@ -1481,34 +1497,19 @@ namespace
    // Testing distribution corner cases
    policy_t curPolicy;
    policy_t prevPolicy;
-   curPolicy.distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
+   curPolicy.distributionParameters = std::vector<float>({0.2, 0.8, 1.0}); // Q values andbeta
+   curPolicy.actionProbabilities = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
    curPolicy.actionIndex = 0;
-   prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
+   prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5, 1.0}); // Q values andbeta
+   prevPolicy.actionProbabilities = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
    prevPolicy.actionIndex = 0;
    size_t testActionIdx = 0;
    auto testAction = std::vector<float>({-10.0f});
 
    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
    ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
-
-   // Testing mandatory parameters
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs.erase("Random Action Probability");
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Random Action Probability"] = "Not a Number";
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Random Action Probability"] = 1.0f;
-   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
   }
 
  TEST(a, dVRACER)

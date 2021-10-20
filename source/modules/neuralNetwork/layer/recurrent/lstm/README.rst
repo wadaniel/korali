@@ -14,5 +14,3 @@ Specialization of the Recurrent Layer for Long Short Term Memory (LSTM). The inp
 	\mathbf{h}_t &= \mathbf{o}_t \circ \sigma_h(\mathbf{c}_t)
 
 We note that for :math:`t=0` the needed vectors :math:`\mathbf{h}_{t-1}` and :math:`\mathbf{c}_{t-1}` are zero vectors. From the input and the hidden state we compute the forget :math:`\mathbf{f}_t`, the input :math:`\mathbf{i}_t`, and output :math:`\mathbf{o}_t` activation vector using the respective Weights :math:`W_f,W_i,W_o,U_f,U_i,U_o` and Biases :math:`\mathbf{b}_f,\mathbf{b}_i,\mathbf{b}_o`. These are used to compute the cell :math:`\tilde{\mathbf{c}}_t` activation vector via the Weights :math:`W_c` and Bias :math:`\mathbf{b}_c`. The cell state :math:`\mathbf{c}_t` is now computed by combining the cell state with the forget and input activation vectors. The output state is obtained by combining the cell state with the output activation vector. The used component-wise non-linearitites are sigmoid for :math:`\sigma_g` and hyperbolic tangent functions for :math:`\sigma_c` and :math:`\sigma_h`. As an illustration we attach a visual representation of the data-flow through an LSTM layer.
-
-.. image:: LSTM_Cell.svg

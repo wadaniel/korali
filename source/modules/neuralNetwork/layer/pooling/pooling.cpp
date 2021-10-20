@@ -63,8 +63,8 @@ void Pooling::initialize()
   IC = _prevLayer->_outputChannels / (IH * IW);
 
   // Deriving output height and width
-  OH = std::floor((IH - (KH - (PR + PL)))/SH) + 1;
-  OW = std::floor((IW - (KW - (PT + PB)))/SV) + 1;
+  OH = std::floor((IH - (KH - (PR + PL))) / SH) + 1;
+  OW = std::floor((IW - (KW - (PT + PB))) / SV) + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
   if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Pooling layer contains a number of output channels (%lu) not divisible by the output image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _outputChannels, OH, OW, KH, KW);
@@ -87,7 +87,7 @@ void Pooling::createForwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -110,13 +110,12 @@ void Pooling::createForwardPipeline()
     // Create pooling workspace memory
     _workspaceMem.resize(_nn->_timestepCount);
     for (size_t t = 0; t < _nn->_timestepCount; t++)
-     _workspaceMem[t] = memory(_forwardPoolingPrimitiveDesc.workspace_desc(), _nn->_dnnlEngine);
+      _workspaceMem[t] = memory(_forwardPoolingPrimitiveDesc.workspace_desc(), _nn->_dnnlEngine);
 
     // Create the weights+bias primitive.
     _forwardPoolingPrimitive = pooling_forward(_forwardPoolingPrimitiveDesc);
   }
 #endif
-
 }
 
 void Pooling::createBackwardPipeline()
@@ -134,7 +133,7 @@ void Pooling::createBackwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -176,7 +175,6 @@ void Pooling::forwardData(const size_t t)
     _forwardPoolingPrimitive.execute(_nn->_dnnlStream, forwardPoolingArgs);
   }
 #endif
-
 }
 
 void Pooling::backwardData(const size_t t)

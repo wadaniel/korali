@@ -26,13 +26,13 @@ solver::Agent *_agent;
 Conduit *_conduit;
 
 /**
-  * @brief Stores the environment thread (coroutine).
-  */
+ * @brief Stores the environment thread (coroutine).
+ */
 cothread_t _envThread;
 
 /**
-  * @brief Stores the current launch Id for the current sample
-  */
+ * @brief Stores the current launch Id for the current sample
+ */
 size_t _launchId;
 
 void __className__::initialize()

@@ -113,7 +113,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       // Storage for the update gradient
-      std::vector<float> gradientLoss(1 + _problem->_possibleActions.size(), 0.0f);
+      std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
       gradientLoss[0] = expVtbc[d] - V[d];

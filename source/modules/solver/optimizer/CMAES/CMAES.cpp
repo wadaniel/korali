@@ -487,9 +487,12 @@ void CMAES::prepareGeneration()
           discretize(_samplePopulation[i + 1]);
         }
 
-        isFeasible = isSampleFeasible(_samplePopulation[i]) && isSampleFeasible(_samplePopulation[i + 1]);
-
-        if (isFeasible == false) _infeasibleSampleCount++;
+        bool isFeasibleOne = isSampleFeasible(_samplePopulation[i]);
+        if (isFeasibleOne == false) _infeasibleSampleCount++;
+        bool isFeasibleTwo = isSampleFeasible(_samplePopulation[i + 1]);
+        if (isFeasibleTwo == false) _infeasibleSampleCount++;
+        
+        isFeasibleTwo = (isFeasibleOne || isFeasibleTwo);
 
       } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
     }

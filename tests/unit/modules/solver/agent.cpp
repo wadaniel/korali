@@ -63,6 +63,8 @@ namespace
   e["Variables"][1]["Lower Bound"] = 0.00;
   e["Variables"][1]["Upper Bound"] = 1.00;
 
+  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
+
   Variable vState;
   vState._name = "State0";
   vState._type = "State";
@@ -78,10 +80,21 @@ namespace
   e._variables.push_back(&vAction);
 
   ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pC->applyModuleDefaults(problemRefJs));
+
+  // Covering variable functions (no effect)
+  ASSERT_NO_THROW(pC->applyVariableDefaults());
+
+  // Setting up problem correctly
+  ASSERT_NO_THROW(pC->setConfiguration(problemRefJs));
+
+  // Intitialize problem
   e._problem = pC;
   ASSERT_NO_THROW(pC->initialize());
 
-  // Using a neural network solver (deep learning) for inference
+  // Using a agent solver
 
   agentJs["Type"] = "Agent / Continuous / VRACER";
   agentJs["Mode"] = "Training";
@@ -115,7 +128,7 @@ namespace
   auto baseOptJs = agentJs;
   auto baseExpJs = experimentJs;
 
-//   // Setting up optimizer correctly
+  // Setting up optimizer correctly
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
@@ -149,13 +162,14 @@ namespace
 
   // Testing Process Episode corner cases
   knlohmann::json episode;
-  episode["Experiences"][0]["Environment Id"] = 0;
+  episode["Environment Id"] = 0;
   episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
   episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
   episode["Experiences"][0]["Reward"] = 1.0f;
   episode["Experiences"][0]["Termination"] = "Terminal";
   episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
-  ASSERT_NO_THROW(a->processEpisode(episode));
+  a->processEpisode(episode);
+  // ASSERT_NO_THROW(a->processEpisode(episode));
 
   // No state value provided error
   episode["Experiences"][0]["Policy"].erase("State Value");
@@ -1503,7 +1517,6 @@ namespace
    prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5, 1.0}); // Q values andbeta
    prevPolicy.actionProbabilities = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
    prevPolicy.actionIndex = 0;
-   size_t testActionIdx = 0;
    auto testAction = std::vector<float>({-10.0f});
 
    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());

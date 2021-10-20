@@ -100,12 +100,9 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Getting experience policy data
     const auto &expPolicy = _expPolicyVector[expId];
-    const auto &expDistParams = expPolicy.distributionParameters;
-    const auto &expActionIdx = expPolicy.actionIndex;
 
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
-    const auto &curDistParams = curPolicy.distributionParameters;
 
     // Getting value evaluation
     const float V = _stateValueVector[expId];
@@ -154,12 +151,10 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     // Compute derivative of kullback-leibler divergence wrt current distribution params
     auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
 
+    // Step towards old policy (gradient pointing to larger difference between old and current policy)
     const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta);
     for (size_t i = 0; i < _policyParameterCount; i++)
-    {
-      // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= klGradMultiplier * klGrad[i];
-    }
+      gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;

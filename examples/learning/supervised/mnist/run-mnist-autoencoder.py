@@ -261,7 +261,7 @@ for epoch in range(epochs):
  # Getting MSE loss for testing set
  squaredMeanError = 0.0
  for i, res in enumerate(testingInferredVector):
-  sol = testingImageVector[i]
+  sol = testingImageVector[i][0]
   for j, s in enumerate(sol):
    diff = res[j] - s
    squaredMeanError += diff * diff 

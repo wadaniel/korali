@@ -110,7 +110,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
 
 ### Running Experiment
 

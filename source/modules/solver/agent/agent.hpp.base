@@ -55,6 +55,11 @@ struct policy_t
   size_t actionIndex;
 
   /**
+  * @brief [Discrete] Stores the action probabilities of the categorial distribution.
+  */
+  std::vector<float> actionProbabilities;
+
+  /**
    * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
    */
   std::vector<float> unboundedAction;

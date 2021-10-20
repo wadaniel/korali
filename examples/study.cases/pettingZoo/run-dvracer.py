@@ -58,7 +58,7 @@ for i in range(numAg):
 	refer_beta.append(0.3)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
-#e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
@@ -95,7 +95,7 @@ e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 150
-#e["File Output"]["Frequency"] = 2
+e["File Output"]["Frequency"] = 2
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

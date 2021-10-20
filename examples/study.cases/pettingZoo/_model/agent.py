@@ -209,6 +209,9 @@ def agent(s, env, model = ''):
    if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
       env.step(np.array(action,dtype= 'float32'))
    else:
+      if done:
+         #TODO: Check if this does the job 
+         action[0] = 4
       env.step(action[0])
    
   # Getting Reward

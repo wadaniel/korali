@@ -71,6 +71,11 @@ struct policy_t
   size_t actionIndex;
 
   /**
+  * @brief [Discrete] Stores the action probabilities of the categorial distribution.
+  */
+  std::vector<float> actionProbabilities;
+
+  /**
    * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
    */
   std::vector<float> unboundedAction;
@@ -147,6 +152,10 @@ class Agent : public Solver
   */
    float _discountFactor;
   /**
+  * @brief Represents the discount factor to weight future experiences.
+  */
+   float _importanceWeightTruncationLevel;
+  /**
   * @brief Indicates whether to serialize and store the experience replay after each generation. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
   */
    int _experienceReplaySerialize;
@@ -198,6 +207,10 @@ class Agent : public Solver
   * @brief The factor (f) by which te reward is scaled down. R = f * R
   */
    float _rewardOutboundPenalizationFactor;
+  /**
+  * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
+  */
+   size_t _policyParameterCount;
   /**
   * @brief [Internal Use] Lower bounds for actions.
   */

@@ -466,7 +466,7 @@ void Agent::averageRewardsAcrossAgents(knlohmann::json &message)
   }
 }
 
-// todo: look into this
+
 void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
   /*********************************************************************
@@ -569,6 +569,13 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       const auto actIdx = episode["Experiences"][expId]["Policy"]["Action Index"].get<std::vector<size_t>>();
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         expPolicy[d].actionIndex = actIdx[d];
+    }
+
+    if (isDefined(episode["Experiences"][expId], "Policy", "Action Probabilities"))
+    {
+      const auto actProb = episode["Experiences"][expId]["Policy"]["Action Probabilities"].get<std::vector<std::vector<float>>>();
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        expPolicy[d].actionProbabilities = actProb[d];
     }
 
     if (isDefined(episode["Experiences"][expId], "Policy", "Unbounded Action"))
@@ -724,7 +731,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
       // Compute importance weight
       importanceWeight[d] = calculateImportanceWeight(expAction, curPolicy, expPolicy);
-      truncatedImportanceWeight[d] = std::min(1.0f, importanceWeight[d]);
+      truncatedImportanceWeight[d] = std::min(_importanceWeightTruncationLevel, importanceWeight[d]);
       if (std::isfinite(importanceWeight[d]) == false)
         KORALI_LOG_ERROR("Calculated value of importanceWeight returned an invalid value: %f\n", importanceWeight[d]);
       // Checking if experience is still on policy
@@ -983,11 +990,13 @@ void Agent::serializeExperienceReplay()
     std::vector<std::vector<float>> expDistributionParameter(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].distributionParameters.size()));
     std::vector<size_t> expActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> expUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].unboundedAction.size()));
+    std::vector<std::vector<float>> expActProb(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].actionProbabilities.size()));
 
     std::vector<float> curStateValue(_problem->_agentsPerEnvironment, 0.0f);
     std::vector<std::vector<float>> curDistributionParameter(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].distributionParameters.size()));
     std::vector<size_t> curActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> curUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].unboundedAction.size()));
+    std::vector<std::vector<float>> curActProb(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].actionProbabilities.size()));
 
     for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
     {
@@ -995,21 +1004,25 @@ void Agent::serializeExperienceReplay()
       expDistributionParameter[j] = _expPolicyVector[i][j].distributionParameters;
       expActionIdx[j] = _expPolicyVector[i][j].actionIndex;
       expUnboundedAct[j] = _expPolicyVector[i][j].unboundedAction;
+      expActProb[j] = _expPolicyVector[i][j].actionProbabilities;
 
       curStateValue[j] = _curPolicyVector[i][j].stateValue;
       curDistributionParameter[j] = _curPolicyVector[i][j].distributionParameters;
       curActionIdx[j] = _curPolicyVector[i][j].actionIndex;
       curUnboundedAct[j] = _curPolicyVector[i][j].unboundedAction;
+      curActProb[j] = _curPolicyVector[i][j].actionProbabilities;
     }
     stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = expStateValue;
     stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"] = expDistributionParameter;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = expActionIdx;
     stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"] = expUnboundedAct;
+    stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"] = expActProb;
 
     stateJson["Experience Replay"][i]["Current Policy"]["State Value"] = curStateValue;
     stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"] = curDistributionParameter;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Index"] = curActionIdx;
     stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = curUnboundedAct;
+    stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"] = curActProb;
   }
 
   // If results directory doesn't exist, create it
@@ -1086,11 +1099,13 @@ void Agent::deserializeExperienceReplay()
       expPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"][d].get<std::vector<float>>();
       expPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"][d].get<std::vector<float>>();
       expPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"][d].get<size_t>();
+      expPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"][d].get<std::vector<float>>();
 
       curPolicy[d].stateValue = stateJson["Experience Replay"][i]["Current Policy"]["State Value"][d].get<float>();
       curPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"][d].get<std::vector<float>>();
       curPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"][d].get<size_t>();
       curPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"][d].get<std::vector<float>>();
+      curPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"][d].get<std::vector<float>>();
     }
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(curPolicy);
@@ -1188,6 +1203,14 @@ void Agent::printGenerationAfter()
 void Agent::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
+
+ if (isDefined(js, "Policy", "Parameter Count"))
+ {
+ try { _policyParameterCount = js["Policy"]["Parameter Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Policy']['Parameter Count']\n%s", e.what()); } 
+   eraseValue(js, "Policy", "Parameter Count");
+ }
 
  if (isDefined(js, "Action Lower Bounds"))
  {
@@ -1612,6 +1635,15 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Discount Factor'] required by agent.\n"); 
 
+ if (isDefined(js, "Importance Weight Truncation Level"))
+ {
+ try { _importanceWeightTruncationLevel = js["Importance Weight Truncation Level"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Importance Weight Truncation Level']\n%s", e.what()); } 
+   eraseValue(js, "Importance Weight Truncation Level");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Importance Weight Truncation Level'] required by agent.\n"); 
+
  if (isDefined(js, "Experience Replay", "Serialize"))
  {
  try { _experienceReplaySerialize = js["Experience Replay"]["Serialize"].get<int>();
@@ -1803,6 +1835,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
    js["Neural Network"]["Engine"] = _neuralNetworkEngine;
    js["Discount Factor"] = _discountFactor;
+   js["Importance Weight Truncation Level"] = _importanceWeightTruncationLevel;
    js["Experience Replay"]["Serialize"] = _experienceReplaySerialize;
    js["Experience Replay"]["Start Size"] = _experienceReplayStartSize;
    js["Experience Replay"]["Maximum Size"] = _experienceReplayMaximumSize;
@@ -1821,6 +1854,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Termination Criteria"]["Testing"]["Target Average Reward"] = _testingTargetAverageReward;
    js["Termination Criteria"]["Testing"]["Average Reward Increment"] = _testingAverageRewardIncrement;
    js["Termination Criteria"]["Max Policy Updates"] = _maxPolicyUpdates;
+   js["Policy"]["Parameter Count"] = _policyParameterCount;
    js["Action Lower Bounds"] = _actionLowerBounds;
    js["Action Upper Bounds"] = _actionUpperBounds;
    js["Current Episode"] = _currentEpisode;
@@ -1863,7 +1897,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

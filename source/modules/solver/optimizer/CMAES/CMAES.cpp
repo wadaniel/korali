@@ -491,8 +491,7 @@ void CMAES::prepareGeneration()
         if (isFeasibleOne == false) _infeasibleSampleCount++;
         bool isFeasibleTwo = isSampleFeasible(_samplePopulation[i + 1]);
         if (isFeasibleTwo == false) _infeasibleSampleCount++;
-        
-        isFeasibleTwo = (isFeasibleOne || isFeasibleTwo);
+        isFeasible = (isFeasibleOne || isFeasibleTwo);
 
       } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
     }

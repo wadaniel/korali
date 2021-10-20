@@ -769,10 +769,10 @@ void CMAES::updateSigma()
 
 void CMAES::numericalErrorTreatment()
 {
-  //treat maximal standard deviations
-  //TODO
+  // treat maximal standard deviations
+  // TODO
 
-  //treat minimal standard deviations
+  // treat minimal standard deviations
   for (size_t d = 0; d < _variableCount; ++d)
     if (_sigma * sqrt(_covarianceMatrix[d * _variableCount + d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
     {
@@ -780,11 +780,11 @@ void CMAES::numericalErrorTreatment()
       _k->_logger->logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
     }
 
-  //too low coordinate axis deviations
-  //TODO
+  // too low coordinate axis deviations
+  // TODO
 
-  //treat numerical precision provblems
-  //TODO
+  // treat numerical precision provblems
+  // TODO
 }
 
 void CMAES::handleConstraints()
@@ -796,7 +796,7 @@ void CMAES::handleConstraints()
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
-        //update constraint normal
+        // update constraint normal
         for (size_t c = 0; c < _constraintEvaluations.size(); c++)
           if (_viabilityIndicator[c][i] == true)
           {
@@ -825,7 +825,7 @@ void CMAES::handleConstraints()
     /* in original some stopping criterion (TOLX) */
     // TODO
 
-    //resample invalid points
+    // resample invalid points
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
@@ -847,7 +847,7 @@ void CMAES::handleConstraints()
 
     reEvaluateConstraints();
 
-  } //while _maxConstraintViolationCount > 0
+  } // while _maxConstraintViolationCount > 0
 }
 
 void CMAES::updateDiscreteMutationMatrix()

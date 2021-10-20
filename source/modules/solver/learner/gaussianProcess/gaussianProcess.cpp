@@ -14,9 +14,9 @@ namespace learner
 ;
 
 /**
-  * @brief Converts a vector of floats to Eigen format
-  * @param v the vector to convert
-  * @return An Eigen vector type
+ * @brief Converts a vector of floats to Eigen format
+ * @param v the vector to convert
+ * @return An Eigen vector type
  */
 Eigen::VectorXd
 toEigen(const std::vector<float> &v)
@@ -28,10 +28,10 @@ toEigen(const std::vector<float> &v)
 }
 
 /**
-* @brief Model function to evaluate the error function of the GP
-* @param sample The sample containing the proposal parameters
-* @param gp Pointer to the GP
-*/
+ * @brief Model function to evaluate the error function of the GP
+ * @param sample The sample containing the proposal parameters
+ * @param gp Pointer to the GP
+ */
 void runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
   size_t gpParameterDimension = gp->covf().get_param_dim();

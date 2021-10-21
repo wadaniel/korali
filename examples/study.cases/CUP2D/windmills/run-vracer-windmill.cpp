@@ -43,19 +43,29 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
-  const size_t numStates = 4;
-  for (size_t curVariable = 0; curVariable < numStates; curVariable++)
+  // const size_t numStates = 4;
+  // size_t curVariable = 0;
+  // for (size_t stateIdx = 0; stateIdx < numStates; stateIdx++)
+  // {
+  //   e["Variables"][curVariable++]["Name"] = std::string("Angle ") + std::to_string(stateIdx);
+  //   e["Variables"][curVariable++]["Name"] = std::string("Omega ") + std::to_string(stateIdx);
+  // }
+
+  // for (size_t i = 0; i < curVariable; i++) e["Variables"][i]["Type"] = "State";
+
+
+  // use 
+  const size_t numStates = 576;
+  size_t curVariable = 0;
+  for (size_t i = 0; i < numStates; i++)
   {
-    if(curVariable%2==0){
-      e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
-    } else{
-      e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
-    }
-    
-    e["Variables"][curVariable]["Type"] = "State";
+    e["Variables"][i]["Name"] = std::string("Vorticity ") + std::to_string(i);
+    e["Variables"][i]["Type"] = "State";
   }
 
-  double max_torque = 1e-3;
+
+
+  double max_torque = 1e-4;
   for(size_t j=numStates; j < numStates + 2; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";
@@ -74,7 +84,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
   //e["Solver"]["Policy"]["Distribution"] = "Normal";
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
@@ -89,6 +99,99 @@ int main(int argc, char *argv[])
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
 
+  /////////////////////////////////////////////////////////////////////////////////
+
+  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+  
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
+
+  // Convolutional Layer with ReLU activation function [1x24x24] -> [4x20x20]
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Convolution";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Image Height"]      = 24;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Image Width"]       = 24;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Kernel Height"]     = 5;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Kernel Width"]      = 5;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Vertical Stride"]   = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Horizontal Stride"] = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Padding Left"]      = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Padding Right"]     = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Padding Top"]       = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Padding Bottom"]    = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"]   = 4*20*20;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/ReLU";
+
+  // Pooling Layer [4x20x20] -> [4x10x10]
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Pooling";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Function"]          = "Exclusive Average";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Height"]      = 20;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Image Width"]       = 20;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Kernel Height"]     = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Kernel Width"]      = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Vertical Stride"]   = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Horizontal Stride"] = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Left"]      = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Right"]     = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Top"]       = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Padding Bottom"]    = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"]   = 4*10*10;
+
+  // Convolutional Layer with tanh activation function [4x10x10] -> [12x6x6]
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Convolution";
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Image Height"]      = 10;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Image Width"]       = 10;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Kernel Height"]     = 5;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Kernel Width"]      = 5;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Vertical Stride"]   = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Horizontal Stride"] = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Left"]      = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Right"]     = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Top"]       = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Padding Bottom"]    = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"]   = 12*6*6;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/ReLU";
+
+  // Pooling Layer [12x6x6] -> [12x3x3]
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Pooling";
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"]          = "Exclusive Average";
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Image Height"]      = 6;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Image Width"]       = 6;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Kernel Height"]     = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Kernel Width"]      = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Vertical Stride"]   = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Horizontal Stride"] = 2;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Left"]      = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Right"]     = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Top"]       = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Bottom"]    = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][5]["Output Channels"]   = 12*3*3;
+
+  // Convolutional Fully Connected Output Layer [12x3x3] -> [2x1x1]
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Type"] = "Layer/Convolution";
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Height"]      = 3;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Width"]       = 3;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Kernel Height"]     = 3;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Kernel Width"]      = 3;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Vertical Stride"]   = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Horizontal Stride"] = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Left"]      = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Right"]     = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Top"]       = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Bottom"]    = 0;
+  e["Solver"]["Neural Network"]["Hidden Layers"][6]["Output Channels"]   = 64*1*1;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Softmax" ///////////////////////////////----------------------------
+
+
+  /////////////////////////////////////////////////////////////////////////////////
+
+  /*
   /// Configuring the neural network and its hidden layers
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
@@ -107,6 +210,9 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  */
+
+  /////////////////////////////////////////////////////////////////////////////////
 
   ////// Defining Termination Criteria
   e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Defaults for Options
-BPDX=${BPDX:-8}
-BPDY=${BPDY:-8}
-LEVELS=${LEVELS:-4}
+BPDX=${BPDX:-64}
+BPDY=${BPDY:-64}
+LEVELS=${LEVELS:-1}
 RTOL=${RTOL-0.1}
 CTOL=${CTOL-0.01}
 EXTENT=${EXTENT:-1.4}

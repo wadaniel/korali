@@ -1,4 +1,6 @@
 #include "windmillEnvironment.hpp"
+#include "Operators/Helpers.h"
+#include "Definitions.h"
 #include <chrono>
 #include <filesystem>
 
@@ -67,7 +69,12 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();
 
-  std::vector<double> state = {state1[0], state1[1], state2[0], state2[1]};
+  //std::vector<double> state = {state1[0], state1[1], state2[0], state2[1]};
+
+  std::vector<double> center_area = {target_pos[0], target_pos[1]};
+  std::vector<double> dim = {0.2, 0.2};
+
+  std::vector<double> state = getConvState(_environment, center_area);
 
   s["State"] = state;
 
@@ -143,6 +150,8 @@ void runEnvironment(korali::Sample &s)
     // Storing reward
     s["Reward"] = reward;
 
+    state = getConvState(_environment, center_area);
+
     // Storing new state
     s["State"] = state;
 
@@ -184,4 +193,125 @@ void setInitialConditions(Windmill* agent, double init_angle, bool randomized)
   printf("[Korali] orientation: %f\n", angle);
 
   agent->setOrientation(angle);
+}
+
+// get the grid state for case with convnet as input
+
+std::vector<double> getConvState(Simulation *_environment, std::vector<double> pos)
+{
+  std::vector<double> vorticities;
+  // get the simulation data
+  const auto K1 = computeVorticity(_environment->sim); K1.run();
+
+  // the vorticity is stored in the ScalarGrid* tmp
+  // get the part of the grid that interests us
+  // we will get all the blocks that together contain the area fully
+  const std::vector<cubism::BlockInfo>& vortInfo = _environment->sim.tmp->getBlocksInfo();
+
+  int bpdx = _environment->sim.bpdx;
+  int bpdy = _environment->sim.bpdy;
+
+  size_t num_points_x = ScalarBlock::sizeX;
+  size_t num_points_y = ScalarBlock::sizeY;
+
+  int index = 0;
+
+  // loop over all the blocks
+  for(size_t t=0; t < vortInfo.size(); ++t)
+  {
+    const cubism::BlockInfo & info = vortInfo[t];
+    
+    // find block associated with the center_area point
+    // get gridspacing in block
+    const Real h = info.h_gridpoint;
+
+    // compute lower left corner of block
+    std::array<Real,2> MIN = info.pos<Real>(0, 0);
+    for(int j=0; j<2; ++j)
+      MIN[j] -= 0.5 * h; // pos returns cell centers
+
+    // compute top right corner of block
+    std::array<Real,2> MAX = info.pos<Real>(num_points_x-1, num_points_y-1);
+    for(int j=0; j<2; ++j)
+      MAX[j] += 0.5 * h; // pos returns cell centers
+
+    // check whether point is inside block
+    if( pos[0] >= MIN[0] && pos[1] >= MIN[1] && pos[0] <= MAX[0] && pos[1] <= MAX[1] )
+    {
+      // select block
+      index = t;
+    }
+
+  }
+
+  // get all the blocks surrounding the block that contains the point
+  const cubism::BlockInfo & info = vortInfo[index];
+
+  const cubism::BlockInfo & west  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, 0, 0));
+  const cubism::BlockInfo & east  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, 0, 0));
+  const cubism::BlockInfo & north  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(0, 1, 0));
+  const cubism::BlockInfo & south  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(0, -1, 0));
+
+  const cubism::BlockInfo & ne  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, 1, 0));
+  const cubism::BlockInfo & nw  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, 1, 0));
+  const cubism::BlockInfo & sw  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, -1, 0));
+  const cubism::BlockInfo & se  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, -1, 0));
+
+  const std::vector<std::vector<cubism::BlockInfo>>& blocks = {{nw, north, ne}, {west, info, east}, {sw, south, se}};
+
+  for(size_t b_i = 0; b_i < 3; ++b_i)
+  for(size_t b_j = 0; b_j < 3; ++b_j)
+  for(size_t i = 0; i < num_points_x; ++i)
+  for(size_t j = 0; j < num_points_y; ++j)
+  {
+    const ScalarBlock& b = * (const ScalarBlock*) blocks[b_i][b_j].ptrBlock;
+    
+    vorticities.push_back(b(i,j).s);
+  }
+
+  /////////////////////////////////////////////////////////
+
+
+  // size_t num_points = ScalarBlock::sizeY;
+
+  // // loop over the rows
+  // for(size_t j=0; j < num_points; ++j)
+  // {
+  //   // loop over all the blocks
+  //   for(size_t t=0; t < vortInfo.size(); ++t)
+  //   {
+  //     // get pointer on block
+  //     const ScalarBlock& b = * (const ScalarBlock*) vortInfo[t].ptrBlock;
+
+  //     // loop over the cols
+  //     for(size_t i=0; i < b.sizeX; ++i)
+  //       {
+  //         const std::array<Real,2> oSens = vortInfo[t].pos<Real>(i, j);
+  //         if (isInConvArea(oSens, center_area, dim))
+  //         {
+  //           vorticities.push_back(b(i,j).s);
+  //         }
+  //       }
+  //   }
+  // }
+
+  std::cout<<"size of vorticities: "<<vorticities.size()<<std::endl;
+
+  return vorticities;
+}
+
+bool isInConvArea(const std::array<Real,2> point, std::vector<double> target, std::vector<double> dimensions)
+{
+  std::array<Real, 2> lower_left = {target[0]-dimensions[0]/2.0, target[1]-dimensions[1]/2.0};
+  std::array<Real, 2> upper_right = {target[0]+dimensions[0]/2.0, target[1]+dimensions[1]/2.0};
+
+  if(point[0] >= lower_left[0] && point[0] <= upper_right[0])
+  {
+    if(point[1] >= lower_left[1] && point[1] <= upper_right[1])
+    {
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -67,8 +67,13 @@ void runEnvironment(korali::Sample &s)
   _environment->startObstacles();
 
   // Set target
-  std::array<Real,2> target_pos{0.7,0.6};
+  std::array<Real,2> target_pos{0.9,0.7};
   std::array<double, 2> target_vel={0.0,0.0};
+
+  agent1->setTarget(target_pos);
+  agent2->setTarget(target_pos);
+  agent3->setTarget(target_pos);
+  agent4->setTarget(target_pos);
 
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();

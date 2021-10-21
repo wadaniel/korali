@@ -19,8 +19,8 @@ void dVRACER::initializeAgent()
   Discrete::initializeAgent();
 
   /*********************************************************************
- * Initializing Critic/Policy Neural Network Optimization Experiment
- *********************************************************************/
+   * Initializing Critic/Policy Neural Network Optimization Experiment
+   *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
@@ -151,12 +151,10 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     // Compute derivative of kullback-leibler divergence wrt current distribution params
     auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
 
+    // Step towards old policy (gradient pointing to larger difference between old and current policy)
     const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta);
     for (size_t i = 0; i < _policyParameterCount; i++)
-    {
-      // Step towards old policy (gradient pointing to larger difference between old and current policy)
       gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
-    }
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;

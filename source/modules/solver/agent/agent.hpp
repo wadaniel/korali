@@ -208,6 +208,10 @@ class Agent : public Solver
   */
    float _rewardOutboundPenalizationFactor;
   /**
+  * @brief Indicates whether we are in an individual setting or collaborator setting
+  */
+   std::string _relationship;
+  /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
    size_t _policyParameterCount;

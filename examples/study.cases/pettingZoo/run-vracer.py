@@ -12,6 +12,7 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
+parser.add_argument('--rel', help='Relationship, possible values "individual" and "collaborator".', required=False,type = str, default = 'individual')
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
@@ -47,6 +48,7 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Relationship"] = args.rel
 #e["Solver"]["Mini Batch"]["Size"] = 85
 
 ### Setting Experience Replay and REFER settings

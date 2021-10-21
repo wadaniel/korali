@@ -9,7 +9,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 # Number of parallel environments
-NNODES=16
+NNODES=1
 
 # Setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"

@@ -2,7 +2,7 @@
 # Defaults for Options
 BPDX=${BPDX:-32}
 BPDY=${BPDY:-16}
-NAGENTS=420 # BPDX*BPDY - 2*BPDX - 2*(BPDY-2)
+NAGENTS=$(($(($(($BPDX*$BPDY))-$((2*$BPDX))))-$((2*$(($BPDY-2))))))
 LEVELS=${LEVELS:-1}
 RTOL=${RTOL-0.1}
 CTOL=${CTOL-0.01}

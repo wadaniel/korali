@@ -111,6 +111,7 @@ for launch in range(args.launchNum):
     dirfiles["Results"] = args.m + "_" + dt_string + resultFolder
     dirfiles["Best Trajectory"] = args.m + "_" + dt_string + "best_trajectory.csv"
     dirfiles["Experience Replay"] = args.m + dt_string + "experience_replay.csv"
+    dirfiles["Log File"] = args.m + dt_string + "log.txt"
     for r in range(1, num_procs):
         dirfiles[f"Current Model {r}"] = args.m + "Models/" + dt_string + f"Rank{r}_of_{num_procs}_surnet_curr.pth"
         dirfiles[f"Previous Model {r}"] = args.m + "Models/" + dt_string + f"Rank{r}_of_{num_procs}_surnet_prev.pth"
@@ -194,6 +195,13 @@ for launch in range(args.launchNum):
     #    print(f"[Ensemble] Testing = False")
 
     if rank == 0:
+        fname = dirfiles["Log File"]
+        if os.path.exists(fname):
+            os.remove(fname)
+        info = "#Log File"
+        with open(fname, "w") as fhandle:
+            fhandle.write(info + "\n")
+            
         fname = dirfiles["Dataset Train Korali"]
         if os.path.exists(fname):
             os.remove(fname)

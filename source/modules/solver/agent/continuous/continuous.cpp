@@ -116,22 +116,22 @@ void Continuous::getAction(korali::Sample &sample)
     auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
 
     /*****************************************************************************
-   * During Training we select action according to policy's probability
-   * distribution
-   ****************************************************************************/
+     * During Training we select action according to policy's probability
+     * distribution
+     ****************************************************************************/
 
     if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
 
     /*****************************************************************************
-   * During testing, we select the means (point of highest density) for all
-   * elements of the action vector
-   ****************************************************************************/
+     * During testing, we select the means (point of highest density) for all
+     * elements of the action vector
+     ****************************************************************************/
 
     if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
 
     /*****************************************************************************
-   * Storing the action and its policy
-   ****************************************************************************/
+     * Storing the action and its policy
+     ****************************************************************************/
 
     sample["Policy"][i]["Distribution Parameters"] = policy.distributionParameters;
     sample["Policy"][i]["State Value"] = policy.stateValue;
@@ -397,7 +397,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (std::isfinite(logImportanceWeight) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
 
   // Calculating actual importance weight by exp
-  const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
+  const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
   return importanceWeight;
 }
@@ -439,7 +439,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) importanceWeightGradients[i] *= importanceWeight;
@@ -478,7 +478,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -553,7 +553,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < _policyParameterCount; i++)
@@ -639,7 +639,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight); //TODO: reuse importance weight calculation from updateExperienceReplayMetadata
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)

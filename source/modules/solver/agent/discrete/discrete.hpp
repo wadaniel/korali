@@ -58,8 +58,8 @@ class Discrete : public Agent
   
 
   /**
- * @brief Storage for the pointer to the (discrete) learning problem
- */
+   * @brief Storage for the pointer to the (discrete) learning problem
+   */
   problem::reinforcementLearning::Discrete *_problem;
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;

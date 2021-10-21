@@ -786,7 +786,7 @@ void CMAES::handleConstraints()
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
-        //update constraint normal
+        // update constraint normal
         for (size_t c = 0; c < _constraintEvaluations.size(); c++)
           if (_viabilityIndicator[c][i] == true)
           {
@@ -834,7 +834,7 @@ void CMAES::handleConstraints()
 
     reEvaluateConstraints();
 
-  } //while _maxConstraintViolationCount > 0
+  } // while _maxConstraintViolationCount > 0
 }
 
 void CMAES::updateDiscreteMutationMatrix()

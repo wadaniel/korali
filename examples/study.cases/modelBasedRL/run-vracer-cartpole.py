@@ -304,7 +304,8 @@ for launch in range(args.launchNum):
 
     #Note: episodes are number of environments fully executed, experiences are gathered in them, and generations are executions of the solver
     e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGen # Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment.
-    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = targetAverageReward #was 450 # The solver will stop when the given best average per-episode reward has been reached among the experiences between two learner updates.
+    if targetAverageReward != 0:
+        e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = targetAverageReward #was 450 # The solver will stop when the given best average per-episode reward has been reached among the experiences between two learner updates.
     if maxPolicyUpdates != 0:
         e["Solver"]["Termination Criteria"]["Max Policy Updates"] = maxPolicyUpdates
 

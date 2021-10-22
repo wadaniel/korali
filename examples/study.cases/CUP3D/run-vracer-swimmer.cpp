@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
-  // retreiving number of agents
+  // retreiving number of agents and ranks
   int nAgents = atoi(argv[argc-3]);
   int nRanks  = atoi(argv[argc-1]);
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-  N = (int)(N / nRanks);
+  N = (int)(N / nRanks); // Divided by the ranks per worker
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";

@@ -7,7 +7,7 @@ do
             export CONF=$conf
             export INI=$iniretrain
             export RE=$retrain
-            export M="Finalv2Net10Ini${INI}Re${RE}_u1.0_Results_${CONF}_1/"
+            export M="ThesisFinalv2Net10Ini${INI}Re${RE}_u1.0_Results_${CONF}_1/"
             ./sbatch-vracer-cartpole-v2.sh
         done;
     done; 

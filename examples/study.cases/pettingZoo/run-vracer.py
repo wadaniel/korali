@@ -12,14 +12,13 @@ os.environ["SDL_VIDEODRIVER"] = "dummy"
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--dis', help='Sampling Distribution.', required=False,type = str, default = 'Clipped Normal')
-parser.add_argument('--rel', help='Relationship, possible values "individual" and "collaborator".', required=False,type = str, default = 'individual')
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-#model '0' or '' first model, all agents the same, model '1' has agent id as additional input
+#model '0' or '' first model, all agents the same, model '1' has agent id as additional input, model '2' changes to collaborator model
 args = parser.parse_args()
 print(args)
 
@@ -48,7 +47,9 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
-e["Solver"]["Relationship"] = args.rel
+e["Solver"]["Relationship"] = 'individual'
+if(args.model == '2'):
+	e["Solver"]["Relationship"] = 'collaborator'
 #e["Solver"]["Mini Batch"]["Size"] = 85
 
 ### Setting Experience Replay and REFER settings

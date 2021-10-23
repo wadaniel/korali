@@ -7,3 +7,4 @@ OPT=${OPT:-0.1}
 LR=${LR:-0.0001}
 MODEL=${MODEL:-0}
 NN=${NN:-128}
+RUN=${RUN:-0}

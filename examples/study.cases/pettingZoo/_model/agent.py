@@ -210,8 +210,8 @@ def agent(s, env, model = ''):
       env.step(np.array(action,dtype= 'float32'))
    else:
       if done:
-         #TODO: Check if this does the job 
-         action[0] = 4
+         #if persuit is done only action is NONE
+         continue
       env.step(action[0])
    
   # Getting Reward

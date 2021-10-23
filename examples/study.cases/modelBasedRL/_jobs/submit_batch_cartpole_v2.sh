@@ -2,7 +2,7 @@ for conf in 0.8500 0.8750 0.9000 0.9100 0.9200 0.9300 0.9400 0.9500 0.9600 0.970
 do 
     for iniretrain in 500;
     do
-        for retrain in 5000;
+        for retrain in 2000;
         do
             export CONF=$conf
             export INI=$iniretrain

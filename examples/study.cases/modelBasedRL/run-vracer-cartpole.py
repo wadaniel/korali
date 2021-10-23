@@ -435,6 +435,10 @@ for launch in range(args.launchNum):
         info_res = f"{bestTestingEpisodeId},{averageTrainingReward:.4f},{finalGenerationRes},{previousDataUsage},{usageSurrBestTestingPolicy:.4f},{averageTestReward:.4f},{numberInteractionsWithReal},{numberInteractionsWithSurr},{totalNumberInteractionsWithEnv},{interactionsRealWarmUp},{ratioExperiences:.4f},{policyUpdateCount},{iterationsUsed}"
         with open(fname_results, "a") as fhandle_results:
             fhandle_results.write(info_res+"\n")
+            
+        for genNum in range(testingFrequency,finalGenerationRes+1,testingFrequency):
+            if os.path.exists(trainingResultsPath + f"/gen{genNum:08d}.json"):
+                os.remove(trainingResultsPath + f"/gen{genNum:08d}.json")
         
     else:
         

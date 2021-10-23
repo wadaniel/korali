@@ -436,6 +436,10 @@ for launch in range(args.launchNum):
         with open(fname_results, "a") as fhandle_results:
             fhandle_results.write(info_res+"\n")
         
+        for genNum in range(testingFrequency,finalGenerationRes+1,testingFrequency):
+            if os.path.exists(trainingResultsPath + f"/gen{genNum:08d}.json"):
+                os.remove(trainingResultsPath + f"/gen{genNum:08d}.json")
+                
     else:
         
         keep_retraining = True

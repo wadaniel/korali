@@ -20,6 +20,7 @@ import torch.optim as optim
 from adabelief_pytorch import AdaBelief
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 #TODO: eliminate output variables that are 0. !!
 # y_train_state -> eliminate idxs=4,5,10 (starting from 0 to 10)
@@ -57,6 +58,7 @@ parser.add_argument("--maxSize", type=float, default=262144, help="Maximum size 
 parser.add_argument("--launchNum", type=int, default=1, help="Number of times to run vracer.")
 parser.add_argument("--iniRetrain", type=int, default=65536, help="Initial retraining sample data points.")
 parser.add_argument("--retrain", type=int, default=50000, help="Retraining sample data points.")
+parser.add_argument("--outputScaler", default="Standard", help="Standard or MinMax scaler")
 args = parser.parse_args()
 args.hid = args.layers*[args.units]
 print(args)
@@ -179,7 +181,8 @@ for launch in range(args.launchNum):
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer=opt, mode='min', factor=hyperparams.lr_reduction_factor, patience=hyperparams.patience, verbose=True)
 
     # Initialize Net/Problem Configuration
-    net_config = NetConfig(comm=comm, model=model, scheduler=scheduler, optimizer=opt, loss_fn_state=loss_fn_state, loss_fn_rew=loss_fn_rew, hyperparams=hyperparams, ifVal=validate, ifTest=False, dt_string=dt_string, launch=launch, scaleInputAndOutput=scaleIO, alphaDropout=alphaDropout, stateVariableCount=stateVariableCount, actionVariableCount=actionVariableCount)
+    outputScaler = StandardScaler() if args.outputScaler == "Standard" else MinMaxScaler()
+    net_config = NetConfig(comm=comm, model=model, scheduler=scheduler, optimizer=opt, loss_fn_state=loss_fn_state, loss_fn_rew=loss_fn_rew, hyperparams=hyperparams, ifVal=validate, ifTest=False, dt_string=dt_string, launch=launch, scaleInputAndOutput=scaleIO, alphaDropout=alphaDropout, outputScaler=outputScaler, stateVariableCount=stateVariableCount, actionVariableCount=actionVariableCount)
     
     models={}
     for r in range(1, net_config.num_procs):

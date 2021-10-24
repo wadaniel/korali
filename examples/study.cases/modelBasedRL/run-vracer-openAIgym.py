@@ -181,8 +181,9 @@ for launch in range(args.launchNum):
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer=opt, mode='min', factor=hyperparams.lr_reduction_factor, patience=hyperparams.patience, verbose=True)
 
     # Initialize Net/Problem Configuration
-    outputScaler = StandardScaler() if args.outputScaler == "Standard" else MinMaxScaler()
-    net_config = NetConfig(comm=comm, model=model, scheduler=scheduler, optimizer=opt, loss_fn_state=loss_fn_state, loss_fn_rew=loss_fn_rew, hyperparams=hyperparams, ifVal=validate, ifTest=False, dt_string=dt_string, launch=launch, scaleInputAndOutput=scaleIO, alphaDropout=alphaDropout, outputScaler=outputScaler, stateVariableCount=stateVariableCount, actionVariableCount=actionVariableCount)
+    outputScalerState = StandardScaler() if args.outputScaler == "Standard" else MinMaxScaler()
+    outputScalerRew = StandardScaler() if args.outputScaler == "Standard" else MinMaxScaler()
+    net_config = NetConfig(comm=comm, model=model, scheduler=scheduler, optimizer=opt, loss_fn_state=loss_fn_state, loss_fn_rew=loss_fn_rew, hyperparams=hyperparams, ifVal=validate, ifTest=False, dt_string=dt_string, launch=launch, scaleInputAndOutput=scaleIO, alphaDropout=alphaDropout, outputScalerState=outputScalerState, outputScalerRew=outputScalerRew, stateVariableCount=stateVariableCount, actionVariableCount=actionVariableCount)
     
     models={}
     for r in range(1, net_config.num_procs):

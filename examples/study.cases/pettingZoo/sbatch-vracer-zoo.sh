@@ -24,7 +24,7 @@ cat > run.sbatch <<EOF
 #SBATCH --job-name=zoo_VRACER_${ENV}
 #SBATCH --output=zoo_${ENV}_%j.out
 #SBATCH --error=zoo_${ENV}_err_%j.out
-#SBATCH --time=48:00:00
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12

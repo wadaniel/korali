@@ -22,7 +22,7 @@ def validateOutput(output):
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate, dir2 = '', result2 = ''):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate,label1, dir2 = '', result2 = '', label2 = ''):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  if (dir2 == ''):
@@ -140,8 +140,14 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       confIntervalUpperHistory = np.array(confIntHigh)
       confIntervalLowerHistory = np.array(confIntLow)
 
-      ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-      ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+      if (label1 == ''):
+        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+      else:
+        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label1) 
+        plt.legend(loc="lower right")
+
 
       # Plotting confidence intervals
       #if showCI > 0.:
@@ -229,6 +235,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
      unpackedResults.append((coH,rH,trTh,teTh))
         
      for resId, r in enumerate(unpackedResults):
+      if resId == 0:
+        label = label1
+      else:
+        label = label2
       
       cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingRewardThreshold = r
       
@@ -305,8 +315,14 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       confIntervalUpperHistory = np.array(confIntHigh)
       confIntervalLowerHistory = np.array(confIntLow)
 
-      ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-      ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+      if label == '':
+        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
+      else:
+        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label) 
+        plt.legend(loc="lower right")
+
 
       # Plotting confidence intervals
       #if showCI > 0.:
@@ -426,6 +442,19 @@ if __name__ == '__main__':
       '--output',
       help='Indicates the output file path. If not specified, it prints to screen.',
       required=False)
+ parser.add_argument(
+      '--label1',
+      type = str, 
+      default = '',
+      help='Indicates the output file path. If not specified, it prints to screen.',
+      required=False)
+ parser.add_argument(
+      '--label2',
+      type = str, 
+      default = '',
+      help='Indicates the output file path. If not specified, it prints to screen.',
+      required=False)
+
 
  args = parser.parse_args()
 
@@ -464,10 +493,10 @@ if __name__ == '__main__':
      
  ### Creating plots
  if args.dir2[0] == '':
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.label1)
     plt.draw()
  else:
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.dir2, results2)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.label1, args.dir2, results2, args.label2)
     plt.draw()
  
  ### Printing live results if update frequency > 0

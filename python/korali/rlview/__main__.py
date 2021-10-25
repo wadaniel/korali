@@ -329,8 +329,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         #ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
       # Updating color index
-      if (len(results) > 1):
-       colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
+      
+      colCurrIndex = colCurrIndex + 2.0
       
      ## Configuring common plotting features
 

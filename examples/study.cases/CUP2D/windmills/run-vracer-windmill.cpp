@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
 
   // for (size_t i = 0; i < curVariable; i++) e["Variables"][i]["Type"] = "State";
 
+  std::cout<<"Before state 1"<<std::endl;
 
   // use 
   const size_t numStates = 576;
@@ -63,8 +64,6 @@ int main(int argc, char *argv[])
     e["Variables"][i]["Type"] = "State";
   }
 
-
-
   double max_torque = 1e-4;
   for(size_t j=numStates; j < numStates + 2; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
@@ -73,6 +72,8 @@ int main(int argc, char *argv[])
     e["Variables"][j]["Upper Bound"] = +max_torque;
     e["Variables"][j]["Initial Exploration Noise"] = 0.5;
   }
+
+  std::cout<<"Before state 2"<<std::endl;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][5]["Padding Bottom"]    = 0;
   e["Solver"]["Neural Network"]["Hidden Layers"][5]["Output Channels"]   = 12*3*3;
 
-  // Convolutional Fully Connected Output Layer [12x3x3] -> [2x1x1]
+  // Convolutional Fully Connected Output Layer [12x3x3] -> [64x1x1]
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Type"] = "Layer/Convolution";
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Height"]      = 3;
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Image Width"]       = 3;
@@ -185,32 +186,34 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Bottom"]    = 0;
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Output Channels"]   = 64*1*1;
 
-  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"
-  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Softmax" ///////////////////////////////----------------------------
+  std::cout<<"Before state 3"<<std::endl;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Elementwise/Linear"; ///////////////////////////////----------------------------
 
 
   /////////////////////////////////////////////////////////////////////////////////
 
-  /*
-  /// Configuring the neural network and its hidden layers
-  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
   
-  e["Solver"]["L2 Regularization"]["Enabled"] = true;
-  e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
+  // /// Configuring the neural network and its hidden layers
+  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  // e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+  
+  // e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  // e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
-  */
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  
 
   /////////////////////////////////////////////////////////////////////////////////
 
@@ -234,6 +237,7 @@ int main(int argc, char *argv[])
   // set conduit and MPI communicator
   k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
+  std::cout<<"Before state 4"<<std::endl;
 
   // run korali
   k.run(e);

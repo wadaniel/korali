@@ -11,6 +11,7 @@ std::mt19937 _randomGenerator;
 // 4 windmills with variable torque applied to them
 void runEnvironment(korali::Sample &s)
 {
+  std::cout<<"Before state env"<<std::endl;
   ////////////////////////////////////////// setup stuff 
   // Setting seed
   size_t sampleId = s["Sample Id"];
@@ -74,7 +75,10 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> center_area = {target_pos[0], target_pos[1]};
   std::vector<double> dim = {0.2, 0.2};
 
-  std::vector<double> state = getConvState(_environment, center_area);
+  std::cout<<"Before state "<<std::endl;
+
+  //std::vector<double> state = getConvState(_environment, center_area);
+  std::vector<double> state = getUniformGridVort(_environment);
 
   s["State"] = state;
 
@@ -126,26 +130,26 @@ void runEnvironment(korali::Sample &s)
     double r2 = agent2->reward( target_vel,  en, flow);
     double reward = (r1 + r2);
 
-    // Obtaining new agent state
-    state1 = agent1->state();
-    state2 = agent2->state();
-    state = {state1[0], state1[1], state2[0], state2[1]};
+    // // Obtaining new agent state
+    // state1 = agent1->state();
+    // state2 = agent2->state();
+    // state = {state1[0], state1[1], state2[0], state2[1]};
 
-    // Printing Information:
-    printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    printf("[Korali] State: [ ");
-    for (size_t i = 0; i < state.size(); i++){
-      if (i%2 == 0){
-        printf("[%.3f, ", state[i]);
-      } else {
-        printf("%.3f]", state[i]);
-      }
-    }
-    printf("]\n");
-    printf("[Korali] Action: [ %.8f, %.8f ]\n", action[0], action[1]);
-    printf("[Korali] Reward: %.3f+%.3f=%.3f\n", r1, r2, reward);
-    printf("[Korali] -------------------------------------------------------\n");
-    fflush(stdout);
+    // // Printing Information:
+    // printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+    // printf("[Korali] State: [ ");
+    // for (size_t i = 0; i < state.size(); i++){
+    //   if (i%2 == 0){
+    //     printf("[%.3f, ", state[i]);
+    //   } else {
+    //     printf("%.3f]", state[i]);
+    //   }
+    // }
+    // printf("]\n");
+    // printf("[Korali] Action: [ %.8f, %.8f ]\n", action[0], action[1]);
+    // printf("[Korali] Reward: %.3f+%.3f=%.3f\n", r1, r2, reward);
+    // printf("[Korali] -------------------------------------------------------\n");
+    // fflush(stdout);
 
     // Storing reward
     s["Reward"] = reward;
@@ -314,4 +318,107 @@ bool isInConvArea(const std::array<Real,2> point, std::vector<double> target, st
   }
 
   return false;
+}
+
+
+
+std::vector<double> getUniformGridVort(Simulation *_environment)
+{
+  const unsigned int nX = ScalarBlock::sizeX;
+  const unsigned int nY = ScalarBlock::sizeY;
+
+  const auto K1 = computeVorticity(_environment->sim); K1.run();
+
+  const std::vector<cubism::BlockInfo>& vortInfo = _environment->sim.tmp->getBlocksInfo();
+
+  const int levelMax = _environment->sim.tmp->getlevelMax();
+
+  std::array<int, 3> bpd = _environment->sim.tmp->getMaxBlocks();
+  const unsigned int unx = bpd[0]*(1<<(levelMax-1))*nX; // maximum number of blocks in x directions
+  const unsigned int uny = bpd[1]*(1<<(levelMax-1))*nY; // same in y direction
+
+
+  std::vector<double> uniform_mesh(uny*unx); // vector containing all the points in the simulation
+
+  // loop over the blocks
+  for (size_t i = 0 ; i < vortInfo.size() ; i++)
+  {
+    const int level = vortInfo[i].level;
+    const cubism::BlockInfo & info = vortInfo[i];
+    const ScalarBlock& b = * (const ScalarBlock*) info.ptrBlock;
+
+    for (unsigned int y = 0; y < nY; y++)
+    for (unsigned int x = 0; x < nX; x++)
+    {
+      double output = 0.0;
+      double dudx = 0.0;
+      double dudy = 0.0;
+
+      output = b(x,y).s;
+      if (x!= 0 && x!= nX-1)
+      {
+        double output_p = 0.0;
+        double output_m = 0.0;
+        output_p = b(x+1, y).s;
+        output_m = b(x-1, y).s;
+        dudx = 0.5*(output_p-output_m);
+      }
+      else if (x==0)
+      {
+        double output_p = 0.0;
+        output_p = b(x+1,y).s;
+        dudx = output_p-output;   
+      }
+      else
+      {
+        double output_m = 0.0;
+        output_m = b(x-1, y).s;
+        dudx = output-output_m;     
+      }
+
+      if (y!= 0 && y!= nY-1)
+      {
+        double output_p = 0.0;
+        double output_m = 0.0;
+        output_p = b(x, y+1).s;
+        output_m = b(x, y-1).s;
+        dudy = 0.5*(output_p-output_m);
+      }
+      else if (y==0)
+      {
+        double output_p = 0.0;
+        output_p = b(x, y+1).s;
+        dudy = output_p-output;     
+      }
+      else
+      {
+        double output_m = 0.0;
+        output_m = b(x, y-1).s;
+        dudy = output-output_m;       
+      }
+
+      // refinement part
+
+      int iy_start = (info.index[1]*nY + y)*(1<< ( (levelMax-1)-level ) );
+      int ix_start = (info.index[0]*nX + x)*(1<< ( (levelMax-1)-level ) );
+
+      const int points = 1<< ( (levelMax-1)-level ); 
+      const double dh = 1.0/points;
+
+      for (int iy = iy_start; iy< iy_start + (1<< ( (levelMax-1)-level ) ); iy++)
+      for (int ix = ix_start; ix< ix_start + (1<< ( (levelMax-1)-level ) ); ix++)
+      {
+        double cx = (ix - ix_start - points/2 + 1 - 0.5)*dh;
+        double cy = (iy - iy_start - points/2 + 1 - 0.5)*dh;
+        uniform_mesh[iy*unx+ix] = output + cx*dudx + cy*dudy;
+        // for (unsigned int j = 0; j < NCHANNELS; ++j)
+        //   uniform_mesh[iy*NCHANNELS*unx+ix*NCHANNELS+j] = output[j]+ cx*dudx[j]+ cy*dudy[j];
+      }
+    }
+  }
+
+  std::cout<<"Total size of grid: "<<uniform_mesh.size()<<std::endl;
+
+  return uniform_mesh;
+
 }

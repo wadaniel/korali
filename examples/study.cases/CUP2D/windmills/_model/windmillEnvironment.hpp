@@ -13,3 +13,4 @@ void setInitialConditions(Windmill* agent, double init_angle, bool randomized);
 
 std::vector<double> getConvState(Simulation *_environment, std::vector<double> center_area);
 bool isInConvArea(const std::array<Real,2> point, std::vector<double> target, std::vector<double> dim);
+std::vector<double> getUniformGridVort(Simulation *_environment);

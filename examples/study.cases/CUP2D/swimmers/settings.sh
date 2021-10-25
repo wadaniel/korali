@@ -8,8 +8,8 @@ RTOL=${RTOL-2}
 CTOL=${CTOL-1}
 EXTENT=${EXTENT:-2}
 CFL=${CFL:-0.4}
-PT=${PT:-1e-5}
-PTR=${PTR:-1e-2}
+PT=${PT:-1e-7}
+PTR=${PTR:-0}
 PR=${PR:-5}
 
 # Defaults for follower

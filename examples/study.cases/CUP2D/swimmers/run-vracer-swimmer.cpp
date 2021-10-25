@@ -16,13 +16,15 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
-  // retreiving number of agents
-  int nAgents = atoi(argv[argc-1]);
+  // retreiving number of agents and ranks
+  int nAgents = atoi(argv[argc-3]);
+  int nRanks  = atoi(argv[argc-1]);
 
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
+  N = (int)(N / nRanks); // Divided by the ranks per worker
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
@@ -145,6 +147,7 @@ int main(int argc, char *argv[])
 
   // Configuring conduit / communicator
   k["Conduit"]["Type"] = "Distributed";
+  k["Conduit"]["Ranks Per Worker"] = nRanks;
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   // ..and run

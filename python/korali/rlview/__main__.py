@@ -141,17 +141,17 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       confIntervalLowerHistory = np.array(confIntLow)
 
       if (label1 == ''):
-        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
       else:
-        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label1) 
         plt.legend(loc="lower right")
 
 
       # Plotting confidence intervals
-      #if showCI > 0.:
-        #ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
+      if showCI > 0.:
+        ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
       # Updating color index
       if (len(results) > 1):
@@ -296,6 +296,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
       # Plotting common plot
+      '''
       rewHistory= []
       meanHist = []
       cumObsArr = []
@@ -314,19 +315,20 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       cumulativeObsArr = np.array(cumObsArr)
       confIntervalUpperHistory = np.array(confIntHigh)
       confIntervalLowerHistory = np.array(confIntLow)
+      '''
 
       if label == '':
-        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
       else:
-        ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+        #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label) 
         plt.legend(loc="lower right")
 
 
       # Plotting confidence intervals
-      #if showCI > 0.:
-        #ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
+      if showCI > 0.:
+        ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
       # Updating color index
       

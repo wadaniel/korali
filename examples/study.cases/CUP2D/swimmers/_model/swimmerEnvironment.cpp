@@ -161,7 +161,7 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time of next action     
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200;
+  size_t maxSteps = 1;
 
   // // File to write actions
   // std::stringstream filename;
@@ -389,8 +389,8 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
   if( nAgents == 1 ){
     xMin = 0.8;
     xMax = 1.4;
-    yMin = 0.8;
-    yMax = 1.2;
+    yMin = 0.3;
+    yMax = 0.7;
   }
   else if( nAgents == 3 ){
     xMin = 0.4;

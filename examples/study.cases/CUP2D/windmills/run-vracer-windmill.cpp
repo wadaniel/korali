@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"]   = 4*20*20;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/ReLU";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   // Pooling Layer [4x20x20] -> [4x10x10]
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Pooling";
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"]   = 12*6*6;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/ReLU";
+  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/Tanh";
 
   // Pooling Layer [12x6x6] -> [12x3x3]
   e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Pooling";

@@ -115,14 +115,3 @@ e["File Output"]["Enabled"] = False
 ### Running Experiment
 
 k.run(e)
-
-### Now we run a few test samples and check their reward
-
-e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(5))
-
-k.run(e)
-
-averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
-print("Average Reward: " + str(averageTestReward))
-

@@ -45,12 +45,12 @@ void Convolution::initialize()
   PR = _paddingRight;
 
   // Check for non zeros
-   if (IH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for convolutional layer.\n");
-   if (IW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for convolutional layer.\n");
-   if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for convolutional layer.\n");
-   if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for convolutional layer.\n");
-   if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for convolutional layer.\n");
-   if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for convolutional layer.\n");
+  if (IH <= 0) KORALI_LOG_ERROR("Image height must be larger than zero for convolutional layer.\n");
+  if (IW <= 0) KORALI_LOG_ERROR("Image width must be larger than zero for convolutional layer.\n");
+  if (KH <= 0) KORALI_LOG_ERROR("Kernel height must be larger than zero for convolutional layer.\n");
+  if (KW <= 0) KORALI_LOG_ERROR("Kernel width must be larger than zero for convolutional layer.\n");
+  if (SV <= 0) KORALI_LOG_ERROR("Vertical stride must be larger than zero for convolutional layer.\n");
+  if (SH <= 0) KORALI_LOG_ERROR("Horizontal stride must be larger than zero for convolutional layer.\n");
 
   // Several sanity checks
   if (KH > IH) KORALI_LOG_ERROR("Kernel height cannot be larger than input image height.\n");
@@ -63,8 +63,8 @@ void Convolution::initialize()
   IC = _prevLayer->_outputChannels / (IH * IW);
 
   // Deriving output height and width
-  OH = (IH - KH + PT + PB)/SV + 1;
-  OW = (IW - KW + PR + PL)/SH + 1;
+  OH = (IH - KH + PT + PB) / SV + 1;
+  OW = (IW - KW + PR + PL) / SH + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
   if (_outputChannels % (OH * OW) > 0) KORALI_LOG_ERROR("Convolutional layer contains a number of output channels (%lu) not divisible by the output image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _outputChannels, OH, OW, KH, KW);
@@ -85,7 +85,7 @@ std::vector<float> Convolution::generateInitialHyperparameters()
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < weightCount; i++)
-        hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+      hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values
     for (size_t i = 0; i < biasCount; i++)
@@ -98,10 +98,10 @@ std::vector<float> Convolution::generateInitialHyperparameters()
 void Convolution::createHyperparameterMemory()
 {
   // Setting hyperparameter count
- size_t weightCount = OC * IC * KH * KW;
- size_t biasCount = OC;
+  size_t weightCount = OC * IC * KH * KW;
+  size_t biasCount = OC;
 
- _hyperparameterCount = weightCount + biasCount;
+  _hyperparameterCount = weightCount + biasCount;
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -146,7 +146,7 @@ void Convolution::createForwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -161,7 +161,6 @@ void Convolution::createForwardPipeline()
     _forwardConvolutionPrimitive = convolution_forward(_forwardConvolutionPrimitiveDesc);
   }
 #endif
-
 }
 
 void Convolution::createBackwardPipeline()
@@ -179,7 +178,7 @@ void Convolution::createBackwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -232,7 +231,6 @@ void Convolution::forwardData(const size_t t)
     _forwardConvolutionPrimitive.execute(_nn->_dnnlStream, forwardConvolutionArgs);
   }
 #endif
-
 }
 
 void Convolution::backwardData(const size_t t)
@@ -260,7 +258,7 @@ void Convolution::backwardHyperparameters(size_t t)
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    //Arguments for the backward propagation of the gradient wrt Weights and Biases
+    // Arguments for the backward propagation of the gradient wrt Weights and Biases
     std::unordered_map<int, dnnl::memory> backwardWeightsArgs;
     backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];    // Input
     backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];   // Input
@@ -270,7 +268,6 @@ void Convolution::backwardHyperparameters(size_t t)
     _backwardWeightsPrimitive.execute(_nn->_dnnlStream, backwardWeightsArgs);
   }
 #endif
-
 }
 
 void Convolution::setHyperparameters(float *hyperparameters)
@@ -279,21 +276,18 @@ void Convolution::setHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
     write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
-    write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    write_to_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
 
 void Convolution::getHyperparameters(float *hyperparameters)
 {
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
-    read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    read_from_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
@@ -304,7 +298,7 @@ void Convolution::getHyperparameterGradients(float *gradient)
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&gradient[0], _weightsGradientMem);
-    read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
+    read_from_dnnl_memory(&gradient[OC * IC * KH * KW], _biasGradientMem);
   }
 #endif
 }

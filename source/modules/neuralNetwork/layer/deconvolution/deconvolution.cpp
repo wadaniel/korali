@@ -63,8 +63,8 @@ void Deconvolution::initialize()
   OC = _outputChannels / (OH * OW);
 
   // Deriving output height and width
-  IH = (OH - KH + PT + PB)/SV + 1;
-  IW = (OW - KW + PR + PL)/SH + 1;
+  IH = (OH - KH + PT + PB) / SV + 1;
+  IW = (OW - KW + PR + PL) / SH + 1;
 
   // Check whether the output channels of the previous layer is divided by the height and width
   if (_prevLayer->_outputChannels % (IH * IW) > 0) KORALI_LOG_ERROR("Previous layer to the convolutional layer contains a number of output channels (%lu) not divisible by the image size (%lux%lu) given kernel (%lux%lu) size and padding/stride configuration.\n", _prevLayer->_outputChannels, IH, IW, KH, KW);
@@ -85,7 +85,7 @@ std::vector<float> Deconvolution::generateInitialHyperparameters()
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < weightCount; i++)
-        hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+      hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values
     for (size_t i = 0; i < biasCount; i++)
@@ -98,10 +98,10 @@ std::vector<float> Deconvolution::generateInitialHyperparameters()
 void Deconvolution::createHyperparameterMemory()
 {
   // Setting hyperparameter count
- size_t weightCount = OC * IC * KH * KW;
- size_t biasCount = OC;
+  size_t weightCount = OC * IC * KH * KW;
+  size_t biasCount = OC;
 
- _hyperparameterCount = weightCount + biasCount;
+  _hyperparameterCount = weightCount + biasCount;
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -146,7 +146,7 @@ void Deconvolution::createForwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -161,7 +161,6 @@ void Deconvolution::createForwardPipeline()
     _forwardDeconvolutionPrimitive = deconvolution_forward(_forwardDeconvolutionPrimitiveDesc);
   }
 #endif
-
 }
 
 void Deconvolution::createBackwardPipeline()
@@ -179,7 +178,7 @@ void Deconvolution::createBackwardPipeline()
     _dstMemDesc = memory::desc({N, OC, OH, OW}, memory::data_type::f32, memory::format_tag::nchw);
 
     // Creating padding dims
-    memory::dims ST  = {SV, SH}; // Horizontal Vertical
+    memory::dims ST = {SV, SH};  // Horizontal Vertical
     memory::dims PTL = {PT, PL}; // Top Left
     memory::dims PBR = {PB, PR}; // Bottom Right
 
@@ -232,7 +231,6 @@ void Deconvolution::forwardData(const size_t t)
     _forwardDeconvolutionPrimitive.execute(_nn->_dnnlStream, forwardDeconvolutionArgs);
   }
 #endif
-
 }
 
 void Deconvolution::backwardData(const size_t t)
@@ -260,7 +258,7 @@ void Deconvolution::backwardHyperparameters(size_t t)
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    //Arguments for the backward propagation of the gradient wrt Weights and Biases
+    // Arguments for the backward propagation of the gradient wrt Weights and Biases
     std::unordered_map<int, dnnl::memory> backwardWeightsArgs;
     backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];    // Input
     backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];   // Input
@@ -270,7 +268,6 @@ void Deconvolution::backwardHyperparameters(size_t t)
     _backwardWeightsPrimitive.execute(_nn->_dnnlStream, backwardWeightsArgs);
   }
 #endif
-
 }
 
 void Deconvolution::setHyperparameters(float *hyperparameters)
@@ -279,21 +276,18 @@ void Deconvolution::setHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
     write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
-    write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    write_to_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
 
 void Deconvolution::getHyperparameters(float *hyperparameters)
 {
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
-    read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    read_from_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
@@ -304,7 +298,7 @@ void Deconvolution::getHyperparameterGradients(float *gradient)
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&gradient[0], _weightsGradientMem);
-    read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
+    read_from_dnnl_memory(&gradient[OC * IC * KH * KW], _biasGradientMem);
   }
 #endif
 }

@@ -13,17 +13,25 @@ std::mt19937 _randomGenerator;
 // Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
 {
+  // Get MPI communicator
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+
+  // Get rank and size of subcommunicator
+  int rank, size;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+
+  // Get rank in world
+  int rankGlobal;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
+
   // Setting seed
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
-  // Get rank to create/switch to results folder
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rank);
+  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
@@ -32,14 +40,19 @@ void runEnvironment(korali::Sample &s)
   };
 
   // Redirecting all output to the log file
-  char logFilePath[128];
-  sprintf(logFilePath, "%s/log.txt", resDir);
-  auto logFile = freopen(logFilePath, "w", stdout);
-  if (logFile == NULL)
-  {
-    printf("[Korali] Error creating log file: %s.\n", logFilePath);
-    exit(-1);
+  FILE * logFile;
+  if( rank == 0 ) {
+    char logFilePath[128];
+    sprintf(logFilePath, "%s/log.txt", resDir);
+    logFile = freopen(logFilePath, "a", stdout);
+    if (logFile == NULL)
+    {
+      printf("[Korali] Error creating log file: %s.\n", logFilePath);
+      exit(-1);
+    }
   }
+  // Make sure folder / logfile is created before switching path
+  MPI_Barrier(comm);
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
@@ -76,7 +89,7 @@ void runEnvironment(korali::Sample &s)
   #endif
 
   // Creating simulation environment
-  Simulation *_environment = new Simulation(_argc, _argv);
+  Simulation *_environment = new Simulation(_argc, _argv, comm);
   _environment->init();
 
   // Obtaining agents
@@ -92,12 +105,12 @@ void runEnvironment(korali::Sample &s)
   // Resetting environment and setting initial conditions
   for( size_t i = 0; i<nAgents; i++ )
     setInitialConditions(agents[i], i, s["Mode"] == "Training");
+
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
-  // Setting initial state
-  if( nAgents > 1 )
-  {
+  // Setting initial state [Carful, state function needs to be called by all ranks!]
+  if( nAgents > 1 ) {
     std::vector<std::vector<double>> states(nAgents);
     #ifdef ID
     size_t rowEndId = 0;
@@ -148,44 +161,48 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time of next action     
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200;
+  size_t maxSteps = 1;
 
-  // File to write actions
-  std::stringstream filename;
-  filename<<"actions.txt";
-  ofstream myfile(filename.str().c_str());
+  // // File to write actions
+  // std::stringstream filename;
+  // filename<<"actions.txt";
+  // ofstream myfile(filename.str().c_str());
+
+  // Careful, hardcoded the number of action(s)!
+  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
 
   // Starting main environment loop
   bool done = false;
   while ( curStep < maxSteps && done == false )
   {
-    // Getting new actions
-    s.update();
+    // Only rank 0 communicates with Korali
+    if( rank == 0 ) {
+      // Getting new action(s)
+      s.update();
+      auto actionsJson = s["Action"];
 
-    // Reading new action(s)
-    auto actions = s["Action"];
+      // Setting action for each agent
+      for( size_t i = 0; i<nAgents; i++ )
+      {
+        std::vector<double> action;
+        if( nAgents > 1 )
+          action = actionsJson[i].get<std::vector<double>>();
+        else
+          action = actionsJson.get<std::vector<double>>();
+        actions[i] = action;
+      }
+    }
 
-    // Setting action for each agent
+    // Broadcast and apply action(s) [Careful, hardcoded the number of action(s)!]
     for( size_t i = 0; i<nAgents; i++ )
     {
-      std::vector<double> action;
-      if( nAgents > 1 )
-        action = actions[i].get<std::vector<double>>();
-      else
-        action = actions.get<std::vector<double>>();
-
-      // Write action to file
-      if (myfile.is_open())
-      {
-        myfile << i << " " << action[0] << " " << action[1] << std::endl;
-      }
-      else{
-        fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
-        exit(-1);
-      }
-
-      // Apply action
-      agents[i]->act(t, action);
+      MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
+      // std::cout << "Applying action(" << t<< ") = [ ";
+      // for( size_t j = 0; j<actions[i].size(); j++ )
+      //   std::cout << actions[i][j] << " ";
+      // std::cout << "] for agent "<< i << "\n";
+      if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
+      agents[i]->act(t, actions[i]);
     }
 
     // Run the simulation until next action is required
@@ -211,9 +228,8 @@ void runEnvironment(korali::Sample &s)
         done = ( done || isTerminal(agents[i], nAgents) );
     }
 
-    // Get and store state and action
-    if( nAgents > 1 )
-    {
+    // Get and store state and reward [Carful, state function needs to be called by all ranks!] 
+    if( nAgents > 1 ) {
       std::vector<std::vector<double>> states(nAgents);
       std::vector<double> rewards(nAgents);
       #ifdef ID
@@ -257,22 +273,36 @@ void runEnvironment(korali::Sample &s)
       s["State"]  = states;
       s["Reward"] = rewards;
     }
-    else{
+    else {
       s["State"]  = agents[0]->state();
       s["Reward"] = done ? -10.0 : agents[0]->EffPDefBnd;
     }
 
     // Printing Information:
-    printf("[Korali] -------------------------------------------------------\n");
-    printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    if( nAgents > 1 )
-    {
-      for( size_t i = 0; i<nAgents; i++ )
+    if( rank == 0 ) {
+      printf("[Korali] -------------------------------------------------------\n");
+      printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+      if( nAgents > 1 )
       {
-        auto state  = s["State"][i].get<std::vector<float>>();
-        auto action = s["Action"][i].get<std::vector<float>>();
-        auto reward = s["Reward"][i].get<float>();
-        printf("[Korali] AGENT %ld/%ld\n", i, nAgents);
+        for( size_t i = 0; i<nAgents; i++ )
+        {
+          auto state  = s["State"][i].get<std::vector<float>>();
+          auto action = s["Action"][i].get<std::vector<float>>();
+          auto reward = s["Reward"][i].get<float>();
+          printf("[Korali] AGENT %ld/%ld\n", i, nAgents);
+          printf("[Korali] State: [ %.3f", state[0]);
+          for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+          printf("]\n");
+          printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+          printf("[Korali] Reward: %.3f\n", reward);
+          printf("[Korali] Terminal?: %d\n", done);
+          printf("[Korali] -------------------------------------------------------\n");
+        }
+      }
+      else{
+        auto state  = s["State"].get<std::vector<float>>();
+        auto action = s["Action"].get<std::vector<float>>();
+        auto reward = s["Reward"].get<float>();
         printf("[Korali] State: [ %.3f", state[0]);
         for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
         printf("]\n");
@@ -281,33 +311,12 @@ void runEnvironment(korali::Sample &s)
         printf("[Korali] Terminal?: %d\n", done);
         printf("[Korali] -------------------------------------------------------\n");
       }
+      fflush(stdout);
     }
-    else{
-      auto state  = s["State"].get<std::vector<float>>();
-      auto action = s["Action"].get<std::vector<float>>();
-      auto reward = s["Reward"].get<float>();
-      printf("[Korali] State: [ %.3f", state[0]);
-      for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
-      printf("]\n");
-      printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
-      printf("[Korali] Reward: %.3f\n", reward);
-      printf("[Korali] Terminal?: %d\n", done);
-      printf("[Korali] -------------------------------------------------------\n");
-    }
-    fflush(stdout);
 
     // Advancing to next step
     curStep++;
   }
-
-  // Close file to write actions
-  myfile.close();
-
-  // Flush CUP logger
-  logger.flush();
-
-  // delete simulation class
-  delete _environment;
 
   // Setting finalization status
   if (done == true)
@@ -315,21 +324,31 @@ void runEnvironment(korali::Sample &s)
   else
     s["Termination"] = "Truncated";
 
-  // Switching back to experiment directory
-  std::filesystem::current_path(curPath);
+  // // Close file to write actions
+  // myfile.close();
+
+  // Flush CUP logger
+  logger.flush();
 
   // Closing log file
-  fclose(logFile);
+  if( rank == 0 )
+    fclose(logFile);
+
+  // delete simulation class
+  delete _environment;
+
+  // Switching back to experiment directory
+  std::filesystem::current_path(curPath);
 }
 
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining)
+void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining) 
 {
   // Initial fixed conditions
   double initialAngle = 0.0;
   std::vector<double> initialPosition{ agent->origC[0], agent->origC[1] };
 
   // with noise
-  if (isTraining)
+  if (isTraining) 
   {
     std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
     std::uniform_real_distribution<double> disX(-0.025, 0.025);
@@ -345,19 +364,19 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   printf("[Korali] x: %f\n", initialPosition[0]);
   printf("[Korali] y: %f\n", initialPosition[1]);
 
-  // Write initial condition to file
-  std::stringstream filename;
-  filename<<"initialCondition.txt";
-  ofstream myfile(filename.str().c_str(), std::ofstream::app);
-  if (myfile.is_open())
-  {
-    myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
-    myfile.close();
-  }
-  else{
-    fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
-    exit(-1);
-  }
+  // // Write initial condition to file
+  // std::stringstream filename;
+  // filename<<"initialCondition.txt";
+  // ofstream myfile(filename.str().c_str(), std::ofstream::app);
+  // if (myfile.is_open())
+  // {
+  //   myfile << agentId << " " << initialAngle << " " << initialPosition[0] << " " << initialPosition[1] << std::endl;
+  //   myfile.close();
+  // }
+  // else{
+  //   fprintf(stderr, "Unable to open %s file...\n", filename.str().c_str());
+  //   exit(-1);
+  // }
 
   // Setting initial position and orientation for the fish
   agent->setCenterOfMass(initialPosition.data());
@@ -376,8 +395,8 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
   else if( nAgents == 3 ){
     xMin = 0.4;
     xMax = 1.4;
-    yMin = 0.2;
-    yMax = 0.3;
+    yMin = 0.7;
+    yMax = 1.3;
   }
   else if( nAgents == 8 ){
     xMin = 0.4;

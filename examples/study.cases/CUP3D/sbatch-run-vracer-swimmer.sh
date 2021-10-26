@@ -15,7 +15,7 @@ NAGENTS=14
 NWORKER=1
 
 # number of nodes per worker
-NRANKS=64
+NRANKS=9
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))
@@ -34,12 +34,14 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=24:00:00
+# #SBATCH --time=24:00:00
+# #SBATCH --partition=normal
+#SBATCH --time=00:30:00
+#SBATCH --partition=debug
 #SBATCH --nodes=$((NNODES+1))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1
-#SBATCH --partition=normal
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 

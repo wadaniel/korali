@@ -194,7 +194,7 @@ for launch in range(args.launchNum):
     #if rank == 0:
     #    print(models)
     
-    argsEnv = ArgsEnv(dataPoints=0, totalDataPoints=0, previousDataPoints=0, previousTotalDataPoints=0, iterationSurrogate=0, scalers=None, rangeOutputState=None, varOutputState=None, rangeOutputRew=None, varOutputRew=None, dumpBestTrajectory=args.dumpBestTrajectory, initialRetrainingDataPoints=args.iniRetrain, retrainingDataPoints=args.retrain, keep_retraining=True, policyTestingEpisodes=policyTestingEpisodes, mode="Training", samplesTrained=[], models=models, surrUsage=[], useretrainednet=useretrainednet, pathretrainednet=pathretrainednet)
+    argsEnv = ArgsEnv(dataPoints=0, totalDataPoints=0, previousDataPoints=0, previousTotalDataPoints=0, iterationSurrogate=0, scalers=None, rangeOutputState=None, varOutputState=None, rangeOutputRew=None, varOutputRew=None, dumpBestTrajectory=args.dumpBestTrajectory, initialRetrainingDataPoints=args.iniRetrain, retrainingDataPoints=args.retrain, keep_retraining=True, policyTestingEpisodes=policyTestingEpisodes, mode="Training", samplesTrained=[], models=models, surrUsage=[], useretrainednet=args.useretrainednet, pathretrainednet=args.pathretrainednet)
     
     #if rank == 0:
     #    print(f"[Ensemble] Optimizer = {opt}")

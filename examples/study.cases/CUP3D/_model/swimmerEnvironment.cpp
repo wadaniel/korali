@@ -110,8 +110,6 @@ void runEnvironment(korali::Sample &s)
   // Setting random initial conditions
   for( size_t i = 0; i<nAgents; i++ )
     setInitialConditions(agents[i], i, s["Mode"] == "Training", rank);
-  // Wait for all ranks to update initial conditions for agents
-  MPI_Barrier(comm);
   // After moving the agent, the grid has to be refined
   _environment->refineGrid();
 
@@ -174,10 +172,6 @@ void runEnvironment(korali::Sample &s)
     for( size_t i = 0; i<nAgents; i++ )
     {
       MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
-      // std::cout << "Applying action(" << t<< ") = [ ";
-      // for( size_t j = 0; j<actions[i].size(); j++ )
-      //   std::cout << actions[i][j] << " ";
-      // std::cout << "] for agent "<< i << "\n";
       if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
     }

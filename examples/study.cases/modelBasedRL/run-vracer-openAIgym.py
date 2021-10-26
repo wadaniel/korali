@@ -59,6 +59,9 @@ parser.add_argument("--launchNum", type=int, default=1, help="Number of times to
 parser.add_argument("--iniRetrain", type=int, default=65536, help="Initial retraining sample data points.")
 parser.add_argument("--retrain", type=int, default=50000, help="Retraining sample data points.")
 parser.add_argument("--outputScaler", default="Standard", help="Standard or MinMax scaler")
+parser.add_argument("--useretrainednet", action='store_true', help="Use retrained net")
+parser.add_argument("--pathretrainednet", type=str, default="", help="Path retrained net")
+# /scratch/snx3000/jclapesr/Surrogate_OpenAIGym_VRACER/Swimmer-v2/best_trained_net.pth
 args = parser.parse_args()
 args.hid = args.layers*[args.units]
 print(args)
@@ -191,7 +194,7 @@ for launch in range(args.launchNum):
     #if rank == 0:
     #    print(models)
     
-    argsEnv = ArgsEnv(dataPoints=0, totalDataPoints=0, previousDataPoints=0, previousTotalDataPoints=0, iterationSurrogate=0, scalers=None, rangeOutputState=None, varOutputState=None, rangeOutputRew=None, varOutputRew=None, dumpBestTrajectory=args.dumpBestTrajectory, initialRetrainingDataPoints=args.iniRetrain, retrainingDataPoints=args.retrain, keep_retraining=True, policyTestingEpisodes=policyTestingEpisodes, mode="Training", samplesTrained=[], models=models, surrUsage=[])
+    argsEnv = ArgsEnv(dataPoints=0, totalDataPoints=0, previousDataPoints=0, previousTotalDataPoints=0, iterationSurrogate=0, scalers=None, rangeOutputState=None, varOutputState=None, rangeOutputRew=None, varOutputRew=None, dumpBestTrajectory=args.dumpBestTrajectory, initialRetrainingDataPoints=args.iniRetrain, retrainingDataPoints=args.retrain, keep_retraining=True, policyTestingEpisodes=policyTestingEpisodes, mode="Training", samplesTrained=[], models=models, surrUsage=[], useretrainednet=useretrainednet, pathretrainednet=pathretrainednet)
     
     #if rank == 0:
     #    print(f"[Ensemble] Optimizer = {opt}")

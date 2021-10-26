@@ -276,7 +276,7 @@ void Deconvolution::setHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
     write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
-    write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    write_to_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
@@ -290,7 +290,7 @@ void Deconvolution::getHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
-    read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    read_from_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }
@@ -301,7 +301,7 @@ void Deconvolution::getHyperparameterGradients(float *gradient)
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&gradient[0], _weightsGradientMem);
-    read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
+    read_from_dnnl_memory(&gradient[OC * IC * KH * KW], _biasGradientMem);
   }
 #endif
 }

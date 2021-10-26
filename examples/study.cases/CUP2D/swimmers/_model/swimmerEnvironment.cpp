@@ -197,10 +197,6 @@ void runEnvironment(korali::Sample &s)
     for( size_t i = 0; i<nAgents; i++ )
     {
       MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
-      // std::cout << "Applying action(" << t<< ") = [ ";
-      // for( size_t j = 0; j<actions[i].size(); j++ )
-      //   std::cout << actions[i][j] << " ";
-      // std::cout << "] for agent "<< i << "\n";
       if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
     }

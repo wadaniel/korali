@@ -3,6 +3,38 @@ import os
 import sys
 sys.path.append('./_model')
 from env import *
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--engine',
+    help='NN backend to use',
+    default='OneDNN',
+    required=False)
+parser.add_argument(
+    '--maxGenerations',
+    help='Maximum Number of generations to run',
+    default=50,
+    required=False)    
+parser.add_argument(
+    '--optimizer',
+    help='Optimizer to use for NN parameter updates',
+    default='Adam',
+    required=False)
+parser.add_argument(
+    '--learningRate',
+    help='Learning rate for the selected optimizer',
+    default=3e-3,
+    required=False)
+parser.add_argument(
+    '--concurrentEnvironments',
+    help='Number of environments to run concurrently',
+    default=1,
+    required=False)
+args = parser.parse_args()
+
+print("Running Cartpole example with arguments:")
+print(args)
 
 ####### Defining Korali Problem
 
@@ -14,9 +46,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 400
-e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Environment Count"] = 3
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -40,24 +71,26 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Episodes Per Generation"] = 10
+e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
 ### Configuring the neural network and its hidden layers
 
-e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Neural Network"]["Engine"] = args.engine
+e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
+e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
@@ -73,12 +106,11 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
+e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

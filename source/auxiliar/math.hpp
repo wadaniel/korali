@@ -2,17 +2,26 @@
 * @brief Auxiliary library for Korali's essential math and time manipulation operations.
 **************************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_MATH_HPP_
-#define _KORALI_AUXILIARS_MATH_HPP_
+#pragma once
+
 
 /**
 * @brief This definition enables the use of M_PI
 */
 #define _USE_MATH_DEFINES
 
+/**
+* @brief Epsilon to add to log or division operations to prevent numerical instabilities
+*/
+#define KORALI_EPSILON 0.00000000001
+
 #include <cmath>
+#include <gsl/gsl_sf.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_erf.h>
 #include <limits>
 #include <stdlib.h>
 #include <string>
@@ -84,6 +93,107 @@ const double Min = std::numeric_limits<double>::min();
 * @brief Korali's definition of minimum representable difference between two numbers
 */
 const double Eps = std::numeric_limits<double>::epsilon();
+
+/**
+* @brief Check if both arguments are approximately equal up to given precision
+* @param a Value a
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool approximatelyEqual(T a, T b, T epsilon)
+{
+        return fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
+* @brief Check if the first argument is surely greater than the second argument up to given precision
+* @param a First argument, to be checked if greater than b
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool definitelyGreaterThan(T a, T b, T epsilon)
+{
+        return (a - b) > ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
+* @brief Check if the first argument is surely smaller than the second argument up to given precision
+* @param a First argument, to be checked if smaller than b
+* @param b Value b
+* @param epsilon Precision parameter
+* @return The inverse of the error function
+*/
+template <typename T>
+bool definitelyLessThan(T a, T b, T epsilon)
+{
+        return (b - a) > ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+}
+
+/**
+* @brief Approximates the inverse of the error function
+* @param x Argument to the inverse error function
+* @return The inverse of the error function
+*/
+template <typename T>
+T ierf(T x)
+{
+    // Taken from: https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+    // Based on: A handy approximation for the error function and its inverse" by Sergei Winitzki.
+    
+    const float sgn = (x < 0) ? -1. : 1.;
+    const float xx = (1. - x)*(1. + x);        // x = 1 - x*x;
+    const float lnx = std::log(xx);
+
+    const float tt1 = 2./(M_PI*0.147) + 0.5 * lnx;
+    const float tt2 = 1./(0.147) * lnx;
+
+    return(sgn*std::sqrt(-tt1 + std::sqrt(tt1*tt1 - tt2)));
+}
+
+
+/**
+* @brief Safely computes log(exp(x)+exp(y)) and avoids overflows
+* @param x a variable
+* @param y a variable
+* @return The result of log(exp(x)+exp(y))
+*/
+template <typename T>
+T safeLogPlus(T x, T y)
+{
+  if (x > y)
+    return x + log1p(std::exp(y - x));
+  else
+    return y + log1p(std::exp(x - y));
+}
+
+/**
+* @brief Safely computes log(exp(x)-exp(y)) and avoids overflows
+* @param x a variable, x > y
+* @param y a variable
+* @return The result of log(exp(x)-exp(y))
+*/
+template <typename T>
+T safeLogMinus(T x, T y)
+{
+  if (x-y>12.0)
+  {
+    // prevent overflows when exponentiating x-y
+    return x;
+  }
+  else if(x>y)
+  {
+    return y + std::log(std::exp(x - y) - 1.);
+  }
+  else
+  {
+    KORALI_LOG_ERROR("Invalid input to mathematical function 'safeLogMinus, x (%.*e) must be larger than y (%.*e)\n", x, y);
+    return 0.;
+  }
+}
 
 /**
 * @brief Computes: log sum_{i=1}^N x_i using the log-sum-exp trick: https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations
@@ -159,8 +269,62 @@ template <typename T>
 T normalLogDensity(const T &x, const T &mean, const T &sigma)
 {
   T norm = -0.5 * log(2 * M_PI * sigma * sigma);
-  T d = (x - mean) / sigma;
+  T d = (x - mean) / (sigma + KORALI_EPSILON);
   return norm - 0.5 * d * d;
+}
+ 
+/**
+* @brief Computes the cumulative distribution function of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 + 0.5*std::erf((x-mean)/(sigma*M_SQRT2));
+}
+
+/**
+* @brief Computes the log of the cumulative distribution function of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCDF(const T &x, const T &mean, const T &sigma)
+{
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5)+gsl_sf_log_erfc(-z);
+}
+
+/**
+* @brief Computes the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 - 0.5*std::erf((x-mean)/(sigma*M_SQRT2));
+}
+
+/**
+* @brief Computes the log of the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCCDF(const T &x, const T &mean, const T &sigma)
+{
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5) + gsl_sf_log_erfc(z);
 }
 
 /**
@@ -188,6 +352,51 @@ T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma, const T &
 
   // log[p(g(x))]=log[p(x)]-log[g'(x)]
   return logExp - logConst - logStdDev - logDTanhX - logScale;
+}
+
+/**
+* @brief Computes the density of the truncated normal distribution.
+* @param x density evaluation point
+* @param mu Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @param a Lower bound of truncated normal
+* @param b Upper bound of truncated normal
+* @return The log density
+*/
+template <typename T>
+T truncatedNormalPdf (T x,T mu,T sigma,T a,T b)
+{
+  // Taken from: https://people.sc.fsu.edu/~jburkardt/cpp_src/truncated_normal/truncated_normal.cpp
+  T alpha;
+  T alpha_cdf;
+  T beta;
+  T beta_cdf;
+  T pdf;
+  T xi;
+  T xi_pdf;
+
+  if ( x < a )
+  {
+    pdf = 0.0;
+  }
+  else if ( x <= b )
+  {
+    alpha = ( a - mu ) / sigma;
+    beta = ( b - mu ) / sigma;
+    xi = ( x - mu ) / sigma;
+
+    alpha_cdf = normalCDF( alpha, 0., 1.);
+    beta_cdf = normalCDF( beta, 0., 1. );
+    xi_pdf = normalCDF( xi, 0., 1. );
+
+    pdf = xi_pdf / ( beta_cdf - alpha_cdf ) / sigma;
+  }
+  else
+  {
+    pdf = 0.0;
+  }
+  
+  return pdf;
 }
 
 /**
@@ -373,4 +582,3 @@ void byteToHexPair(char *dst, const uint8_t byte);
 size_t checksum(void *buffer, size_t len, unsigned int seed);
 } // namespace korali
 
-#endif // _KORALI_AUXILIARS_MATH_HPP_

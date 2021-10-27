@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <stdio.h>
+#include <stdexcept>
 
 namespace korali
 {
@@ -16,6 +17,7 @@ void fAdaBelief::reset()
 {
   fAdam::reset();
 
+#pragma omp parallel for simd
   for (size_t i = 0; i < _nVars; i++)
     _secondCentralMoment[i] = 0.0f;
 }
@@ -27,7 +29,7 @@ void fAdaBelief::processResult(float evaluation, std::vector<float> &gradient)
   if (gradient.size() != _nVars)
   {
     fprintf(stderr, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _nVars);
-    std::abort();
+    throw std::runtime_error("Bad Inputs for Optimizer.");
   }
 
   const float secondCentralMomentFactor = 1.0f / (1.0f - std::pow(_beta2, (float)_modelEvaluationCount));

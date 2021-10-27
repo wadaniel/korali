@@ -27,7 +27,7 @@ def env(s):
    
   # Storing New State
   s["State"] = upswing.getState().tolist()
-  
+
   # Advancing step counter
   step = step + 1
 

@@ -3,8 +3,7 @@
 *        Credits to Motoki Sato (https://gist.github.com/aonotas)
 ******************************************************************************************************/
 
-#ifndef CUDA_UTILS_HPP
-#define CUDA_UTILS_HPP
+#pragma once
 
 #ifdef _KORALI_USE_CUDNN
 
@@ -40,4 +39,3 @@ inline void cudnnErrCheck_(cudnnStatus_t stat, const char *file, int line)
 
 #endif // _KORALI_USE_CUDNN
 
-#endif // CUDA_UTILS_HPP

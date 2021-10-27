@@ -17,8 +17,6 @@ setResultsDir('_result_vracer')
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 50.0
-e["Problem"]["Policy Testing Episodes"] = 20
 
 ### Defining state variables
 
@@ -47,12 +45,16 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 50 
-e["Solver"]["Learning Rate"] = 1e-5
+e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 128
 e["Solver"]["Policy"]["Distribution"] = "Normal"
 e["Solver"]["Experience Replay"]["Start Size"] = 32768
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
+### Normalization Parameters
+
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 
@@ -71,16 +73,18 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-### Defining Termination Criteria
-
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
-
+### If this is test mode, run only a couple generations
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  
 ### Setting file output configuration
 
-e["Solver"]["Experience Replay"]["Serialize"] = True
+e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 300
+e["File Output"]["Frequency"] = 1
 e["File Output"]["Path"] = "_result_vracer"
 
 ### Running Experiment

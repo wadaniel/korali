@@ -1,0 +1,5 @@
+subdir('configuration')
+subdir('correctness')
+subdir('detailed')
+subdir('mean')
+subdir('termination')

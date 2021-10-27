@@ -2,8 +2,10 @@
 * @brief Contains auxiliar functions for JSON object manipulation
 ******************************************************************************/
 
-#ifndef _KORALI_AUXILIARS_JSONINTERFACE_HPP_
-#define _KORALI_AUXILIARS_JSONINTERFACE_HPP_
+#pragma GCC diagnostic ignored "-Wparentheses"
+
+#pragma once
+
 
 #include "auxiliar/json.hpp"
 #include "auxiliar/logger.hpp"
@@ -101,21 +103,16 @@ T getValue(T &js, const Key &... key)
   auto *tmp = &js;
   auto *prv = &js;
 
-  bool result = true;
+  bool found = true;
   decltype(tmp->begin()) it;
-  (((result && ((it = tmp->find(key)) == tmp->end()) ? (result = false) : (prv = tmp, tmp = &*it, true))), ...);
+  (((found && ((it = tmp->find(key)) == tmp->end()) ? (found = false) : (prv = tmp, tmp = &*it, true))), ...);
 
   const auto *lastKey = (getPointer(key), ...);
 
-  if (result == true)
-  {
-    return (*prv)[*lastKey];
-  }
-  else
-  {
-    std::string keyString(*lastKey);
-    KORALI_LOG_ERROR("Could not find key '%s' to return.\n", keyString.c_str());
-  }
+  T result;
+  if (found == true) result = (*prv)[*lastKey];
+
+  return result;
 }
 
 /**
@@ -150,4 +147,3 @@ bool loadJsonFromFile(knlohmann::json &dst, const char *fileName);
 int saveJsonToFile(const char *fileName, const knlohmann::json &js);
 
 } // namespace korali
-#endif // _KORALI_AUXILIARS_JSONINTERFACE_HPP_

@@ -2,13 +2,12 @@
 * @brief Contains the definition of a Korali Sample
 *****************************************************************************************************/
 
-#ifndef __KORALI_SAMPLE_HPP_
-#define __KORALI_SAMPLE_HPP_
+#pragma once
 
 #include "auxiliar/koraliJson.hpp"
+#include "auxiliar/libco/libco.h"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
-#include "libco.h"
 #include <queue>
 #include <string>
 
@@ -70,11 +69,6 @@ class Sample
   std::queue<knlohmann::json> _messageQueue;
 
   /**
-  * @brief Pointer to global parameters
-  */
-  knlohmann::json *_globals;
-
-  /**
   * @brief Current state of the sample
   */
   SampleState _state;
@@ -93,12 +87,6 @@ class Sample
   * @brief Storage to keep the iD of the worker processing this sample.
   */
   size_t _workerId;
-
-  /**
-  * @brief Determines whether the thread memory has been allocated.
-  * Necessary to make sure we do not double-allocate or free unallocated space when re-executing sample.
-  */
-  bool _isAllocated;
 
   /**
   * @brief JSON object containing the sample's configuration and input/output data.
@@ -203,5 +191,3 @@ class Sample
 };
 
 } // namespace korali
-
-#endif // __KORALI_SAMPLE_HPP_

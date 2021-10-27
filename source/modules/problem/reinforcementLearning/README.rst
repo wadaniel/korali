@@ -2,7 +2,7 @@
 Reinforcement Learning
 **********************
 
-Describes a problem were we want to solve a sequential decision making problem. Here we are given an environment such that for an action :math:`a` a state :math:`s` is mapped to state :math:`s'` while giving a reward :math:`r` with probability :math:`p(s',r|s,a)`. The goal is to find a policy :math:`\pi` that choses an action :math:`a` for a given state :math:`s` with probability :math:`\pi(a|s)` such that for every state :math:`s` the chosen action :math:`a` is such that the value function
+Describes a sequential decision making problem. We are given an environment that transitions to a state :math:`s'` and returns a reward :math:`r` for a given action :math:`a` and state :math:`s` with probability :math:`p(s',r|s,a)`. We want to find the policy :math:`\pi` that choses an action :math:`a` for a given state :math:`s` with probability :math:`\pi(a|s)` such that for every state :math:`s` the chosen action :math:`a` is such that the value function
 
 .. math::
 

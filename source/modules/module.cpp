@@ -7,6 +7,7 @@
 #include "distribution/multivariate/normal/normal.hpp"
 #include "distribution/specific/multinomial/multinomial.hpp"
 #include "distribution/specific/specific.hpp"
+#include "distribution/univariate/beta/beta.hpp"
 #include "distribution/univariate/cauchy/cauchy.hpp"
 #include "distribution/univariate/exponential/exponential.hpp"
 #include "distribution/univariate/gamma/gamma.hpp"
@@ -20,6 +21,9 @@
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
 #include "neuralNetwork/layer/activation/activation.hpp"
+#include "neuralNetwork/layer/convolution/convolution.hpp"
+#include "neuralNetwork/layer/deconvolution/deconvolution.hpp"
+#include "neuralNetwork/layer/pooling/pooling.hpp"
 #include "neuralNetwork/layer/input/input.hpp"
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/layer/linear/linear.hpp"
@@ -28,8 +32,6 @@
 #include "neuralNetwork/layer/recurrent/lstm/lstm.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
-#include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
-#include "problem/bayesian/latent/latent.hpp"
 #include "problem/bayesian/reference/reference.hpp"
 #include "problem/hierarchical/psi/psi.hpp"
 #include "problem/hierarchical/theta/theta.hpp"
@@ -42,7 +44,6 @@
 #include "problem/reinforcementLearning/discrete/discrete.hpp"
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
-#include "solver/SAEM/SAEM.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
@@ -55,7 +56,6 @@
 #include "solver/optimizer/Adam/Adam.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
-#include "solver/optimizer/LMCMAES/LMCMAES.hpp"
 #include "solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "solver/optimizer/Rprop/Rprop.hpp"
@@ -73,6 +73,16 @@ knlohmann::json __profiler;
 std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
 double _cumulativeTime;
+
+void Module::initialize() {};
+void Module::finalize() {};
+std::string Module::getType() { return _type; };
+bool Module::checkTermination() { return false; };
+void Module::getConfiguration(knlohmann::json &js){};
+void Module::setConfiguration(knlohmann::json &js){};
+void Module::applyModuleDefaults(knlohmann::json &js){};
+void Module::applyVariableDefaults(){};
+bool Module::runOperation(std::string operation, korali::Sample &sample) { return false; };
 
 Module *Module::getModule(knlohmann::json &js, Experiment *e)
 {
@@ -106,6 +116,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Sequential")) module = new korali::conduit::Sequential();
   if (iCompare(moduleType, "Multivariate/Normal")) module = new korali::distribution::multivariate::Normal();
   if (iCompare(moduleType, "Specific/Multinomial")) module = new korali::distribution::specific::Multinomial();
+  if (iCompare(moduleType, "Univariate/Beta")) module = new korali::distribution::univariate::Beta();
   if (iCompare(moduleType, "Univariate/Cauchy")) module = new korali::distribution::univariate::Cauchy();
   if (iCompare(moduleType, "Univariate/Exponential")) module = new korali::distribution::univariate::Exponential();
   if (iCompare(moduleType, "Univariate/Gamma")) module = new korali::distribution::univariate::Gamma();
@@ -119,8 +130,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Univariate/Weibull")) module = new korali::distribution::univariate::Weibull();
   if (iCompare(moduleType, "Experiment")) module = new korali::Experiment();
   if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();
-  if (iCompare(moduleType, "Bayesian/Latent")) module = new korali::problem::bayesian::Latent();
-  if (iCompare(moduleType, "Bayesian/Latent/ExponentialLatent")) module = new korali::problem::bayesian::latent::ExponentialLatent();
   if (iCompare(moduleType, "Bayesian/Reference")) module = new korali::problem::bayesian::Reference();
   if (iCompare(moduleType, "Hierarchical/Psi")) module = new korali::problem::hierarchical::Psi();
   if (iCompare(moduleType, "Hierarchical/Theta")) module = new korali::problem::hierarchical::Theta();
@@ -134,7 +143,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();
-  if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
@@ -145,7 +153,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Optimizer/Adam")) module = new korali::solver::optimizer::Adam();
   if (iCompare(moduleType, "Optimizer/AdaBelief")) module = new korali::solver::optimizer::AdaBelief();
   if (iCompare(moduleType, "Optimizer/MADGRAD")) module = new korali::solver::optimizer::MADGRAD();
-  if (iCompare(moduleType, "Optimizer/LMCMAES")) module = new korali::solver::optimizer::LMCMAES();
   if (iCompare(moduleType, "Optimizer/MOCMAES")) module = new korali::solver::optimizer::MOCMAES();
   if (iCompare(moduleType, "Optimizer/GridSearch")) module = new korali::solver::optimizer::GridSearch();
   if (iCompare(moduleType, "Sampler/Nested")) module = new korali::solver::sampler::Nested();
@@ -154,6 +161,9 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Sampler/TMCMC")) module = new korali::solver::sampler::TMCMC();
   if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
   if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();
+  if (iCompare(moduleType, "Layer/Convolution")) module = new korali::neuralNetwork::layer::Convolution();
+  if (iCompare(moduleType, "Layer/Deconvolution")) module = new korali::neuralNetwork::layer::Deconvolution();
+  if (iCompare(moduleType, "Layer/Pooling")) module = new korali::neuralNetwork::layer::Pooling();
   if (iCompare(moduleType, "Layer/Recurrent/GRU")) module = new korali::neuralNetwork::layer::recurrent::GRU();
   if (iCompare(moduleType, "Layer/Recurrent/LSTM")) module = new korali::neuralNetwork::layer::recurrent::LSTM();
   if (iCompare(moduleType, "Layer/Input")) module = new korali::neuralNetwork::layer::Input();
@@ -169,13 +179,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (isExperiment == false) module->_k = e;
 
   return module;
-}
-
-Module *Module::duplicate(Module *src)
-{
-  knlohmann::json js;
-  src->getConfiguration(js);
-  return Module::getModule(js, src->_k);
 }
 
 } // namespace korali

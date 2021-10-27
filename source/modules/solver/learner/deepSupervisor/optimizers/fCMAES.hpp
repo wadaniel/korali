@@ -5,6 +5,7 @@
 #ifndef _KORALI_FAST_CMAES_HPP_
 #define _KORALI_FAST_CMAES_HPP_
 
+#include <cstddef>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 #include <random>
@@ -274,7 +275,7 @@ class fCMAES
 */
   int _isEigensystemUpdated;
   /**
-* @brief [Internal Use] This is the $eta$ factor that indicates how fast the covariance matrix is adapted.
+* @brief [Internal Use] This is the beta factor that indicates how fast the covariance matrix is adapted.
 */
   float _covarianceMatrixAdaptionFactor;
   /**

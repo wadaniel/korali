@@ -20,7 +20,8 @@ class CartPole:
     self.th_threshold = math.pi / 15
     self.ODE = ode(self.system).set_integrator('dopri5')
 
-  def reset(self):
+  def reset(self, seed):
+    np.random.seed(seed)
     self.u = np.random.uniform(-0.05, 0.05, 4)
     self.step = 0
     self.F = 0

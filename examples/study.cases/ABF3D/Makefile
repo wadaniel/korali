@@ -1,5 +1,5 @@
 BINARIES = run-vracer
-KORALICXX=$(shell python3 -m korali.cxx --compiler)
+KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 

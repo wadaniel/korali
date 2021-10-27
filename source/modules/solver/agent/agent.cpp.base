@@ -228,14 +228,6 @@ void __className__::trainingGeneration()
         partitionFunctionStat();
       }
 
-      // If we performed enough policy updates, we rescale rewards again
-      if (_rewardRescalingEnabled == true)
-      {
-        KORALI_LOG_ERROR("Reward Rescaling not allowed in IRL");
-        if (_policyUpdateCount >= _rewardRescalingFrequency * _rewardRescalingCount)
-          calculateRewardRescalingFactors();
-      }
-
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
@@ -1026,14 +1018,7 @@ void __className__::processEpisode(knlohmann::json &episode)
   // Getting environment id
   auto environmentId = episode["Environment Id"].get<size_t>();
 
-  for (size_t expId = 0; expId < episode.size(); expId++)
-  {
-    // Getting state
-    _stateVector.add(episode[expId]["State"].get<std::vector<float>>());
-    _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
-    _policyVector.add(policyHyperparameters);
-  
-    // Storage for the episode's cumulative reward
+  // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
   for (size_t expId = 0; expId < curExperienceCount; expId++)
@@ -1045,6 +1030,12 @@ void __className__::processEpisode(knlohmann::json &episode)
     const auto action = episode["Experiences"][expId]["Action"].get<std::vector<float>>();
     _actionVector.add(action);
 
+    // Getting features
+    _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
+    
+    // Getting policy
+    _policyVector.add(episode["Policy Hyperparameters"]);
+    
     // Getting reward
     float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
 

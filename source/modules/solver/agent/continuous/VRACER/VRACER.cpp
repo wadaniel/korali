@@ -116,8 +116,8 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     size_t expId = miniBatch[b];
 
     // Get state, action and policy for this experience
-    const auto &expPolicy = _expPolicyVector[expId];
     const auto &expAction = _actionVector[expId];
+    const auto &expPolicy = _expPolicyVector[expId];
 
     // Gathering metadata
     const float V = _stateValueVector[expId];
@@ -134,7 +134,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     if (_isOnPolicyVector[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = getScaledReward(_environmentIdVector[expId], _rewardVector[expId]);
+      float Qret = calculateReward(_featureVector[expId]);
 
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
@@ -169,6 +169,9 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     for (size_t i = 0; i < _policyParameterCount; i++)
       gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
 
+    // Compute statistics
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      _statisticsAverageActionSigmas[i] += expPolicy.distributionParameters[_problem->_actionVectorSize + i];
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       if (expPolicy.distributionParameters[i] > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = expPolicy.distributionParameters[i];

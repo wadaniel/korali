@@ -188,6 +188,30 @@ class Agent : public Solver
   */
    float _experiencesBetweenPolicyUpdates;
   /**
+  * @brief The number of experiences to receive before updating parameter of reward function.
+  */
+   float _experiencesBetweenRewardUpdates;
+  /**
+  * @brief The number of experiences to receive before measuring partition function statistics.
+  */
+   float _experiencesBetweenPartitionFunctionStatistics;
+  /**
+  * @brief The learning rate to update the feature weights of the reward function.
+  */
+   float _rewardfunctionLearningRate;
+  /**
+  * @brief Calculate importance weights using the fusion distribution assumption.
+  */
+   int _useFusionDistribution;
+  /**
+  * @brief The number of sampled observed trajectories to update the weights of the reward function.
+  */
+   size_t _demonstrationBatchSize;
+  /**
+  * @brief The number of sampled trajectories from the experience replay to update the weights of the reward function.
+  */
+   size_t _backgroundBatchSize;
+  /**
   * @brief Determines whether to normalize the states, such that they have mean 0 and standard deviation 1 (done only once after the initial exploration phase).
   */
    int _stateRescalingEnabled;
@@ -304,17 +328,57 @@ class Agent : public Solver
   */
    std::vector<float> _rewardRescalingSumSquaredRewards;
   /**
-  * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
+  * @brief [Internal Use] Indicates the maximum priority of any experience in the experience replay.
   */
    size_t _rewardOutboundPenalizationCount;
+  /**
+  * @brief [Internal Use] The weights of the features required to calculate the reward.
+  */
+   std::vector<float> _featureWeights;
+  /**
+  * @brief [Internal Use] The softmax of the feature weights.
+  */
+   std::vector<float> _softMaxFeatureWeights;
+  /**
+  * @brief [Internal Use] The gradient of the feature weights.
+  */
+   std::vector<float> _featureWeightGradient;
+  /**
+  * @brief [Internal Use] The logarithm of the estimated partition function
+  */
+   float _logPartitionFunction;
+  /**
+  * @brief [Internal Use] The logarithm of the standard deviation of the partition function estimate
+  */
+   float _logSdevPartitionFunction;
   /**
   * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
    std::vector<float> _stateRescalingMeans;
   /**
-  * @brief [Internal Use] Contains the standard deviations of the states. They will be scaled by this value in order to normalize the state distribution in the RM.
+  * @brief [Internal Use] Standard deviation of states during exploration phase.
   */
    std::vector<float> _stateRescalingSigmas;
+  /**
+  * @brief [Internal Use] Number of samples collected from background distribution.
+  */
+   size_t _backgroundSampleSize;
+  /**
+  * @brief [Internal Use] Container to collect statistics of log partition function.
+  */
+   std::vector<std::vector<float>> _statisticLogPartitionFunction;
+  /**
+  * @brief [Internal Use] Container to collect statistics of log partition function using the fusion distribution.
+  */
+   std::vector<std::vector<float>> _statisticFusionLogPartitionFunction;
+  /**
+  * @brief [Internal Use] Value of features when doing statistics of log partition function.
+  */
+   std::vector<std::vector<float>> _statisticFeatureWeights;
+  /**
+  * @brief [Internal Use] Value of trajectory returns.
+  */
+   std::vector<std::vector<float>> _statisticCumulativeRewards;
   /**
   * @brief [Termination Criteria] The solver will stop when the given number of episodes have been run.
   */
@@ -366,6 +430,11 @@ class Agent : public Solver
   std::vector<bool> _isAgentRunning;
 
   /**
+   * @brief Features given by the environment to calculate the reward
+   */
+  std::vector<float> features;
+
+  /**
    * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
    */
   size_t _sessionExperienceCount;
@@ -386,6 +455,11 @@ class Agent : public Solver
   size_t _sessionPolicyUpdateCount;
 
   /**
+   * @brief Session-specific reward update count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionRewardUpdateCount;
+
+  /**
    * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
    */
   size_t _sessionExperiencesUntilStartSize;
@@ -401,8 +475,18 @@ class Agent : public Solver
   cBuffer<std::vector<float>> _actionVector;
 
   /**
-   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
+   * @brief Stores the observed features at the given state
    */
+  cBuffer<std::vector<float>> _featureVector;
+
+  /**
+   * @brief Stores the policyHyperparameters of the agent at the given state
+   */
+  cBuffer<std::vector<float>> _policyVector;
+
+  /**
+  * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
+  */
   cBuffer<std::vector<float>> _stateTimeSequence;
 
   /**
@@ -509,6 +593,22 @@ class Agent : public Solver
    * @brief Mersenne twister for the generation of shuffling numbers
    */
   std::mt19937 *mt;
+
+  /****************************************************************************************************
+   * Storage for background batch and demonstration batch
+   ***************************************************************************************************/
+
+  std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryStates;
+  std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryActions;
+  std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryFeatures;
+  std::vector<std::vector<float>> _backgroundPolicyHyperparameter;
+  std::vector<std::vector<float>> _backgroundTrajectoryLogProbabilities;
+  std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
+
+  /**
+  * @brief [Profiling] Measures the amount of time taken by the generation
+  */
+  double _sessionAgentTrajectoryLogProbilityUpdateTime;
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -710,6 +810,7 @@ class Agent : public Solver
    */
   inline float getScaledReward(const size_t environmentId, const float reward)
   {
+    KORALI_LOG_ERROR("Reward Rescaling not allowed in IRL");
     float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)
@@ -717,6 +818,60 @@ class Agent : public Solver
 
     return rescaledReward;
   }
+
+  /**
+   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
+   */
+  void calculateRewardRescalingFactors();
+
+  /**
+   * @brief Calculates the reward given a vector of features.
+   * @param features Features returned from the environment to calculate the reward.
+   */
+  float calculateReward(const std::vector<float> &features);
+
+  /**
+   * @brief Calculates the gradient of the reward wrt. the feature weights.
+   * @param features Features returned from the environment to calculate the reward.
+   */
+  std::vector<float> calculateRewardGradient(const std::vector<float> &features);
+
+  /**
+  * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.
+  */
+  void updateBackgroundBatch();
+
+  /**
+  * @brief Updates probabilities of demonstration batch.
+  */
+  void updateDemonstrationBatch();
+
+  /**
+  * @brief Update the weights of the reward function based on guided cost learning
+  */
+  void updateRewardFunction();
+
+  /**
+  * @brief Collects statistics of partition function estimate.
+  */
+  void partitionFunctionStat();
+
+  /**
+  * @brief Evaluates the log probability of a trajectory given policy hyperparameter
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @param policyHyperparameter The neural network policy hyperparameter.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) = 0;
+
+  /**
+  * @brief Evaluates the log probability of a trajectory given a surrogate built from observed states and actions.
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) = 0;
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

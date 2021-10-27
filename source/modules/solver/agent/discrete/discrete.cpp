@@ -168,9 +168,53 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const policy_t &oldPo
   return klGrad;
 }
 
+float Discrete::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
+{
+  knlohmann::json policy;
+  policy["Policy"] = policyHyperparameter;
+  setAgentPolicy(policy);
+
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    auto policy = runPolicy({{states[t]}})[0];
+
+    const auto &pActions = policy.distributionParameters;
+    for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+      if (actions[t] == _problem->_possibleActions[actionIdx])
+        trajectoryLogProbability += std::log(pActions[actionIdx]);
+  }
+
+  return trajectoryLogProbability;
+}
+
+float Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions)
+{
+  float trajectoryLogProbability = 0.0;
+
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+      if (_problem->_possibleActions[actionIdx] == actions[t])
+        trajectoryLogProbability += std::log(_observationsApproximatorActionProbabilities[actionIdx]);
+  }
+
+  return trajectoryLogProbability;
+}
+
 void Discrete::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
+
+ if (isDefined(js, "Observations", "Approximator", "Action Probabilities"))
+ {
+ try { _observationsApproximatorActionProbabilities = js["Observations"]["Approximator"]["Action Probabilities"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ discrete ] \n + Key:    ['Observations']['Approximator']['Action Probabilities']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "Approximator", "Action Probabilities");
+ }
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
@@ -185,6 +229,7 @@ void Discrete::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
+   js["Observations"]["Approximator"]["Action Probabilities"] = _observationsApproximatorActionProbabilities;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Agent::getConfiguration(js);

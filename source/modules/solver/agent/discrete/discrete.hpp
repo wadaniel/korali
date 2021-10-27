@@ -29,6 +29,10 @@ namespace agent
 class Discrete : public Agent
 {
   public: 
+  /**
+  * @brief [Internal Use] Observed action probabilities.
+  */
+   std::vector<float> _observationsApproximatorActionProbabilities;
   
  
   /**
@@ -80,8 +84,26 @@ class Discrete : public Agent
    */
   std::vector<float> calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy);
 
+  /**
+  * @brief Evaluates the log probability of a trajectory given policy hyperparameter
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @param policyHyperparameter The neural network policy hyperparameter.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) override;
+ 
+  /**
+  * @brief Evaluates the log probability of a trajectory given observed action frequencies.
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) override;
+
   void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent() override;
+
+ virtual void initializeAgent() override;
 };
 
 } //agent

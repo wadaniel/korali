@@ -920,6 +920,46 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   return KLDivergenceGradients;
 }
 
+
+float Continuous::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
+{
+  knlohmann::json policy;
+  policy["Policy"] = policyHyperparameter;
+  setAgentPolicy(policy);
+
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    auto evaluation = runPolicy({{states[t]}})[0];
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.distributionParameters[d], evaluation.distributionParameters[_problem->_actionVectorSize + d]);
+  }
+
+  return trajectoryLogProbability;
+}
+
+float Continuous::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions)
+{
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    std::vector<float> evaluation(_problem->_actionVectorSize);
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+    {
+      // Predict action with linear policy
+      evaluation[d] = _observationsApproximatorWeights[d][0];
+      for (size_t j = 0; j < _problem->_stateVectorSize; ++j)
+        evaluation[d] += states[t][j] * _observationsApproximatorWeights[d][j + 1];
+    }
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation[d], _observationsApproximatorSigmas[d]);
+  }
+
+  return trajectoryLogProbability;
+}
+
 void Continuous::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
@@ -973,6 +1013,22 @@ void Continuous::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Policy", "Parameter Shifting");
  }
 
+ if (isDefined(js, "Observations", "Approximator", "Weights"))
+ {
+ try { _observationsApproximatorWeights = js["Observations"]["Approximator"]["Weights"].get<std::vector<std::vector<float>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ continuous ] \n + Key:    ['Observations']['Approximator']['Weights']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "Approximator", "Weights");
+ }
+
+ if (isDefined(js, "Observations", "Approximator", "Sigmas"))
+ {
+ try { _observationsApproximatorSigmas = js["Observations"]["Approximator"]["Sigmas"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ continuous ] \n + Key:    ['Observations']['Approximator']['Sigmas']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "Approximator", "Sigmas");
+ }
+
  if (isDefined(js, "Policy", "Distribution"))
  {
  try { _policyDistribution = js["Policy"]["Distribution"].get<std::string>();
@@ -1011,6 +1067,8 @@ void Continuous::getConfiguration(knlohmann::json& js)
    js["Policy"]["Parameter Transformation Masks"] = _policyParameterTransformationMasks;
    js["Policy"]["Parameter Scaling"] = _policyParameterScaling;
    js["Policy"]["Parameter Shifting"] = _policyParameterShifting;
+   js["Observations"]["Approximator"]["Weights"] = _observationsApproximatorWeights;
+   js["Observations"]["Approximator"]["Sigmas"] = _observationsApproximatorSigmas;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Agent::getConfiguration(js);

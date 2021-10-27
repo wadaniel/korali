@@ -203,11 +203,12 @@ void Agent::trainingGeneration()
         _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
-
+        printf("Q\n");
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
       }
 
+    printf("R\n");
     // Listening to _agents for incoming experiences
     KORALI_LISTEN(_agents);
 
@@ -216,6 +217,7 @@ void Agent::trainingGeneration()
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
 
+    printf("S\n");
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
     {
@@ -321,15 +323,16 @@ void Agent::testingGeneration()
 
 float Agent::calculateReward(const std::vector<float> &features)
 {
+  printf("%zu %zu\n", features.size(), _featureWeights.size());
   float reward = 0.0;
 #ifdef COSREWARD
   reward = std::cos(features[0] - _featureWeights[0]);
 #else
-#ifdef COSREWARDSCALED
-  reward = std::cos(features[0] - _featureWeights[0])/500.0;
-#else
+  #ifdef COSREWARDSCALED
+  reward = std::cos(features[0] - _featureWeights[0]) / 500.0;
+  #else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
-#endif
+  #endif
 #endif
   return reward;
 }
@@ -340,9 +343,9 @@ std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &feat
 #ifdef COSREWARD
   rewardGrad[0] = std::sin(features[0] - _featureWeights[0]);
 #else
-#ifdef COSREWARDSCALED
-  rewardGrad[0] = std::sin(features[0] - _featureWeights[0])/500.0;
-#else
+  #ifdef COSREWARDSCALED
+  rewardGrad[0] = std::sin(features[0] - _featureWeights[0]) / 500.0;
+  #else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
     for (size_t j = 0; j < _problem->_featureVectorSize; ++j)
     {
@@ -351,7 +354,7 @@ std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &feat
       else
         rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
     }
-#endif
+  #endif
 #endif
   return rewardGrad;
 }
@@ -576,7 +579,7 @@ void Agent::partitionFunctionStat()
     cumulativeRewardsDemonstrationBatch[n] = cumReward;
   }
 
-#pragma omp parallel for schedule (dynamic)
+#pragma omp parallel for schedule(dynamic)
   for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
   {
     // Get background trajectory log probabilities
@@ -980,14 +983,13 @@ void Agent::attendAgent(size_t agentId)
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
         _trainingLastReward = cumulativeAgentReward;
       }
- 
+
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
-      if ( _experienceCount >= _experienceReplayStartSize && ( (_experienceCount-_experienceReplayStartSize)/_experiencesBetweenRewardUpdates >= _backgroundSampleSize) )
+      if (_experienceCount >= _experienceReplayStartSize && ((_experienceCount - _experienceReplayStartSize) / _experiencesBetweenRewardUpdates >= _backgroundSampleSize))
       {
         updateBackgroundBatch();
         updateDemonstrationBatch();
       }
-
 
       // Obtaining profiling information
       _sessionAgentComputationTime += _agents[agentId]["Computation Time"].get<double>();
@@ -1019,12 +1021,14 @@ void Agent::processEpisode(knlohmann::json &episode)
   // Getting experience count from the episode
   size_t curExperienceCount = episode["Experiences"].size();
 
+  printf("H\n");
   // Getting environment id
-  auto environmentId = episode["Environment Id"].get<size_t>();
+  auto environmentId = 0; //episode["Environment Id"].get<size_t>(); TODO D.W
 
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
+  printf("J\n");
   for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
     // Getting state
@@ -1036,12 +1040,16 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Getting features
     _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
-    
+    printf("K\n");
+
     // Getting policy
     _policyVector.add(episode["Policy Hyperparameters"]);
-    
+    printf("L\n");
+
     // Getting reward
+    printf("expId %zu\n",expId);
     float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    printf("M\n");
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1102,7 +1110,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
-    
+
     if (isDefined(episode["Experiences"][expId], "Policy", "Distribution Parameters"))
       expPolicy.distributionParameters = episode["Experiences"][expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
 
@@ -1116,6 +1124,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     if (isDefined(episode[expId], "Policy", "Distribution Parameters"))
       expPolicy.distributionParameters = episode[expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
+    printf("N\n");
 
     // Storing policy information
     _expPolicyVector.add(expPolicy);
@@ -1177,6 +1186,8 @@ void Agent::processEpisode(knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
+    printf("endId %zd startId %zd svs %zu e %zu\n", endId, startId, _stateVector.size(), episode.size());
+    printf("expId %zd\n",expId);
     retV = _discountFactor * retV + calculateReward(_featureVector[expId]);
 
     // Setting initial retrace value in the experience's cache
@@ -1314,10 +1325,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   // Adding experiences so long as they do not repeat episodes
   for (ssize_t i = miniBatchSize - 2; i >= 0; i--)
   {
-    size_t currExpId = miniBatch[i];
-    size_t nextExpId = miniBatch[i + 1];
-    size_t curEpisode = _episodeIdVector[currExpId];
-    size_t nextEpisode = _episodeIdVector[nextExpId];
+    const size_t currExpId = miniBatch[i];
+    const size_t nextExpId = miniBatch[i + 1];
+    const size_t curEpisode = _episodeIdVector[currExpId];
+    const size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
@@ -1326,11 +1337,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 0; i < retraceMiniBatch.size(); i++)
   {
     // Finding the earliest experience corresponding to the same episode as this experience
-    ssize_t endId = retraceMiniBatch[i];
-    ssize_t startId = endId - _episodePosVector[endId];
+    const ssize_t endId = retraceMiniBatch[i];
 
     // If the starting experience has already been discarded, take the earliest one that still remains
-    if (startId < 0) startId = 0;
+    const ssize_t startId = (ssize_t)_episodePosVector[endId] < endId ? endId - (ssize_t)_episodePosVector[endId] : 0;
 
     // Storage for the retrace value
     float retV = 0.0f;
@@ -1346,6 +1356,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
+      printf("endId %zd startId %zd\n", endId, startId);
+      printf("curId %zd\n", curId);
       const float curReward = calculateReward(_featureVector[curId]);
 
       // Calculating state value function
@@ -1452,13 +1464,13 @@ std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId)
 void Agent::finalize()
 {
   if (_mode != "Training") return;
-  
+
   if (_experienceReplaySerialize == true)
     if (_k->_fileOutputEnabled)
       serializeExperienceReplay();
- 
+
   partitionFunctionStat();
-  
+
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
   // Waiting for pending agents to finish
@@ -1475,8 +1487,6 @@ void Agent::finalize()
 
     if (agentsRemain) KORALI_LISTEN(_agents);
   } while (agentsRemain == true);
-
-
 }
 
 void Agent::serializeExperienceReplay()
@@ -1577,7 +1587,7 @@ void Agent::deserializeExperienceReplay()
     _stateVector.add(stateJson["Experience Replay"][i]["State"].get<std::vector<float>>());
     _actionVector.add(stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>());
     _rewardVector.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
-    _environmentIdVector.add(stateJson["Experience Replay"][i]["Environment Id"].get<float>());
+    _environmentIdVector.add(stateJson["Experience Replay"][i]["Environment Id"].get<size_t>());
     _stateValueVector.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueVector.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<float>());

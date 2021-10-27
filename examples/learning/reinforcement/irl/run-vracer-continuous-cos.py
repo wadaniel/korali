@@ -50,8 +50,6 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = cosenv
-e["Problem"]["Training Reward Threshold"] = 501
-e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 10
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
@@ -129,7 +127,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 500
-e["File Output"]["Path"] = '_korali_results_continuous_cos_fusion_2_nornd'
+e["File Output"]["Path"] = '_korali_results'
 
 ### Running Experiment
 

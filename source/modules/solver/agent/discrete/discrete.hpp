@@ -92,7 +92,7 @@ class Discrete : public Agent
   * @return The log probability of the trajectory.
   */
   virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) override;
- 
+
   /**
   * @brief Evaluates the log probability of a trajectory given observed action frequencies.
   * @param states Vector of states in the trajectory.
@@ -103,7 +103,7 @@ class Discrete : public Agent
 
   void getAction(korali::Sample &sample) override;
 
- virtual void initializeAgent() override;
+  virtual void initializeAgent() override;
 };
 
 } //agent

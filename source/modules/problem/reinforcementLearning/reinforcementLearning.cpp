@@ -55,7 +55,7 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
- 
+
   // Validating observations
   _numberObservedTrajectories = _observationsStates.size();
   if (_numberObservedTrajectories == 0) KORALI_LOG_ERROR("No states have been recorded.\n");
@@ -138,6 +138,7 @@ void __environmentWrapper()
 
 void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 {
+  printf("XX\n");
   // Profiling information - Computation and communication time taken by the agent
   _agentPolicyEvaluationTime = 0.0;
   _agentComputationTime = 0.0;
@@ -168,7 +169,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
- 
+
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
@@ -176,6 +177,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     return;
   }
 
+  printf("X\n");
   // Get environment iId value from agent
   auto environmentId = KORALI_GET(size_t, agent, "Environment Id");
 
@@ -188,6 +190,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
+    printf("Y\n");
     // Generating new action from the agent's policy
     getAction(agent);
 
@@ -199,21 +202,24 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
 
+    printf("Z\n");
     // Storing the experience's policy
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
- 
 
+    printf("A\n");
     // Sanity checks for the features
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-    for (size_t j = 0; j < _featureVectorSize; j++)
-      if (std::isfinite(agent["Features"][i][j].get<float>()) == false)
-        KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i][j].get<float>());
-  
+      for (size_t j = 0; j < _featureVectorSize; j++)
+        if (std::isfinite(agent["Features"][i][j].get<float>()) == false)
+          KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i][j].get<float>());
+
+    printf("B\n");
+
     // Storing features of the reward function
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Features"] = agent["Features"][i];
-  
+
     // Sanity check for reward
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
@@ -222,6 +228,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
         KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
     }
 
+    printf("C\n");
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
@@ -245,6 +252,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Increasing counter for generated actions
     actionCount++;
 
+    printf("D\n");
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
     if ((_actionsBetweenPolicyUpdates > 0) &&
         (agent["Termination"] == "Non Terminal") &&
@@ -263,6 +271,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   message["Episodes"] = episodes;
   KORALI_SEND_MSG_TO_ENGINE(message);
 
+  printf("E\n");
   // Finalizing Environment
   finalizeEnvironment();
 
@@ -410,6 +419,10 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     auto state = KORALI_GET(std::vector<float>, agent, "State");
     agent._js.getJson().erase("State");
     agent["State"][0] = state;
+    
+    auto features = KORALI_GET(std::vector<float>, agent, "Features");
+    agent._js.getJson().erase("Features");
+    agent["Features"][0] = features;
   }
 
   // Checking correct format of state

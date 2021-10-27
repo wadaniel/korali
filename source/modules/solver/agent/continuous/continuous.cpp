@@ -920,7 +920,6 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   return KLDivergenceGradients;
 }
 
-
 float Continuous::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
 {
   knlohmann::json policy;

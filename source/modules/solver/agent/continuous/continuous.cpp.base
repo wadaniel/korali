@@ -914,7 +914,6 @@ std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &
   return KLDivergenceGradients;
 }
 
-
 float __className__::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
 {
   knlohmann::json policy;

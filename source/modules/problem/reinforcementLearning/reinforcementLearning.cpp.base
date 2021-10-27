@@ -51,7 +51,7 @@ void __className__::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
- 
+
   // Validating observations
   _numberObservedTrajectories = _observationsStates.size();
   if (_numberObservedTrajectories == 0) KORALI_LOG_ERROR("No states have been recorded.\n");
@@ -164,7 +164,7 @@ void __className__::runTrainingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
- 
+
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
@@ -198,18 +198,17 @@ void __className__::runTrainingEpisode(Sample &agent)
     // Storing the experience's policy
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
- 
 
     // Sanity checks for the features
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-    for (size_t j = 0; j < _featureVectorSize; j++)
-      if (std::isfinite(agent["Features"][i][j].get<float>()) == false)
-        KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i][j].get<float>());
-  
+      for (size_t j = 0; j < _featureVectorSize; j++)
+        if (std::isfinite(agent["Features"][i][j].get<float>()) == false)
+          KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i][j].get<float>());
+
     // Storing features of the reward function
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Features"] = agent["Features"][i];
-  
+
     // Sanity check for reward
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {

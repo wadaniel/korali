@@ -39,7 +39,7 @@ class __className__ : public __parentClassName__
   * @return The log probability of the trajectory.
   */
   virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) override;
- 
+
   /**
   * @brief Evaluates the log probability of a trajectory given observed action frequencies.
   * @param states Vector of states in the trajectory.
@@ -50,7 +50,7 @@ class __className__ : public __parentClassName__
 
   void getAction(korali::Sample &sample) override;
 
- virtual void initializeAgent() override;
+  virtual void initializeAgent() override;
 };
 
 __endNamespace__;

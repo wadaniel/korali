@@ -1,3 +1,32 @@
+CMAESX: results from slides
+
+CMA: results with 3 different objective types (100 steps)
+CMA0: results with 3 different objective types (300 steps)
+CMA1: results with 3 different objective types (100 steps, random start)
+CMA2: results with 3 different objective types (100 steps, random start)
+
+CMA3: results with 10 standard objectives (100 steps, random start, version==1)
+RLCMA2: results with 10 standard objectives (100 steps, random start, version==2)
+
+# params cma-es
+Namespace(dim=64, eval=False, noise=0.0, obj='fsphere', pop=256, reps=1, run=0, steps=100)
+Running with cs: 0.5068372800075271, cm: 1, cu: 0.02933521975901428
+
+Namespace(dim=32, eval=False, noise=0.0, obj='fsphere', pop=128, reps=1, run=0, steps=100)
+Running with cs: 0.5082796550309218, cm: 1, cu: 0.05412284473896106
+
+Namespace(dim=16, eval=False, noise=0.0, obj='fsphere', pop=64, reps=1, run=0, steps=100)
+Running with cs: 0.5080479778584683, cm: 1, cu: 0.09178809752550958
+
+Namespace(dim=8, eval=False, noise=0.0, obj='fsphere', pop=32, reps=1, run=0, steps=100)
+Running with cs: 0.5040315229069345, cm: 1, cu: 0.13350162016265607
+
+Namespace(dim=4, eval=False, noise=0.0, obj='fsphere', pop=16, reps=1, run=0, steps=100)
+Running with cs: 0.4942530712443723, cm: 1, cu: 0.14923696382608587
+
+Namespace(dim=2, eval=False, noise=0.0, obj='fsphere', pop=8, reps=1, run=0, steps=100)
+Running with cs: 0.479176368423509, cm: 1, cu: 0.10588798830238358
+
 # Run 5
 standard setup
 running 2,4,8 dimension w 1e7 experiences

@@ -14,6 +14,7 @@ parser.add_argument('--pop', help='CMAES population size.', required=True, type=
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--feval', help='Evaluate stored policy.', required=False, type=str)
 parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=10, type=int)
+parser.add_argument('--steps', help='Number of optimization steps.', required=False, default=100, type=int)
 
 # Defaults
 parser.add_argument('--exp', help='VRACER max experiences.', required=False, type=int, default=1000000)
@@ -39,13 +40,14 @@ populationSize = args.pop
 noise = args.noise
 maxExperiences = args.exp
 evaluation = args.eval
+steps = args.steps
 repetitions = args.reps
 version = args.version
 
 resultDirectory = "_vracer_{}_{}_{}_{}_{}".format(objective, dim, populationSize, noise, run)
 
 if objective == "random":
-    environmentCount = 10
+    environmentCount = len(objectiveList)
 else:
     environmentCount = 1
 
@@ -64,15 +66,14 @@ if evaluation == True:
     if found == False:
         sys.exit("Cannot run evaluation, results not found")
 
-lEnv = lambda s : env(s, fobjective, dim, populationSize, noise, version)
+lEnv = lambda s : env(s, fobjective, dim, populationSize, steps, noise, version)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Environment Count"] = environmentCount
-e["Problem"]["Testing Frequency"] = 500
+e["Problem"]["Testing Frequency"] = int(maxExperiences/(steps*200))
 e["Problem"]["Training Reward Threshold"] = np.inf
-e["Problem"]["Policy Testing Episodes"] = 10
-e["Problem"]["Actions Between Policy Updates"] = 0.2
+e["Problem"]["Policy Testing Episodes"] = 100
 
 if version == 0:
     i = 0
@@ -89,6 +90,23 @@ if version == 0:
     e["Variables"][i]["Name"] = "Best Ever Evaluation"
     e["Variables"][i]["Type"] = "State"
     i += 1
+
+elif version == 1:
+    i = 0
+    for j in range(dim):
+        e["Variables"][i]["Name"] = "Mu Cov {}".format(j)
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+        
+    for j in range(mu):
+        e["Variables"][i]["Name"] = "Evaluation"
+        e["Variables"][i]["Type"] = "State"
+        i += 1
+
+    e["Variables"][i]["Name"] = "Best Ever Evaluation"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+
 else:
     i = 0
     for j in range(dim):
@@ -100,6 +118,10 @@ else:
         e["Variables"][i]["Name"] = "Evaluation"
         e["Variables"][i]["Type"] = "State"
         i += 1
+ 
+    e["Variables"][i]["Name"] = "Path L2 Norm"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
 
     e["Variables"][i]["Name"] = "Best Ever Evaluation"
     e["Variables"][i]["Type"] = "State"
@@ -122,8 +144,8 @@ i += 1
 
 e["Variables"][i]["Name"] = "Cov Adaption"
 e["Variables"][i]["Type"] = "Action"
-e["Variables"][i]["Lower Bound"] = 0
-e["Variables"][i]["Upper Bound"] = 1.
+e["Variables"][i]["Lower Bound"] = 0.0
+e["Variables"][i]["Upper Bound"] = 1.0
 e["Variables"][i]["Initial Exploration Noise"] = 0.2
 i += 1
 
@@ -140,7 +162,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 128
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
@@ -152,13 +174,13 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 256
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 256
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

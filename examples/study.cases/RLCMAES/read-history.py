@@ -34,7 +34,7 @@ for idx, filename in enumerate(args.files):
     print("{} Entries found in file {}".format(len(history['scaleHistory'][0]), filename))
     scaleHistory = np.median(history['scaleHistory'], axis=0)
     muobjectiveHistory = np.median(history['muobjectiveHistory'], axis=0)
-    actionHistory = np.median(history['actionHistory'], axis=0)
+    actionHistoryMedian = np.median(history['actionHistory'], axis=0)
     actionHistoryUpperQuantile = np.quantile(history['actionHistory'], 0.8, axis=0)
     actionHistoryLowerQuantile = np.quantile(history['actionHistory'], 0.2, axis=0)
     
@@ -53,12 +53,18 @@ for idx, filename in enumerate(args.files):
     ax1.fill_between(gens, objectiveHistoryLowerQuantile, objectiveHistoryUpperQuantile, color=col, alpha=0.2)
 
     # action plot
-    ax2.plot(gens, actionHistory, c=col, linestyle='solid', linewidth=0.5)
-    #ax2.plot(gens, actionHistoryUpperQuantile, c=col, linestyle='solid', linewidth=0.5)
-    #ax2.plot(gens, actionHistoryLowerQuantile, c=col, linestyle='solid', linewidth=0.5)
+    ax2.plot(gens, actionHistoryMedian[:,0], c=col, linestyle='dotted', linewidth=0.5, label="cs")
+    ax2.fill_between(gens, actionHistoryLowerQuantile[:,0], actionHistoryUpperQuantile[:,0], color=col, alpha=0.2)
+    
+    ax2.plot(gens, actionHistoryMedian[:,1], c=col, linestyle='solid', linewidth=0.5, label="cm")
+    ax2.fill_between(gens, actionHistoryLowerQuantile[:,1], actionHistoryUpperQuantile[:,1], color=col, alpha=0.2)
+    
+    ax2.plot(gens, actionHistoryMedian[:,2], c=col, linestyle='dashed', linewidth=0.5, label="cu")
+    ax2.fill_between(gens, actionHistoryLowerQuantile[:,2], actionHistoryUpperQuantile[:,2], color=col, alpha=0.2)
 
 ax1.legend()
-plt.title("Median of scale (dotted), best objective (solid), and mu-objective (dashed)")
+ax1.title.set_text("Median of scale (dotted), best eval (solid), and mean-eval (dashed)")
+ax2.legend()
 plt.tight_layout()
 plt.savefig(args.out, format='png')
 

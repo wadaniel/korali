@@ -14,6 +14,7 @@ parser.add_argument('--pop', help='CMAES population size.', required=True, type=
 parser.add_argument('--obj', help='Objective function.', required=True, type=str)
 parser.add_argument('--eval', help='Evaluate stored policy.', required=False, action='store_true')
 parser.add_argument('--reps', help='Number of optimization runs.', required=False, default=1, type=int)
+parser.add_argument('--steps', help='Number of optimization steps.', required=False, default=100, type=int)
 
 parser.add_argument('--noise', help='Noise level of objective function.', required=False, type=float, default=0.0)
 args = parser.parse_args()
@@ -32,21 +33,24 @@ dim = args.dim
 populationSize = args.pop
 noise = args.noise
 evaluation = args.eval
+steps = args.steps
 reps=args.reps
 
 resultdir = "_env_cmaes_{}_{}_{}_{}".format(objective, dim, populationSize, noise, args.run)
  
-maxSteps = 100
+maxSteps = steps
 
 # Calculate defaults to define cs and cm
 mu = int(populationSize/2)
 weights = np.log(mu+1/2)-np.log(np.array(range(mu))+1)
 ueff = sum(weights)**2/sum(weights**2)
+c1 = 2/((dim+1.3)**2+ueff)
 cs = (ueff+2.)/(dim+ueff+5)
 cm = 1
-c1 = 2./((dim+1.3)**2+ueff)
-cu = min(1.-c1, 2.*(ueff-2+1/ueff)/((dim+2)**2+2.*ueff/2))
+cu =  max(min(1.-c1, 2*(ueff-2+1/ueff)/((dim+2)**2+ueff)),0)
 action = [cs, cm, cu]
+
+print("Running with cs: {}, cm: {}, cu: {}".format(cs, cm, cu))
 
 outfile = "history_cmaes_{}_{}_{}_{}_{}.npz".format(objective, dim, populationSize, noise, args.run)
 objective = ObjectiveFactory(objective, dim, populationSize)

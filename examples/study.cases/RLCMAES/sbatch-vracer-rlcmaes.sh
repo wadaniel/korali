@@ -1,4 +1,21 @@
-#!/bin/bash
+#!/bin/bash -l
+
+#dims=(2 4 8 16 32 64 128)
+#pops=(8 16 32 64 128 256 512)
+#dim=2
+#pop=8
+#dim=4
+#pop=16
+#dim=8
+#pop=32
+#dim=16
+#pop=64
+#dim=32
+#pop=128
+#dim=64
+#pop=256
+#dim=128
+#pop=512
 
 run=0
 noise=0.0
@@ -9,17 +26,6 @@ steps=100
 version=1
 outdir="figures"
 
-dims=(2 4 8 16 32 64 128) 
-pops=(8 16 32 64 128 256 512)
-
-#dims=(2)
-#pops=(8)
-
-for i in "${!dims[@]}";
-do
-
-dim=${dims[i]}
-pop=${pops[i]}
 
 cat > run.sh <<EOF
 #!/bin/bash -l
@@ -35,7 +41,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMA2/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/CMA3/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py
@@ -55,6 +61,7 @@ python -m korali.rlview --dir "_vracer_${obj}_${dim}_${pop}_${noise}_${run}/" --
 python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --steps $steps --eval --reps $reps --version=$version
 
 objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
+#objectives=("fsphere" "felli" "fparabr" "booth" "rosenbrock" "dixon" "ackley" "levi" "rastrigin")
 #objectives=("fsphere" "felli" "rosenbrock" "dixon" "ackley" "levi")
 
 for o in "\${objectives[@]}";
@@ -73,5 +80,3 @@ date
 EOF
 
 sbatch run.sh
-
-done;

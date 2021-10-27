@@ -528,7 +528,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   ssize_t endId = (ssize_t)_stateVector.size() - 1;
 
   // Getting the starting ID of the initial experience of the episode in the replay memory
-  ssize_t startId = endId - (ssize_t)episode.size() + 1;
+  ssize_t startId = endId - (ssize_t)curExperienceCount + 1;
 
   // If it was a truncated episode, add the value function for the terminal state to retV
   if (_terminationVector[endId] == e_truncated)
@@ -557,7 +557,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
-
+  
   if (_rewardRescalingEnabled)
   {
     // get environment Id vector

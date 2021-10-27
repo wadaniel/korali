@@ -5,8 +5,8 @@ from objective import *
 ######## Defining Environment Storage
 
 
-objectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
-#objectiveList = ["fsphere", "felli", "rosenbrock", "dixon", "ackley", "levi"]
+trainingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
+testingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
  
 def env(s, objective, dim, populationSize, steps, noise, version):
 
@@ -14,9 +14,9 @@ def env(s, objective, dim, populationSize, steps, noise, version):
  
  # Selecting environment
  if objective == "random":
-     envId = s["Sample Id"] % len(objectiveList)
+     envId = s["Sample Id"] % len(trainingObjectiveList)
      s["Environment Id"] = envId
-     objective = objectiveList[envId]
+     objective = trainingObjectiveList[envId]
 
  # Initializing environment
  objective = ObjectiveFactory(objective, dim, populationSize, version)

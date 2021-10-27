@@ -1,3 +1,6 @@
+CMA_ND: version 3, dimension independent state (success history 5)
+
+
 CMAESX: results from slides
 
 CMA: results with 3 different objective types (100 steps)

@@ -12,8 +12,8 @@
 #pop=64
 #dim=32
 #pop=128
-#dim=64
-#pop=256
+dim=64
+pop=256
 #dim=128
 #pop=512
 

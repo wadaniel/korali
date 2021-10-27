@@ -557,7 +557,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
-  
+
   if (_rewardRescalingEnabled)
   {
     // get environment Id vector

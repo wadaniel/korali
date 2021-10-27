@@ -26,7 +26,7 @@ cat > run.sh <<EOF
 #SBATCH --job-name="RLCMAES_VRACER_$dim"
 #SBATCH --output=RLCMAES_$dim_%j.out
 #SBATCH --error=RLCMAES_$dim_err_%j.out
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
@@ -35,7 +35,7 @@ cat > run.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/RLCMA2/\$SLURM_JOB_ID
+RUNPATH=$SCRATCH/RLCMA_ND/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 cat run-vracer.py
@@ -54,7 +54,8 @@ python -m korali.rlview --dir "_vracer_${obj}_${dim}_${pop}_${noise}_${run}/" --
 
 python run-vracer.py --noise $noise --obj $obj --dim ${dim} --pop ${pop} --run $run --steps $steps --eval --reps $reps --version=$version
 
-objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
+objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr" "booth" "dixon" "ackley" "levi" "rastrigin")
+#objectives=("fsphere" "felli" "fcigar" "ftablet" "fcigtab" "ftwoax" "fdiffpow" "rosenbrock" "fparabr" "fsharpr")
 #objectives=("fsphere" "felli" "rosenbrock" "dixon" "ackley" "levi")
 
 for o in "\${objectives[@]}";

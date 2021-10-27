@@ -31,6 +31,8 @@ e["Solver"]["Eta"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring results path
+e["Console Output"]["Frequency"] = 250
+e["File Output"]["Frequency"] = 250
 e["File Output"]["Path"] = '_korali_result_adabelief'
 
 # Running Experiment

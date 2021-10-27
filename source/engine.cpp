@@ -2,8 +2,8 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/conduit/distributed/distributed.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
@@ -18,6 +18,10 @@ bool isPythonActive = 0;
 
 Engine::Engine()
 {
+  #ifdef _KORALI_USE_MPI
+  __isMPICommGiven = false;
+  #endif
+
   _cumulativeTime = 0.0;
   _thread = co_active();
   _conduit = NULL;
@@ -49,22 +53,15 @@ void Engine::initialize()
     _experimentVector[i]->initialize();
     _experimentVector[i]->_isFinished = false;
   }
-
+  
   // Check configuration correctness
   auto js = _js.getJson();
-  try
-  {
-    if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
-    if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
-    if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
-    if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
-    if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
-    if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
-  }
-  catch (const std::exception &e)
-  {
-    KORALI_LOG_ERROR("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
-  }
+  if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
+  if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
+  if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
+  if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
+  if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
+  if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
 
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
@@ -75,7 +72,7 @@ void Engine::start()
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
-  auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  auto conduit = dynamic_cast<Conduit *>(Module::getModule(_js["Conduit"], NULL));
   conduit->applyModuleDefaults(_js["Conduit"]);
   conduit->setConfiguration(_js["Conduit"]);
   conduit->initialize();
@@ -126,7 +123,8 @@ void Engine::start()
   }
 
   // Finalizing Conduit if last engine in the stack
-  _conduit->finalize();
+  _conduit->terminateServer();
+  delete _conduit;
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)
@@ -176,13 +174,6 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
-#ifdef _KORALI_USE_MPI
-long int Engine::getMPICommPointer()
-{
-  return (long int)(&__KoraliTeamComm);
-}
-#endif
-
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -191,15 +182,35 @@ knlohmann::json &Engine::operator[](const unsigned long int &key) { return _js[k
 pybind11::object Engine::getItem(const pybind11::object key) { return _js.getItem(key); }
 void Engine::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
+
+#ifdef _KORALI_USE_MPI4PY
+#ifndef _KORALI_NO_MPI4PY
+
+void Engine::setMPI4PyComm(mpi4py_comm comm)
+{
+ korali::setMPI4PyComm(comm);
+}
+
+#endif
+#endif
+
 } // namespace korali
 
 using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
-#ifdef _KORALI_USE_MPI
-  m.def("getMPICommPointer", &Engine::getMPICommPointer, pybind11::return_value_policy::reference);
-#endif
+  #ifdef _KORALI_USE_MPI
+  #ifdef _KORALI_USE_MPI4PY
+  #ifndef _KORALI_NO_MPI4PY
+
+  // import the mpi4py API
+  if (import_mpi4py() < 0) { throw std::runtime_error("Could not load mpi4py API."); }
+  m.def("getWorkerMPI4PyComm", &getMPI4PyComm);
+
+  #endif
+  #endif
+  #endif
 
   pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
@@ -207,16 +218,25 @@ PYBIND11_MODULE(libkorali, m)
       isPythonActive = true;
       k.run(e);
     })
+
     .def("run", [](Engine &k, std::vector<Experiment> &e) {
       isPythonActive = true;
       k.run(e);
     })
+
+    #ifdef _KORALI_USE_MPI
+    #ifdef _KORALI_USE_MPI4PY
+    #ifndef _KORALI_NO_MPI4PY
+     .def("setMPIComm", &Engine::setMPI4PyComm)
+    #endif
+    #endif
+    #endif
+
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Engine::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);
 
+
   pybind11::class_<KoraliJson>(m, "koraliJson")
-    .def("get", &KoraliJson::get)
-    .def("set", &KoraliJson::set)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&KoraliJson::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&KoraliJson::setItem), pybind11::return_value_policy::reference);
 

@@ -6,7 +6,7 @@ from objective import *
 
 
 trainingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
-testingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
+testingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr", "booth", "dixon", "ackley", "levi", "rastrigin"]
  
 def env(s, objective, dim, populationSize, steps, noise, version):
 
@@ -14,9 +14,16 @@ def env(s, objective, dim, populationSize, steps, noise, version):
  
  # Selecting environment
  if objective == "random":
-     envId = s["Sample Id"] % len(trainingObjectiveList)
+ 
+     objectiveList = None
+     if s["Custom Settings"]["Evaluation"] == "False":
+        objectiveList = trainingObjectiveList
+     else:
+        objectiveList = testingObjectiveList
+
+     envId = s["Sample Id"] % len(objectiveList)
      s["Environment Id"] = envId
-     objective = trainingObjectiveList[envId]
+     objective = objectiveList[envId]
 
  # Initializing environment
  objective = ObjectiveFactory(objective, dim, populationSize, version)

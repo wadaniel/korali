@@ -459,6 +459,7 @@ class __className__ : public __parentClassName__
    */
   inline float getScaledReward(const size_t environmentId, const float reward)
   {
+    KORALI_LOG_ERROR("Reward Rescaling not allowed in IRL");
     float rescaledReward = reward / _rewardRescalingSigma[environmentId];
 
     if (std::isfinite(rescaledReward) == false)

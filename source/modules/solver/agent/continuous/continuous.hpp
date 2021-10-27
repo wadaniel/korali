@@ -58,6 +58,14 @@ class Continuous : public Agent
   * @brief [Internal Use] Stores the shifting required for the parameter after the scaling is applied.
   */
    std::vector<float> _policyParameterShifting;
+  /**
+  * @brief [Internal Use] Weights of linear approximator for observed state action pairs. First entry is intercept.
+  */
+   std::vector<std::vector<float>> _observationsApproximatorWeights;
+  /**
+  * @brief [Internal Use] Estimated noise of linear approximator for observed state action pairs.
+  */
+   std::vector<float> _observationsApproximatorSigmas;
   
  
   /**
@@ -91,6 +99,8 @@ class Continuous : public Agent
    */
   problem::reinforcementLearning::Continuous *_problem;
 
+  float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
+  
   /**
    * @brief Calculates the gradient of teh importance weight  wrt to the parameter of the 2nd (current) distribution evaluated at old action.
    * @param action The action taken by the agent in the given experience
@@ -122,8 +132,25 @@ class Continuous : public Agent
    */
   std::vector<float> generateTestingAction(const policy_t &curPolicy);
 
-  float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
+  /**
+  * @brief Evaluates the log probability of a trajectory given policy hyperparameter
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @param policyHyperparameter The neural network policy hyperparameter.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) override;
+
+  /**
+  * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @return The log probability of the trajectory.
+  */
+  virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) override;
+
   virtual void getAction(korali::Sample &sample) override;
+  
   virtual void initializeAgent() override;
 };
 

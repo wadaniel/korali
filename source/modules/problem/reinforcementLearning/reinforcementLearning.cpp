@@ -55,6 +55,55 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+ 
+  // Validating observations
+  _numberObservedTrajectories = _observationsStates.size();
+  if (_numberObservedTrajectories == 0) KORALI_LOG_ERROR("No states have been recorded.\n");
+  if (_observationsActions.size() == 0) KORALI_LOG_ERROR("No actions have been recorded.\n");
+  if (_observationsFeatures.size() == 0) KORALI_LOG_ERROR("No features have been recorded.\n");
+  if (_observationsStates[0].size() == 0) KORALI_LOG_ERROR("Observed states empty.\n");
+  if (_observationsActions[0].size() == 0) KORALI_LOG_ERROR("Observed actions empty.\n");
+  if (_observationsFeatures[0].size() == 0) KORALI_LOG_ERROR("Observed features empty.\n");
+
+  _featureVectorSize = _observationsFeatures[0][0].size();
+  if (_featureVectorSize == 0) KORALI_LOG_ERROR("No features have been defined.\n");
+
+  if (_observationsActions.size() != _numberObservedTrajectories)
+    KORALI_LOG_ERROR("Number of trajectories mismatch between observed states and observed actions.\n");
+
+  if (_observationsFeatures.size() != _numberObservedTrajectories)
+    KORALI_LOG_ERROR("Number of trajectories mismacht between observed states and observed features.\n");
+
+  _totalObservedStateActionPairs = 0;
+  for (size_t t = 0; t < _numberObservedTrajectories; ++t)
+  {
+    size_t trajectoryLength = _observationsStates[t].size();
+    _totalObservedStateActionPairs += trajectoryLength;
+
+    for (size_t i = 0; i < trajectoryLength; ++i)
+    {
+      if (_observationsStates[t][i].size() != _stateVectorSize)
+        KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
+    }
+
+    if (_observationsActions[t].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory (%zu) length of observed actions (%zu) does not agree with trajectory length of observed states (%zu)\n", t, _observationsActions[t].size(), trajectoryLength);
+
+    for (size_t i = 0; i < trajectoryLength; ++i)
+    {
+      if (_observationsActions[t][i].size() != _actionVectorSize)
+        KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
+    }
+
+    if (_observationsFeatures[t].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory length of observed features (trajectory %zu) does not agree with observed states\n", t);
+
+    for (size_t i = 0; i < trajectoryLength; ++i)
+    {
+      if (_observationsFeatures[t][i].size() != _featureVectorSize)
+        KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
+    }
+  }
 
   // Setting initial launch id (0)
   _launchId = 0;
@@ -119,7 +168,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
-
+ 
   // If this is not the leader rank within the worker group, return immediately
   if (_k->_engine->_conduit->isWorkerLeadRank() == false)
   {
@@ -153,6 +202,25 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Storing the experience's policy
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
+ 
+
+    // Sanity checks for the features
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    for (size_t j = 0; j < _featureVectorSize; j++)
+      if (std::isfinite(agent["Features"][i][j].get<float>()) == false)
+        KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i][j].get<float>());
+  
+    // Storing features of the reward function
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      episodes[i]["Experiences"][actionCount]["Features"] = agent["Features"][i];
+  
+    // Sanity check for reward
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    {
+      episodes[i]["Experiences"][actionCount]["Reward"] = _agent->calculateReward(agent["Features"][i].get<std::vector<float>>());
+      if (std::isfinite(episodes[i]["Experiences"][actionCount]["Reward"].get<float>()) == false)
+        KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
+    }
 
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
@@ -160,10 +228,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
-
-    // Storing experience's reward
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
 
     // Storing termination status
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -176,7 +240,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Adding to cumulative training rewards
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      trainingRewards[i] += agent["Reward"][i].get<float>();
+      trainingRewards[i] += _agent->calculateReward(agent["Features"][i].get<std::vector<float>>());
 
     // Increasing counter for generated actions
     actionCount++;
@@ -428,6 +492,30 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
    eraseValue(js, "State Vector Indexes");
  }
 
+ if (isDefined(js, "Number Observed Trajectories"))
+ {
+ try { _numberObservedTrajectories = js["Number Observed Trajectories"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Number Observed Trajectories']\n%s", e.what()); } 
+   eraseValue(js, "Number Observed Trajectories");
+ }
+
+ if (isDefined(js, "Feature Vector Size"))
+ {
+ try { _featureVectorSize = js["Feature Vector Size"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Feature Vector Size']\n%s", e.what()); } 
+   eraseValue(js, "Feature Vector Size");
+ }
+
+ if (isDefined(js, "Total Observed State Action Pairs"))
+ {
+ try { _totalObservedStateActionPairs = js["Total Observed State Action Pairs"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Total Observed State Action Pairs']\n%s", e.what()); } 
+   eraseValue(js, "Total Observed State Action Pairs");
+ }
+
  if (isDefined(js, "Agents Per Environment"))
  {
  try { _agentsPerEnvironment = js["Agents Per Environment"].get<size_t>();
@@ -471,6 +559,33 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Custom Settings");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Custom Settings'] required by reinforcementLearning.\n"); 
+
+ if (isDefined(js, "Observations", "States"))
+ {
+ try { _observationsStates = js["Observations"]["States"].get<std::vector<std::vector<std::vector<float>>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['States']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "States");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Observations']['States'] required by reinforcementLearning.\n"); 
+
+ if (isDefined(js, "Observations", "Actions"))
+ {
+ try { _observationsActions = js["Observations"]["Actions"].get<std::vector<std::vector<std::vector<float>>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['Actions']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "Actions");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Observations']['Actions'] required by reinforcementLearning.\n"); 
+
+ if (isDefined(js, "Observations", "Features"))
+ {
+ try { _observationsFeatures = js["Observations"]["Features"].get<std::vector<std::vector<std::vector<float>>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['Features']\n%s", e.what()); } 
+   eraseValue(js, "Observations", "Features");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Observations']['Features'] required by reinforcementLearning.\n"); 
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
@@ -532,10 +647,16 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
    js["Environment Function"] = _environmentFunction;
    js["Actions Between Policy Updates"] = _actionsBetweenPolicyUpdates;
    js["Custom Settings"] = _customSettings;
+   js["Observations"]["States"] = _observationsStates;
+   js["Observations"]["Actions"] = _observationsActions;
+   js["Observations"]["Features"] = _observationsFeatures;
    js["Action Vector Size"] = _actionVectorSize;
    js["State Vector Size"] = _stateVectorSize;
    js["Action Vector Indexes"] = _actionVectorIndexes;
    js["State Vector Indexes"] = _stateVectorIndexes;
+   js["Number Observed Trajectories"] = _numberObservedTrajectories;
+   js["Feature Vector Size"] = _featureVectorSize;
+   js["Total Observed State Action Pairs"] = _totalObservedStateActionPairs;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
    _k->_js["Variables"][i]["Type"] = _k->_variables[i]->_type;
    _k->_js["Variables"][i]["Lower Bound"] = _k->_variables[i]->_lowerBound;

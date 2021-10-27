@@ -49,6 +49,18 @@ class ReinforcementLearning : public Problem
   */
    knlohmann::json _customSettings;
   /**
+  * @brief Vector containing the states of the observed trajectories.
+  */
+   std::vector<std::vector<std::vector<float>>> _observationsStates;
+  /**
+  * @brief Vector containing the actions of the observed trajectories.
+  */
+   std::vector<std::vector<std::vector<float>>> _observationsActions;
+  /**
+  * @brief Vector containing the features corresponding to the observed state action pairs.
+  */
+   std::vector<std::vector<std::vector<float>>> _observationsFeatures;
+  /**
   * @brief [Internal Use] Stores the dimension of the action space.
   */
    size_t _actionVectorSize;
@@ -61,9 +73,21 @@ class ReinforcementLearning : public Problem
   */
    std::vector<size_t> _actionVectorIndexes;
   /**
-  * @brief [Internal Use] Stores the indexes of the variables that constitute the action vector.
+  * @brief [Internal Use] Stores the indexes of the number of variables that constitute the action vector.
   */
    std::vector<size_t> _stateVectorIndexes;
+  /**
+  * @brief [Internal Use] Stores the number of observed trajectories.
+  */
+   size_t _numberObservedTrajectories;
+  /**
+  * @brief [Internal Use] The number of features that are observed to compute the reward.
+  */
+   size_t _featureVectorSize;
+  /**
+  * @brief [Internal Use] The total number of observed state action pairs.
+  */
+   size_t _totalObservedStateActionPairs;
   
  
   /**
@@ -109,7 +133,7 @@ class ReinforcementLearning : public Problem
   void runTestingEpisode(korali::Sample &agent);
 
   /**
-   * @brief Initializes the environment and agent configuration
+   * @brief Initializes the environment and agent configuration.
    * @param agent Sample containing current agent/state information.
    */
   void initializeEnvironment(korali::Sample &agent);

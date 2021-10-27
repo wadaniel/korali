@@ -409,7 +409,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     auto state = KORALI_GET(std::vector<float>, agent, "State");
     agent._js.getJson().erase("State");
     agent["State"][0] = state;
-    
+
     auto features = KORALI_GET(std::vector<float>, agent, "Features");
     agent._js.getJson().erase("Features");
     agent["Features"][0] = features;
@@ -418,7 +418,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // Checking correct format of state and feature vector
   if (agent["State"].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
   if (agent["State"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents state vector returned with the wrong size: %lu, expected: %lu.\n", agent["State"].size(), _agentsPerEnvironment);
-  
+
   if (agent["Features"].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
   if (agent["Features"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents feature vector returned with the wrong size: %lu, expected: %lu.\n", agent["Features"].size(), _agentsPerEnvironment);
 
@@ -427,7 +427,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   {
     if (agent["State"][i].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
     if (agent["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["State"][i].size(), _stateVectorSize);
-    
+
     if (agent["Features"][i].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
     if (agent["Features"][i].size() != _featureVectorSize) KORALI_LOG_ERROR("Agents feature vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["Features"][i].size(), _featureVectorSize);
 

@@ -306,12 +306,11 @@ class ObjectiveFactory:
         state[-1] = self.bestEver/self.curEf
     
     else: # dim independent
-        state = np.zeros(9)
+        state = np.zeros(8)
         state[0] = np.linalg.norm(self.paths)
         state[1] = self.scale*np.mean(np.sqrt(np.diag(self.cov))) # mean diagonal sdev
-        state[2] = np.linalg.det(self.cov) # mean diagonal sdev
-        state[3] = self.scale
-        state[4:] = self.successHistory
+        state[2] = np.std(self.feval)/np.mean(self.feval)
+        state[3:] = self.successHistory
 
    
     return state

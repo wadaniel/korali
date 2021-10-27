@@ -137,14 +137,10 @@ else:
     e["Variables"][i]["Type"] = "State"
     i += 1
 
-    e["Variables"][i]["Name"] = "Determinant Variance"
+    e["Variables"][i]["Name"] = "Feval Variation Coefficient"
     e["Variables"][i]["Type"] = "State"
     i += 1
 
-    e["Variables"][i]["Name"] = "Step Size"
-    e["Variables"][i]["Type"] = "State"
-    i += 1
-  
     for j in range(5):
         e["Variables"][i]["Name"] = "Success History {}".format(j)
         e["Variables"][i]["Type"] = "State"

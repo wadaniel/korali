@@ -203,12 +203,10 @@ void Agent::trainingGeneration()
         _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
-        printf("Q\n");
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
       }
 
-    printf("R\n");
     // Listening to _agents for incoming experiences
     KORALI_LISTEN(_agents);
 
@@ -217,7 +215,6 @@ void Agent::trainingGeneration()
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
 
-    printf("S\n");
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
     {
@@ -323,7 +320,6 @@ void Agent::testingGeneration()
 
 float Agent::calculateReward(const std::vector<float> &features)
 {
-  printf("%zu %zu\n", features.size(), _featureWeights.size());
   float reward = 0.0;
 #ifdef COSREWARD
   reward = std::cos(features[0] - _featureWeights[0]);
@@ -964,12 +960,13 @@ void Agent::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
-      //  Now that we have the entire episode, process its experiences (add them to replay memory)
-      processEpisode(message);
-
-      // Increasing total experience counters
-      _experienceCount += message["Experiences"].size();
-      _sessionExperienceCount += message["Experiences"].size();
+      
+      // Process every episode received and its experiences (add them to replay memory)
+      for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+      {
+        message["Episodes"][i]["Policy Hyperparameters"] = _trainingCurrentPolicy["Policy"].get<std::vector<float>>(); // TODO: clean-up (D.W)
+        processEpisode(message["Episodes"][i]);
+      }
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
@@ -1021,14 +1018,12 @@ void Agent::processEpisode(knlohmann::json &episode)
   // Getting experience count from the episode
   size_t curExperienceCount = episode["Experiences"].size();
 
-  printf("H\n");
   // Getting environment id
-  auto environmentId = 0; //episode["Environment Id"].get<size_t>(); TODO D.W
+  auto environmentId = episode["Environment Id"].get<size_t>();
 
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
 
-  printf("J\n");
   for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
     // Getting state
@@ -1039,17 +1034,14 @@ void Agent::processEpisode(knlohmann::json &episode)
     _actionVector.add(action);
 
     // Getting features
-    _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
-    printf("K\n");
+    _featureVector.add(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
 
     // Getting policy
-    _policyVector.add(episode["Policy Hyperparameters"]);
-    printf("L\n");
+    _policyVector.add(episode["Policy Hyperparameters"].get<std::vector<float>>());
 
     // Getting reward
-    printf("expId %zu\n",expId);
-    float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
-    printf("M\n");
+    printf("expId %zu %zu\n",expId, curExperienceCount);
+    float reward = calculateReward(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1108,9 +1100,6 @@ void Agent::processEpisode(knlohmann::json &episode)
       KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
     }
 
-    if (isDefined(episode[expId], "Policy", "Action Index"))
-      expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
-
     if (isDefined(episode["Experiences"][expId], "Policy", "Distribution Parameters"))
       expPolicy.distributionParameters = episode["Experiences"][expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
 
@@ -1121,10 +1110,6 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     if (isDefined(episode["Experiences"][expId], "Policy", "Unbounded Action"))
       expPolicy.unboundedAction = episode["Experiences"][expId]["Policy"]["Unbounded Action"].get<std::vector<float>>();
-
-    if (isDefined(episode[expId], "Policy", "Distribution Parameters"))
-      expPolicy.distributionParameters = episode[expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
-    printf("N\n");
 
     // Storing policy information
     _expPolicyVector.add(expPolicy);
@@ -1162,7 +1147,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   ssize_t endId = (ssize_t)_stateVector.size() - 1;
 
   // Getting the starting ID of the initial experience of the episode in the replay memory
-  ssize_t startId = endId - (ssize_t)episode.size() + 1;
+  ssize_t startId = endId - (ssize_t)curExperienceCount + 1;
 
   // If it was a truncated episode, add the value function for the terminal state to retV
   if (_terminationVector[endId] == e_truncated)
@@ -1186,8 +1171,8 @@ void Agent::processEpisode(knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    printf("endId %zd startId %zd svs %zu e %zu\n", endId, startId, _stateVector.size(), episode.size());
-    printf("expId %zd\n",expId);
+    //printf("endId %zd startId %zd svs %zu e %zu\n", endId, startId, _stateVector.size(), episode.size());
+    //printf("expId %zd\n",expId);
     retV = _discountFactor * retV + calculateReward(_featureVector[expId]);
 
     // Setting initial retrace value in the experience's cache
@@ -1198,6 +1183,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   {
     // get environment Id vector
     // finalize computation of standard deviation for reward rescaling
+    KORALI_LOG_ERROR("IRL does not allow reward rescaling");
     for (size_t i = 0; i < _problem->_environmentCount; ++i)
       _rewardRescalingSigma[i] = std::sqrt(_rewardRescalingSumSquaredRewards[i] / ((float)_experienceCountPerEnvironment[i] + 1e-9)) + 1e-9;
   }
@@ -1356,8 +1342,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      printf("endId %zd startId %zd\n", endId, startId);
-      printf("curId %zd\n", curId);
+      //printf("endId %zd startId %zd\n", endId, startId);
+      //printf("curId %zd\n", curId);
       const float curReward = calculateReward(_featureVector[curId]);
 
       // Calculating state value function

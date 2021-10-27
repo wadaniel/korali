@@ -50,7 +50,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = cosenv
-e["Problem"]["Actions Between Policy Updates"] = 10
+e["Problem"]["Actions Between Policy Updates"] = 1
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures
@@ -77,7 +77,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 0.1
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 10
 
 ### Defining the configuration of replay memory

@@ -11,7 +11,15 @@ def env(s):
 
  # Initializing environment
  cart.reset()
- s["State"] = cart.getState().tolist()
+ state = cart.getState().tolist()
+ s["State"] = state
+  
+ # Getting Features
+ # Pole angle and cart velocity^2
+ s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
+ # Pole angle, cart velocity^2 and dummy
+ #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
+ 
  step = 0
  done = False
 
@@ -29,15 +37,13 @@ def env(s):
   
   # Storing New State
   state = cart.getState().tolist()
-  s["State"] = cart.getState().tolist()
+  s["State"] = state
   
   # Getting Features
   # Pole angle and cart velocity^2
   s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
   # Pole angle, cart velocity^2 and dummy
   #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
-  # for COSREWARD setup: feature = angle
-  #s["Features"] = [ state[2] ]
   
   # Advancing step counter
   step = step + 1
@@ -52,7 +58,11 @@ def cosenv(s):
 
  # Initializing environment
  cart.reset()
- s["State"] = cart.getState().tolist()
+ state = cart.getState().tolist()
+ s["State"] = state
+ #s["Features"] = [ state[2], np.random.normal(0.0, 1.0) ]
+ s["Features"] = [ state[2] ]
+ 
  step = 0
  done = False
 
@@ -73,6 +83,7 @@ def cosenv(s):
   s["State"] = cart.getState().tolist()
   
   # Getting Features
+  #s["Features"] = [ state[2], np.random.normal(0.0, 1.0) ]
   s["Features"] = [ state[2] ]
   
   # Advancing step counter

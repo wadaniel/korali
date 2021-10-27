@@ -100,7 +100,7 @@ class Continuous : public Agent
   problem::reinforcementLearning::Continuous *_problem;
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
-  
+
   /**
    * @brief Calculates the gradient of teh importance weight  wrt to the parameter of the 2nd (current) distribution evaluated at old action.
    * @param action The action taken by the agent in the given experience
@@ -150,7 +150,7 @@ class Continuous : public Agent
   virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) override;
 
   virtual void getAction(korali::Sample &sample) override;
-  
+
   virtual void initializeAgent() override;
 };
 

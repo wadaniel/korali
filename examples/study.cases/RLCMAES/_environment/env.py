@@ -6,7 +6,7 @@ from objective import *
 
 
 trainingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
-testingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr", "booth", "dixon", "ackley", "levi", "rastrigin"]
+evaluationObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr", "booth", "dixon", "ackley", "levi", "rastrigin"]
  
 def env(s, objective, dim, populationSize, steps, noise, version):
 
@@ -15,21 +15,21 @@ def env(s, objective, dim, populationSize, steps, noise, version):
  # Selecting environment
  if objective == "random":
  
-     objectiveList = None
-     if s["Custom Settings"]["Evaluation"] == "False":
+    objectiveList = None
+    if s["Custom Settings"]["Evaluation"] == "True":
+        objectiveList = evaluationObjectiveList
+    else:
         objectiveList = trainingObjectiveList
-     else:
-        objectiveList = testingObjectiveList
 
-     envId = s["Sample Id"] % len(objectiveList)
-     s["Environment Id"] = envId
-     objective = objectiveList[envId]
+    envId = s["Sample Id"] % len(objectiveList)
+    s["Environment Id"] = envId
+    objective = objectiveList[envId]
 
  # Initializing environment
- objective = ObjectiveFactory(objective, dim, populationSize, version)
- objective.reset(noise=noise)
+ objectiveFactory = ObjectiveFactory(objective, dim, populationSize, version)
+ objectiveFactory.reset(noise=noise)
 
- s["State"] = objective.getState().tolist()
+ s["State"] = objectiveFactory.getState().tolist()
  step = 0
  done = False
 
@@ -44,27 +44,27 @@ def env(s, objective, dim, populationSize, steps, noise, version):
   s.update()
   
   # Performing the action
-  done = objective.advance(s["Action"])
+  done = objectiveFactory.advance(s["Action"])
   
   # Getting Reward
-  s["Reward"] = objective.getReward()
+  s["Reward"] = objectiveFactory.getReward()
    
   # Storing New State
-  s["State"] = objective.getState().tolist()
+  s["State"] = objectiveFactory.getState().tolist()
   
-  #state = objective.getState().tolist()
+  #state = objectiveFactory.getState().tolist()
   #print(state)
 
   # Advancing step counter
-  objectives.append(objective.curBestF)
-  muobjectives.append(objective.curEf)
-  scales.append(objective.scale)
+  objectives.append(objectiveFactory.curBestF)
+  muobjectives.append(objectiveFactory.curEf)
+  scales.append(objectiveFactory.scale)
   actions.append(s["Action"])
 
   step = step + 1
 
  # Setting finalization status
- if (objective.isOver()):
+ if (objectiveFactory.isOver()):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
@@ -73,7 +73,7 @@ def env(s, objective, dim, populationSize, steps, noise, version):
  if s["Custom Settings"]["Evaluation"] == "True":
     # load previous
     outfile = s["Custom Settings"]["Outfile"]
-    outfile = outfile.replace("random", objective.objective)
+    outfile = outfile.replace("random", objectiveFactory.objective)
     if os.path.isfile(outfile):
         history = np.load(outfile)
         scaleHistory = history['scaleHistory']

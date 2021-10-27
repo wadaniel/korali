@@ -6,7 +6,7 @@ obj="random"
 exp=5000000
 reps=100
 steps=100
-version=1
+version=3
 outdir="figures"
 
 dims=(2 4 8 16 32 64 128) 

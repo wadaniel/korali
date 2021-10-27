@@ -107,7 +107,7 @@ elif version == 1:
     e["Variables"][i]["Type"] = "State"
     i += 1
 
-else:
+elif version == 2:
     i = 0
     for j in range(dim):
         e["Variables"][i]["Name"] = "Mu Cov {}".format(j)
@@ -127,6 +127,28 @@ else:
     e["Variables"][i]["Type"] = "State"
     i += 1
 
+else:
+    i = 0
+    e["Variables"][i]["Name"] = "Path L2 Norm"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+
+    e["Variables"][i]["Name"] = "Average Diagonal Sdev"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+
+    e["Variables"][i]["Name"] = "Determinant Variance"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+
+    e["Variables"][i]["Name"] = "Step Size"
+    e["Variables"][i]["Type"] = "State"
+    i += 1
+  
+    for j in range(5):
+        e["Variables"][i]["Name"] = "Success History {}".format(j)
+        e["Variables"][i]["Type"] = "State"
+        i += 1
 
 e["Variables"][i]["Name"] = "Step Size Rate"
 e["Variables"][i]["Type"] = "Action"

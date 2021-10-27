@@ -23,7 +23,7 @@ obj="random"
 exp=5000000
 reps=100
 steps=100
-version=1
+version=3
 outdir="figures"
 
 

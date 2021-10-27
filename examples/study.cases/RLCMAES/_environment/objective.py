@@ -31,7 +31,6 @@ class ObjectiveFactory:
    
     self.cs = (self.ueff+2.)/(self.dim+self.ueff+5)
     self.cm = 1.
-
     #print(" mueff {}\n chi {}\n dhat {}\n cc {}\n c1{}\n cu {}\n cs {}\n".format(self.ueff, self.chi, self.dhat, self.cc, self.c1, self.cu, self.cs))
 
     # Init variables
@@ -40,7 +39,7 @@ class ObjectiveFactory:
   def reset(self, noise=0.0):
 
     # Initialize variable params
-    self.scale = self.cs
+    self.scale = 1.0
     #self.mean = np.zeros(self.dim)
     self.mean = np.random.uniform(low=-5., high=5., size=self.dim)
     self.cov = np.diag(np.ones(self.dim))
@@ -48,6 +47,7 @@ class ObjectiveFactory:
     self.paths = np.zeros(self.dim)
     self.pathc = np.zeros(self.dim)
 
+    self.successHistory = np.zeros(5)
     self.population = np.zeros( (self.dim,self.populationSize ) )
     self.feval = np.zeros( self.populationSize )
     self.prevBestEver = np.inf
@@ -227,6 +227,11 @@ class ObjectiveFactory:
     assert self.curBestF > 0., "Best must be positive {} ({})".format(self.curBestF, self.objective)
     if self.curBestF < self.bestEver:
         self.bestEver = self.curBestF
+    
+    # Update success history
+    self.successHistory[1:] = self.successHistory[:4]
+    self.successHistory[0] = int(self.curEf < self.prevEf)
+
 
   def advance(self, action):
 
@@ -293,12 +298,20 @@ class ObjectiveFactory:
         state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
         state[-1] = self.bestEver/self.curEf
 
-    else:
+    elif self.version == 2:
         state = np.zeros(self.dim+self.mu+2)
         state[:self.dim] = np.diag(self.covMu)
         state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
         state[-2] = np.linalg.norm(self.paths)
         state[-1] = self.bestEver/self.curEf
+    
+    else: # dim independent
+        state = np.zeros(9)
+        state[0] = np.linalg.norm(self.paths)
+        state[1] = self.scale*np.mean(np.sqrt(np.diag(self.cov))) # mean diagonal sdev
+        state[2] = np.linalg.det(self.cov) # mean diagonal sdev
+        state[3] = self.scale
+        state[4:] = self.successHistory
 
    
     return state

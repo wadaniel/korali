@@ -45,6 +45,9 @@ def env(s, objective, dim, populationSize, steps, noise, version):
   # Storing New State
   s["State"] = objective.getState().tolist()
   
+  #state = objective.getState().tolist()
+  #print(state)
+
   # Advancing step counter
   objectives.append(objective.curBestF)
   muobjectives.append(objective.curEf)

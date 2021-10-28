@@ -1,7 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "sample/sample.hpp"
-
+#include <gsl/gsl_multifit.h>
 #include <gsl/gsl_sf_psi.h>
 
 namespace korali
@@ -96,6 +96,83 @@ void Continuous::initializeAgent()
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
     }
   }
+
+  // Allocate memory for linear controller
+  _observationsApproximatorWeights.resize(_problem->_actionVectorSize, std::vector<float>(_problem->_stateVectorSize + 1));
+  _observationsApproximatorSigmas.resize(_problem->_actionVectorSize);
+
+  // Building linear controller for observed state action pairs
+  gsl_matrix *X = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
+  gsl_matrix *Y = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, _problem->_actionVectorSize);
+  size_t idx = 0;
+  for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
+  {
+    size_t trajectoryLength = _problem->_observationsStates[i].size();
+    for (size_t t = 0; t < trajectoryLength; ++t)
+    {
+      gsl_matrix_set(X, idx, 0, 1.0); // intercept
+      for (size_t j = 0; j < _problem->_stateVectorSize; ++j)
+      {
+        gsl_matrix_set(X, idx, j + 1, (double)_problem->_observationsStates[i][t][j]);
+      }
+      for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
+      {
+        gsl_matrix_set(Y, idx, k, (double)_problem->_observationsActions[i][t][k]);
+      }
+      idx++;
+    }
+  }
+
+_k->_logger->logInfo("Normal", "Linear Approximator Expert Policy\n");
+
+  // Do regression over actions
+  for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
+  {
+    double chisq;
+    gsl_vector *c = gsl_vector_alloc(_problem->_stateVectorSize + 1);
+    gsl_matrix *cov = gsl_matrix_alloc(_problem->_stateVectorSize + 1, _problem->_stateVectorSize + 1);
+    gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
+
+    // predict action Y_k
+    gsl_vector_view y = gsl_matrix_column(Y, k);
+    gsl_multifit_linear(X, &y.vector, c, cov, &chisq, work);
+
+    for (size_t j = 0; j < _problem->_stateVectorSize + 1; ++j)
+    {
+      _observationsApproximatorWeights[k][j] = gsl_vector_get(c, j);
+      _k->_logger->logInfo("Normal", "    + Weights  [%zu, %zu] %f \n", k, j, _observationsApproximatorWeights[k][j]);
+    }
+
+    gsl_multifit_linear_free(work);
+    gsl_vector_free(c);
+    gsl_matrix_free(cov);
+  }
+
+  // Calculate squared error over all predictions
+  std::vector<float> squaredErrors(_problem->_actionVectorSize);
+  for (size_t t = 0; t < _problem->_numberObservedTrajectories; ++t)
+    for (size_t i = 0; i < _problem->_observationsStates[t].size(); ++i)
+    {
+      for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
+      {
+        float approx = _observationsApproximatorWeights[k][0]; // intercept
+        for (size_t j = 0; j < _problem->_stateVectorSize; ++j)
+        {
+          approx += _problem->_observationsStates[t][i][j] * _observationsApproximatorWeights[k][j + 1];
+        }
+        squaredErrors[k] += std::pow(_problem->_observationsActions[t][i][k] - approx, 2.);
+      }
+    }
+
+  // Set MLE sigma estimates
+  for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
+  {
+    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k] / (float)_problem->_totalObservedStateActionPairs);
+    _k->_logger->logInfo("Normal", "    + Sigma    [%zu] %f \n", k, _observationsApproximatorSigmas[k]);
+  }
+
+  gsl_matrix_free(X);
+  gsl_matrix_free(Y);
 }
 
 void Continuous::getAction(korali::Sample &sample)

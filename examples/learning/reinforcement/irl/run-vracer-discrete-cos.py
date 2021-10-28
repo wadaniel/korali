@@ -52,7 +52,6 @@ e["Problem"]["Possible Actions"] = [ [i] for i in range(-10,11) ]
 e["Problem"]["Environment Function"] = cosenv
 e["Problem"]["Training Reward Threshold"] = 600
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures

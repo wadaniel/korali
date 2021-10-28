@@ -963,7 +963,6 @@ void Agent::attendAgent(size_t agentId)
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-        message["Episodes"][i]["Policy Hyperparameters"] = _trainingCurrentPolicy["Policy"].get<std::vector<float>>(); // TODO: clean-up, wrong (D.W)
         processEpisode(message["Episodes"][i]);
       }
 
@@ -1036,10 +1035,9 @@ void Agent::processEpisode(knlohmann::json &episode)
     _featureVector.add(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
 
     // Getting policy
-    _policyVector.add(episode["Policy Hyperparameters"].get<std::vector<float>>());
+    _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
     // Getting reward
-    printf("expId %zu %zu\n", expId, curExperienceCount);
     float reward = calculateReward(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated

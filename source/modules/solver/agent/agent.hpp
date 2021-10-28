@@ -96,9 +96,9 @@ class Agent : public Solver
   */
    std::vector<size_t> _testingSampleIds;
   /**
-  * @brief The current hyperparameters of the policy to test.
+  * @brief The current hyperparameters of the policies to test.
   */
-   knlohmann::json _testingCurrentPolicy;
+   knlohmann::json _testingCurrentPolicies;
   /**
   * @brief Specifies the depth of the running training average to report.
   */
@@ -252,13 +252,13 @@ class Agent : public Solver
   */
    size_t _trainingBestEpisodeId;
   /**
-  * @brief [Internal Use] Stores the current training policy configuration.
+  * @brief [Internal Use] Stores the current training policies configuration.
   */
-   knlohmann::json _trainingCurrentPolicy;
+   knlohmann::json _trainingCurrentPolicies;
   /**
-  * @brief [Internal Use] Stores the best training policy configuration found so far.
+  * @brief [Internal Use] Stores the best training policies configuration found so far.
   */
-   knlohmann::json _trainingBestPolicy;
+   knlohmann::json _trainingBestPolicies;
   /**
   * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
@@ -296,9 +296,9 @@ class Agent : public Solver
   */
    float _testingBestAverageReward;
   /**
-  * @brief [Internal Use] Stores the best testing policy configuration found so far.
+  * @brief [Internal Use] Stores the best testing policies configuration found so far.
   */
-   knlohmann::json _testingBestPolicy;
+   knlohmann::json _testingBestPolicies;
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */

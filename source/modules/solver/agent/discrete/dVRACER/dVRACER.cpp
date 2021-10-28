@@ -24,47 +24,56 @@ void dVRACER::initializeAgent()
   /*********************************************************************
    * Initializing Critic/Policy Neural Network Optimization Experiment
    *********************************************************************/
+  _criticPolicyLearner.resize(_problem->_policiesPerEnvironment);
+  _criticPolicyExperiment.resize(_problem->_policiesPerEnvironment);
+  _criticPolicyProblem.resize(_problem->_policiesPerEnvironment);
 
-  _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
-  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
-  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount; // The value function, action q values, and inverse temperatur
-
-  _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
-  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
-  _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
-  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
-
-  // No transformations for the state value output
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
-
-  // No transofrmation for the q values
-  for (size_t i = 0; i < _problem->_possibleActions.size(); ++i)
+  for(size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = 0.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = "Identity";
+    _criticPolicyExperiment[p]["Problem"]["Type"] = "Supervised Learning";
+    _criticPolicyExperiment[p]["Problem"]["Max Timesteps"] = _timeSequenceLength;
+    if(_problem->_policiesPerEnvironment == 1)
+      _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
+    else
+      _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize;
+    _criticPolicyExperiment[p]["Problem"]["Inference Batch Size"] = 1;
+    _criticPolicyExperiment[p]["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+    _criticPolicyExperiment[p]["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount; // The value function, action q values, and inverse temperatur
+
+    _criticPolicyExperiment[p]["Solver"]["Type"] = "Learner/DeepSupervisor";
+    _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+    _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
+    _criticPolicyExperiment[p]["Solver"]["Learning Rate"] = _currentLearningRate;
+    _criticPolicyExperiment[p]["Solver"]["Loss Function"] = "Direct Gradient";
+    _criticPolicyExperiment[p]["Solver"]["Steps Per Generation"] = 1;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+    _criticPolicyExperiment[p]["Solver"]["Output Weights Scaling"] = 0.001;
+
+    // No transformations for the state value output
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
+
+    // No transofrmation for the q values
+    for (size_t i = 0; i < _problem->_possibleActions.size(); ++i)
+    {
+      _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.0f;
+      _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = 0.0f;
+      _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = "Identity";
+    }
+
+    // Transofrmation for the inverse temperature
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][1 + _problem->_possibleActions.size()] = 1.0f;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_possibleActions.size()] = 0.0f;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_possibleActions.size()] = "Sigmoid";
+
+    // Running initialization to verify that the configuration is correct
+    _criticPolicyExperiment[p].initialize();
+    _criticPolicyProblem[p] = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment[p]._problem);
+    _criticPolicyLearner[p] = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment[p]._solver);
   }
-
-  // Transofrmation for the inverse temperature
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][1 + _problem->_possibleActions.size()] = 1.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_possibleActions.size()] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_possibleActions.size()] = "Sigmoid";
-
-  // Running initialization to verify that the configuration is correct
-  _criticPolicyExperiment.initialize();
-  _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
-  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
 void dVRACER::trainPolicy()
@@ -84,11 +93,14 @@ void dVRACER::trainPolicy()
   // Now calculating policy gradients
   calculatePolicyGradients(miniBatch);
 
-  // Updating learning rate for critic/policy learner guided by REFER
-  _criticPolicyLearner->_learningRate = _currentLearningRate;
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  {
+    // Updating learning rate for critic/policy learner guided by REFER
+    _criticPolicyLearner[p]->_learningRate = _currentLearningRate;
 
-  // Now applying gradients to update policy NN
-  _criticPolicyLearner->runGeneration();
+    // Now applying gradients to update policy NN
+    _criticPolicyLearner[p]->runGeneration();
+  }
 }
 
 void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
@@ -166,7 +178,11 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
         }
 
-        _criticPolicyProblem->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        // Set Gradient of Loss as Solution
+        if (_problem->_policiesPerEnvironment == 1)
+          _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        else
+          _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
       }
     }
     else if (_relationship== "collaborator")
@@ -239,7 +255,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
         }
 
-        _criticPolicyProblem->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
       }
 
     }
@@ -256,79 +272,218 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
   // Getting batch size
   size_t batchSize = stateBatch.size();
 
-  // Storage for policy
-  std::vector<policy_t> policyVector(batchSize);
-
-  // Forward the neural network for this state
-  const auto evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
-
-#pragma omp parallel for
-  for (size_t b = 0; b < batchSize; b++)
+  if (_problem->_policiesPerEnvironment == 1)
   {
-    // Getting state value
-    policyVector[b].stateValue = evaluation[b][0];
+    // Storage for policy
+    std::vector<policy_t> policyVector(batchSize);
 
-    // Storage for action probabilities
-    float maxq = -korali::Inf;
-    std::vector<float> qValAndInvTemp(_policyParameterCount);
-    std::vector<float> pActions(_problem->_possibleActions.size());
+    // Forward the neural network for this state
+    const auto evaluation = _criticPolicyLearner[0]->getEvaluation(stateBatch);
 
-    // Get the inverse of the temperature for the softmax distribution
-    const float invTemperature = evaluation[b][_policyParameterCount];
-
-    // Iterating all Q(s,a)
-    for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  #pragma omp parallel for
+    for (size_t b = 0; b < batchSize; b++)
     {
-      // Computing Q(s,a_i)
-      qValAndInvTemp[i] = evaluation[b][1 + i];
+      // Getting state value
+      policyVector[b].stateValue = evaluation[b][0];
 
-      // Extracting max Q(s,a_i)
-      if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+      // Storage for action probabilities
+      float maxq = -korali::Inf;
+      std::vector<float> qValAndInvTemp(_policyParameterCount);
+      std::vector<float> pActions(_problem->_possibleActions.size());
+
+      // Get the inverse of the temperature for the softmax distribution
+      const float invTemperature = evaluation[b][_policyParameterCount];
+
+      // Iterating all Q(s,a)
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+      {
+        // Computing Q(s,a_i)
+        qValAndInvTemp[i] = evaluation[b][1 + i];
+
+        // Extracting max Q(s,a_i)
+        if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+      }
+
+      // Storage for the cumulative e^Q(s,a_i)/maxq
+      float sumExpQVal = 0.0;
+
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+      {
+        // Computing e^(Q(s,a_i) - maxq)
+        float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+
+        // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+        sumExpQVal += expCurQVal;
+
+        // Storing partial value of the probability of the action
+        pActions[i] = expCurQVal;
+      }
+
+      // Calculating inverse of Sum_i(e^Q(s,a_i))
+      float invSumExpQVal = 1.0f / sumExpQVal;
+
+      // Normalizing action probabilities
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+        pActions[i] *= invSumExpQVal;
+
+      // Set inverse temperature parameter
+      qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
+
+      // Storing the action probabilities into the policy
+      policyVector[b].actionProbabilities = pActions;
+      policyVector[b].distributionParameters = qValAndInvTemp;
     }
 
-    // Storage for the cumulative e^Q(s,a_i)/maxq
-    float sumExpQVal = 0.0;
+    return policyVector;
 
-    for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    {
-      // Computing e^(Q(s,a_i) - maxq)
-      float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
-
-      // Computing Sum_i(e^Q(s,a_i)/e^maxq)
-      sumExpQVal += expCurQVal;
-
-      // Storing partial value of the probability of the action
-      pActions[i] = expCurQVal;
-    }
-
-    // Calculating inverse of Sum_i(e^Q(s,a_i))
-    float invSumExpQVal = 1.0f / sumExpQVal;
-
-    // Normalizing action probabilities
-    for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-      pActions[i] *= invSumExpQVal;
-
-    // Set inverse temperature parameter
-    qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
-
-    // Storing the action probabilities into the policy
-    policyVector[b].actionProbabilities = pActions;
-    policyVector[b].distributionParameters = qValAndInvTemp;
   }
+  else if ((_problem->_policiesPerEnvironment != 1) & (batchSize==1)) //TODO:CHECK with P&D,since it is unclear which policy is needed when runPolicy is called in continuous.cpp.base, I feed it through all NN and decide in cont. which one to take
+  {
+    // Storage for policy
+    std::vector<policy_t> policyVector(_problem->_policiesPerEnvironment);
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+    {
+      const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatch);
 
-  return policyVector;
+      // Getting state value
+      policyVector[p].stateValue = evaluation[0][0];
+
+      // Storage for action probabilities
+      float maxq = -korali::Inf;
+      std::vector<float> qValAndInvTemp(_policyParameterCount);
+      std::vector<float> pActions(_problem->_possibleActions.size());
+
+      // Get the inverse of the temperature for the softmax distribution
+      const float invTemperature = evaluation[0][_policyParameterCount];
+
+      // Iterating all Q(s,a)
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+      {
+        // Computing Q(s,a_i)
+        qValAndInvTemp[i] = evaluation[0][1 + i];
+
+        // Extracting max Q(s,a_i)
+        if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+      }
+
+      // Storage for the cumulative e^Q(s,a_i)/maxq
+      float sumExpQVal = 0.0;
+
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+      {
+        // Computing e^(Q(s,a_i) - maxq)
+        float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+
+        // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+        sumExpQVal += expCurQVal;
+
+        // Storing partial value of the probability of the action
+        pActions[i] = expCurQVal;
+      }
+
+      // Calculating inverse of Sum_i(e^Q(s,a_i))
+      float invSumExpQVal = 1.0f / sumExpQVal;
+
+      // Normalizing action probabilities
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+        pActions[i] *= invSumExpQVal;
+
+      // Set inverse temperature parameter
+      qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
+
+      // Storing the action probabilities into the policy
+      policyVector[p].actionProbabilities = pActions;
+      policyVector[p].distributionParameters = qValAndInvTemp;
+
+    }
+    return policyVector;
+  }
+  else
+  {
+    // Storage for policy
+    std::vector<policy_t> policyVector(batchSize);
+
+    // Storage for each sample for all Policies
+    std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
+    for (size_t b = 0; b < batchSize; b++)
+    {
+      stateBatchDistributed[b % _problem->_agentsPerEnvironment].push_back(stateBatch[b]);
+    }
+
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+    {
+      const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
+    #pragma omp parallel for
+      for (size_t b = 0; b < evaluation.size(); b++)
+      {
+        // Getting state value
+        policyVector[b * _problem->_agentsPerEnvironment + p].stateValue = evaluation[b][0];
+
+        // Storage for action probabilities
+        float maxq = -korali::Inf;
+        std::vector<float> qValAndInvTemp(_policyParameterCount);
+        std::vector<float> pActions(_problem->_possibleActions.size());
+
+        // Get the inverse of the temperature for the softmax distribution
+        const float invTemperature = evaluation[b][_policyParameterCount];
+
+        // Iterating all Q(s,a)
+        for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+        {
+          // Computing Q(s,a_i)
+          qValAndInvTemp[i] = evaluation[b][1 + i];
+
+          // Extracting max Q(s,a_i)
+          if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+        }
+
+        // Storage for the cumulative e^Q(s,a_i)/maxq
+        float sumExpQVal = 0.0;
+
+        for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+        {
+          // Computing e^(Q(s,a_i) - maxq)
+          float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+
+          // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+          sumExpQVal += expCurQVal;
+
+          // Storing partial value of the probability of the action
+          pActions[i] = expCurQVal;
+        }
+
+        // Calculating inverse of Sum_i(e^Q(s,a_i))
+        float invSumExpQVal = 1.0f / sumExpQVal;
+
+        // Normalizing action probabilities
+        for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+          pActions[i] *= invSumExpQVal;
+
+        // Set inverse temperature parameter
+        qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
+
+        // Storing the action probabilities into the policy
+        policyVector[b * _problem->_agentsPerEnvironment + p].actionProbabilities = pActions;
+        policyVector[b * _problem->_agentsPerEnvironment + p].distributionParameters = qValAndInvTemp;
+
+      }
+    }
+    return policyVector;
+  }
 }
 
 knlohmann::json dVRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
+    hyperparameters["Policy Hyperparameters"][p]= _criticPolicyLearner[p]->getHyperparameters();
   return hyperparameters;
 }
 
 void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
+    _criticPolicyLearner[p]->setHyperparameters(hyperparameters[p].get<std::vector<float>>());
 }
 
 void dVRACER::printAgentInformation()

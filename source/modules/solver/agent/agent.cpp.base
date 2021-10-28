@@ -107,15 +107,16 @@ void __className__::initialize()
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
-    _trainingCurrentPolicy = getAgentPolicy();
+    _trainingCurrentPolicies = getAgentPolicy();
+
   }
 
   // Setting current agent's training state
-  setAgentPolicy(_trainingCurrentPolicy);
+  setAgentPolicy(_trainingCurrentPolicies["Policy Hyperparameters"]);
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
-    if (_mode == "Training" || _testingBestPolicy.empty())
+    if (_mode == "Training" || _testingBestPolicies.empty())
       deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
@@ -149,17 +150,17 @@ void __className__::initialize()
     _maxGenerations = _k->_currentGeneration + 1;
 
     // Setting testing policy to best testing hyperparameters if not custom-set by the user
-    if (_testingCurrentPolicy.empty())
+    if (_testingCurrentPolicies.empty())
     {
       // Checking if testing policies have been generated
-      if (_testingBestPolicy.empty())
+      if (_testingBestPolicies.empty())
       {
         _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
-        _testingCurrentPolicy = _trainingCurrentPolicy;
+        _testingCurrentPolicies = _trainingCurrentPolicies;
       }
       else
       {
-        _testingCurrentPolicy = _testingBestPolicy;
+        _testingCurrentPolicies = _testingBestPolicies;
       }
     }
 
@@ -204,7 +205,8 @@ void __className__::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
+        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+          _agents[agentId]["Policy Hyperparameters"][p] = _trainingCurrentPolicies["Policy Hyperparameters"][p];
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
@@ -257,7 +259,7 @@ void __className__::trainingGeneration()
       }
 
       // Getting new policy hyperparameters (for agents to generate actions)
-      _trainingCurrentPolicy = getAgentPolicy();
+      _trainingCurrentPolicies = getAgentPolicy();
     }
   }
 
@@ -301,7 +303,8 @@ void __className__::testingGeneration()
     testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
-    testingAgents[agentId]["Policy Hyperparameters"] = _testingCurrentPolicy;
+    for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+      testingAgents[agentId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
@@ -365,7 +368,9 @@ void __className__::attendAgent(size_t agentId)
 
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
-      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
+    {
+      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicies);
+    }
 
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
@@ -397,7 +402,8 @@ void __className__::attendAgent(size_t agentId)
       {
         _trainingBestReward = _trainingLastReward;
         _trainingBestEpisodeId = episodeId;
-        _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+          _trainingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
       }
 
       // Storing bookkeeping information
@@ -421,7 +427,8 @@ void __className__::attendAgent(size_t agentId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = episodeId;
-          _testingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+          for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+            _testingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
         }
       }
 

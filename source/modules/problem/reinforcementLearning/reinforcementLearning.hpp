@@ -29,9 +29,13 @@ class ReinforcementLearning : public Problem
 {
   public: 
   /**
-  * @brief Number of agents in a given environment. All agents share the same policy .
+  * @brief Number of agents in a given environment .
   */
    size_t _agentsPerEnvironment;
+  /**
+  * @brief Number of policies in a given environment. All agents share the same policy or all have individual policy.
+  */
+   size_t _policiesPerEnvironment;
   /**
   * @brief Function to initialize and run an episode in the environment.
   */

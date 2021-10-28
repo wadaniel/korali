@@ -111,15 +111,16 @@ void Agent::initialize()
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
-    _trainingCurrentPolicy = getAgentPolicy();
+    _trainingCurrentPolicies = getAgentPolicy();
+
   }
 
   // Setting current agent's training state
-  setAgentPolicy(_trainingCurrentPolicy);
+  setAgentPolicy(_trainingCurrentPolicies["Policy Hyperparameters"]);
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
-    if (_mode == "Training" || _testingBestPolicy.empty())
+    if (_mode == "Training" || _testingBestPolicies.empty())
       deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
@@ -153,17 +154,17 @@ void Agent::initialize()
     _maxGenerations = _k->_currentGeneration + 1;
 
     // Setting testing policy to best testing hyperparameters if not custom-set by the user
-    if (_testingCurrentPolicy.empty())
+    if (_testingCurrentPolicies.empty())
     {
       // Checking if testing policies have been generated
-      if (_testingBestPolicy.empty())
+      if (_testingBestPolicies.empty())
       {
         _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
-        _testingCurrentPolicy = _trainingCurrentPolicy;
+        _testingCurrentPolicies = _trainingCurrentPolicies;
       }
       else
       {
-        _testingCurrentPolicy = _testingBestPolicy;
+        _testingCurrentPolicies = _testingBestPolicies;
       }
     }
 
@@ -208,7 +209,8 @@ void Agent::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
+        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+          _agents[agentId]["Policy Hyperparameters"][p] = _trainingCurrentPolicies["Policy Hyperparameters"][p];
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
@@ -261,7 +263,7 @@ void Agent::trainingGeneration()
       }
 
       // Getting new policy hyperparameters (for agents to generate actions)
-      _trainingCurrentPolicy = getAgentPolicy();
+      _trainingCurrentPolicies = getAgentPolicy();
     }
   }
 
@@ -305,7 +307,8 @@ void Agent::testingGeneration()
     testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
-    testingAgents[agentId]["Policy Hyperparameters"] = _testingCurrentPolicy;
+    for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+      testingAgents[agentId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
@@ -369,7 +372,9 @@ void Agent::attendAgent(size_t agentId)
 
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
-      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
+    {
+      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicies);
+    }
 
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
@@ -401,7 +406,8 @@ void Agent::attendAgent(size_t agentId)
       {
         _trainingBestReward = _trainingLastReward;
         _trainingBestEpisodeId = episodeId;
-        _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+          _trainingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
       }
 
       // Storing bookkeeping information
@@ -425,7 +431,8 @@ void Agent::attendAgent(size_t agentId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = episodeId;
-          _testingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+          for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+            _testingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
         }
       }
 
@@ -1385,18 +1392,18 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Training", "Best Episode Id");
  }
 
- if (isDefined(js, "Training", "Current Policy"))
+ if (isDefined(js, "Training", "Current Policies"))
  {
- _trainingCurrentPolicy = js["Training"]["Current Policy"].get<knlohmann::json>();
+ _trainingCurrentPolicies = js["Training"]["Current Policies"].get<knlohmann::json>();
 
-   eraseValue(js, "Training", "Current Policy");
+   eraseValue(js, "Training", "Current Policies");
  }
 
- if (isDefined(js, "Training", "Best Policy"))
+ if (isDefined(js, "Training", "Best Policies"))
  {
- _trainingBestPolicy = js["Training"]["Best Policy"].get<knlohmann::json>();
+ _trainingBestPolicies = js["Training"]["Best Policies"].get<knlohmann::json>();
 
-   eraseValue(js, "Training", "Best Policy");
+   eraseValue(js, "Training", "Best Policies");
  }
 
  if (isDefined(js, "Testing", "Reward"))
@@ -1471,11 +1478,11 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Testing", "Best Average Reward");
  }
 
- if (isDefined(js, "Testing", "Best Policy"))
+ if (isDefined(js, "Testing", "Best Policies"))
  {
- _testingBestPolicy = js["Testing"]["Best Policy"].get<knlohmann::json>();
+ _testingBestPolicies = js["Testing"]["Best Policies"].get<knlohmann::json>();
 
-   eraseValue(js, "Testing", "Best Policy");
+   eraseValue(js, "Testing", "Best Policies");
  }
 
  if (isDefined(js, "Experience Replay", "Off Policy", "Count"))
@@ -1607,13 +1614,13 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing']['Sample Ids'] required by agent.\n"); 
 
- if (isDefined(js, "Testing", "Current Policy"))
+ if (isDefined(js, "Testing", "Current Policies"))
  {
- _testingCurrentPolicy = js["Testing"]["Current Policy"].get<knlohmann::json>();
+ _testingCurrentPolicies = js["Testing"]["Current Policies"].get<knlohmann::json>();
 
-   eraseValue(js, "Testing", "Current Policy");
+   eraseValue(js, "Testing", "Current Policies");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing']['Current Policy'] required by agent.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing']['Current Policies'] required by agent.\n"); 
 
  if (isDefined(js, "Training", "Average Depth"))
  {
@@ -1931,7 +1938,7 @@ void Agent::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Mode"] = _mode;
    js["Testing"]["Sample Ids"] = _testingSampleIds;
-   js["Testing"]["Current Policy"] = _testingCurrentPolicy;
+   js["Testing"]["Current Policies"] = _testingCurrentPolicies;
    js["Training"]["Average Depth"] = _trainingAverageDepth;
    js["Concurrent Environments"] = _concurrentEnvironments;
    js["Episodes Per Generation"] = _episodesPerGeneration;
@@ -1975,8 +1982,8 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Training"]["Last Reward"] = _trainingLastReward;
    js["Training"]["Best Reward"] = _trainingBestReward;
    js["Training"]["Best Episode Id"] = _trainingBestEpisodeId;
-   js["Training"]["Current Policy"] = _trainingCurrentPolicy;
-   js["Training"]["Best Policy"] = _trainingBestPolicy;
+   js["Training"]["Current Policies"] = _trainingCurrentPolicies;
+   js["Training"]["Best Policies"] = _trainingBestPolicies;
    js["Testing"]["Reward"] = _testingReward;
    js["Testing"]["Best Reward"] = _testingBestReward;
    js["Testing"]["Worst Reward"] = _testingWorstReward;
@@ -1986,7 +1993,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Stdev Reward"] = _testingStdevReward;
    js["Testing"]["Previous Average Reward"] = _testingPreviousAverageReward;
    js["Testing"]["Best Average Reward"] = _testingBestAverageReward;
-   js["Testing"]["Best Policy"] = _testingBestPolicy;
+   js["Testing"]["Best Policies"] = _testingBestPolicies;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;
@@ -2008,7 +2015,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"individual\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"individual\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

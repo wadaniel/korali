@@ -140,10 +140,10 @@ namespace
   ASSERT_ANY_THROW(a->initialize()); // No sample ids defined
 
   a->_testingSampleIds = std::vector<size_t>({1});
-  a->_trainingCurrentPolicy = std::vector<float>({1.0});
-  a->_testingBestPolicy = std::vector<float>();
+  a->_trainingCurrentPolicies = std::vector<knlohmann::json>({1.0});
+  a->_testingBestPolicies = std::vector<knlohmann::json>();
   ASSERT_NO_THROW(a->initialize());
-  ASSERT_EQ(a->_testingCurrentPolicy, a->_trainingCurrentPolicy);
+  ASSERT_EQ(a->_testingCurrentPolicies, a->_trainingCurrentPolicies);
 
   // Testing Process Episode corner cases
   knlohmann::json episode;

@@ -121,24 +121,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
       # Plotting common plot
-      rewHistory= []
-      meanHist = []
-      cumObsArr = []
-      confIntLow = []
-      confIntHigh = []
-      for i in range(1,len(rewardHistory)):
-        if (rewardHistory[i] > confIntervalLowerHistory[i]) and (rewardHistory[i]< confIntervalUpperHistory[i]):
-            rewHistory.append(rewardHistory[i])
-            meanHist.append(meanHistory[i])
-            cumObsArr.append(cumulativeObsArr[i])
-            confIntLow.append(confIntervalLowerHistory[i])
-            confIntHigh.append(confIntervalUpperHistory[i])
-
-      rewardHistory = np.array(rewHistory)
-      meanHistory= np.array(meanHist)
-      cumulativeObsArr = np.array(cumObsArr)
-      confIntervalUpperHistory = np.array(confIntHigh)
-      confIntervalLowerHistory = np.array(confIntLow)
 
       if (label1 == ''):
         #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
@@ -296,26 +278,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
       # Plotting common plot
-      '''
-      rewHistory= []
-      meanHist = []
-      cumObsArr = []
-      confIntLow = []
-      confIntHigh = []
-      for i in range(1,len(rewardHistory)):
-        if (rewardHistory[i] > confIntervalLowerHistory[i]) and (rewardHistory[i]< confIntervalUpperHistory[i]):
-            rewHistory.append(rewardHistory[i])
-            meanHist.append(meanHistory[i])
-            cumObsArr.append(cumulativeObsArr[i])
-            confIntLow.append(confIntervalLowerHistory[i])
-            confIntHigh.append(confIntervalUpperHistory[i])
-
-      rewardHistory = np.array(rewHistory)
-      meanHistory= np.array(meanHist)
-      cumulativeObsArr = np.array(cumObsArr)
-      confIntervalUpperHistory = np.array(confIntHigh)
-      confIntervalLowerHistory = np.array(confIntLow)
-      '''
 
       if label == '':
         #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
@@ -328,7 +290,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
       # Plotting confidence intervals
       if showCI > 0.:
-        ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
+        ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.6)
 
       # Updating color index
       
@@ -430,7 +392,7 @@ if __name__ == '__main__':
       help='Option to plot the reward confidence interval.',
       type = float,
       default=0.0,
-      required=True)
+      required=False)
  parser.add_argument(
       '--aggregate',
       help='Aggregate multiple runs and plot result summary.',

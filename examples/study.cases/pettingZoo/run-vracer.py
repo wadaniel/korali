@@ -18,7 +18,8 @@ parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, d
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-#model '0' or '' first model, all agents the same, model '1' has agent id as additional input, model '2' changes to collaborator model
+#model '0' or '' first model, all agents the same, model '1' has agent id as additional input,
+#model '2' changes to collaborator model, model '3' individual policy for each agent
 args = parser.parse_args()
 print(args)
 

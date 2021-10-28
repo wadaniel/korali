@@ -60,6 +60,8 @@ def initEnvironment(e, envName, model = ''):
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
+   if model == '3' :
+      e["Problem"]["Policies Per Environment"] = numIndividuals
     
    # Generating state variable index list
    stateVariablesIndexes = range(stateVariableCount)
@@ -101,6 +103,8 @@ def initEnvironment(e, envName, model = ''):
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
+   if model == '3' :
+      e["Problem"]["Policies Per Environment"] = numIndividuals
  
    # Generating state variable index list
    stateVariablesIndexes = range(stateVariableCount)

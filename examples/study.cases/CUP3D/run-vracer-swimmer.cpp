@@ -51,7 +51,11 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
+  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
+  #else
+  size_t numStates = 16;
+  #endif
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {

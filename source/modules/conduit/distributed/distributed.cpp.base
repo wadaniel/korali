@@ -19,24 +19,30 @@ void __className__::initialize()
   // Sanity checks for the correct initialization of MPI
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
-  if (isInitialized == 0) KORALI_LOG_ERROR("Korali requires that the MPI is initialized by the user (e.g., via MPI_init) prior to running the engine.\n");
   if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setKoraliMPIComm) prior to running the engine.\n");
-  if (_rankCount == 1) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
+  if (isInitialized == 0) KORALI_LOG_ERROR("Korali requires that the MPI is initialized by the user (e.g., via MPI_init) prior to running the engine.\n");
 
   // Getting size and id from the user-defined communicator
   MPI_Comm_size(__KoraliGlobalMPIComm, &_rankCount);
   MPI_Comm_rank(__KoraliGlobalMPIComm, &_rankId);
-  MPI_Barrier(__KoraliGlobalMPIComm);
-
-  // Checking for valid settings
-  if (_ranksPerWorker < 1) KORALI_LOG_ERROR("The distributed conduit requires that the ranks per worker is equal or larger than 1, provided: %d\n", _ranksPerWorker);
-  if (_engineRanks < 1) KORALI_LOG_ERROR("The distributed conduit requires that the engine ranks is equal or larger than 1, provided: %d\n", _engineRanks);
 
   // Determining ranks per worker
   _workerCount = (_rankCount - _engineRanks) / _ranksPerWorker;
   size_t workerRemainder = (_rankCount - _engineRanks) % _ranksPerWorker;
-  if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _engineRanks, _ranksPerWorker, workerRemainder);
 
+  // If this is a root rank, check whether configuration is correct
+  if (isRoot())
+  {
+   if (_rankCount < 2) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 MPI ranks to run.\n");
+   if (_ranksPerWorker < 1) KORALI_LOG_ERROR("The distributed conduit requires that the ranks per worker is equal or larger than 1, provided: %d\n", _ranksPerWorker);
+   if (_engineRanks < 1) KORALI_LOG_ERROR("The distributed conduit requires that the engine ranks is equal or larger than 1, provided: %d\n", _engineRanks);
+   if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _engineRanks, _ranksPerWorker, workerRemainder);
+  }
+
+  // Syncrhonizing all ranks
+  MPI_Barrier(__KoraliGlobalMPIComm);
+
+  // Initializing worker id setting storage
   _localRankId = 0;
   _workerIdSet = false;
 
@@ -76,26 +82,12 @@ void __className__::initialize()
       currentRank++;
     }
 
-  // If this is a root rank, check whether the number of ranks is correct
-  if (isRoot())
-  {
-    int mpiSize;
-    MPI_Comm_size(__KoraliGlobalMPIComm, &mpiSize);
-    checkRankCount();
-  }
-
   // Creating communicator
   MPI_Comm_split(__KoraliGlobalMPIComm, curWorker, _rankId, &__koraliWorkerMPIComm);
 
   // Waiting for all ranks to reach this point
   MPI_Barrier(__KoraliGlobalMPIComm);
 #endif
-}
-
-void __className__::checkRankCount()
-{
-  if (_rankCount < _ranksPerWorker + 1)
-    KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
 }
 
 void __className__::initServer()

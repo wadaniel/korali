@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the state variables
-  #ifdef NOSENSOR
+  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
   #else
   size_t numStates = 16;

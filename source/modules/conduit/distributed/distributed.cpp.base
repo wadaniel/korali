@@ -31,12 +31,17 @@ void __className__::initialize()
   // Checking for valid settings
   if (_ranksPerWorker < 1) KORALI_LOG_ERROR("The distributed conduit requires that the ranks per worker is equal or larger than 1, provided: %d\n", _ranksPerWorker);
   if (_engineRanks < 1) KORALI_LOG_ERROR("The distributed conduit requires that the engine ranks is equal or larger than 1, provided: %d\n", _engineRanks);
+  if (isRoot()) checkRankCount();
 
   // Determining ranks per worker
   _workerCount = (_rankCount - _engineRanks) / _ranksPerWorker;
-  size_t workerRemainder = (_rankCount - _engineRanks) % _ranksPerWorker;
-  if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _engineRanks, _ranksPerWorker, workerRemainder);
+  if (isRoot())
+  {
+    size_t workerRemainder = (_rankCount - _engineRanks) % _ranksPerWorker;
+    if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _workerCount, _engineRanks, _ranksPerWorker, workerRemainder);
+  }
 
+  // Initialize variables for local worker rank
   _localRankId = 0;
   _workerIdSet = false;
 
@@ -76,14 +81,6 @@ void __className__::initialize()
       currentRank++;
     }
 
-  // If this is a root rank, check whether the number of ranks is correct
-  if (isRoot())
-  {
-    int mpiSize;
-    MPI_Comm_size(__KoraliGlobalMPIComm, &mpiSize);
-    checkRankCount();
-  }
-
   // Creating communicator
   MPI_Comm_split(__KoraliGlobalMPIComm, curWorker, _rankId, &__koraliWorkerMPIComm);
 
@@ -94,8 +91,9 @@ void __className__::initialize()
 
 void __className__::checkRankCount()
 {
-  if (_rankCount < _ranksPerWorker + 1)
+  if (_rankCount < _ranksPerWorker + _engineRanks)
     KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
+
 }
 
 void __className__::initServer()
@@ -112,6 +110,7 @@ void __className__::initServer()
   int flag;
   MPI_Irecv(&flag, 1, MPI_INT, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, MPI_COMM_WORLD, &req);
   int finalized = 0;
+  _k->_logger->logWarning("Normal", "Running Korali engine with %d ranks, sending rank %d to sleep", _engineRanks, _rankId);
   while (finalized == 0)
   {
    // Passive wait, 1s at a time

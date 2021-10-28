@@ -236,6 +236,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     if (agent["Termination"] == "Truncated")
       for (size_t i = 0; i < _agentsPerEnvironment; i++)
         episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
+ 
+    // Store episode policy
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+      episodes[i]["Policy Hyperparameters"] = _agent->getAgentPolicy();
 
     // Adding to cumulative training rewards
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
@@ -247,7 +251,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
     if ((_actionsBetweenPolicyUpdates > 0) &&
         (agent["Termination"] == "Non Terminal") &&
-        (actionCount % _actionsBetweenPolicyUpdates == 0)) requestNewPolicy(agent);
+        (actionCount % _actionsBetweenPolicyUpdates == 0)) { requestNewPolicy(agent); KORALI_LOG_ERROR("IRL cant handle inter episode policy hupdates."); }
+
   }
 
   // Setting cumulative reward

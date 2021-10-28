@@ -55,7 +55,6 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures

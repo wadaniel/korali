@@ -58,7 +58,6 @@ e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 0.0 ], [ 1
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 600
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures

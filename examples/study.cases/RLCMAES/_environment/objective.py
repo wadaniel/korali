@@ -45,6 +45,7 @@ class ObjectiveFactory:
     self.cov = np.diag(np.ones(self.dim))
     self.covMu = np.diag(np.ones(self.dim))
     self.paths = np.zeros(self.dim)
+    self.pathsNorm = 0
     self.pathc = np.zeros(self.dim)
 
     self.successHistory = np.zeros(5)
@@ -240,7 +241,7 @@ class ObjectiveFactory:
     cm = np.clip(action[1], a_min=0.0, a_max=1.0)
     dhat = self.dhat + cs
     cu = np.clip(action[2], a_min=0.0, a_max=1.0)
-    #dhat = np.clip(action[2], a_min=1, a_max=3)
+    
     # Calc weighted mean and cov
     y = (self.population[:self.mu]-self.mean)/self.scale
     weightedMeanOfBest = np.average(y, weights=self.weights, axis=0)
@@ -249,29 +250,27 @@ class ObjectiveFactory:
     for i in range(self.mu):
         self.covMu = self.weights[i] * np.outer(y[i], y[i])
 
+    
     # Update mean
     prevMean = self.mean
-    self.mean = (1-cm) * self.mean + cm * self.scale * weightedMeanOfBest
+    self.mean = (1.-cm) * self.mean + cm * self.scale * weightedMeanOfBest
 
     # Update step size & path
-    self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
-    self.scale *= np.exp((cs/dhat)*(np.linalg.norm(self.paths)/self.chi-1))
+    self.paths = (1.-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
+    self.pathsNorm = np.linalg.norm(self.paths)
+    self.scale *= np.exp((cs/dhat)*(self.pathsNorm/self.chi-1.))
     
-    if(self.scale < 1e-24):
-        print("Warning: scale reaching lower bound")
-        self.scale = 1e-24
-
     # Update cov & path
-    hsig = 0.
-    if cs < 1e-6:
-        hsig = 0.
-    elif np.linalg.norm(self.paths)/np.sqrt(1-(1-cs)**(2.*self.step+1)) < 1.4+2/(self.dim+1)*self.chi:
-        hsig = 1.
+    hsig = int(self.pathsNorm/np.sqrt(1-(1-cs)**(2.*self.step+1)) < 1.4+2/(self.dim+1)*self.chi) if cs > 1e-9 else 0
     dhsig = min((1.-hsig)*self.cc*(2.-self.cc),1.0)
 
     self.pathc = (1-self.cc)*self.pathc+np.sqrt(self.cc*(2.-self.cc)*self.ueff)*weightedMeanOfBest
-    #self.cov = (1.+self.c1*dhsig-self.c1-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
     self.cov = (1.-self.cu) * self.cov + self.c1*np.outer(self.pathc, self.pathc) + self.cu * self.covMu
+ 
+    if(self.scale < 1e-24):
+      print("Warning: scale reaching lower bound")
+      self.scale = 1e-24
+
 
     # Resample
     self.population = np.random.multivariate_normal(self.mean, self.scale**2*self.cov, self.populationSize)
@@ -283,12 +282,10 @@ class ObjectiveFactory:
   def getState(self):
     if self.version == 0:
         state = np.zeros((self.dim+1)*self.mu+1)
-        #state = np.zeros(self.mu+1)
         diagsdev = self.scale*np.sqrt(np.diag(self.cov)) # diagonal sdev
         for i in range(self.mu):
             state[i*(self.dim+1):i*(self.dim+1)+self.dim] = np.divide(self.population[i] - self.mean, diagsdev)
             state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
-            #state[i] = self.feval[i]/self.curEf
         state[-1] = self.bestEver/self.curEf # relative function eval
         assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
 
@@ -302,12 +299,12 @@ class ObjectiveFactory:
         state = np.zeros(self.dim+self.mu+2)
         state[:self.dim] = np.diag(self.covMu)
         state[self.dim:self.dim+self.mu] = self.feval[:self.mu]/self.curEf
-        state[-2] = np.linalg.norm(self.paths)
+        state[-2] = self.pathsNorm
         state[-1] = self.bestEver/self.curEf
     
     else: # dim independent
         state = np.zeros(8)
-        state[0] = np.linalg.norm(self.paths)
+        state[0] = self.pathsNorm
         state[1] = self.scale*np.mean(np.sqrt(np.diag(self.cov))) # mean diagonal sdev
         state[2] = np.std(self.feval)/np.mean(self.feval)
         state[3:] = self.successHistory
@@ -317,17 +314,7 @@ class ObjectiveFactory:
 
 
   def getReward(self):
-    #r = (self.prevEf - self.curEf)/self.initialEf
-    #r = (self.prevEf - self.curEf)/self.prevEf
-    #r = +np.log(self.prevEf)-np.log(self.curEf)
-    #r = -np.log(self.curEf)
-    #r = np.log(self.initialEf/self.curBestF)
-    #r = (np.log(self.prevDist)-np.log(self.curDist))/np.log(self.initialDist) # run 6 (similar to 8, but high var)
-    r = np.log(self.initialEf/self.curEf) # run 4
-    #r = -np.log(self.curDist/self.initialDist) # run 8
-    
-    #r = self.rfac * np.log(self.initialEf/self.curEf) # run 11
-    #r = -self.rfac * np.log(self.curDist/self.initialDist) # run 12
+    r = np.log(self.initialEf/self.curEf)
     
     assert np.isfinite(r), "Return not finite {}".format(r)
     return r

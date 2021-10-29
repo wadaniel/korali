@@ -33,10 +33,11 @@ def env(s, objective, dim, populationSize, steps, noise, version):
  step = 0
  done = False
 
- objectives = []
- muobjectives = []
- scales = []
- actions = []
+ objectives = np.zeros(maxSteps)
+ meanobjectives = np.zeros(maxSteps)
+ scales = np.zeros(maxSteps)
+ actions = np.zeros((maxSteps, 3))
+ paths = np.zeros(maxSteps)
 
  while not done and step < maxSteps:
 
@@ -52,15 +53,15 @@ def env(s, objective, dim, populationSize, steps, noise, version):
   # Storing New State
   s["State"] = objectiveFactory.getState().tolist()
   
-  #state = objectiveFactory.getState().tolist()
-  #print(state)
+  # Store statistics
+  if s["Custom Settings"]["Evaluation"] == "True":
+    objectives[step] = objectiveFactory.curBestF
+    meanobjectives[step] = objectiveFactory.curEf
+    scales[step] = objectiveFactory.scale
+    paths[step] = objectiveFactory.pathsNorm
+    actions[step, :] = s["Action"]
 
   # Advancing step counter
-  objectives.append(objectiveFactory.curBestF)
-  muobjectives.append(objectiveFactory.curEf)
-  scales.append(objectiveFactory.scale)
-  actions.append(s["Action"])
-
   step = step + 1
 
  # Setting finalization status
@@ -77,19 +78,22 @@ def env(s, objective, dim, populationSize, steps, noise, version):
     if os.path.isfile(outfile):
         history = np.load(outfile)
         scaleHistory = history['scaleHistory']
+        pathsHistory = history['pathsHistory']
         objectiveHistory = history['objectiveHistory']
         muobjectiveHistory = history['muobjectiveHistory']
         actionHistory = history['actionHistory']
 
         scaleHistory = np.concatenate((scaleHistory, [scales]))
+        pathsHistory = np.concatenate((pathsHistory, [paths]))
         objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
-        muobjectiveHistory = np.concatenate((objectiveHistory, [muobjectives]))
+        muobjectiveHistory = np.concatenate((objectiveHistory, [meanobjectives]))
         actionHistory = np.concatenate((actionHistory, [actions]))
 
     else:
         scaleHistory = [scales]
+        pathsHistory = [paths]
         objectiveHistory = [objectives]
         muobjectiveHistory = [muobjectives]
         actionHistory = [actions]
      
-    np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
+    np.savez(outfile, scaleHistory=scaleHistory, pathsHistory=pathsHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)

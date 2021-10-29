@@ -88,8 +88,8 @@ void __className__::trainPolicy()
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
-
-  const auto policyInfo = runPolicy(stateSequence);
+  // policyIdx input fixed to zero, since case where polidyIdx matters not reached from trainPolicy
+  const auto policyInfo = runPolicy(stateSequence,0);
 
   // Using policy information to update experience's metadata
   updateExperienceMetadata(miniBatch, policyInfo);
@@ -139,7 +139,7 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
     const std::vector<float> expVtbc = _retraceValueVector[expId];
 
     // Storage for the update gradient
-    if (_relationship == "individual")
+    if (_relationship == "Individual")
     {
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -206,7 +206,7 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
           _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
       }
     }
-    else if (_relationship== "collaborator")
+    else if (_relationship== "Collaboration")
     {
       //TODO: Check the on policy comment, at the moment no special treatment also we are using different betas, hence not exactly like formular different scales
       //Calculating sum or product terms which will be needed for gradients
@@ -285,24 +285,21 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
         _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
       }
     }
-    else
-      KORALI_LOG_ERROR("Defined Relationship: %s is neither individual nor collaborator \n", _relationship);
   }
 
   // Compute average action stadard deviation
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-std::vector<policy_t> __className__::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+std::vector<policy_t> __className__::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
+  // Storage for policy
+  std::vector<policy_t> policyVector(batchSize);
 
   if (_problem->_policiesPerEnvironment == 1)
   {
-    // Storage for policy
-    std::vector<policy_t> policyVector(batchSize);
-
     // Forward the neural network for this state
     const auto evaluation = _criticPolicyLearner[0]->getEvaluation(stateBatch);
 
@@ -318,25 +315,21 @@ std::vector<policy_t> __className__::runPolicy(const std::vector<std::vector<std
 
     return policyVector;
   }
-  else if ((_problem->_policiesPerEnvironment != 1) & (batchSize==1)) //TODO:CHECK with P&D,since it is unclear which policy is needed when runPolicy is called in continuous.cpp.base, I feed it through all NN and decide in cont. which one to take
+  else if (batchSize==1) 
   { 
     
     // Storage for policy, where we feed the same input into all policies
-    std::vector<policy_t> policyVector(_problem->_policiesPerEnvironment);
-    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-    {
-      const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatch);
-      policyVector[p].stateValue = evaluation[0][0];
-      policyVector[p].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
+    std::vector<policy_t> policyVector(batchSize);
+    
+    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
+    policyVector[0].stateValue = evaluation[0][0];
+    policyVector[0].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
 
-    }
+  
     return policyVector;
   }
   else
   {
-    // Storage for policy
-    std::vector<policy_t> policyVector(batchSize);
-
     // Storage for each sample for all Policies
     std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
     for (size_t b = 0; b < batchSize; b++)

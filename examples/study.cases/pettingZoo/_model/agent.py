@@ -91,7 +91,7 @@ def initEnvironment(e, envName, model = ''):
     
    ### Defining Termination Criteria
 
-   e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
+   #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
 
  elif (envName ==  'Pursuit'):
    ### Defining problem configuration for pettingZoo environments

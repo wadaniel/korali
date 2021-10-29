@@ -220,10 +220,6 @@ namespace
   ASSERT_NO_THROW(a->printGenerationAfter());
   a->_maxPolicyUpdates = 1;
   ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = -korali::Inf;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = 1.0;
-  ASSERT_NO_THROW(a->printGenerationAfter());
 
   // Testing optional parameters
   agentJs = baseOptJs;
@@ -1068,14 +1064,6 @@ namespace
   a->_experienceCount = 20;
   ASSERT_TRUE(a->checkTermination());
   a->_experienceCount = 5;
-  ASSERT_FALSE(a->checkTermination());
-
-  // Checking average reward increment termination
-  a->_mode = "Training";
-  a->_testingAverageRewardIncrement  = 10.0;
-  a->_testingPreviousAverageReward  = 20.0;
-  ASSERT_TRUE(a->checkTermination());
-  a->_testingPreviousAverageReward  = 5.0;
   ASSERT_FALSE(a->checkTermination());
 
   // Checking curPolicy update termination

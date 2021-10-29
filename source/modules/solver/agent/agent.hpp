@@ -196,10 +196,6 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief If enabled, the learner averages the rewards for each experience across agents. Such that each agent receives the same reward at the t-th step of each episode.
-  */
-   int _rewardAveragingEnabled;
-  /**
   * @brief If enabled, the learner penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
   */
    int _rewardOutboundPenalizationEnabled;
@@ -208,7 +204,7 @@ class Agent : public Solver
   */
    float _rewardOutboundPenalizationFactor;
   /**
-  * @brief Indicates whether we are in an individual setting or collaborator setting
+  * @brief Specifies whether we are in an individual setting or collaborator setting.
   */
    std::string _relationship;
   /**
@@ -230,7 +226,7 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Keeps a history of all training episode rewards.
   */
-   std::vector<float> _trainingRewardHistory;
+   std::vector<std::vector<float>> _trainingRewardHistory;
   /**
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
@@ -238,19 +234,19 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Contains a running average of the training episode rewards.
   */
-   float _trainingAverageReward;
+   std::vector<float> _trainingAverageReward;
   /**
   * @brief [Internal Use] Remembers the cumulative sum of rewards for the last training episode.
   */
-   float _trainingLastReward;
+   std::vector<float> _trainingLastReward;
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far in any episodes.
   */
-   float _trainingBestReward;
+   std::vector<float> _trainingBestReward;
   /**
   * @brief [Internal Use] Remembers the episode that obtained the maximum cumulative sum of rewards found so far.
   */
-   size_t _trainingBestEpisodeId;
+   std::vector<size_t> _trainingBestEpisodeId;
   /**
   * @brief [Internal Use] Stores the current training policies configuration.
   */
@@ -266,15 +262,15 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
   */
-   float _testingBestReward;
+   std::vector<float> _testingBestReward;
   /**
   * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
   */
-   float _testingWorstReward;
+   std::vector<float> _testingWorstReward;
   /**
   * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
   */
-   size_t _testingBestEpisodeId;
+   std::vector<size_t> _testingBestEpisodeId;
   /**
   * @brief [Internal Use] Remembers the number of candidate policies tested so far.
   */
@@ -282,19 +278,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
   */
-   float _testingAverageReward;
-  /**
-  * @brief [Internal Use] Remembers the standard deviation of the cumulative sum of rewards from latest testing episodes, if any.
-  */
-   float _testingStdevReward;
-  /**
-  * @brief [Internal Use] Remembers the average cumulative sum of rewards from previous testing episodes, if any.
-  */
-   float _testingPreviousAverageReward;
+   std::vector<float> _testingAverageReward;
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
   */
-   float _testingBestAverageReward;
+   std::vector<float> _testingBestAverageReward;
   /**
   * @brief [Internal Use] Stores the best testing policies configuration found so far.
   */
@@ -359,14 +347,6 @@ class Agent : public Solver
   * @brief [Termination Criteria] The solver will stop when the given number of experiences have been gathered.
   */
    size_t _maxExperiences;
-  /**
-  * @brief [Termination Criteria] The solver will stop when the given best average per-episode reward has been reached among the experiences between two learner updates.
-  */
-   float _testingTargetAverageReward;
-  /**
-  * @brief [Termination Criteria] The solver will stop when the average testing reward is below the previous testing average by more than a threshold given by this factor multiplied with the testing standard deviation.
-  */
-   float _testingAverageRewardIncrement;
   /**
   * @brief [Termination Criteria] The solver will stop when the given number of optimization steps have been performed.
   */
@@ -684,7 +664,7 @@ class Agent : public Solver
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) = 0;
+  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx) = 0;
 
   /**
    * @brief Calculates the starting experience index of the time sequence for the selected experience

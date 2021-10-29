@@ -18,7 +18,7 @@ parser.add_argument('--nn', help='Neural net width of two hidden layers.', requi
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 #model '0' or '' first model, all agents the same, model '1' has agent id as additional input,
-#model '2' changes to collaborator model, model '3' individual policy for each agent
+#model '2' changes to Collaboration model, model '3' individual policy for each agent
 args = parser.parse_args()
 print(args)
 
@@ -46,9 +46,9 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
-e["Solver"]["Relationship"] = 'individual'
+e["Solver"]["Relationship"] = 'Individual'
 if(args.model == '2'):
-	e["Solver"]["Relationship"] = 'collaborator'
+	e["Solver"]["Relationship"] = 'Collaboration'
 
 ### Setting Experience Replay and REFER settings
 

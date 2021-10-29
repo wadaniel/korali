@@ -20,6 +20,8 @@ void Agent::initialize()
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
+  _trainingRewardHistory.resize(_problem->_agentsPerEnvironment);
+  
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
@@ -78,17 +80,15 @@ void Agent::initialize()
     _currentSampleID = 0;
     _experienceCount = 0;
 
-    // Initializing training and episode statistics
-    _testingAverageReward = -korali::Inf;
-    _testingStdevReward = +korali::Inf;
-    _testingBestReward = -korali::Inf;
-    _testingWorstReward = +korali::Inf;
-    _trainingBestReward = -korali::Inf;
-    _trainingBestEpisodeId = 0;
-    _trainingAverageReward = 0.0f;
-    _testingPreviousAverageReward = -korali::Inf;
-    _testingBestAverageReward = -korali::Inf;
-    _testingBestEpisodeId = 0;
+    // Initializing training and episode statistics //TODO go through all
+    _testingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
+    _testingBestReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
+    _testingWorstReward = std::vector<float>(_problem->_agentsPerEnvironment,+korali::Inf);
+    _trainingBestReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
+    _trainingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment,0);
+    _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,0.0f);
+    _testingBestAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
+    _testingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment,0);
 
     // Initializing REFER information
 
@@ -175,9 +175,6 @@ void Agent::initialize()
     // Prepare storage for rewards from tested samples
     _testingReward.resize(_testingSampleIds.size());
   }
-
-  if (_problem->_agentsPerEnvironment == 1 && _rewardAveragingEnabled)
-    KORALI_LOG_ERROR("Reward averaging is only meaningful in multi agent reinforcement learning. Set ['Reward']['Averaging']['Enabled'] to false");
 }
 
 void Agent::runGeneration()
@@ -284,13 +281,16 @@ void Agent::trainingGeneration()
    *********************************************************************/
 
   // Updating average cumulative reward statistics
-  _trainingAverageReward = 0.0f;
-  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
-  if (startEpisodeId < 0) startEpisodeId = 0;
-  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-    _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+  _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
+  for(size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+  {
+    ssize_t startEpisodeId = _trainingRewardHistory[d].size() - _trainingAverageDepth;
+    ssize_t endEpisodeId = _trainingRewardHistory[d].size() - 1;
+    if (startEpisodeId < 0) startEpisodeId = 0;
+      for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+        _trainingAverageReward[d] += _trainingRewardHistory[d][e];
+    _trainingAverageReward[d] /= (float)(endEpisodeId - startEpisodeId + 1);
+  }
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -379,14 +379,7 @@ void Agent::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
-      // Average the rewards agross agents
-      if (_rewardAveragingEnabled)
-      {
-        averageRewardsAcrossAgents(message);
-      }
-
       // Process every episode received and its experiences (add them to replay memory)
-
       processEpisode(episodeId, message["Episodes"]);
 
       // Increasing total experience counters
@@ -400,39 +393,45 @@ void Agent::attendAgent(size_t agentId)
 
       if (message["Episodes"].size() >= 2) KORALI_LOG_ERROR("Korali assumes that only 1 epsiode is being send.\n");
 
-      _trainingLastReward = _agents[agentId]["Training Rewards"][agentId].get<float>();
+      _trainingLastReward = _agents[agentId]["Training Rewards"].get<std::vector<float>>();
       // Keeping training statistics. Updating if exceeded best training policy so far.
-      if (_trainingLastReward > _trainingBestReward)
+      for(size_t d = 0; d < _problem->_agentsPerEnvironment;d++)
       {
-        _trainingBestReward = _trainingLastReward;
-        _trainingBestEpisodeId = episodeId;
-        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
-          _trainingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
+        if (_trainingLastReward[d] > _trainingBestReward[d])
+        {
+          _trainingBestReward[d] = _trainingLastReward[d];
+          _trainingBestEpisodeId[d] = episodeId;
+          if (_problem->_policiesPerEnvironment == 1)
+            _testingBestPolicies["Policy Hyperparameters"][0] = _agents[agentId]["Policy Hyperparameters"][0];
+          else
+            _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
+        }
+        _trainingRewardHistory[d].push_back(_trainingLastReward[d]);
       }
-
       // Storing bookkeeping information
-      _trainingRewardHistory.push_back(_trainingLastReward);
       _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
       // If the policy has exceeded the threshold during training, we gather its statistics
       if (_agents[agentId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;
-
-        _testingPreviousAverageReward = _testingAverageReward;
-        _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
-        _testingStdevReward = _agents[agentId]["Stdev Testing Reward"].get<float>();
-        _testingBestReward = _agents[agentId]["Best Testing Reward"].get<float>();
-        _testingWorstReward = _agents[agentId]["Worst Testing Reward"].get<float>();
-
-        // If the average testing reward is better than the previous best, replace it
-        // and store hyperparameters as best so far.
-        if (_testingAverageReward > _testingBestAverageReward)
+        for(size_t d = 0; d < _problem->_agentsPerEnvironment;d++)
         {
-          _testingBestAverageReward = _testingAverageReward;
-          _testingBestEpisodeId = episodeId;
-          for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
-            _testingBestPolicies["Policy Hyperparameters"][p] = _agents[agentId]["Policy Hyperparameters"][p];
+          _testingAverageReward[d] = _agents[agentId]["Average Testing Reward"][d].get<float>();
+          _testingBestReward[d] = _agents[agentId]["Best Testing Reward"][d].get<float>();
+          _testingWorstReward[d] = _agents[agentId]["Worst Testing Reward"][d].get<float>();
+
+          // If the average testing reward is better than the previous best, replace it
+          // and store hyperparameters as best so far.
+          if (_testingAverageReward[d] > _testingBestAverageReward[d])
+          {
+            _testingBestAverageReward[d] = _testingAverageReward[d];
+            _testingBestEpisodeId[d] = episodeId;
+            if (_problem->_policiesPerEnvironment == 1)
+              _testingBestPolicies["Policy Hyperparameters"][0] = _agents[agentId]["Policy Hyperparameters"][0];
+            else
+              _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
+          }
         }
       }
 
@@ -456,23 +455,6 @@ void Agent::attendAgent(size_t agentId)
   _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
-
-void Agent::averageRewardsAcrossAgents(knlohmann::json &message)
-{
-  // Iterate over all experiences from each agent
-  for (size_t expId = 0; expId < message["Episodes"][0]["Experiences"].size(); ++expId)
-  {
-    float cumulativeRewardOfAgents = 0.0;
-    for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
-      cumulativeRewardOfAgents += message["Episodes"][i]["Experiences"][expId]["Reward"].get<float>();
-
-    const float averageRewardPerExp = cumulativeRewardOfAgents / _problem->_agentsPerEnvironment;
-    // Set the reward to the average reward of all agents
-    for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
-      message["Episodes"][i]["Experiences"][expId]["Reward"] = averageRewardPerExp;
-  }
-}
-
 
 void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
@@ -629,7 +611,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Getting the starting ID of the initial experience of the episode in the replay memory
   ssize_t startId = endId - (ssize_t)episode.size() + 1;
 
-  if (_relationship == "individual")
+  if (_relationship == "Individual")
   {
     // Storage for the retrace value
     std::vector<float> retV(_problem->_agentsPerEnvironment, 0.0f);
@@ -643,8 +625,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
-
-        auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+        //Take policy d if there are more than one otherwise equal
+        auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
         truncatedV[d] = truncatedPolicy.stateValue;
 
         if (std::isfinite(truncatedV[d]) == false)
@@ -665,7 +647,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
   }
-  else if(_relationship == "collaborator")
+  else if(_relationship == "Collaboration")
   {
     // Storage for the retrace value
     float retV = 0.0f;
@@ -679,8 +661,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
-
-        auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+        //Take policy d if there are more than one otherwise equal
+        auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
         truncatedV[d] = truncatedPolicy.stateValue;
 
         if (std::isfinite(truncatedV[d]) == false)
@@ -706,8 +688,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       _retraceValueVector[expId] = retVVector;
     }
   }
-  else
-    KORALI_LOG_ERROR("Defined Relationship: %s is neither individual nor collaborator \n", _relationship);
 
   if (_rewardRescalingEnabled)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -821,7 +801,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         auto truncatedState = getTruncatedStateSequence(expId, d);
-        auto truncatedPolicy = runPolicy({truncatedState})[0];
+        //Take policy d if there are more than one otherwise equal
+        auto truncatedPolicy = runPolicy({truncatedState},d)[0];
         truncStateValue[d] = truncatedPolicy.stateValue;
       }
       _truncatedStateValueVector[expId] = truncStateValue;
@@ -865,7 +846,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (startId < 0) startId = 0;
 
     // Storage for the retrace value
-    if (_relationship == "individual")
+    if (_relationship == "Individual")
     {
       std::vector<float> retV(_problem->_agentsPerEnvironment, 0.0f);
 
@@ -897,7 +878,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         _retraceValueVector[curId] = retV;
       }
     }
-    else if( _relationship == "collaborator")
+    else if( _relationship == "Collaboration")
     {
       float retV = 0.0f;
 
@@ -946,9 +927,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         _retraceValueVector[curId] = retVVector;
       }
     }
-    else
-      KORALI_LOG_ERROR("Defined Relationship: %s is neither individual nor collaborator \n", _relationship);
-
   }
 }
 
@@ -1245,13 +1223,6 @@ void Agent::printGenerationAfter()
     if (_rewardOutboundPenalizationEnabled == true)
       _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f * (float)_rewardOutboundPenalizationEnabled / (float)_experienceCount);
 
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      _k->_logger->logInfo("Normal", "Off-Policy Statistics for agent %lu: \n", d);
-      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount[d], _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
-      _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
-      _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta[d]);
-    }
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
     if (_maxPolicyUpdates > 0)
@@ -1259,24 +1230,29 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
-    _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
-    _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
-
-    if (isinf(_problem->_trainingRewardThreshold) == false)
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
-      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+      _k->_logger->logInfo("Normal", "Off-Policy Statistics for agent %lu: \n", d);
+      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount[d], _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
+      _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
+      _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta[d]);
 
-      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
+      _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f/%f\n",d, _trainingLastReward[d], _problem->_trainingRewardThreshold);
+      _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n",d, _trainingAverageDepth, _trainingAverageReward[d]);
+      _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n",d, _trainingBestReward[d], _trainingBestEpisodeId[d]);
 
-      _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
+      if (isinf(_problem->_trainingRewardThreshold) == false)
+      {
+        _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+
+        _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
+
+        _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent %lu: %f (%f / %f / %f)\n",d, _testingAverageReward[d], _testingWorstReward[d], _testingBestReward[d]);
+      }
+
+    
+      _k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n",d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
     }
-
-    if (_testingTargetAverageReward > -korali::Inf)
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _testingBestAverageReward, _testingTargetAverageReward, _testingBestEpisodeId);
-    else
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
-
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
@@ -1303,7 +1279,8 @@ void Agent::printGenerationAfter()
     for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
     {
       _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
-      _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward            %f\n", _testingReward[agentId]);
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward for agent %lu:           %f\n",d, _testingReward[d]);
     }
   }
 }
@@ -1346,7 +1323,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Training", "Reward History"))
  {
- try { _trainingRewardHistory = js["Training"]["Reward History"].get<std::vector<float>>();
+ try { _trainingRewardHistory = js["Training"]["Reward History"].get<std::vector<std::vector<float>>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Reward History']\n%s", e.what()); } 
    eraseValue(js, "Training", "Reward History");
@@ -1362,7 +1339,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Training", "Average Reward"))
  {
- try { _trainingAverageReward = js["Training"]["Average Reward"].get<float>();
+ try { _trainingAverageReward = js["Training"]["Average Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Average Reward']\n%s", e.what()); } 
    eraseValue(js, "Training", "Average Reward");
@@ -1370,7 +1347,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Training", "Last Reward"))
  {
- try { _trainingLastReward = js["Training"]["Last Reward"].get<float>();
+ try { _trainingLastReward = js["Training"]["Last Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Last Reward']\n%s", e.what()); } 
    eraseValue(js, "Training", "Last Reward");
@@ -1378,7 +1355,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Training", "Best Reward"))
  {
- try { _trainingBestReward = js["Training"]["Best Reward"].get<float>();
+ try { _trainingBestReward = js["Training"]["Best Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Best Reward']\n%s", e.what()); } 
    eraseValue(js, "Training", "Best Reward");
@@ -1386,7 +1363,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Training", "Best Episode Id"))
  {
- try { _trainingBestEpisodeId = js["Training"]["Best Episode Id"].get<size_t>();
+ try { _trainingBestEpisodeId = js["Training"]["Best Episode Id"].get<std::vector<size_t>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Best Episode Id']\n%s", e.what()); } 
    eraseValue(js, "Training", "Best Episode Id");
@@ -1416,7 +1393,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Testing", "Best Reward"))
  {
- try { _testingBestReward = js["Testing"]["Best Reward"].get<float>();
+ try { _testingBestReward = js["Testing"]["Best Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Reward']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Best Reward");
@@ -1424,7 +1401,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Testing", "Worst Reward"))
  {
- try { _testingWorstReward = js["Testing"]["Worst Reward"].get<float>();
+ try { _testingWorstReward = js["Testing"]["Worst Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Worst Reward']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Worst Reward");
@@ -1432,7 +1409,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Testing", "Best Episode Id"))
  {
- try { _testingBestEpisodeId = js["Testing"]["Best Episode Id"].get<size_t>();
+ try { _testingBestEpisodeId = js["Testing"]["Best Episode Id"].get<std::vector<size_t>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Episode Id']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Best Episode Id");
@@ -1448,31 +1425,15 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Testing", "Average Reward"))
  {
- try { _testingAverageReward = js["Testing"]["Average Reward"].get<float>();
+ try { _testingAverageReward = js["Testing"]["Average Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Average Reward']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Average Reward");
  }
 
- if (isDefined(js, "Testing", "Stdev Reward"))
- {
- try { _testingStdevReward = js["Testing"]["Stdev Reward"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Stdev Reward']\n%s", e.what()); } 
-   eraseValue(js, "Testing", "Stdev Reward");
- }
-
- if (isDefined(js, "Testing", "Previous Average Reward"))
- {
- try { _testingPreviousAverageReward = js["Testing"]["Previous Average Reward"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Previous Average Reward']\n%s", e.what()); } 
-   eraseValue(js, "Testing", "Previous Average Reward");
- }
-
  if (isDefined(js, "Testing", "Best Average Reward"))
  {
- try { _testingBestAverageReward = js["Testing"]["Best Average Reward"].get<float>();
+ try { _testingBestAverageReward = js["Testing"]["Best Average Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Average Reward']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Best Average Reward");
@@ -1842,15 +1803,6 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Rescaling']['Enabled'] required by agent.\n"); 
 
- if (isDefined(js, "Reward", "Averaging", "Enabled"))
- {
- try { _rewardAveragingEnabled = js["Reward"]["Averaging"]["Enabled"].get<int>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Averaging']['Enabled']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Averaging", "Enabled");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Averaging']['Enabled'] required by agent.\n"); 
-
  if (isDefined(js, "Reward", "Outbound Penalization", "Enabled"))
  {
  try { _rewardOutboundPenalizationEnabled = js["Reward"]["Outbound Penalization"]["Enabled"].get<int>();
@@ -1874,6 +1826,12 @@ void Agent::setConfiguration(knlohmann::json& js)
  try { _relationship = js["Relationship"].get<std::string>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Relationship']\n%s", e.what()); } 
+{
+ bool validOption = false; 
+ if (_relationship == "Individual") validOption = true; 
+ if (_relationship == "Collaboration") validOption = true; 
+ if (validOption == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ['Relationship'] required by agent.\n", _relationship.c_str()); 
+}
    eraseValue(js, "Relationship");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Relationship'] required by agent.\n"); 
@@ -1895,24 +1853,6 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Termination Criteria", "Max Experiences");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Max Experiences'] required by agent.\n"); 
-
- if (isDefined(js, "Termination Criteria", "Testing", "Target Average Reward"))
- {
- try { _testingTargetAverageReward = js["Termination Criteria"]["Testing"]["Target Average Reward"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Termination Criteria']['Testing']['Target Average Reward']\n%s", e.what()); } 
-   eraseValue(js, "Termination Criteria", "Testing", "Target Average Reward");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Testing']['Target Average Reward'] required by agent.\n"); 
-
- if (isDefined(js, "Termination Criteria", "Testing", "Average Reward Increment"))
- {
- try { _testingAverageRewardIncrement = js["Termination Criteria"]["Testing"]["Average Reward Increment"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Termination Criteria']['Testing']['Average Reward Increment']\n%s", e.what()); } 
-   eraseValue(js, "Termination Criteria", "Testing", "Average Reward Increment");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Testing']['Average Reward Increment'] required by agent.\n"); 
 
  if (isDefined(js, "Termination Criteria", "Max Policy Updates"))
  {
@@ -1963,14 +1903,11 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experiences Between Policy Updates"] = _experiencesBetweenPolicyUpdates;
    js["State Rescaling"]["Enabled"] = _stateRescalingEnabled;
    js["Reward"]["Rescaling"]["Enabled"] = _rewardRescalingEnabled;
-   js["Reward"]["Averaging"]["Enabled"] = _rewardAveragingEnabled;
    js["Reward"]["Outbound Penalization"]["Enabled"] = _rewardOutboundPenalizationEnabled;
    js["Reward"]["Outbound Penalization"]["Factor"] = _rewardOutboundPenalizationFactor;
    js["Relationship"] = _relationship;
    js["Termination Criteria"]["Max Episodes"] = _maxEpisodes;
    js["Termination Criteria"]["Max Experiences"] = _maxExperiences;
-   js["Termination Criteria"]["Testing"]["Target Average Reward"] = _testingTargetAverageReward;
-   js["Termination Criteria"]["Testing"]["Average Reward Increment"] = _testingAverageRewardIncrement;
    js["Termination Criteria"]["Max Policy Updates"] = _maxPolicyUpdates;
    js["Policy"]["Parameter Count"] = _policyParameterCount;
    js["Action Lower Bounds"] = _actionLowerBounds;
@@ -1990,8 +1927,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Best Episode Id"] = _testingBestEpisodeId;
    js["Testing"]["Candidate Count"] = _testingCandidateCount;
    js["Testing"]["Average Reward"] = _testingAverageReward;
-   js["Testing"]["Stdev Reward"] = _testingStdevReward;
-   js["Testing"]["Previous Average Reward"] = _testingPreviousAverageReward;
    js["Testing"]["Best Average Reward"] = _testingBestAverageReward;
    js["Testing"]["Best Policies"] = _testingBestPolicies;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
@@ -2015,7 +1950,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"individual\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Averaging\": {\"Enabled\": false}, \"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0, \"Testing\": {\"Target Average Reward\": -Infinity, \"Average Reward Increment\": 0.0}}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"Individual\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);
@@ -2045,18 +1980,6 @@ bool Agent::checkTermination()
  if ((_mode == "Training") && (_maxExperiences > 0) && (_experienceCount >= _maxExperiences))
  {
   _terminationCriteria.push_back("agent['Max Experiences'] = " + std::to_string(_maxExperiences) + ".");
-  hasFinished = true;
- }
-
- if ((_mode == "Training") && (_testingTargetAverageReward > -korali::Inf) && (_testingBestAverageReward >= _testingTargetAverageReward))
- {
-  _terminationCriteria.push_back("agent['Testing']['Target Average Reward'] = " + std::to_string(_testingTargetAverageReward) + ".");
-  hasFinished = true;
- }
-
- if ((_mode == "Training") && (_testingAverageRewardIncrement > 0.0) && (_testingPreviousAverageReward > -korali::Inf) && (_testingAverageReward + _testingStdevReward * _testingAverageRewardIncrement < _testingPreviousAverageReward))
- {
-  _terminationCriteria.push_back("agent['Testing']['Average Reward Increment'] = " + std::to_string(_testingAverageRewardIncrement) + ".");
   hasFinished = true;
  }
 

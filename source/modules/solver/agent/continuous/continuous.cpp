@@ -99,7 +99,7 @@ void Continuous::initializeAgent()
 void Continuous::getAction(korali::Sample &sample)
 {
   // Get action for all the agents in the environment
-  for (size_t i = 0; i < sample["State"].size(); i++)
+  for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
   {
     // Getting current state
 
@@ -112,14 +112,8 @@ void Continuous::getAction(korali::Sample &sample)
     std::vector<float> action(_problem->_actionVectorSize);
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
-    //since not really known which policy in case of multiple ones, use trick applied in runPolicy
-    size_t temp;
-    if (_problem->_policiesPerEnvironment == 1)
-      temp = 0;
-    else
-      temp = i % _problem->_policiesPerEnvironment;
-
-    auto policy = runPolicy({_stateTimeSequence.getVector()})[temp];
+    //in case of multiple polices it runs the i-th policy otherwise standard
+    auto policy = runPolicy({_stateTimeSequence.getVector()},i)[0];
 
 
     /*****************************************************************************

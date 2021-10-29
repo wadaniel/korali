@@ -288,12 +288,13 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
 
   // First, re-setting all output gradients to zero
   std::fill(p->_rawOutputGradients.begin(), p->_rawOutputGradients.end(), 0.0f);
-
 // To store the gradients in the NN we place them on the last input timestep
 #pragma omp parallel for
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
+    {
       p->_rawOutputGradients[p->_inputBatchLastStep[b] * N * OC + b * OC + i] = outputGradients[b][i];
+    }
 
   // Resetting cumulative hyperparameter gradients
   std::fill(p->_hyperparameterGradients.begin(), p->_hyperparameterGradients.end(), 0.0f);

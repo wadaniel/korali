@@ -8,10 +8,8 @@ from objective import *
 trainingObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr"]
 evaluationObjectiveList = ["fsphere", "felli", "fcigar", "ftablet", "fcigtab", "ftwoax", "fdiffpow", "rosenbrock", "fparabr", "fsharpr", "booth", "dixon", "ackley", "levi", "rastrigin"]
  
-def env(s, objective, dim, populationSize, steps, noise, version):
+def env(s, objective, dim, populationSize, maxSteps, noise, version):
 
- maxSteps = steps
- 
  # Selecting environment
  if objective == "random":
  
@@ -80,20 +78,20 @@ def env(s, objective, dim, populationSize, steps, noise, version):
         scaleHistory = history['scaleHistory']
         pathsHistory = history['pathsHistory']
         objectiveHistory = history['objectiveHistory']
-        muobjectiveHistory = history['muobjectiveHistory']
+        meanobjectiveHistory = history['meanobjectiveHistory']
         actionHistory = history['actionHistory']
 
         scaleHistory = np.concatenate((scaleHistory, [scales]))
         pathsHistory = np.concatenate((pathsHistory, [paths]))
         objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
-        muobjectiveHistory = np.concatenate((objectiveHistory, [meanobjectives]))
+        meanobjectiveHistory = np.concatenate((objectiveHistory, [meanobjectives]))
         actionHistory = np.concatenate((actionHistory, [actions]))
 
     else:
         scaleHistory = [scales]
         pathsHistory = [paths]
         objectiveHistory = [objectives]
-        muobjectiveHistory = [muobjectives]
+        meanobjectiveHistory = [meanobjectives]
         actionHistory = [actions]
      
-    np.savez(outfile, scaleHistory=scaleHistory, pathsHistory=pathsHistory, objectiveHistory=objectiveHistory, muobjectiveHistory=muobjectiveHistory, actionHistory=actionHistory)
+    np.savez(outfile, scaleHistory=scaleHistory, pathsHistory=pathsHistory, objectiveHistory=objectiveHistory, meanobjectiveHistory=meanobjectiveHistory, actionHistory=actionHistory)

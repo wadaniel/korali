@@ -33,7 +33,7 @@ for idx, filename in enumerate(args.files):
 
     print("{} Entries found in file {}".format(len(history['scaleHistory'][0]), filename))
     scaleHistory = np.median(history['scaleHistory'], axis=0)
-    muobjectiveHistory = np.median(history['muobjectiveHistory'], axis=0)
+    meanobjectiveHistory = np.median(history['meanobjectiveHistory'], axis=0)
     actionHistoryMedian = np.median(history['actionHistory'], axis=0)
     actionHistoryUpperQuantile = np.quantile(history['actionHistory'], 0.8, axis=0)
     actionHistoryLowerQuantile = np.quantile(history['actionHistory'], 0.2, axis=0)
@@ -49,7 +49,7 @@ for idx, filename in enumerate(args.files):
     # objective plot
     ax1.plot(gens, scaleHistory, c=col, linestyle='dotted', linewidth=0.5)
     ax1.plot(gens, objectiveHistory, c=col, linestyle='solid', label=filename)
-    ax1.plot(gens, muobjectiveHistory, c=col, linestyle='dashed', linewidth=0.5)
+    ax1.plot(gens, meanobjectiveHistory, c=col, linestyle='dashed', linewidth=0.5)
     ax1.fill_between(gens, objectiveHistoryLowerQuantile, objectiveHistoryUpperQuantile, color=col, alpha=0.2)
 
     # action plot

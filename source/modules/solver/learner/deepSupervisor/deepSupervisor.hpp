@@ -66,10 +66,6 @@ class DeepSupervisor : public Learner
   */
    std::string _lossFunction;
   /**
-  * @brief Represents the number of opitmization steps to run per each generation.
-  */
-   size_t _stepsPerGeneration;
-  /**
   * @brief Learning rate for the underlying ADAM optimizer.
   */
    float _learningRate;
@@ -85,6 +81,14 @@ class DeepSupervisor : public Learner
   * @brief Specified by how much will the weights of the last linear transformation of the NN be scaled. A value of < 1.0 is useful for a more deterministic start.
   */
    float _outputWeightsScaling;
+  /**
+  * @brief Specifies in how many parts will the training mini batch be split for concurrent processing. It must divide the training mini batch size perfectly.
+  */
+   size_t _trainingConcurrency;
+  /**
+  * @brief Specifies in how many parts will the inference mini batch be split for concurrent processing. It must divide the inference mini batch size perfectly.
+  */
+   size_t _inferenceConcurrency;
   /**
   * @brief [Internal Use] Current value of the loss function.
   */
@@ -127,6 +131,13 @@ class DeepSupervisor : public Learner
   * @brief Applies the module's default variable configuration to each variable in the Experiment upon creation.
   */
   void applyVariableDefaults() override;
+  /**
+  * @brief Runs the operation specified on the given sample. It checks recursively whether the function was found by the current module or its parents.
+  * @param sample Sample to operate on. Should contain in the 'Operation' field an operation accepted by this module or its parents.
+  * @param operation Should specify an operation type accepted by this module or its parents.
+  * @return True, if operation found and executed; false, otherwise.
+  */
+  bool runOperation(std::string operation, korali::Sample& sample) override;
   
 
   /**
@@ -149,6 +160,11 @@ class DeepSupervisor : public Learner
    */
   NeuralNetwork *_neuralNetwork;
 
+  /**
+   * @brief Temporary storage for calculation of Mean Square Error, if necessary
+   */
+  std::vector<std::vector<float>> _MSEVector;
+
   // Only needed for DDPG
   //
   //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
@@ -165,6 +181,26 @@ class DeepSupervisor : public Learner
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;
+
+  std::vector<float>& backwardGradients(const std::vector<std::vector<float>> &gradients);
+
+  /**
+   * @brief Run the forward pipeline of the network given an input and return the output.
+   * @param sample A sample containing the NN's input BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+   */
+  void runInferenceOnWorker(korali::Sample &sample);
+
+  /**
+   * @brief Run the backward pipeline of the network given an output and return the hyperparameter and input gradients
+   * @param sample A sample containing the NN's output BxTxOC (B: Batch Size, T: Time steps, OC: Output channels)
+   */
+  void runTrainingStepOnWorker(korali::Sample &sample);
+
+  /**
+   * @brief Update the hyperparameters for the neural network after an update for every worker.
+   * @param sample A sample containing the new NN's hyperparameters
+   */
+  void updateHyperparametersOnWorker(korali::Sample &sample);
 };
 
 } //learner

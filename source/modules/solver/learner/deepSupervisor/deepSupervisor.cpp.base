@@ -14,6 +14,10 @@ void __className__::initialize()
   // Don't reinitialize if experiment was already initialized
   if (_k->_isInitialized == true) return;
 
+  // Check whether the minibatch size (N) can be divided by the requested concurrency
+  if (_problem->_trainingBatchSize % _trainingConcurrency > 0) KORALI_LOG_ERROR("The training concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _trainingConcurrency, _problem->_trainingBatchSize);
+  if (_problem->_inferenceBatchSize % _inferenceConcurrency > 0) KORALI_LOG_ERROR("The inference concurrency requested (%lu) does not divide the inference mini batch size (%lu) perfectly.", _inferenceConcurrency, _problem->_inferenceBatchSize);
+
   /*****************************************************************
    * Setting up Neural Networks
    *****************************************************************/
@@ -100,64 +104,46 @@ void __className__::runGeneration()
   const size_t N = _problem->_trainingBatchSize;
   const size_t OC = _problem->_solutionSize;
 
-  // Updating optimizer's learning rate, in case it changed
   _optimizer->_eta = _learningRate;
 
-  for (size_t step = 0; step < _stepsPerGeneration; step++)
+  // By default, the gradient vector is simply the solution data
+  auto gradientVector = &_problem->_solutionData;
+
+  // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
+  if (_lossFunction == "Mean Squared Error")
   {
-    // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
-    if (_lossFunction == "Mean Squared Error")
-    {
-      // Checking that incoming data has a correct format
-      _problem->verifyData();
+    // Making a copy of the solution data for MSE calculation
+    _MSEVector = _problem->_solutionData;
 
-      // Creating gradient vector
-      auto gradientVector = _problem->_solutionData;
+    // Getting a reference to the neural network output
+    const auto &results = getEvaluation(_problem->_inputData);
 
-      // Forward propagating the input values through the training neural network
-      _neuralNetwork->forward(_problem->_inputData);
-
-      // Getting a reference to the neural network output
-      const auto &results = _neuralNetwork->getOutputValues(N);
-
-      // Calculating gradients via the loss function
-      for (size_t b = 0; b < N; b++)
-        for (size_t i = 0; i < OC; i++)
-          gradientVector[b][i] = gradientVector[b][i] - results[b][i];
-
-      // Backward propagating the gradients through the training neural network
-      _neuralNetwork->backward(gradientVector);
-
-      // Calculating loss across the batch size
-      _currentLoss = 0.0;
-      for (size_t b = 0; b < N; b++)
-        for (size_t i = 0; i < OC; i++)
-          _currentLoss += gradientVector[b][i] * gradientVector[b][i];
-      _currentLoss = _currentLoss / ((float)N * 2.0f);
-    }
-
-    // If using direct gradient, backward propagating the gradients directly through the training neural network
-    if (_lossFunction == "Direct Gradient")
-      _neuralNetwork->backward(_problem->_solutionData);
-
-    // Getting hyperparameter gradients
-    auto nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
-
-    // Apply gradient of L2 regularizer
-    if (_l2RegularizationEnabled)
-    {
-      const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+    // Calculating gradients via the loss function
 #pragma omp parallel for simd
-      for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
-        nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
-    }
+    for (size_t b = 0; b < N; b++)
+      for (size_t i = 0; i < OC; i++)
+       _MSEVector[b][i] = _MSEVector[b][i] - results[b][i];
 
-    // Passing hyperparameter gradients through an ADAM update
-    _optimizer->processResult(0.0f, nnHyperparameterGradients);
+    // Calculating loss across the batch size
+    _currentLoss = 0.0;
+#pragma omp parallel for simd
+    for (size_t b = 0; b < N; b++)
+      for (size_t i = 0; i < OC; i++)
+        _currentLoss += _MSEVector[b][i] * _MSEVector[b][i];
+    _currentLoss = _currentLoss / ((float)N * 2.0f);
 
-    // Getting new set of hyperparameters from Adam
-    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
+    // Setting gradient vector as target for gradient backward propagation
+    gradientVector = &_MSEVector;
   }
+
+  // Getting hyperparameter gradients
+  auto nnHyperparameterGradients = backwardGradients(*gradientVector);
+
+  // Passing hyperparameter gradients through a gradient descent update
+  _optimizer->processResult(0.0f, nnHyperparameterGradients);
+
+  // Getting new set of hyperparameters from the gradient descent algorithm
+  _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
 }
 
 std::vector<float> __className__::getHyperparameters()
@@ -179,6 +165,9 @@ std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<
   // Grabbing constants
   const size_t N = input.size();
 
+  // Checking that incoming data has a correct format
+  _problem->verifyData();
+
   // Running the input values through the neural network
   _neuralNetwork->forward(input);
 
@@ -186,17 +175,45 @@ std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<
   return _neuralNetwork->getOutputValues(N);
 }
 
-// Only needed for DDPG
-// std::vector<std::vector<float>> &__className__::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-//{
-//  const size_t N = input.size();
-//
-//  // Running the input values through the neural network
-//  _neuralNetwork->backward(outputGradients);
-//
-//  // Returning the input data gradients
-//  return _neuralNetwork->getInputGradients(N);
-//}
+std::vector<float> &__className__::backwardGradients(const std::vector<std::vector<float>> &gradients)
+{
+  // Grabbing constants
+  const size_t N = gradients.size();
+
+  // Running the input values through the neural network
+  _neuralNetwork->backward(gradients);
+
+  // Getting NN hyperparameter gradients
+  auto& nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
+
+  // If required, apply L2 Normalization to the network's hyperparameters
+  if (_l2RegularizationEnabled)
+  {
+    const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+    #pragma omp parallel for simd
+    for (size_t i = 0; i < nnHyperparameterGradients.size(); i++)
+      nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+  }
+
+  // Returning the hyperparameter gradients
+  return nnHyperparameterGradients;
+}
+
+void __className__::runInferenceOnWorker(korali::Sample &sample)
+{
+ printf("Running Inference on Worker!\n");
+ exit(0);
+}
+
+void __className__::runTrainingStepOnWorker(korali::Sample &sample)
+{
+
+}
+
+void __className__::updateHyperparametersOnWorker(korali::Sample &sample)
+{
+
+}
 
 void __className__::printGenerationAfter()
 {

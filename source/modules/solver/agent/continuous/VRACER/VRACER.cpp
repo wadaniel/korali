@@ -60,6 +60,7 @@ void VRACER::initializeAgent()
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
+  _criticPolicyExperiment.setEngine(_k->_engine);
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 

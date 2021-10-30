@@ -20,6 +20,10 @@ void DeepSupervisor::initialize()
   // Don't reinitialize if experiment was already initialized
   if (_k->_isInitialized == true) return;
 
+  // Check whether the minibatch size (N) can be divided by the requested concurrency
+  if (_problem->_trainingBatchSize % _trainingConcurrency > 0) KORALI_LOG_ERROR("The training concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _trainingConcurrency, _problem->_trainingBatchSize);
+  if (_problem->_inferenceBatchSize % _inferenceConcurrency > 0) KORALI_LOG_ERROR("The inference concurrency requested (%lu) does not divide the inference mini batch size (%lu) perfectly.", _inferenceConcurrency, _problem->_inferenceBatchSize);
+
   /*****************************************************************
    * Setting up Neural Networks
    *****************************************************************/
@@ -106,64 +110,46 @@ void DeepSupervisor::runGeneration()
   const size_t N = _problem->_trainingBatchSize;
   const size_t OC = _problem->_solutionSize;
 
-  // Updating optimizer's learning rate, in case it changed
   _optimizer->_eta = _learningRate;
 
-  for (size_t step = 0; step < _stepsPerGeneration; step++)
+  // Creating gradient vector
+  auto gradientVector = &_problem->_solutionData;
+
+  // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
+  if (_lossFunction == "Mean Squared Error")
   {
-    // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
-    if (_lossFunction == "Mean Squared Error")
-    {
-      // Checking that incoming data has a correct format
-      _problem->verifyData();
+    // Making a copy of the solution data for MSE calculation
+    _MSEVector = _problem->_solutionData;
 
-      // Creating gradient vector
-      auto gradientVector = _problem->_solutionData;
+    // Getting a reference to the neural network output
+    const auto &results = getEvaluation(_problem->_inputData);
 
-      // Forward propagating the input values through the training neural network
-      _neuralNetwork->forward(_problem->_inputData);
+    // Calculating gradients via the loss function
+//#pragma omp parallel for simd
+    for (size_t b = 0; b < N; b++)
+      for (size_t i = 0; i < OC; i++)
+       _MSEVector[b][i] = _MSEVector[b][i] - results[b][i];
 
-      // Getting a reference to the neural network output
-      const auto &results = _neuralNetwork->getOutputValues(N);
+    // Calculating loss across the batch size
+    _currentLoss = 0.0;
+//#pragma omp parallel for simd
+    for (size_t b = 0; b < N; b++)
+      for (size_t i = 0; i < OC; i++)
+        _currentLoss += _MSEVector[b][i] * _MSEVector[b][i];
+    _currentLoss = _currentLoss / ((float)N * 2.0f);
 
-      // Calculating gradients via the loss function
-      for (size_t b = 0; b < N; b++)
-        for (size_t i = 0; i < OC; i++)
-          gradientVector[b][i] = gradientVector[b][i] - results[b][i];
-
-      // Backward propagating the gradients through the training neural network
-      _neuralNetwork->backward(gradientVector);
-
-      // Calculating loss across the batch size
-      _currentLoss = 0.0;
-      for (size_t b = 0; b < N; b++)
-        for (size_t i = 0; i < OC; i++)
-          _currentLoss += gradientVector[b][i] * gradientVector[b][i];
-      _currentLoss = _currentLoss / ((float)N * 2.0f);
-    }
-
-    // If using direct gradient, backward propagating the gradients directly through the training neural network
-    if (_lossFunction == "Direct Gradient")
-      _neuralNetwork->backward(_problem->_solutionData);
-
-    // Getting hyperparameter gradients
-    auto nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
-
-    // Apply gradient of L2 regularizer
-    if (_l2RegularizationEnabled)
-    {
-      const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
-#pragma omp parallel for simd
-      for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
-        nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
-    }
-
-    // Passing hyperparameter gradients through an ADAM update
-    _optimizer->processResult(0.0f, nnHyperparameterGradients);
-
-    // Getting new set of hyperparameters from Adam
-    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
+    // Setting gradient vector as target for gradient backward propagation
+    gradientVector = &_MSEVector;
   }
+
+  // Getting hyperparameter gradients
+  auto nnHyperparameterGradients = backwardGradients(*gradientVector);
+
+  // Passing hyperparameter gradients through a gradient descent update
+  _optimizer->processResult(0.0f, nnHyperparameterGradients);
+
+  // Getting new set of hyperparameters from Adam
+  _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
 }
 
 std::vector<float> DeepSupervisor::getHyperparameters()
@@ -185,6 +171,9 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   // Grabbing constants
   const size_t N = input.size();
 
+  // Checking that incoming data has a correct format
+  _problem->verifyData();
+
   // Running the input values through the neural network
   _neuralNetwork->forward(input);
 
@@ -192,17 +181,45 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   return _neuralNetwork->getOutputValues(N);
 }
 
-// Only needed for DDPG
-// std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-//{
-//  const size_t N = input.size();
-//
-//  // Running the input values through the neural network
-//  _neuralNetwork->backward(outputGradients);
-//
-//  // Returning the input data gradients
-//  return _neuralNetwork->getInputGradients(N);
-//}
+std::vector<float> &DeepSupervisor::backwardGradients(const std::vector<std::vector<float>> &gradients)
+{
+  // Grabbing constants
+  const size_t N = gradients.size();
+
+  // Running the input values through the neural network
+  _neuralNetwork->backward(gradients);
+
+  // Getting NN hyperparameter gradients
+  auto& nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
+
+  // If required, apply L2 Normalization to the network's hyperparameters
+  if (_l2RegularizationEnabled)
+  {
+    const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+    #pragma omp parallel for simd
+    for (size_t i = 0; i < nnHyperparameterGradients.size(); i++)
+      nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+  }
+
+  // Returning the hyperparameter gradients
+  return nnHyperparameterGradients;
+}
+
+void DeepSupervisor::runInferenceOnWorker(korali::Sample &sample)
+{
+ printf("Running Inference on Worker!\n");
+ exit(0);
+}
+
+void DeepSupervisor::runTrainingStepOnWorker(korali::Sample &sample)
+{
+
+}
+
+void DeepSupervisor::updateHyperparametersOnWorker(korali::Sample &sample)
+{
+
+}
 
 void DeepSupervisor::printGenerationAfter()
 {
@@ -314,15 +331,6 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Loss Function'] required by deepSupervisor.\n"); 
 
- if (isDefined(js, "Steps Per Generation"))
- {
- try { _stepsPerGeneration = js["Steps Per Generation"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Steps Per Generation']\n%s", e.what()); } 
-   eraseValue(js, "Steps Per Generation");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Steps Per Generation'] required by deepSupervisor.\n"); 
-
  if (isDefined(js, "Learning Rate"))
  {
  try { _learningRate = js["Learning Rate"].get<float>();
@@ -359,6 +367,24 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Output Weights Scaling'] required by deepSupervisor.\n"); 
 
+ if (isDefined(js, "Training Concurrency"))
+ {
+ try { _trainingConcurrency = js["Training Concurrency"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Training Concurrency']\n%s", e.what()); } 
+   eraseValue(js, "Training Concurrency");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Training Concurrency'] required by deepSupervisor.\n"); 
+
+ if (isDefined(js, "Inference Concurrency"))
+ {
+ try { _inferenceConcurrency = js["Inference Concurrency"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Inference Concurrency']\n%s", e.what()); } 
+   eraseValue(js, "Inference Concurrency");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Inference Concurrency'] required by deepSupervisor.\n"); 
+
  if (isDefined(js, "Termination Criteria", "Target Loss"))
  {
  try { _targetLoss = js["Termination Criteria"]["Target Loss"].get<float>();
@@ -388,11 +414,12 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
    js["Hyperparameters"] = _hyperparameters;
    js["Loss Function"] = _lossFunction;
-   js["Steps Per Generation"] = _stepsPerGeneration;
    js["Learning Rate"] = _learningRate;
    js["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
    js["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
    js["Output Weights Scaling"] = _outputWeightsScaling;
+   js["Training Concurrency"] = _trainingConcurrency;
+   js["Inference Concurrency"] = _inferenceConcurrency;
    js["Termination Criteria"]["Target Loss"] = _targetLoss;
    js["Current Loss"] = _currentLoss;
    js["Normalization Means"] = _normalizationMeans;
@@ -405,7 +432,7 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
 void DeepSupervisor::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Steps Per Generation\": 1, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Neural Network\": {\"Output Activation\": \"Identity\", \"Output Layer\": {}}, \"Termination Criteria\": {\"Target Loss\": -1.0}, \"Hyperparameters\": [], \"Output Weights Scaling\": 1.0}";
+ std::string defaultString = "{\"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Neural Network\": {\"Output Activation\": \"Identity\", \"Output Layer\": {}}, \"Termination Criteria\": {\"Target Loss\": -1.0}, \"Hyperparameters\": [], \"Output Weights Scaling\": 1.0, \"Training Concurrency\": 1, \"Inference Concurrency\": 1}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Learner::applyModuleDefaults(js);
@@ -434,6 +461,33 @@ bool DeepSupervisor::checkTermination()
 
  hasFinished = hasFinished || Learner::checkTermination();
  return hasFinished;
+}
+
+bool DeepSupervisor::runOperation(std::string operation, korali::Sample& sample)
+{
+ bool operationDetected = false;
+
+ if (operation == "Run Inference On Worker")
+ {
+  runInferenceOnWorker(sample);
+  return true;
+ }
+
+ if (operation == "Run Training Step On Worker")
+ {
+  runTrainingStepOnWorker(sample);
+  return true;
+ }
+
+ if (operation == "Update Hyperparameters On Worker")
+ {
+  updateHyperparametersOnWorker(sample);
+  return true;
+ }
+
+ operationDetected = operationDetected || Learner::runOperation(operation, sample);
+ if (operationDetected == false) KORALI_LOG_ERROR(" + Operation %s not recognized for problem DeepSupervisor.\n", operation.c_str());
+ return operationDetected;
 }
 
 ;

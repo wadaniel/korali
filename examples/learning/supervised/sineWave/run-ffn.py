@@ -17,7 +17,7 @@ parser.add_argument(
 parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
-    default=10,
+    default=2000,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -81,7 +81,6 @@ e["Problem"]["Solution"]["Size"] = 1
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 200
 e["Solver"]["Learning Rate"] = float(args.learningRate)
 
 ### Defining the shape of the neural network
@@ -103,7 +102,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Configuring output
 
-e["Console Output"]["Frequency"] = 1
+e["Console Output"]["Frequency"] = 100
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 0xC0FFEE
 
@@ -114,23 +113,23 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-testInputSet = np.random.uniform(0, 2 * np.pi, args.testBatchSize)
-testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling
-testInferredSet = e.getEvaluation([ [ [ x ] ] for x in testInputSet.tolist() ])
+#testInputSet = np.random.uniform(0, 2 * np.pi, args.testBatchSize)
+#testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling
+#testInferredSet = e.getEvaluation([ [ [ x ] ] for x in testInputSet.tolist() ])
 
 ### Calc MSE on test set
 
-testInferredSet = [ x[0] for x in testInferredSet ]
-mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
-print("MSE on test set: {}".format(mse))
+#testInferredSet = [ x[0] for x in testInferredSet ]
+#mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
+#print("MSE on test set: {}".format(mse))
 
-if (mse > args.testMSEThreshold):
- print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
- exit(-1)
+#if (mse > args.testMSEThreshold):
+# print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
+# exit(-1)
 
 ### Plotting Results
 
-if (args.plot):
- plt.plot(testInputSet, testOutputSet, "o")
- plt.plot(testInputSet, testInferredSet, "x")
- plt.show()
+#if (args.plot):
+# plt.plot(testInputSet, testOutputSet, "o")
+# plt.plot(testInputSet, testInferredSet, "x")
+# plt.show()

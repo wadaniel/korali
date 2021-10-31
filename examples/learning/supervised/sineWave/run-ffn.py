@@ -111,8 +111,10 @@ e["Random Seed"] = 0xC0FFEE
 ### Training the neural network
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
-k["Conduit"]["Type"] = "Distributed"
-k.setMPIComm(MPI.COMM_WORLD)
+#k["Conduit"]["Type"] = "Distributed"
+#k.setMPIComm(MPI.COMM_WORLD)
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 3
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

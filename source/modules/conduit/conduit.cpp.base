@@ -76,6 +76,7 @@ void Conduit::runSample(Sample *sample, Engine *engine)
    engine->_conduit->_workerQueue.erase(dequeFindItr);
   }
 
+  printf("Found Worker!\n");
   // Assigning worker to sample ids and vice-versa for bookkeeping
   sample->_workerId = workerId;
   engine->_conduit->_workerToSampleMap[workerId] = sample;

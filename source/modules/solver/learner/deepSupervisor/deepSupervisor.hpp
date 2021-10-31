@@ -157,11 +157,6 @@ class DeepSupervisor : public Learner
   NeuralNetwork *_neuralNetwork;
 
   /**
-   * @brief Temporary storage for calculation of Mean Square Error, if necessary
-   */
-  std::vector<std::vector<float>> _MSEVector;
-
-  /**
    * @brief Temporary storage for the evaluation of the forward NN propagation
    */
   std::vector<std::vector<float>> _forwardEvaluation;

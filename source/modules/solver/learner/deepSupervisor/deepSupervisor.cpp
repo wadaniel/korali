@@ -121,14 +121,14 @@ void DeepSupervisor::runGeneration()
   // Checking that incoming data has a correct format
   _problem->verifyData();
 
-  // By default, the gradient vector is simply the solution data
-  auto gradientVector = &_problem->_solutionData;
+  // Hyperparameter gradient storage
+  std::vector<float> nnHyperparameterGradients;
 
   // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
   if (_lossFunction == "Mean Squared Error")
   {
     // Making a copy of the solution data for MSE calculation
-    _MSEVector = _problem->_solutionData;
+    auto MSEVector = _problem->_solutionData;
 
     // Getting a reference to the neural network output
     const auto &results = getEvaluation(_problem->_inputData);
@@ -137,22 +137,21 @@ void DeepSupervisor::runGeneration()
 #pragma omp parallel for simd
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
-       _MSEVector[b][i] = _MSEVector[b][i] - results[b][i];
+       MSEVector[b][i] = MSEVector[b][i] - results[b][i];
 
     // Calculating loss across the batch size
     _currentLoss = 0.0;
-#pragma omp parallel for simd
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
-        _currentLoss += _MSEVector[b][i] * _MSEVector[b][i];
+        _currentLoss += MSEVector[b][i] * MSEVector[b][i];
     _currentLoss = _currentLoss / ((float)N * 2.0f);
 
-    // Setting gradient vector as target for gradient backward propagation
-    gradientVector = &_MSEVector;
+    // Running back propagation on the MSE vector
+    nnHyperparameterGradients = backwardGradients(MSEVector);
   }
 
-  // Getting hyperparameter gradients
-  auto nnHyperparameterGradients = backwardGradients(*gradientVector);
+  // If the solution represents the gradients, just pass them on
+  if (_lossFunction == "Direct Gradients")  nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 
   // Passing hyperparameter gradients through a gradient descent update
   _optimizer->processResult(0.0f, nnHyperparameterGradients);

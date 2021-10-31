@@ -82,6 +82,7 @@ e["Problem"]["Solution"]["Size"] = 1
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Learning Rate"] = float(args.learningRate)
+e["Solver"]["Training Concurrency"] = 1
 
 ### Defining the shape of the neural network
 

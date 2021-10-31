@@ -86,10 +86,6 @@ class DeepSupervisor : public Learner
   */
    size_t _trainingConcurrency;
   /**
-  * @brief Specifies in how many parts will the inference mini batch be split for concurrent processing. It must divide the inference mini batch size perfectly.
-  */
-   size_t _inferenceConcurrency;
-  /**
   * @brief [Internal Use] Current value of the loss function.
   */
    float _currentLoss;
@@ -165,6 +161,16 @@ class DeepSupervisor : public Learner
    */
   std::vector<std::vector<float>> _MSEVector;
 
+  /**
+   * @brief Temporary storage for the evaluation of the forward NN propagation
+   */
+  std::vector<std::vector<float>> _forwardEvaluation;
+
+  /**
+   * @brief Temporary storage for the hyperparameter gradients obtained by the backward NN propagation
+   */
+  std::vector<float> _hyperparameterGradients;
+
   // Only needed for DDPG
   //
   //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
@@ -188,13 +194,13 @@ class DeepSupervisor : public Learner
    * @brief Run the forward pipeline of the network given an input and return the output.
    * @param sample A sample containing the NN's input BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
    */
-  void runInferenceOnWorker(korali::Sample &sample);
+  void runEvaluationOnWorker(korali::Sample &sample);
 
   /**
-   * @brief Run the backward pipeline of the network given an output and return the hyperparameter and input gradients
+   * @brief Run the backward pipeline of the network given an output and return the hyperparameter gradients
    * @param sample A sample containing the NN's output BxTxOC (B: Batch Size, T: Time steps, OC: Output channels)
    */
-  void runTrainingStepOnWorker(korali::Sample &sample);
+  void runBackwardGradientsOnWorker(korali::Sample &sample);
 
   /**
    * @brief Update the hyperparameters for the neural network after an update for every worker.

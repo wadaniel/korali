@@ -115,6 +115,9 @@ void DeepSupervisor::runGeneration()
   const size_t N = _problem->_trainingBatchSize;
   const size_t OC = _problem->_solutionSize;
 
+  // Check whether training concurrency exceeds the number of workers
+  if (_trainingConcurrency > _k->_engine->_conduit->getWorkerCount()) KORALI_LOG_ERROR("The training concurrency requested (%lu) exceeds the number of Korali workers defined in the conduit type/configuration (%lu).", _trainingConcurrency, _k->_engine->_conduit->getWorkerCount());
+
   // Updating solver's learning rate, if changed
   _optimizer->_eta = _learningRate;
 
@@ -182,7 +185,7 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   ///// We employ one of two ways to resolve the evaluation:
 
   // 1) If this is a training batch and concurrency was requested, we split the batch and send it to the Korali workers for processing
-  if (N == _problem->_trainingBatchSize && _trainingConcurrency > 1)
+  if (N == _problem->_trainingBatchSize && _trainingConcurrency > 0)
   {
    // Clearing results vector
    _forwardEvaluation.clear();
@@ -204,6 +207,7 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
 
      // Setting up sample
      samples[i]["Sample Id"] = i;
+     samples[i]["Worker Affinity"] = i;
      samples[i]["Module"] = "Solver";
      samples[i]["Operation"] = "Run Evaluation On Worker";
      samples[i]["Input Data"] = workerInputData;
@@ -263,6 +267,7 @@ std::vector<float> &DeepSupervisor::backwardGradients(const std::vector<std::vec
 
      // Setting up sample
      samples[i]["Sample Id"] = i;
+     samples[i]["Worker Affinity"] = i;
      samples[i]["Module"] = "Solver";
      samples[i]["Operation"] = "Run Backward Gradients On Worker";
      samples[i]["Gradient Data"] = workerGradientData;
@@ -310,9 +315,11 @@ void DeepSupervisor::runEvaluationOnWorker(korali::Sample &sample)
  // Updating hyperparameters in the worker's NN
  auto nnHyperparameters = KORALI_GET(std::vector<float>, sample, "Hyperparameters");
  _neuralNetwork->setHyperparameters(nnHyperparameters);
+ sample._js.getJson().erase("Hyperparameters");
 
  // Getting input from sample
  auto input = KORALI_GET(std::vector<std::vector<std::vector<float>>>, sample, "Input Data");
+ sample._js.getJson().erase("Input Data");
 
  // Grabbing batch size
  const size_t N = input.size();
@@ -328,6 +335,7 @@ void DeepSupervisor::runBackwardGradientsOnWorker(korali::Sample &sample)
 {
  // Getting input from sample
  auto gradients = KORALI_GET(std::vector<std::vector<float>>, sample, "Gradient Data");
+ sample._js.getJson().erase("Gradient Data");
 
  // Grabbing batch size
  const size_t N = gradients.size();

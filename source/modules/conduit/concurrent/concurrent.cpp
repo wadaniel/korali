@@ -28,12 +28,12 @@ void Concurrent::initialize()
   _resultSizePipe.clear();
   _resultContentPipe.clear();
   _inputsPipe.clear();
-  while (!_workerQueue.empty()) _workerQueue.pop();
+  _workerQueue.clear();
 
   for (size_t i = 0; i < _concurrentJobs; i++) _resultSizePipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _resultContentPipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _inputsPipe.push_back(vector<int>(2));
-  for (size_t i = 0; i < _concurrentJobs; i++) _workerQueue.push(i);
+  for (size_t i = 0; i < _concurrentJobs; i++) _workerQueue.push_back(i);
 
   // Opening Inter-process communicator pipes
   for (size_t i = 0; i < _concurrentJobs; i++)
@@ -232,6 +232,11 @@ bool Concurrent::isRoot()
 size_t Concurrent::getProcessId()
 {
   return _workerId;
+}
+
+size_t Concurrent::getWorkerCount()
+{
+ return _concurrentJobs;
 }
 
 void Concurrent::setConfiguration(knlohmann::json& js) 

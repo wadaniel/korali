@@ -23,7 +23,7 @@ void Distributed::initialize()
   // Sanity checks for the correct initialization of MPI
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
-  if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setKoraliMPIComm) prior to running the engine.\n");
+  if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setMPIComm) prior to running the engine.\n");
   if (isInitialized == 0) KORALI_LOG_ERROR("Korali requires that the MPI is initialized by the user (e.g., via MPI_init) prior to running the engine.\n");
 
   // Getting size and id from the user-defined communicator
@@ -59,12 +59,10 @@ void Distributed::initialize()
   _rankToWorkerMap.resize(_rankCount);
 
   // Initializing available worker queue
-  _workerQueue = queue<size_t>();
-  while (!_workerQueue.empty()) _workerQueue.pop();
+  _workerQueue.clear();
 
   // Putting workers in the queue
-  for (int i = 0; i < _workerCount; i++)
-    _workerQueue.push(i);
+  for (int i = 0; i < _workerCount; i++) _workerQueue.push_back(i);
 
   // Korali engine as default, is the n+1th worker
   int curWorker = _workerCount + 1;
@@ -295,6 +293,11 @@ void Distributed::popEngine()
 size_t Distributed::getProcessId()
 {
   return _rankId;
+}
+
+size_t Distributed::getWorkerCount()
+{
+ return _workerCount;
 }
 
 void Distributed::setConfiguration(knlohmann::json& js) 

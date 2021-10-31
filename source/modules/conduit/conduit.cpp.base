@@ -33,19 +33,48 @@ void Conduit::runSample(Sample *sample, Engine *engine)
   (*sample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
   (*sample)["Has Finished"] = false;
 
-  // Check whether there are available workers to compute this sample.
-  while (engine->_conduit->_workerQueue.empty())
+  // Identifier of the worker that will execute the sample
+  size_t workerId = 0;
+
+  //////// If sample has no affinity, then it can be ran in any worker in the queue
+  if (isDefined(sample->_js.getJson(), "Worker Affinity") == false)
   {
-    //  If none are available, set sample's state back to initialized
-    sample->_state = SampleState::initialized;
+   // Check whether there are available workers to compute this sample.
+   while (engine->_conduit->_workerQueue.empty())
+   {
+     //  If none are available, set sample's state back to initialized
+     sample->_state = SampleState::initialized;
 
-    // And come back to the experiment's thread
-    co_switch(engine->_currentExperiment->_thread);
+     // And come back to the experiment's thread
+     co_switch(engine->_currentExperiment->_thread);
+   }
+
+   // Selecting the next available worker
+   workerId = engine->_conduit->_workerQueue.front();
+   engine->_conduit->_workerQueue.pop_front();
   }
+  else //////// Else wait for the specific worker to be ready
+  {
+   workerId = KORALI_GET(size_t, (*sample), "Worker Affinity");
 
-  // Selecting the next available worker
-  auto workerId = engine->_conduit->_workerQueue.front();
-  engine->_conduit->_workerQueue.pop();
+   // Checking if specified worker is available
+   auto dequeFindItr = std::find(engine->_conduit->_workerQueue.begin(), engine->_conduit->_workerQueue.end(), workerId);
+
+   while (dequeFindItr == engine->_conduit->_workerQueue.end())
+   {
+     //  If none are available, set sample's state back to initialized
+     sample->_state = SampleState::initialized;
+
+     // And come back to the experiment's thread
+     co_switch(engine->_currentExperiment->_thread);
+
+     // Re-checking for availability
+     dequeFindItr = std::find(engine->_conduit->_workerQueue.begin(), engine->_conduit->_workerQueue.end(), workerId);
+   }
+
+   // Removing worker from queue
+   engine->_conduit->_workerQueue.erase(dequeFindItr);
+  }
 
   // Assigning worker to sample ids and vice-versa for bookkeeping
   sample->_workerId = workerId;
@@ -76,7 +105,7 @@ void Conduit::runSample(Sample *sample, Engine *engine)
   sample->_js.getJson() = endMessage;
 
   // Putting worker back to the available worker queue
-  engine->_conduit->_workerQueue.push(sample->_workerId);
+  engine->_conduit->_workerQueue.push_back(sample->_workerId);
 
   // Storing profiling information
   timelineJs["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;

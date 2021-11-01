@@ -856,6 +856,12 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       // Now iterating backwards to calculate the rest of vTbc
       for (ssize_t curId = endId; curId >= startId; curId--)
       {
+        float prodImportanceWeight = 1.0f;
+        if (_relationshipCorrelation == "Strong")
+        {
+          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) //TODO other implementation of prodIW
+            prodImportanceWeight *= _importanceWeightVector[curId][d];
+        }
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Getting current reward, action, and state
@@ -864,11 +870,23 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
           // Calculating state value function
           const float curV = _stateValueVector[curId][d];
 
-          // Truncate importance weight
-          const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId][d];
+          if (_relationshipCorrelation == "Weak")
+          {
+            // Truncate importance weight
+            const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId][d];
 
-          // Calculating retrace value
-          retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+            // Calculating retrace value
+            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+          }
+
+          else
+          {
+            // Truncate importance weight
+            const float truncatedImportanceWeight = std::min(1.0f,prodImportanceWeight);
+
+            // Calculating retrace value
+            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+          }
         }
         // Storing retrace value into the experience's cache
         _retraceValueVector[curId] = retV;

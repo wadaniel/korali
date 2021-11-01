@@ -125,6 +125,32 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     if (_relationship == "Individual")
     {
+      float lossOffPolicySum = 0.0f;
+      if (_relationshipCorrelation == "Strong")
+      {
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          // Qret for terminal state is just reward
+          float Qret = getScaledReward(_rewardVector[expId][d], d);
+
+          // If experience is non-terminal, add Vtbc
+          if (_terminationVector[expId] == e_nonTerminal)
+          {
+            float nextExpVtbc = _retraceValueVector[expId + 1][d];
+            Qret += _discountFactor * nextExpVtbc;
+          }
+          // If experience is truncated, add truncated state value
+          if (_terminationVector[expId] == e_truncated)
+          {
+            float nextExpVtbc = _truncatedStateValueVector[expId][d];
+            Qret += _discountFactor * nextExpVtbc;
+          }
+
+          // Compute Off-Policy Objective (eq. 5)
+          lossOffPolicySum += Qret - V[d];
+        }
+      }
+
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         // Storage for the update gradient
@@ -136,25 +162,31 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // Compute policy gradient only if inside trust region (or offPolicy disabled)
         if (_isOnPolicyVector[expId][d])
         {
-          // Qret for terminal state is just reward
-          float Qret = getScaledReward(_rewardVector[expId][d], d);
-
-          // If experience is non-terminal, add Vtbc
-          if (_terminationVector[expId] == e_nonTerminal)
+          float lossOffPolicy;
+          if (_relationshipCorrelation == "Weak")
           {
-            float nextExpVtbc = _retraceValueVector[expId + 1][d];
-            Qret += _discountFactor * nextExpVtbc;
-          }
+            // Qret for terminal state is just reward
+            float Qret = getScaledReward(_rewardVector[expId][d], d);
 
-          // If experience is truncated, add truncated state value
-          if (_terminationVector[expId] == e_truncated)
-          {
-            float nextExpVtbc = _truncatedStateValueVector[expId][d];
-            Qret += _discountFactor * nextExpVtbc;
-          }
+            // If experience is non-terminal, add Vtbc
+            if (_terminationVector[expId] == e_nonTerminal)
+            {
+              float nextExpVtbc = _retraceValueVector[expId + 1][d];
+              Qret += _discountFactor * nextExpVtbc;
+            }
 
-          // Compute Off-Policy Objective (eq. 5)
-          float lossOffPolicy = Qret - V[d];
+            // If experience is truncated, add truncated state value
+            if (_terminationVector[expId] == e_truncated)
+            {
+              float nextExpVtbc = _truncatedStateValueVector[expId][d];
+              Qret += _discountFactor * nextExpVtbc;
+            }
+
+            // Compute Off-Policy Objective (eq. 5)
+            lossOffPolicy = Qret - V[d];
+          }
+          else 
+            lossOffPolicy = lossOffPolicySum;
 
           // Compute Policy Gradient wrt Params
           auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);

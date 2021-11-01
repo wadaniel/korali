@@ -208,6 +208,10 @@ class Agent : public Solver
   */
    std::string _relationship;
   /**
+  * @brief Specifies whether we are in an individual setting or collaborator setting.
+  */
+   std::string _relationshipCorrelation;
+  /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
    size_t _policyParameterCount;

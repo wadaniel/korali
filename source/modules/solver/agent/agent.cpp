@@ -860,6 +860,12 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       // Now iterating backwards to calculate the rest of vTbc
       for (ssize_t curId = endId; curId >= startId; curId--)
       {
+        float prodImportanceWeight = 1.0f;
+        if (_relationshipCorrelation == "Strong")
+        {
+          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) //TODO other implementation of prodIW
+            prodImportanceWeight *= _importanceWeightVector[curId][d];
+        }
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Getting current reward, action, and state
@@ -868,11 +874,23 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
           // Calculating state value function
           const float curV = _stateValueVector[curId][d];
 
-          // Truncate importance weight
-          const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId][d];
+          if (_relationshipCorrelation == "Weak")
+          {
+            // Truncate importance weight
+            const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId][d];
 
-          // Calculating retrace value
-          retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+            // Calculating retrace value
+            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+          }
+
+          else
+          {
+            // Truncate importance weight
+            const float truncatedImportanceWeight = std::min(1.0f,prodImportanceWeight);
+
+            // Calculating retrace value
+            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+          }
         }
         // Storing retrace value into the experience's cache
         _retraceValueVector[curId] = retV;
@@ -1836,6 +1854,21 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Relationship'] required by agent.\n"); 
 
+ if (isDefined(js, "Relationship Correlation"))
+ {
+ try { _relationshipCorrelation = js["Relationship Correlation"].get<std::string>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Relationship Correlation']\n%s", e.what()); } 
+{
+ bool validOption = false; 
+ if (_relationshipCorrelation == "Weak") validOption = true; 
+ if (_relationshipCorrelation == "Strong") validOption = true; 
+ if (validOption == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ['Relationship Correlation'] required by agent.\n", _relationshipCorrelation.c_str()); 
+}
+   eraseValue(js, "Relationship Correlation");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Relationship Correlation'] required by agent.\n"); 
+
  if (isDefined(js, "Termination Criteria", "Max Episodes"))
  {
  try { _maxEpisodes = js["Termination Criteria"]["Max Episodes"].get<size_t>();
@@ -1906,6 +1939,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Reward"]["Outbound Penalization"]["Enabled"] = _rewardOutboundPenalizationEnabled;
    js["Reward"]["Outbound Penalization"]["Factor"] = _rewardOutboundPenalizationFactor;
    js["Relationship"] = _relationship;
+   js["Relationship Correlation"] = _relationshipCorrelation;
    js["Termination Criteria"]["Max Episodes"] = _maxEpisodes;
    js["Termination Criteria"]["Max Experiences"] = _maxExperiences;
    js["Termination Criteria"]["Max Policy Updates"] = _maxPolicyUpdates;
@@ -1950,7 +1984,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"Individual\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"Individual\", \"Relationship Correlation\": \"Weak\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

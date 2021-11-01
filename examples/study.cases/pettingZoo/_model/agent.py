@@ -127,12 +127,6 @@ def initEnvironment(e, envName, model = ''):
       e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
       e["Variables"][stateVariableCount + i]["Type"] = "Action"
 
- 
- 
-   ### Defining Termination Criteria
-
-   e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
- 
 
 def agent(s, env, model = ''):
 

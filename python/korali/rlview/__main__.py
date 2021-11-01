@@ -13,6 +13,7 @@ import scipy.stats as st
 import matplotlib.pyplot as plt
 from korali.plot.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
+import pdb
 
 # Check if name has correct suffix
 def validateOutput(output):
@@ -41,31 +42,31 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
      for r in results:
       
       if (len(r) == 0): continue  
-      
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
-      testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
 
       # Merge Results
       if aggregate == True and len(unpackedResults) > 0:
-        coH, rH, trTh, teTh = unpackedResults[0]
-        aggCumObs = np.append(coH, cumulativeObsCountHistory)
-        aggRewards = np.append(rH, rewardHistory)
+        for d in range(rewardHistory.shape[0]):
+            coH, rH, trTh  = unpackedResults[d]
+            aggCumObs = np.append(coH, cumulativeObsCountHistory)
+            aggRewards = np.append(rH, rewardHistory[d])
 
-        sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
-        sortedAggCumObs = np.sort(aggCumObs)
-        unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold, testingRewardThreshold)
+            sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
+            sortedAggCumObs = np.sort(aggCumObs)
+            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
 
       # Append Results
       else:
-        unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold, testingRewardThreshold) )
+        for d in range(rewardHistory.shape[0]):
+            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
 
      ## Plotting the individual experiment results
         
      for resId, r in enumerate(unpackedResults):
       
-      cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingRewardThreshold = r
+      cumulativeObsArr, rewardHistory, trainingRewardThreshold = r
       
       currObsCount = cumulativeObsArr[-1]
       
@@ -85,14 +86,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
        if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
 
-      if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-       if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
       
       if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
        if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-       
-      if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-       if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
      
       # Getting average cumulative reward statistics
       cumRewards = np.cumsum(rewardHistory)
@@ -129,15 +125,16 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label1) 
         plt.legend(loc="lower right")
-
+      
 
       # Plotting confidence intervals
       if showCI > 0.:
         ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
       # Updating color index
-      if (len(results) > 1):
-       colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
+      colCurrIndex = colCurrIndex + (1.0 / float(len(unpackedResults)-1)) - 0.0001
+        
+
       
      ## Configuring common plotting features
 
@@ -167,11 +164,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
      for r in results:
       
       if (len(r) == 0): continue  
-      
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
-      testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
 
       # Merge Results
       if len(unpackedResults) > 0:
@@ -181,11 +176,11 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
         sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
         sortedAggCumObs = np.sort(aggCumObs)
-        unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold, testingRewardThreshold)
+        unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
 
       # Append Results
       else:
-        unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold, testingRewardThreshold) )
+        unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold) )
 
 
      unpackedResults2 = []
@@ -196,7 +191,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
-      testingRewardThreshold = r["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
 
       # Merge Results
       if len(unpackedResults2) > 0:
@@ -206,11 +200,11 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
         sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
         sortedAggCumObs = np.sort(aggCumObs)
-        unpackedResults2[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold, testingRewardThreshold)
+        unpackedResults2[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
 
       # Append Results
       else:
-        unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold, testingRewardThreshold) )
+        unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold) )
 
      ## Plotting the individual experiment results
      coH, rH, trTh, teTh = unpackedResults2[0]
@@ -222,7 +216,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       else:
         label = label2
       
-      cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingRewardThreshold = r
+      cumulativeObsArr, rewardHistory, trainingRewardThreshold = r
       
       currObsCount = cumulativeObsArr[-1]
       
@@ -241,15 +235,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
       if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
        if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
-
-      if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-       if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
       
       if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
        if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-       
-      if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
-       if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
      
       # Getting average cumulative reward statistics
       cumRewards = np.cumsum(rewardHistory)

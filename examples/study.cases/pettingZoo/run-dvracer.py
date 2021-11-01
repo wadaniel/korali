@@ -17,8 +17,9 @@ parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, d
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-#model '0' or '' first model, all agents the same, model '1' has agent id as additional input,
+#model '0' or '' weakly dependent model, model '1' has agent id as additional input,
 #model '2' changes to Collaboration model, model '3' individual policy for each agent
+#model '4' strongly dependent model
 args = parser.parse_args()
 print(args)
 
@@ -47,8 +48,11 @@ e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 e["Solver"]["Relationship"] = 'Individual'
+e["Solver"]["Relationship Correlation"] = 'Weak'
 if(args.model == '2'):
 	e["Solver"]["Relationship"] = 'Collaboration'
+elif(args.model == '4'):
+	e["Solver"]["Relationship Correlation"] = 'Strong'
 
 ### Setting Experience Replay and REFER settings
 

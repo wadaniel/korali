@@ -39,7 +39,6 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
@@ -59,6 +58,7 @@ void VRACER::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
+  _criticPolicyExperiment.setEngine(_k->_engine);
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);

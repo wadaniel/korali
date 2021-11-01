@@ -23,7 +23,7 @@ void Distributed::initialize()
   // Sanity checks for the correct initialization of MPI
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
-  if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setKoraliMPIComm) prior to running the engine.\n");
+  if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setMPIComm) prior to running the engine.\n");
   if (isInitialized == 0) KORALI_LOG_ERROR("Korali requires that the MPI is initialized by the user (e.g., via MPI_init) prior to running the engine.\n");
 
   // Getting size and id from the user-defined communicator
@@ -59,12 +59,10 @@ void Distributed::initialize()
   _rankToWorkerMap.resize(_rankCount);
 
   // Initializing available worker queue
-  _workerQueue = queue<size_t>();
-  while (!_workerQueue.empty()) _workerQueue.pop();
+  _workerQueue.clear();
 
   // Putting workers in the queue
-  for (int i = 0; i < _workerCount; i++)
-    _workerQueue.push(i);
+  for (int i = 0; i < _workerCount; i++) _workerQueue.push_back(i);
 
   // Korali engine as default, is the n+1th worker
   int curWorker = _workerCount + 1;
@@ -125,15 +123,15 @@ void Distributed::terminateServer()
   auto terminationJs = knlohmann::json();
   terminationJs["Conduit Action"] = "Terminate";
 
-  string terminationString = terminationJs.dump();
-  size_t terminationStringSize = terminationString.size();
+  // Serializing message in binary form
+  std::vector<std::uint8_t> msgData = knlohmann::json::to_cbor(terminationJs);
 
   if (isRoot())
   {
    // Sending message to workers for termination
     for (int i = 0; i < _workerCount; i++)
       for (int j = 0; j < _ranksPerWorker; j++)
-        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
+        MPI_Send(msgData.data(), msgData.size(), MPI_UINT8_T, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
 
     // Sending message to Korali non-root engine ranks for termination
     int flag = 0;
@@ -152,12 +150,12 @@ void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
   // Run broadcast only if this is the master process
   if (!isRoot()) return;
 
-  string messageString = message.dump();
-  size_t messageStringSize = messageString.size();
+  // Serializing message in binary form
+  std::vector<std::uint8_t> msgData = knlohmann::json::to_cbor(message);
 
   for (int i = 0; i < _workerCount; i++)
     for (int j = 0; j < _ranksPerWorker; j++)
-      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
+      MPI_Send(msgData.data(), msgData.size(), MPI_UINT8_T, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
 #endif
 }
 
@@ -190,9 +188,9 @@ void Distributed::sendMessageToEngine(knlohmann::json &message)
 #ifdef _KORALI_USE_MPI
   if (_localRankId == 0)
   {
-    string messageString = message.dump();
-    size_t messageStringSize = messageString.size();
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
+    // Serializing message in binary form
+    std::vector<std::uint8_t> msgData = knlohmann::json::to_cbor(message);
+    MPI_Send(msgData.data(), msgData.size(), MPI_UINT8_T, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
   }
 #endif
 }
@@ -207,14 +205,12 @@ knlohmann::json Distributed::recvMessageFromEngine()
   MPI_Status status;
   MPI_Probe(getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, &status);
   int messageSize = 0;
-  MPI_Get_count(&status, MPI_CHAR, &messageSize);
+  MPI_Get_count(&status, MPI_UINT8_T, &messageSize);
 
-  char *jsonStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
-  MPI_Recv(jsonStringChar, messageSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
-
-  jsonStringChar[messageSize] = '\0';
-  message = knlohmann::json::parse(jsonStringChar);
-  free(jsonStringChar);
+  // Allocating receive buffer
+  auto msgData = std::vector<std::uint8_t>(messageSize);
+  MPI_Recv(msgData.data(), messageSize, MPI_UINT8_T, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
+  message = knlohmann::json::from_cbor(msgData);
 #endif
 
   return message;
@@ -241,12 +237,10 @@ void Distributed::listenWorkers()
 
     // Receiving message from the worker
     int messageSize = 0;
-    MPI_Get_count(&status, MPI_CHAR, &messageSize);
-    char *messageStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
-    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
-    messageStringChar[messageSize] = '\0';
-    auto message = knlohmann::json::parse(messageStringChar);
-    free(messageStringChar);
+    MPI_Get_count(&status, MPI_UINT8_T, &messageSize);
+    auto msgData = std::vector<std::uint8_t>(messageSize);
+    MPI_Recv(msgData.data(), msgData.size(), MPI_UINT8_T, source, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
+    auto message = knlohmann::json::from_cbor(msgData);
 
     // Storing message in the sample message queue
     sample->_messageQueue.push(message);
@@ -258,13 +252,14 @@ void Distributed::listenWorkers()
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
 #ifdef _KORALI_USE_MPI
-  string messageString = message.dump();
-  size_t messageStringSize = messageString.size();
+
+  // Serializing message in binary form
+  std::vector<std::uint8_t> msgData = knlohmann::json::to_cbor(message);
 
   for (int i = 0; i < _ranksPerWorker; i++)
   {
     int rankId = _workerTeams[sample._workerId][i];
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, rankId, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
+    MPI_Send(msgData.data(), msgData.size(), MPI_UINT8_T, rankId, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
   }
 #endif
 }
@@ -298,6 +293,11 @@ void Distributed::popEngine()
 size_t Distributed::getProcessId()
 {
   return _rankId;
+}
+
+size_t Distributed::getWorkerCount()
+{
+ return _workerCount;
 }
 
 void Distributed::setConfiguration(knlohmann::json& js) 

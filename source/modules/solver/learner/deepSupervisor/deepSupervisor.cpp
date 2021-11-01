@@ -129,36 +129,45 @@ void DeepSupervisor::runGeneration()
   // In case we run Mean Squared Error with concurrency, distribute the work among samples
   if (_lossFunction == "Mean Squared Error" && _trainingConcurrency > 1)
   {
-   // Batch size per worker
-   size_t batchSizePerWorker = _problem->_trainingBatchSize / _trainingConcurrency;
+   // Calculating per worker dimensions
+   size_t NW = _problem->_trainingBatchSize / _trainingConcurrency;
+   size_t T = _problem->_inputData[0].size();
+   size_t IC = _problem->_inputData[0][0].size();
+   size_t OC = _problem->_solutionData[0].size();
 
    // Getting current NN hyperparameters
    const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
 
    // Sending input to workers for parallel processing
    std::vector<Sample> samples(_trainingConcurrency);
-   for (size_t i = 0; i < _trainingConcurrency; i++)
+   #pragma omp parallel for
+   for (size_t sId = 0; sId < _trainingConcurrency; sId++)
    {
      // Carving part of the batch data that corresponds to this sample
-     const auto beginWorkerInputData = _problem->_inputData.begin() + batchSizePerWorker * i;
-     const auto endWorkerInputData = _problem->_inputData.begin() + batchSizePerWorker * (i+1);
-     const auto workerInputData = std::vector<std::vector<std::vector<float>>>(beginWorkerInputData, endWorkerInputData);
+     auto workerInputDataFlat = std::vector<float>(NW * IC * T);
+     for (size_t i = 0; i < NW; i++)
+      for (size_t j = 0; j < T; j++)
+       for (size_t k = 0; k < IC; k++)
+        workerInputDataFlat[i*T*IC + j*IC + k] = _problem->_inputData[sId * NW + i][j][k];
 
-     const auto beginWorkerSolutionData = _problem->_solutionData.begin() + batchSizePerWorker * i;
-     const auto endWorkerSolutionData = _problem->_solutionData.begin() + batchSizePerWorker * (i+1);
-     const auto workerSolutionData = std::vector<std::vector<float>>(beginWorkerSolutionData, endWorkerSolutionData);
+     auto workerSolutionDataFlat = std::vector<float>(NW * IC * T);
+     for (size_t i = 0; i < NW; i++)
+       for (size_t j = 0; j < OC; j++)
+        workerSolutionDataFlat[i*OC + j] = _problem->_solutionData[sId * NW + i][j];
 
      // Setting up sample
-     samples[i]["Sample Id"] = i;
-     samples[i]["Module"] = "Solver";
-     samples[i]["Operation"] = "Run Training On Worker";
-     samples[i]["Input Data"] = workerInputData;
-     samples[i]["Solution Data"] = workerSolutionData;
-     samples[i]["Hyperparameters"] = nnHyperparameters;
-
-     // Launching sample
-     KORALI_START(samples[i]);
+     samples[sId]["Sample Id"] = sId;
+     samples[sId]["Module"] = "Solver";
+     samples[sId]["Operation"] = "Run Training On Worker";
+     samples[sId]["Input Data"] = workerInputDataFlat;
+     samples[sId]["Input Dims"] = std::vector<size_t>({NW, T, IC});
+     samples[sId]["Solution Data"] = workerSolutionDataFlat;
+     samples[sId]["Solution Dims"] = std::vector<size_t>({NW, OC});
+     samples[sId]["Hyperparameters"] = nnHyperparameters;
    }
+
+   // Launching samples
+   for (size_t i = 0; i < _trainingConcurrency; i++) KORALI_START(samples[i]);
 
    // Waiting for samples to finish
    KORALI_WAITALL(samples);
@@ -196,7 +205,6 @@ void DeepSupervisor::runGeneration()
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
       _currentLoss += MSEVector[b][i] * MSEVector[b][i];
-
     _currentLoss = _currentLoss / ((float)N * 2.0f);
 
     // Running back propagation on the MSE vector
@@ -271,16 +279,37 @@ void DeepSupervisor::runTrainingOnWorker(korali::Sample &sample)
  sample._js.getJson().erase("Hyperparameters");
 
  // Getting input from sample
- auto input = KORALI_GET(std::vector<std::vector<std::vector<float>>>, sample, "Input Data");
+ auto inputDataFlat = KORALI_GET(std::vector<float>, sample, "Input Data");
  sample._js.getJson().erase("Input Data");
 
  // Getting solution from sample
- auto solution = KORALI_GET(std::vector<std::vector<float>>, sample, "Solution Data");
+ auto solutionDataFlat = KORALI_GET(std::vector<float>, sample, "Solution Data");
  sample._js.getJson().erase("Solution Data");
 
- // Grabbing batch size and solution size
- const size_t N = input.size();
- const size_t OC = _problem->_solutionSize;
+ // Getting input dimensions
+ auto inputDims = KORALI_GET(std::vector<size_t>, sample, "Input Dims");
+ size_t N = inputDims[0];
+ size_t T = inputDims[1];
+ size_t IC = inputDims[2];
+ sample._js.getJson().erase("Input Dims");
+
+ // De-flattening input
+ auto input = std::vector<std::vector<std::vector<float>>>(N, std::vector<std::vector<float>>(T, std::vector<float>(IC)));
+ for (size_t i = 0; i < N; i++)
+  for (size_t j = 0; j < T; j++)
+   for (size_t k = 0; k < IC; k++)
+    input[i][j][k] = inputDataFlat[i*T*IC + j*IC + k];
+
+ // Getting solution dimensions
+ auto solutionDims = KORALI_GET(std::vector<size_t>, sample, "Solution Dims");
+ size_t OC = solutionDims[1];
+ sample._js.getJson().erase("Solution Dims");
+
+ // De-flattening solution
+ auto solution = std::vector<std::vector<float>>(N, std::vector<float>(OC));
+ for (size_t i = 0; i < N; i++)
+   for (size_t j = 0; j < OC; j++)
+    solution[i][j] = solutionDataFlat[i*OC + j];
 
  // Getting a reference to the neural network output
  const auto &results = getEvaluation(input);

@@ -111,9 +111,8 @@ void DeepSupervisor::initialize()
 
 void DeepSupervisor::runGeneration()
 {
-  // Grabbing constants
+  // Grabbing batch size
   const size_t N = _problem->_trainingBatchSize;
-  const size_t OC = _problem->_solutionSize;
 
   // Check whether training concurrency exceeds the number of workers
   if (_trainingConcurrency > _k->_engine->_conduit->getWorkerCount()) KORALI_LOG_ERROR("The training concurrency requested (%lu) exceeds the number of Korali workers defined in the conduit type/configuration (%lu).", _trainingConcurrency, _k->_engine->_conduit->getWorkerCount());
@@ -127,9 +126,61 @@ void DeepSupervisor::runGeneration()
   // Hyperparameter gradient storage
   std::vector<float> nnHyperparameterGradients;
 
-  // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
-  if (_lossFunction == "Mean Squared Error")
+  // In case we run Mean Squared Error with concurrency, distribute the work among samples
+  if (_lossFunction == "Mean Squared Error" && _trainingConcurrency > 1)
   {
+   // Batch size per worker
+   size_t batchSizePerWorker = _problem->_trainingBatchSize / _trainingConcurrency;
+
+   // Getting current NN hyperparameters
+   const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+
+   // Sending input to workers for parallel processing
+   std::vector<Sample> samples(_trainingConcurrency);
+   for (size_t i = 0; i < _trainingConcurrency; i++)
+   {
+     // Carving part of the batch data that corresponds to this sample
+     const auto beginWorkerInputData = _problem->_inputData.begin() + batchSizePerWorker * i;
+     const auto endWorkerInputData = _problem->_inputData.begin() + batchSizePerWorker * (i+1);
+     const auto workerInputData = std::vector<std::vector<std::vector<float>>>(beginWorkerInputData, endWorkerInputData);
+
+     const auto beginWorkerSolutionData = _problem->_solutionData.begin() + batchSizePerWorker * i;
+     const auto endWorkerSolutionData = _problem->_solutionData.begin() + batchSizePerWorker * (i+1);
+     const auto workerSolutionData = std::vector<std::vector<float>>(beginWorkerSolutionData, endWorkerSolutionData);
+
+     // Setting up sample
+     samples[i]["Sample Id"] = i;
+     samples[i]["Module"] = "Solver";
+     samples[i]["Operation"] = "Run Training On Worker";
+     samples[i]["Input Data"] = workerInputData;
+     samples[i]["Solution Data"] = workerSolutionData;
+     samples[i]["Hyperparameters"] = nnHyperparameters;
+
+     // Launching sample
+     KORALI_START(samples[i]);
+   }
+
+   // Waiting for samples to finish
+   KORALI_WAITALL(samples);
+
+   // Assembling hyperparameters and the total mean squared loss
+   _currentLoss = 0.0f;
+   nnHyperparameterGradients = std::vector<float>(_neuralNetwork->_hyperparameterCount, 0.0f);
+   for (size_t i = 0; i < _trainingConcurrency; i++)
+   {
+    _currentLoss += KORALI_GET(float, samples[i], "Squared Loss");
+    const auto workerGradients = KORALI_GET(std::vector<float>, samples[i], "Hyperparameter Gradients");
+    for (size_t i = 0; i < workerGradients.size(); i++) nnHyperparameterGradients[i] += workerGradients[i];
+   }
+   _currentLoss = _currentLoss / ((float)N * 2.0f);
+  }
+
+  // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
+  if (_lossFunction == "Mean Squared Error" && _trainingConcurrency == 1)
+  {
+   // Grabbing constants
+   const size_t OC = _problem->_solutionSize;
+
     // Making a copy of the solution data for MSE calculation
     auto MSEVector = _problem->_solutionData;
 
@@ -137,16 +188,15 @@ void DeepSupervisor::runGeneration()
     const auto &results = getEvaluation(_problem->_inputData);
 
     // Calculating gradients via the loss function
-#pragma omp parallel for simd
+    #pragma omp parallel for simd
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
        MSEVector[b][i] = MSEVector[b][i] - results[b][i];
 
-    // Calculating loss across the batch size
-    _currentLoss = 0.0;
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
-        _currentLoss += MSEVector[b][i] * MSEVector[b][i];
+      _currentLoss += MSEVector[b][i] * MSEVector[b][i];
+
     _currentLoss = _currentLoss / ((float)N * 2.0f);
 
     // Running back propagation on the MSE vector
@@ -154,7 +204,7 @@ void DeepSupervisor::runGeneration()
   }
 
   // If the solution represents the gradients, just pass them on
-  if (_lossFunction == "Direct Gradients")  nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
+  if (_lossFunction == "Direct Gradient")  nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 
   // Passing hyperparameter gradients through a gradient descent update
   _optimizer->processResult(0.0f, nnHyperparameterGradients);
@@ -182,135 +232,38 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   // Grabbing constants
   const size_t N = input.size();
 
-  ///// We employ one of two ways to resolve the evaluation:
+  // Running the input values through the neural network
+  _neuralNetwork->forward(input);
 
-  // 1) If this is a training batch and concurrency was requested, we split the batch and send it to the Korali workers for processing
-  if (N == _problem->_trainingBatchSize && _trainingConcurrency > 0)
-  {
-   // Clearing results vector
-   _forwardEvaluation.clear();
-
-   // Getting current NN hyperparameters
-   const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
-
-   // Batch size per worker
-   size_t batchSizePerWorker = _problem->_trainingBatchSize / _trainingConcurrency;
-
-   // Sending input to workers for parallel processing
-   std::vector<Sample> samples(_trainingConcurrency);
-   for (size_t i = 0; i < _trainingConcurrency; i++)
-   {
-     // Carving part of the batch data that corresponds to this sample
-     const auto beginWorkerData = _problem->_inputData.begin() + batchSizePerWorker * i;
-     const auto endWorkerData = _problem->_inputData.begin() + batchSizePerWorker * (i+1);
-     const auto workerInputData = std::vector<std::vector<std::vector<float>>>(beginWorkerData,endWorkerData);
-
-     // Setting up sample
-     samples[i]["Sample Id"] = i;
-     samples[i]["Worker Affinity"] = i;
-     samples[i]["Module"] = "Solver";
-     samples[i]["Operation"] = "Run Evaluation On Worker";
-     samples[i]["Input Data"] = workerInputData;
-     samples[i]["Hyperparameters"] = nnHyperparameters;
-
-     // Launching sample
-     KORALI_START(samples[i]);
-   }
-
-   // Waiting for samples to finish
-   KORALI_WAITALL(samples);
-
-   for (size_t i = 0; i < _trainingConcurrency; i++)
-   {
-     const auto workerEvaluation = KORALI_GET(std::vector<std::vector<float>>, samples[i], "Evaluation");
-     _forwardEvaluation.insert(_forwardEvaluation.end(), workerEvaluation.begin(), workerEvaluation.end());
-   }
-
-   return _forwardEvaluation;
-  }
-
-  // 2) If this is an inference batch or no concurrency was requested, we process it locally
-  else
-  {
-   // Running the input values through the neural network
-   _neuralNetwork->forward(input);
-
-   // Returning the output values for the last given timestep
-   return _neuralNetwork->getOutputValues(N);
-  }
+  // Returning the output values for the last given timestep
+  return _neuralNetwork->getOutputValues(N);
 }
 
-std::vector<float> &DeepSupervisor::backwardGradients(const std::vector<std::vector<float>> &gradients)
+std::vector<float> DeepSupervisor::backwardGradients(const std::vector<std::vector<float>> &gradients)
 {
   // Grabbing constants
   const size_t N = gradients.size();
 
-  // 1) If this is a training batch and concurrency was requested, we split the batch and send it to the Korali workers for processing
-  if (N == _problem->_trainingBatchSize && _trainingConcurrency > 1)
-  {
-   // Clearing results vector
-   _hyperparameterGradients.clear();
+  // Running the input values through the neural network
+  _neuralNetwork->backward(gradients);
 
-   // Batch size per worker
-   size_t batchSizePerWorker = _problem->_trainingBatchSize / _trainingConcurrency;
+  // Getting NN hyperparameter gradients
+  auto hyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
 
-   // Sending input to workers for parallel processing
-   std::vector<Sample> samples(_trainingConcurrency);
-
-//   #pragma omp parallel for
-   for (size_t i = 0; i < _trainingConcurrency; i++)
-   {
-     // Carving part of the batch data that corresponds to this sample
-     const auto beginWorkerData = gradients.begin() + batchSizePerWorker * i;
-     const auto endWorkerData = gradients.begin() + batchSizePerWorker * (i+1);
-     const auto workerGradientData = std::vector<std::vector<float>>(beginWorkerData, endWorkerData);
-
-     // Setting up sample
-     samples[i]["Sample Id"] = i;
-     samples[i]["Worker Affinity"] = i;
-     samples[i]["Module"] = "Solver";
-     samples[i]["Operation"] = "Run Backward Gradients On Worker";
-     samples[i]["Gradient Data"] = workerGradientData;
-   }
-
-   // Launching Samples
-   for (size_t i = 0; i < _trainingConcurrency; i++) KORALI_START(samples[i]);
-
-   // Waiting for samples to finish
-   KORALI_WAITALL(samples);
-
-   _hyperparameterGradients = std::vector<float>(_neuralNetwork->_hyperparameterCount, 0.0f);
-   for (size_t i = 0; i < _trainingConcurrency; i++)
-   {
-     const auto workerEvaluation = KORALI_GET(std::vector<float>, samples[i], "Hyperparameter Gradients");
-     for (size_t i = 0; i < workerEvaluation.size(); i++) _hyperparameterGradients[i] += workerEvaluation[i];
-   }
-  }
-
-  // 2) If this is an inference batch or no concurrency was requested, we process it locally
-  else
-  {
-   // Running the input values through the neural network
-   _neuralNetwork->backward(gradients);
-
-   // Getting NN hyperparameter gradients
-   _hyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
-  }
-
-  // If required, apply L2 Normalization to the network's hyperparameters
+ // If required, apply L2 Normalization to the network's hyperparameters
   if (_l2RegularizationEnabled)
   {
     const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
     #pragma omp parallel for simd
-    for (size_t i = 0; i < _hyperparameterGradients.size(); i++)
-     _hyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+    for (size_t i = 0; i < hyperparameterGradients.size(); i++)
+     hyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
   }
 
   // Returning the hyperparameter gradients
-  return _hyperparameterGradients;
+  return hyperparameterGradients;
 }
 
-void DeepSupervisor::runEvaluationOnWorker(korali::Sample &sample)
+void DeepSupervisor::runTrainingOnWorker(korali::Sample &sample)
 {
  // Updating hyperparameters in the worker's NN
  auto nnHyperparameters = KORALI_GET(std::vector<float>, sample, "Hyperparameters");
@@ -321,30 +274,37 @@ void DeepSupervisor::runEvaluationOnWorker(korali::Sample &sample)
  auto input = KORALI_GET(std::vector<std::vector<std::vector<float>>>, sample, "Input Data");
  sample._js.getJson().erase("Input Data");
 
- // Grabbing batch size
+ // Getting solution from sample
+ auto solution = KORALI_GET(std::vector<std::vector<float>>, sample, "Solution Data");
+ sample._js.getJson().erase("Solution Data");
+
+ // Grabbing batch size and solution size
  const size_t N = input.size();
+ const size_t OC = _problem->_solutionSize;
+
+ // Getting a reference to the neural network output
+ const auto &results = getEvaluation(input);
+
+ // Running Mean squared error function
+ float squaredLoss = 0.0f;
+
+ // Calculating gradients via the loss function
+ #pragma omp parallel for simd
+  for (size_t b = 0; b < N; b++)
+    for (size_t i = 0; i < OC; i++)
+     solution[b][i] = solution[b][i] - results[b][i];
+
+ // Adding square losses
+ for (size_t b = 0; b < N; b++)
+  for (size_t i = 0; i < OC; i++)
+   squaredLoss += solution[b][i] * solution[b][i];
 
  // Running the input values through the neural network
- _neuralNetwork->forward(input);
-
- // Storing the output values for the last given timestep
- sample["Evaluation"] = _neuralNetwork->getOutputValues(N);
-}
-
-void DeepSupervisor::runBackwardGradientsOnWorker(korali::Sample &sample)
-{
- // Getting input from sample
- auto gradients = KORALI_GET(std::vector<std::vector<float>>, sample, "Gradient Data");
- sample._js.getJson().erase("Gradient Data");
-
- // Grabbing batch size
- const size_t N = gradients.size();
-
- // Running the input values through the neural network
- _neuralNetwork->backward(gradients);
+ backwardGradients(solution);
 
  // Storing the output values for the last given timestep
  sample["Hyperparameter Gradients"] = _neuralNetwork->getHyperparameterGradients(N);
+ sample["Squared Loss"] = squaredLoss;
 }
 
 void DeepSupervisor::printGenerationAfter()
@@ -583,15 +543,9 @@ bool DeepSupervisor::runOperation(std::string operation, korali::Sample& sample)
 {
  bool operationDetected = false;
 
- if (operation == "Run Evaluation On Worker")
+ if (operation == "Run Training On Worker")
  {
-  runEvaluationOnWorker(sample);
-  return true;
- }
-
- if (operation == "Run Backward Gradients On Worker")
- {
-  runBackwardGradientsOnWorker(sample);
+  runTrainingOnWorker(sample);
   return true;
  }
 

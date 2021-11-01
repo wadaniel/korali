@@ -4,6 +4,7 @@ import sys
 sys.path.append('./_model')
 from env import *
 import argparse
+from mpi4py import MPI
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -81,7 +82,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
-
+e["Solver"]["Training"]["Concurrency"] = 2
 e["Solver"]["State Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
@@ -115,3 +116,5 @@ e["File Output"]["Enabled"] = False
 ### Running Experiment
 
 k.run(e)
+k["Conduit"]["Type"] = "Distributed"
+k.setMPIComm(MPI.COMM_WORLD)

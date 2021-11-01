@@ -36,25 +36,6 @@ class __className__ : public __parentClassName__
    */
   NeuralNetwork *_neuralNetwork;
 
-  /**
-   * @brief Temporary storage for the evaluation of the forward NN propagation
-   */
-  std::vector<std::vector<float>> _forwardEvaluation;
-
-  /**
-   * @brief Temporary storage for the hyperparameter gradients obtained by the backward NN propagation
-   */
-  std::vector<float> _hyperparameterGradients;
-
-  // Only needed for DDPG
-  //
-  //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
-  //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
-  //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
-  //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-  //
-  //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
-
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getHyperparameters() override;
   void setHyperparameters(const std::vector<float> &hyperparameters) override;
@@ -63,19 +44,14 @@ class __className__ : public __parentClassName__
   void runGeneration() override;
   void printGenerationAfter() override;
 
-  std::vector<float>& backwardGradients(const std::vector<std::vector<float>> &gradients);
+  std::vector<float> backwardGradients(const std::vector<std::vector<float>> &gradients);
 
   /**
-   * @brief Run the forward pipeline of the network given an input and return the output.
-   * @param sample A sample containing the NN's input BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+   * @brief Run the training pipeline of the network given an input and return the output.
+   * @param sample A sample containing the NN's input BxTxIC (B: Batch Size, T: Time steps, IC: Input channels) and solution BxOC data (B: Batch Size, OC: Output channels)
    */
-  void runEvaluationOnWorker(korali::Sample &sample);
+  void runTrainingOnWorker(korali::Sample &sample);
 
-  /**
-   * @brief Run the backward pipeline of the network given an output and return the hyperparameter gradients
-   * @param sample A sample containing the NN's output BxTxOC (B: Batch Size, T: Time steps, OC: Output channels)
-   */
-  void runBackwardGradientsOnWorker(korali::Sample &sample);
 
   /**
    * @brief Update the hyperparameters for the neural network after an update for every worker.

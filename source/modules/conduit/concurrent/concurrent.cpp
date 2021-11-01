@@ -149,7 +149,6 @@ void Concurrent::listenWorkers()
 
     if (readBytes > 0)
     {
-      printf("Reading Message from sample. Size: %lu\n", inputSize);
       std::vector<uint8_t> msgData(inputSize);
       read(_resultContentPipe[i][0], msgData.data(), inputSize * sizeof(uint8_t));
       auto message = knlohmann::json::from_cbor(msgData);
@@ -186,7 +185,6 @@ void Concurrent::sendMessageToSample(Sample &sample, knlohmann::json &message)
   std::vector<std::uint8_t> msgData = knlohmann::json::to_cbor(message);
   size_t messageSize = msgData.size();
 
-  printf("Sending Message to sample. Size: %lu\n", messageSize);
   write(_inputsPipe[sample._workerId][1], &messageSize, sizeof(size_t));
   write(_inputsPipe[sample._workerId][1], msgData.data(), messageSize * sizeof(uint8_t));
 }

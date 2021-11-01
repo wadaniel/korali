@@ -83,7 +83,7 @@ e["Problem"]["Solution"]["Size"] = 1
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Learning Rate"] = float(args.learningRate)
-e["Solver"]["Training Concurrency"] = 2
+e["Solver"]["Training Concurrency"] = 1
 
 ### Defining the shape of the neural network
 
@@ -111,10 +111,8 @@ e["Random Seed"] = 0xC0FFEE
 ### Training the neural network
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
-#k["Conduit"]["Type"] = "Distributed"
-#k.setMPIComm(MPI.COMM_WORLD)
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 3
+k["Conduit"]["Type"] = "Distributed"
+k.setMPIComm(MPI.COMM_WORLD)
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

@@ -45,7 +45,7 @@ void runEnvironment(korali::Sample &s)
   if( rank == 0 ) {
     char logFilePath[128];
     sprintf(logFilePath, "%s/log.txt", resDir);
-    logFile = freopen(logFilePath, "a", stdout);
+    logFile = freopen(logFilePath, "w", stdout);
     if (logFile == NULL)
     {
       printf("[Korali] Error creating log file: %s.\n", logFilePath);

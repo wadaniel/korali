@@ -162,7 +162,7 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time of next action     
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 1;
+  size_t maxSteps = 200;
 
   // // File to write actions
   // std::stringstream filename;
@@ -356,10 +356,10 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
     initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
   }
 
-  printf("[Korali] Initial Condition Agent %ld:\n", agentId);
-  printf("[Korali] angle: %f\n", initialAngle);
-  printf("[Korali] x: %f\n", initialPosition[0]);
-  printf("[Korali] y: %f\n", initialPosition[1]);
+  // printf("[Korali] Initial Condition Agent %ld:\n", agentId);
+  // printf("[Korali] angle: %f\n", initialAngle);
+  // printf("[Korali] x: %f\n", initialPosition[0]);
+  // printf("[Korali] y: %f\n", initialPosition[1]);
 
   // // Write initial condition to file
   // std::stringstream filename;

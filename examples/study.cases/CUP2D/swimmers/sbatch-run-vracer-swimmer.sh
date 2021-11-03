@@ -13,11 +13,11 @@ NWORKER=32
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=8
+NRANKS=4
 # NRANKS=9
 
-# number of threads per worker
-NUMTHREADS=12
+# number of cores per worker
+NUMCORES=12
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))
@@ -44,6 +44,16 @@ cat <<EOF >daint_sbatch
 # #SBATCH --partition=debug
 #SBATCH --nodes=$((NNODES+1))
 
+srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
+EOF
+
+echo "Starting ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
+echo "----------------------------"
+
+chmod 755 daint_sbatch
+sbatch daint_sbatch
+
+
 ## OLD HOMOGENEOUS JOB SETTING ##
 # #SBATCH --ntasks-per-node=1
 # #SBATCH --cpus-per-task=12
@@ -54,11 +64,3 @@ cat <<EOF >daint_sbatch
 
 ## HETEROGENEOUS JOB SETTING ##
 # Korali engine gets 12 threads and 1 rank, CUP gets 1 threads and 12 ranks
-srun --nodes=$NNODES --ntasks-per-node=12 --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=12 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 ))
-EOF
-
-echo "Starting ${NWORKER} simulations each using ${NRANKS} ranks and ${NUMTHREADS} threads"
-echo "----------------------------"
-
-chmod 755 daint_sbatch
-sbatch daint_sbatch

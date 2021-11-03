@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
   #ifdef MULTITASK
-  e["Problem"]["Environment Count"] = 3;
+  e["Problem"]["Environment Count"] = 4;
   #endif
 
   // Setting results path and dumping frequency in CUP

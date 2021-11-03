@@ -92,6 +92,16 @@ else
 		stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
 	"
 		echo $OBJECTS
+	elif [ "$OBSTACLE" = "single" ]
+	then
+		echo "setting options for single"
+		# options for swarm4
+		NAGENTS=1
+		EXTENT=4
+		# set object string
+		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1
+	"
+		echo $OBJECTS
 	elif [ "$OBSTACLE" = "swarm2" ]
 	then
 		echo "setting options for swarm2"
@@ -99,7 +109,6 @@ else
 		NAGENTS=1
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 4 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.00
 	"
@@ -111,7 +120,6 @@ else
 		NAGENTS=3
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 4 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -126,7 +134,6 @@ else
 		NAGENTS=8
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 9 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -146,7 +153,6 @@ else
 		NAGENTS=15
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 16 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -173,7 +179,6 @@ else
 		NAGENTS=24
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 25 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10

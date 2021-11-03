@@ -10,7 +10,8 @@
 
 // #define ID
 // #define MULTITASK
-// #define SWARM
+#define SWARM
+// #define SINGLE
 
 // command line arguments are read in Korali application
 extern int _argc;

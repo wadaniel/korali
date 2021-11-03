@@ -256,17 +256,17 @@ for epoch in range(epochs):
  print('[Korali] Current Training Loss: ' + str(e["Solver"]["Current Loss"])) 
     
  # Evaluating testing set
- testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
+ # testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
  
  # Getting MSE loss for testing set
- squaredMeanError = 0.0
- for i, res in enumerate(testingInferredVector):
-  sol = testingImageVector[i][0]
-  for j, s in enumerate(sol):
-   diff = res[j] - s
-   squaredMeanError += diff * diff 
- squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
- print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
+ # squaredMeanError = 0.0
+ # for i, res in enumerate(testingInferredVector):
+ #  sol = testingImageVector[i][0]
+ #  for j, s in enumerate(sol):
+ #   diff = res[j] - s
+ #   squaredMeanError += diff * diff 
+ # squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
+ # print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
  
  # Adjusting learning rate via decay
  learningRate = learningRate * (1.0 / (1.0 + decay * (epoch+1)));

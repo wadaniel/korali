@@ -22,6 +22,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+warnings.filterwarnings('ignore')
+
 #TODO: eliminate output variables that are 0. !!
 # y_train_state -> eliminate idxs=4,5,10 (starting from 0 to 10)
 #               -> get IDXS=[0,1,2,3,6,7,8,9]
@@ -56,6 +58,7 @@ parser.add_argument("--expBetPolUp", type=float, default=1, help="Experiences Be
 parser.add_argument("--maxPolUp", type=float, default=0, help="Maximum Policy Updates")
 parser.add_argument("--maxSize", type=float, default=262144, help="Maximum size of memory for experience replay")
 parser.add_argument("--launchNum", type=int, default=1, help="Number of times to run vracer.")
+parser.add_argument("--start", type=int, default=1, help="Start seed, 1 2 3 4 5 ...")
 parser.add_argument("--iniRetrain", type=int, default=65536, help="Initial retraining sample data points.")
 parser.add_argument("--retrain", type=int, default=50000, help="Retraining sample data points.")
 parser.add_argument("--outputScaler", default="Standard", help="Standard or MinMax scaler")
@@ -95,7 +98,7 @@ import korali
 
 envName = args.env
         
-for launch in range(args.launchNum):
+for launch in range(args.start - 1, args.launchNum + args.start - 1):
 
     comm.Barrier()
 

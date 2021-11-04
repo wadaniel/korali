@@ -39,6 +39,7 @@ parser.add_argument("--lrRL", help="Learning Rate.", required=False, type=float,
 parser.add_argument("--lr", type=float, default=1e-2, help="Initial learning rate surrogate nets")
 parser.add_argument("--batch", type=int, default=8, help="Batch size")
 parser.add_argument("--epoch", type=int, default=100, help="Total number of epochs to train the surrogate nets")
+parser.add_argument("--epoch2", type=int, default=50, help="Total number of epochs to train the surrogate nets")
 #parser.add_argument("--hid", nargs="+", type=int, help="Specify integers for list of hidden sizes, starting ith input size to first hidden layer and finishing with output size of last layer")
 parser.add_argument("--layers", type=int, default=3, help="layers")
 parser.add_argument("--units", type=int, default=512, help="units")
@@ -470,6 +471,8 @@ for launch in range(args.start - 1, args.launchNum + args.start - 1):
                 shutil.copy(PATH_curr,PATH_prev)
                     
                 comm.send(textPrint, dest=0, tag=tags["tag_retrained_ready"])
+                
+                net_config.hyperparams.epoch_number = args.epoch2
             
             keep_retraining = comm.recv(source=0, tag=tags["tag_keep_retraining"])
             retraining_iter = comm.recv(source=0, tag=tags["tag_iter_surr"])

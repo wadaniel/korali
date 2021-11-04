@@ -61,7 +61,11 @@ void runEnvironment(korali::Sample &s)
 
   // Sample task and save in vector
   #ifdef MULTITASK
+  #ifdef WATERTURBINE
   std::uniform_int_distribution<> disT(0, 3);
+  #else
+  std::uniform_int_distribution<> disT(0, 2);
+  #endif
   int task = disT(_randomGenerator);
   std::string argumentString;
   switch(task) {
@@ -392,8 +396,13 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
 {
   double xMin, xMax, yMin, yMax;
   if( nAgents == 1 ){
+    #ifndef SINGLE
     xMin = 0.8;
     xMax = 1.4;
+    #else
+    xMin = 0.4;
+    xMax = 1.4;
+    #endif
     #ifdef SWARM
     yMin = 0.8;
     yMax = 1.2;

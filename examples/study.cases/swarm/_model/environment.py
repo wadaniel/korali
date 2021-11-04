@@ -3,28 +3,29 @@ from pathlib import Path
 
 def environment( args, s ):
     # set set parameters and initialize environment
-    numIndividuals       = args["numIndividuals"]
-    numTimesteps         = args["numTimesteps"]
-    numNearestNeighbours = args["numNearestNeighbours"]
+    numIndividuals       = args.numIndividuals
+    numTimesteps         = args.numTimesteps
+    numNearestNeighbours = args.numNearestNeighbours
     sim = swarm( numIndividuals, numNearestNeighbours )
 
     # compute pair-wise distances and view-angles
     done = sim.preComputeStates()
     # set initial state
-    states = []
+    states = []*sim.N
     for i in np.arange(sim.N):
         # get state
-        state = sim.getState( i )
-        states.append( state )
+        states[i] = sim.getState( i )
+    
     # print("states:", state)
     s["State"] = states
 
-    ## run simulation
     step = 0
     if done: 
         print("Initial configuration is terminal state...")
+    
+    ## run simulation
     while (step < numTimesteps) and (not done):
-        if args["visualize"]:
+        if args.visualize:
             Path("./_figures").mkdir(parents=True, exist_ok=True)
             # fixed camera
             # plotSwarm( sim, step )
@@ -51,18 +52,18 @@ def environment( args, s ):
 
         # compute pair-wise distances and view-angles
         done = sim.preComputeStates()
+
         # set state
-        states  = []
-        rewards = []
+        states  = []*sim.N
+        rewards = []*sim.N
         for i in np.arange(sim.N):
+
             # get state
-            state = sim.getState( i )
-            states.append( state )
+            states[i] = sim.getState( i )
+            
             # get reward
-            reward = sim.getReward( i )
-            if done:
-                reward = -10.
-            rewards.append(reward)
+            rewards[i] = sim.getReward( i ) if done else -10.
+        
         # print("states:", states)
         s["State"] = states
         # print("rewards:", rewards)

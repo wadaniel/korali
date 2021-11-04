@@ -7,17 +7,18 @@ from environment import *
 ### Parsing arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--visualize', help='whether to plot the swarm or not, default is 0', required=False, type=int, default=0)
-parser.add_argument('--numIndividuals', help='number of fish', required=True, type=int)
-parser.add_argument('--numTimesteps', help='number of timesteps to simulate', required=True, type=int)
-parser.add_argument('--numNearestNeighbours', help='number of nearest neighbours used for state/reward', required=True, type=int)
+parser.add_argument('--exp', help='Number of experiences', required=True, type=int)
+parser.add_argument('--visualize', help='Whether to plot the swarm or not, default is 0', required=False, action='store_true')
+parser.add_argument('--numIndividuals', help='Number of points in simulation.', required=True, type=int)
+parser.add_argument('--numTimesteps', help='Number of timesteps to simulate.', required=True, type=int)
+parser.add_argument('--numNearestNeighbours', help='Number of nearest neighbours used for state & reward.', required=True, type=int)
 
-args = vars(parser.parse_args())
+args = parser.parse_args()
 
 ### check arguments
-numIndividuals       = int(args["numIndividuals"])
-numTimesteps         = int(args["numTimesteps"])
-numNearestNeighbours = int(args["numNearestNeighbours"])
+numIndividuals = args.numIndividuals
+numTimesteps = args.numTimesteps
+numNearestNeighbours = args.numNearestNeighbours
 assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimesteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
 
 ### Define Korali Problem
@@ -67,24 +68,22 @@ e["Variables"][2*numNearestNeighbours+1]["Upper Bound"] = np.pi
 e["Variables"][2*numNearestNeighbours+1]["Initial Exploration Noise"] = np.pi/2
 
 ### Set Experience Replay, REFER and policy settings
-e["Solver"]["Experience Replay"]["Start Size"] = 10000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Start Size"] = 131072
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
-e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
+e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
-# e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
-# e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
   
 ### Configure the neural network and its hidden layers
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]['Neural Network']['Optimizer'] = "Adam"
-e["Solver"]["L2 Regularization"]["Enabled"] = True
-e["Solver"]["L2 Regularization"]["Importance"] = 1.0
+e["Solver"]["L2 Regularization"]["Enabled"] = False
+e["Solver"]["L2 Regularization"]["Importance"] = 0.0
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
@@ -99,7 +98,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Set file output configuration
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

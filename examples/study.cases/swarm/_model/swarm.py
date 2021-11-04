@@ -82,6 +82,7 @@ class swarm:
             locations[i,:]     = fish.location
             curDirections[i,:] = fish.curDirection
             cutOff[i]          = fish.sigmaPotential
+
         # normalize swimming directions
         normalCurDirections = curDirections / np.linalg.norm( curDirections, axis=1 )[:, np.newaxis]
 
@@ -94,7 +95,7 @@ class swarm:
         directions    = locations[np.newaxis, :, :] - locations[:, np.newaxis, :]
         distances     = np.sqrt( np.einsum('ijk,ijk->ij', directions, directions) )
         # normalize direction
-        normalDirections = directions / distances[:,:,np.newaxis]
+        normalDirections = directions / distances[:,:, np.newaxis]
         angles = np.arccos( np.einsum( 'ijk, ijk->ij', normalCurDirections[:,np.newaxis,:], normalDirections ) )
         
         ## set diagonals entries

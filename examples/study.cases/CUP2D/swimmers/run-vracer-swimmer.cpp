@@ -46,7 +46,11 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
   #ifdef MULTITASK
+  #ifdef WATERTURBINE
   e["Problem"]["Environment Count"] = 4;
+  #else
+  e["Problem"]["Environment Count"] = 3;
+  #endif
   #endif
 
   // Setting results path and dumping frequency in CUP

@@ -21,14 +21,14 @@ void __className__::initialize()
   if (_problem->_trainingBatchSize % _batchConcurrency > 0) KORALI_LOG_ERROR("The training concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _batchConcurrency, _problem->_trainingBatchSize);
 
   // Check whether the minibatch size (N) can be divided by the requested concurrency
-  if (_problem->_inferenceBatchSize % _batchConcurrency > 0) KORALI_LOG_ERROR("The inference concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _batchConcurrency, _problem->_inferenceBatchSize);
+  if (_problem->_testingBatchSize % _batchConcurrency > 0) KORALI_LOG_ERROR("The Testing concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _batchConcurrency, _problem->_testingBatchSize);
 
   // Determining batch sizes
-  std::vector<size_t> batchSizes = { _problem->_trainingBatchSize, _problem->_inferenceBatchSize };
+  std::vector<size_t> batchSizes = { _problem->_trainingBatchSize, _problem->_testingBatchSize };
 
   // If parallelizing training, we need to support the split batch size
   if (_batchConcurrency > 1) batchSizes.push_back(_problem->_trainingBatchSize / _batchConcurrency);
-  if (_batchConcurrency > 1) batchSizes.push_back(_problem->_inferenceBatchSize / _batchConcurrency);
+  if (_batchConcurrency > 1) batchSizes.push_back(_problem->_testingBatchSize / _batchConcurrency);
 
   /*****************************************************************
    * Setting up Neural Networks
@@ -122,14 +122,14 @@ void __className__::runTestingGeneration()
  if (_batchConcurrency > _k->_engine->_conduit->getWorkerCount()) KORALI_LOG_ERROR("The batch concurrency requested (%lu) exceeds the number of Korali workers defined in the conduit type/configuration (%lu).", _batchConcurrency, _k->_engine->_conduit->getWorkerCount());
 
  // Checking that incoming data has a correct format
- if (_problem->_inferenceBatchSize != _problem->_inputData.size())
-   KORALI_LOG_ERROR("Inference Batch size %lu different than that of input data (%lu).\n", _problem->_inputData.size(), _problem->_inferenceBatchSize);
+ if (_problem->_testingBatchSize != _problem->_inputData.size())
+   KORALI_LOG_ERROR("Testing Batch size %lu different than that of input data (%lu).\n", _problem->_inputData.size(), _problem->_testingBatchSize);
 
  // In case we run Mean Squared Error with concurrency, distribute the work among samples
  if (_batchConcurrency > 1)
  {
   // Calculating per worker dimensions
-  size_t NW = _problem->_inferenceBatchSize / _batchConcurrency;
+  size_t NW = _problem->_testingBatchSize / _batchConcurrency;
   size_t T = _problem->_inputData[0].size();
   size_t IC = _problem->_inputData[0][0].size();
 

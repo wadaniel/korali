@@ -76,14 +76,14 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = 1
 e["Problem"]["Training Batch Size"] = args.trainingBatchSize
-e["Problem"]["Inference Batch Size"] = args.testBatchSize
+e["Problem"]["Testing Batch Size"] = args.testBatchSize
 
 e["Problem"]["Input"]["Data"] = trainingInputSet
 e["Problem"]["Input"]["Size"] = 1
 e["Problem"]["Solution"]["Data"] = trainingSolutionSet
 e["Problem"]["Solution"]["Size"] = 1
 
-### Using a neural network solver (deep learning) for inference
+### Using a neural network solver (deep learning) for training
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Mode"] = "Training"

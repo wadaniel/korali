@@ -38,6 +38,10 @@ class DeepSupervisor : public Learner
 {
   public: 
   /**
+  * @brief Specifies the operation mode for the learner.
+  */
+   std::string _mode;
+  /**
   * @brief Sets the configuration of the hidden layers for the neural network.
   */
    knlohmann::json _neuralNetworkHiddenLayers;
@@ -82,9 +86,13 @@ class DeepSupervisor : public Learner
   */
    float _outputWeightsScaling;
   /**
-  * @brief Specifies in how many parts will the training mini batch be split for concurrent processing. It must divide the training mini batch size perfectly.
+  * @brief Specifies in how many parts will the mini batch be split for concurrent processing. It must divide the training mini batch size perfectly.
   */
-   size_t _trainingConcurrency;
+   size_t _batchConcurrency;
+  /**
+  * @brief [Internal Use] The output of the neural network if running on testing mode.
+  */
+   std::vector<std::vector<float>> _evaluation;
   /**
   * @brief [Internal Use] Current value of the loss function.
   */
@@ -162,6 +170,8 @@ class DeepSupervisor : public Learner
 
   void initialize() override;
   void runGeneration() override;
+  void runTrainingGeneration();
+  void runTestingGeneration();
   void printGenerationAfter() override;
 
   std::vector<float> backwardGradients(const std::vector<std::vector<float>> &gradients);
@@ -172,6 +182,11 @@ class DeepSupervisor : public Learner
    */
   void runTrainingOnWorker(korali::Sample &sample);
 
+  /**
+   * @brief Run the forward evaluation pipeline of the network given an input and return the output.
+   * @param sample A sample containing the NN's input BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+   */
+  void runEvaluationOnWorker(korali::Sample &sample);
 
   /**
    * @brief Update the hyperparameters for the neural network after an update for every worker.

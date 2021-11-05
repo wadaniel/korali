@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   if (found == true){
     printf("[Korali] Continuing execution from previous run...\n");
     // Hack to enable execution after Testing.
-    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
+    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + std::numeric_limits<int>::max();
   }
 
   // Configuring Experiment

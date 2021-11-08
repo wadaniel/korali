@@ -545,7 +545,7 @@ void Agent::processEpisode(knlohmann::json &episode)
       KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
 
     // Adding truncated state value to the retrace value
-    retV += _discountFactor * truncatedV;
+    retV += truncatedV;
   }
 
   // Now going backwards, setting the retrace value of every experience

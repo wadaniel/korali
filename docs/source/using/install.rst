@@ -96,7 +96,7 @@ To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the 
   
   .. code-block:: bash
   
-     source tools/env/set_env.sh PREFIX
+     source tools/env/set_env.sh PREFIX/build
      
 Troubleshooting
 --------------------------

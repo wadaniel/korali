@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import sys
 import numpy as np
@@ -52,8 +51,14 @@ parser.add_argument(
     required=False)
 args = parser.parse_args()
 
-print("Running FNN solver with arguments:")
-print(args)
+MPIcomm = MPI.COMM_WORLD
+MPIrank = MPIcomm.Get_rank()
+MPIsize = MPIcomm.Get_size()
+MPIroot = MPIsize - 1
+
+if MPIrank == MPIroot:
+ print("Running FNN solver with arguments:")
+ print(args)
 
 scaling = 5.0
 np.random.seed(0xC0FFEE)
@@ -71,19 +76,20 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = 1
 e["Problem"]["Training Batch Size"] = args.trainingBatchSize
-e["Problem"]["Inference Batch Size"] = args.testBatchSize
+e["Problem"]["Testing Batch Size"] = args.testBatchSize
 
 e["Problem"]["Input"]["Data"] = trainingInputSet
 e["Problem"]["Input"]["Size"] = 1
 e["Problem"]["Solution"]["Data"] = trainingSolutionSet
 e["Problem"]["Solution"]["Size"] = 1
 
-### Using a neural network solver (deep learning) for inference
+### Using a neural network solver (deep learning) for training
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Learning Rate"] = float(args.learningRate)
-e["Solver"]["Training Concurrency"] = 1
+e["Solver"]["Batch Concurrency"] = 2
 
 ### Defining the shape of the neural network
 
@@ -111,29 +117,37 @@ e["Random Seed"] = 0xC0FFEE
 ### Training the neural network
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
-#k["Conduit"]["Type"] = "Distributed"
-#k.setMPIComm(MPI.COMM_WORLD)
+k["Conduit"]["Type"] = "Distributed"
+k.setMPIComm(MPI.COMM_WORLD)
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-#testInputSet = np.random.uniform(0, 2 * np.pi, args.testBatchSize)
-#testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling
-#testInferredSet = e.getEvaluation([ [ [ x ] ] for x in testInputSet.tolist() ])
+testInputSet = np.random.uniform(0, 2 * np.pi, args.testBatchSize)
+testInputSet = [ [ [ i ] ] for i in testInputSet.tolist() ]
+testOutputSet = [ x[0][0] for x in np.tanh(np.exp(np.sin(testInputSet))) * scaling ]
 
-### Calc MSE on test set
+e["Solver"]["Mode"] = "Testing"
+e["Problem"]["Input"]["Data"] = testInputSet
 
-#testInferredSet = [ x[0] for x in testInferredSet ]
-#mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
-#print("MSE on test set: {}".format(mse))
+### Running Testing and getting results
+k.setMPIComm(MPI.COMM_WORLD)
+k.run(e)
+testInferredSet = [ x[0] for x in e["Solver"]["Evaluation"] ]
 
-#if (mse > args.testMSEThreshold):
-# print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
-# exit(-1)
+if (MPIrank == MPIroot):
+    
+ ### Calc MSE on test set
+ mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
+ print("MSE on test set: {}".format(mse))
+ 
+ if (mse > args.testMSEThreshold):
+  print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
+  exit(-1)
 
-### Plotting Results
+ ### Plotting Results
 
-#if (args.plot):
-# plt.plot(testInputSet, testOutputSet, "o")
-# plt.plot(testInputSet, testInferredSet, "x")
-# plt.show()
+ #if (args.plot):
+ # plt.plot(testInputSet, testOutputSet, "o")
+ # plt.plot(testInputSet, testInferredSet, "x")
+ # plt.show()

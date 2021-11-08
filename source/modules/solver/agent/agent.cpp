@@ -619,20 +619,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // If it was a truncated episode, add the value function for the terminal state to retV
     if (_terminationVector[endId] == e_truncated)
     {
-      // Get state sequence, appending the truncated state to it and removing first time element
-      std::vector<float> truncatedV(_problem->_agentsPerEnvironment);
-
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
-        //Take policy d if there are more than one otherwise equal
+        //Take policy d if there are more than one otherwise doesnt matter
         auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
-        truncatedV[d] = truncatedPolicy.stateValue;
 
-        if (std::isfinite(truncatedV[d]) == false)
-          KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV[d]);
-
-        retV[d] += _discountFactor * truncatedV[d];
+        if (std::isfinite(truncatedPolicy.stateValue) == false)
+          KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
+        retV[d] +=  truncatedPolicy.stateValue;
       }
     }
 
@@ -649,43 +644,81 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   }
   else if(_relationship == "Collaboration")
   {
-    // Storage for the retrace value
-    float retV = 0.0f;
-
-    // If it was a truncated episode, add the value function of all agents for the terminal state to retV
-    if (_terminationVector[endId] == e_truncated)
+    if (_relationshipCorrelation == "Strong")
     {
-      // Get state sequence, appending the truncated state to it and removing first time element
-      std::vector<float> truncatedV(_problem->_agentsPerEnvironment);
+      // Storage for the retrace value
+      float retV = 0.0f;
 
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      // If it was a truncated episode, add the value function of all agents for the terminal state to retV
+      if (_terminationVector[endId] == e_truncated)
       {
-        auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
-        //Take policy d if there are more than one otherwise equal
-        auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
-        truncatedV[d] = truncatedPolicy.stateValue;
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
+          //Take policy d if there are more than one otherwise equal
+          auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
+          if (std::isfinite(truncatedPolicy.stateValue) == false)
+            KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
+          retV += truncatedPolicy.stateValue;
+        }
+      }
 
-        if (std::isfinite(truncatedV[d]) == false)
-          KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV[d]);
+      // Now going backwards, setting the retrace value of every experience
+      for (ssize_t expId = endId; expId >= startId; expId--)
+      {
+        float sumScaledReward = 0.0f;
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          // Calculating sum of scaled rewards
+          sumScaledReward += getScaledReward(_rewardVector[expId][d], d);
+        }
 
-        retV += _discountFactor * truncatedV[d];
+        // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current and hence Value function cancels.
+        retV = _discountFactor * retV + sumScaledReward;
+        //Store as an vector
+        std::vector<float> retVVector (_problem->_agentsPerEnvironment,retV);
+        _retraceValueVector[expId] = retVVector;
       }
     }
-
-    // Now going backwards, setting the retrace value of every experience
-    for (ssize_t expId = endId; expId >= startId; expId--)
+    else
     {
-      float sumScaledReward = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      // Storage for the retrace value
+      std::vector<float> retV(_problem->_agentsPerEnvironment, 0.0f);
+
+      // If it was a truncated episode, add the value function of all agents for the terminal state to retV
+      if (_terminationVector[endId] == e_truncated)
       {
-        // Calculating sum of scaled rewards
-        sumScaledReward += getScaledReward(_rewardVector[expId][d], d);
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
+          //Take policy d if there are more than one otherwise equal
+          auto truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
+          if (std::isfinite(truncatedPolicy.stateValue) == false)
+            KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
+          retV[d] += truncatedPolicy.stateValue;
+        }
       }
 
-      // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current and hence Value function cancels.
-      retV = _discountFactor * retV + sumScaledReward;
-      std::vector<float> retVVector (_problem->_agentsPerEnvironment,retV);
-      _retraceValueVector[expId] = retVVector;
+      // Now going backwards, setting the retrace value of every experience
+      //TODO: Double check weakly dependent Collective
+      for (ssize_t expId = endId; expId >= startId; expId--)
+      {
+        float sumScaledReward = 0.0f;
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          // Calculating sum of scaled rewards
+          sumScaledReward += getScaledReward(_rewardVector[expId][d], d);
+        }
+
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current and hence Value function cancels.
+          retV[d] = _discountFactor * retV[d] + sumScaledReward;
+        }
+
+        _retraceValueVector[expId] = retV;
+      }
+
     }
   }
 
@@ -748,6 +781,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
     std::vector<float> truncatedImportanceWeight(_problem->_agentsPerEnvironment);
     std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment, false);
+    float logProdImportanceWeight = 0.0f;
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
@@ -767,18 +801,49 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       truncatedImportanceWeight[d] = std::min(_importanceWeightTruncationLevel, importanceWeight[d]);
       if (std::isfinite(importanceWeight[d]) == false)
         KORALI_LOG_ERROR("Calculated value of importanceWeight returned an invalid value: %f\n", importanceWeight[d]);
-      // Checking if experience is still on policy
-      isOnPolicy[d] = (importanceWeight[d] > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight[d] < _experienceReplayOffPolicyCurrentCutoff);
 
-      // Updating off policy count if a change is detected
-      if (_isOnPolicyVector[expId][d] == true && isOnPolicy[d] == false)
-        offPolicyCountDelta[d]++;
+      if (_relationshipCorrelation == "Weak")
+      {
 
-      if (_isOnPolicyVector[expId][d] == false && isOnPolicy[d] == true)
-        offPolicyCountDelta[d]--;
+        // Checking if experience is still on policy
+        isOnPolicy[d] = (importanceWeight[d] > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight[d] < _experienceReplayOffPolicyCurrentCutoff);
+
+        // Updating off policy count if a change is detected
+        if (_isOnPolicyVector[expId][d] == true && isOnPolicy[d] == false)
+         offPolicyCountDelta[d]++;
+
+        if (_isOnPolicyVector[expId][d] == false && isOnPolicy[d] == true)
+          offPolicyCountDelta[d]--;
+      }
+      else
+      {
+        if (std::isfinite(importanceWeight[d]) == 0)
+          KORALI_LOG_ERROR("Unlogical 0 value of calculated importanceWeight.\n");
+
+        logProdImportanceWeight += std::log(importanceWeight[d]);
+      }
 
       // is vector of vector of float
       _curPolicyVector[expId][d] = curPolicy;
+    }
+
+    if (_relationshipCorrelation == "Strong")
+    {
+      bool onPolicy = (logProdImportanceWeight > (-1)* _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight <  _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
+
+
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      {
+        isOnPolicy[d] = onPolicy;
+
+        // Updating off policy count if a change is detected
+        if (_isOnPolicyVector[expId][d] == true && isOnPolicy[d] == false)
+         offPolicyCountDelta[d]++;
+
+        if (_isOnPolicyVector[expId][d] == false && isOnPolicy[d] == true)
+          offPolicyCountDelta[d]--;
+      }
+
     }
 
     // Store computed information for use in replay memory.
@@ -846,10 +911,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (startId < 0) startId = 0;
 
     // Storage for the retrace value
+    std::vector<float> retV(_problem->_agentsPerEnvironment, 0.0f);
+
     if (_relationship == "Individual")
     {
-      std::vector<float> retV(_problem->_agentsPerEnvironment, 0.0f);
-
       // If it was a truncated episode, add the value function for the terminal state to retV
       if (_terminationVector[endId] == e_truncated)
         retV = _truncatedStateValueVector[endId];
@@ -863,9 +928,20 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         float prodImportanceWeight = 1.0f;
         if (_relationshipCorrelation == "Strong")
         {
-          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) //TODO other implementation of prodIW
-            prodImportanceWeight *= _importanceWeightVector[curId][d];
+          if (_strongTruncationVariant == true)
+          {
+            for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
+              prodImportanceWeight *= _importanceWeightVector[curId][d];
+
+            prodImportanceWeight = std::min(_importanceWeightTruncationLevel,prodImportanceWeight);
+          }
+          else
+          {
+            for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
+              prodImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
+          }
         }
+
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Getting current reward, action, and state
@@ -874,22 +950,14 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
           // Calculating state value function
           const float curV = _stateValueVector[curId][d];
 
-          if (_relationshipCorrelation == "Weak")
+          if (_relationshipCorrelation == "Strong")
           {
             // Truncate importance weight
-            const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId][d];
-
-            // Calculating retrace value
-            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+            retV[d] = curV + prodImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
           }
-
           else
           {
-            // Truncate importance weight
-            const float truncatedImportanceWeight = std::min(1.0f,prodImportanceWeight);
-
-            // Calculating retrace value
-            retV[d] = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+            retV[d] = curV + _truncatedImportanceWeightVector[curId][d] * (curReward + _discountFactor * retV[d] - curV);
           }
         }
         // Storing retrace value into the experience's cache
@@ -898,19 +966,26 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     }
     else if( _relationship == "Collaboration")
     {
-      float retV = 0.0f;
+      float retVSum = 0.0f;
 
       // If it was a truncated episode, add the value function for the terminal state to retV
       if (_terminationVector[endId] == e_truncated)
       {
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          retV += _truncatedStateValueVector[endId][d];
+        if (_relationshipCorrelation == "Strong")
+        {
+          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+            retVSum += _truncatedStateValueVector[endId][d];
+        }
+        else
+          retV = _truncatedStateValueVector[endId];
       }
 
       if (_terminationVector[endId] == e_nonTerminal)
       {
-        //In retraceValueVector the same entry is already stored for all agents, hence no sum
-        retV = _retraceValueVector[endId + 1][0]; 
+        if (_relationshipCorrelation == "Strong") //In retraceValueVector the same entry is already stored for all agents, hence no sum
+          retVSum= _retraceValueVector[endId + 1][0]; 
+        else
+          retV = _retraceValueVector[endId + 1]; 
       }
 
 
@@ -920,7 +995,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         //Initialize variable for sum of rewards, state value and product of IW
         float sumCurReward = 0.0f;
         float sumCurV = 0.0f;
-        float prodCurImportanceWeight = 1.0f;
+        float prodImportanceWeight = 1.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Add reward of all agents together
@@ -929,20 +1004,28 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
           // Add state value function of all agents together
           sumCurV += _stateValueVector[curId][d];
 
-          // Calculate product of all agents IW
-          prodCurImportanceWeight *= _importanceWeightVector[curId][d];
+          // Calculate product of all agents IW depending on setting
+          if ((_relationshipCorrelation == "Strong") & (_strongTruncationVariant == true))
+            prodImportanceWeight *= _importanceWeightVector[curId][d];
+          else
+            prodImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
         }
+        //after multiplication we need to truncate this version afterwards 
+        if ((_relationshipCorrelation == "Strong") & (_strongTruncationVariant == true))
+          prodImportanceWeight = std::min(_importanceWeightTruncationLevel,prodImportanceWeight);
 
-        //Truncate IW
-        float truncatedImportanceWeight = std::min(_importanceWeightTruncationLevel, prodCurImportanceWeight);
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        {
+          if (_relationshipCorrelation == "Strong")
+          {
+            // Truncate importance weight
+            retV[d] = sumCurV + prodImportanceWeight * (sumCurReward + _discountFactor * retVSum - sumCurV);
+          }
+          else 
+            retV[d] = sumCurV + _truncatedImportanceWeightVector[curId][d] * (sumCurReward + _discountFactor * retV[d] - sumCurV);
 
-        // Calculating retrace value
-        retV = sumCurV + truncatedImportanceWeight * (sumCurReward + _discountFactor * retV - sumCurV);
-
-        // Storing retrace value into the experience's cache
-        std::vector<float> retVVector (_problem->_agentsPerEnvironment,retV);
-        //TODO: a bit silly to store the same value numberOfAgents times
-        _retraceValueVector[curId] = retVVector;
+        }
+        _retraceValueVector[curId] = retV;
       }
     }
   }
@@ -1869,6 +1952,15 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Relationship Correlation'] required by agent.\n"); 
 
+ if (isDefined(js, "Strong Truncation Variant"))
+ {
+ try { _strongTruncationVariant = js["Strong Truncation Variant"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Strong Truncation Variant']\n%s", e.what()); } 
+   eraseValue(js, "Strong Truncation Variant");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Strong Truncation Variant'] required by agent.\n"); 
+
  if (isDefined(js, "Termination Criteria", "Max Episodes"))
  {
  try { _maxEpisodes = js["Termination Criteria"]["Max Episodes"].get<size_t>();
@@ -1940,6 +2032,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Reward"]["Outbound Penalization"]["Factor"] = _rewardOutboundPenalizationFactor;
    js["Relationship"] = _relationship;
    js["Relationship Correlation"] = _relationshipCorrelation;
+   js["Strong Truncation Variant"] = _strongTruncationVariant;
    js["Termination Criteria"]["Max Episodes"] = _maxEpisodes;
    js["Termination Criteria"]["Max Experiences"] = _maxExperiences;
    js["Termination Criteria"]["Max Policy Updates"] = _maxPolicyUpdates;
@@ -1984,7 +2077,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"Individual\", \"Relationship Correlation\": \"Weak\", \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Environments\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"Relationship\": \"Individual\", \"Relationship Correlation\": \"Weak\", \"Strong Truncation Variant\": false, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Strategy\": \"Uniform\", \"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policies\": {}, \"Best Policies\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policies\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

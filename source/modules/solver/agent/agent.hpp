@@ -208,9 +208,13 @@ class Agent : public Solver
   */
    std::string _relationship;
   /**
-  * @brief Specifies whether we are in an individual setting or collaborator setting.
+  * @brief Specifies whether we have a weak or strong correlation.
   */
    std::string _relationshipCorrelation;
+  /**
+  * @brief Only important in strong correlation case, if set to True we first multiplicate and then truncate, if set to False we first truncate and then multiplicate.
+  */
+   int _strongTruncationVariant;
   /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */

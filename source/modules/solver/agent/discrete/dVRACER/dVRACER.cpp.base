@@ -118,12 +118,16 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
     if (_relationship == "Individual")
     {
       float lossOffPolicySum = 0.0f;
+      float prodImportanceWeight= 1.0;
       if (_relationshipCorrelation == "Strong")
       {
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Qret for terminal state is just reward
           float Qret = getScaledReward(_rewardVector[expId][d], d);
+
+          // if many agents, maybe beneficial to do in log space
+          prodImportanceWeight *= _importanceWeightVector[expId][d];
 
           // If experience is non-terminal, add Vtbc
           if (_terminationVector[expId] == e_nonTerminal)
@@ -178,7 +182,7 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
             lossOffPolicy = Qret - V[d];
           }
           else 
-            lossOffPolicy = lossOffPolicySum;
+            lossOffPolicy = lossOffPolicySum * prodImportanceWeight / _importanceWeightVector[expId][d];
 
           // Compute Policy Gradient wrt Params
           auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
@@ -214,17 +218,21 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
     {
       //Calculating sum or product terms which will be needed for gradients
       float sumV = 0.0;
-      float prodIW= 1.0;
-      float sumQret = 0.0;
+      float prodImportanceWeight= 1.0;
+      float sumR = 0.0;
       float sumNextExpVtbc = 0.0;
 
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
-        sumV += V[d];
-        prodIW *= _importanceWeightVector[expId][d];
-        sumQret += getScaledReward(_rewardVector[expId][d], d);
-        if (_terminationVector[expId] == e_truncated)
-          sumNextExpVtbc += _truncatedStateValueVector[expId][d];
+        sumR += getScaledReward(_rewardVector[expId][d], d); 
+        if (_relationshipCorrelation == "Strong")
+        {
+          prodImportanceWeight *= _importanceWeightVector[expId][d];
+          sumV += V[d];
+          
+          if (_terminationVector[expId] == e_truncated)
+            sumNextExpVtbc += _truncatedStateValueVector[expId][d];
+        }
       }
 
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -232,39 +240,81 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
         // Storage for the update gradient
         std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
 
-        // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-        gradientLoss[0] = expVtbc[d] - sumV;
-
-        // Compute policy gradient only if inside trust region (or offPolicy disabled)
-        if (_isOnPolicyVector[expId][d])
+        if (_relationshipCorrelation == "Strong")
         {
-          // Qret for terminal state is just reward
-          float Qret = sumQret;
+          // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
+          gradientLoss[0] = expVtbc[d] - sumV;
 
-          // If experience is non-terminal, add Vtbc
-          if (_terminationVector[expId] == e_nonTerminal)
+          // Compute policy gradient only if inside trust region (or offPolicy disabled)
+          if (_isOnPolicyVector[expId][d])
           {
-            float nextExpVtbc = _retraceValueVector[expId + 1][d];
-            Qret += _discountFactor * nextExpVtbc;
+            // Qret for terminal state is just reward
+            float Qret = sumR;
+
+            // If experience is non-terminal, add Vtbc
+            if (_terminationVector[expId] == e_nonTerminal)
+            {
+              float nextExpVtbc = _retraceValueVector[expId + 1][d];
+              Qret += _discountFactor * nextExpVtbc;
+            }
+
+            // If experience is truncated, add truncated state value
+            if (_terminationVector[expId] == e_truncated)
+            {
+              Qret += _discountFactor * sumNextExpVtbc;
+            }
+
+            // Compute Off-Policy Objective (eq. 12)
+            float lossOffPolicy = (Qret - sumV) * prodImportanceWeight / _importanceWeightVector[expId][d];
+
+            // Compute Policy Gradient wrt Params
+            auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
+
+            // Set Gradient of Loss wrt Params
+            for (size_t i = 0; i < _policyParameterCount; i++)
+            {
+              // '-' because the optimizer is maximizing
+              gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+            }
           }
+        }
+        else
+        {
+          // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
+          gradientLoss[0] = expVtbc[d] - V[d];
 
-          // If experience is truncated, add truncated state value
-          if (_terminationVector[expId] == e_truncated)
+          // Compute policy gradient only if inside trust region (or offPolicy disabled)
+          if (_isOnPolicyVector[expId][d])
           {
-            Qret += _discountFactor * sumNextExpVtbc;
-          }
+            // Qret for terminal state is just reward
+            float Qret = sumR;
 
-          // Compute Off-Policy Objective (eq. 12)
-          float lossOffPolicy = (Qret - sumV) * prodIW / _importanceWeightVector[expId][d];
+            // If experience is non-terminal, add Vtbc
+            if (_terminationVector[expId] == e_nonTerminal)
+            {
+              float nextExpVtbc = _retraceValueVector[expId + 1][d];
+              Qret += _discountFactor * nextExpVtbc;
+            }
 
-          // Compute Policy Gradient wrt Params
-          auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
+            // If experience is truncated, add truncated state value
+            if (_terminationVector[expId] == e_truncated)
+            {
+              float nextExpVtbc = _truncatedStateValueVector[expId][d];
+              Qret += _discountFactor * nextExpVtbc;
+            }
 
-          // Set Gradient of Loss wrt Params
-          for (size_t i = 0; i < _policyParameterCount; i++)
-          {
-            // '-' because the optimizer is maximizing
-            gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+            // Compute Off-Policy Objective (eq. 12)
+            float lossOffPolicy = Qret - V[d];
+
+            // Compute Policy Gradient wrt Params
+            auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
+
+            // Set Gradient of Loss wrt Params
+            for (size_t i = 0; i < _policyParameterCount; i++)
+            {
+              // '-' because the optimizer is maximizing
+              gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+            }
           }
         }
 
@@ -280,7 +330,11 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
         }
 
-        _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        // Set Gradient of Loss as Solution
+        if (_problem->_policiesPerEnvironment == 1)
+          _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        else
+          _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
       }
 
     }

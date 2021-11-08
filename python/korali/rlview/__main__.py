@@ -23,7 +23,7 @@ def validateOutput(output):
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate,label1, dir2 = '', result2 = '', label2 = ''):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate,average,label1, dir2 = '', result2 = '', label2 = ''):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  if (dir2 == ''):
@@ -45,6 +45,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
+      if average == True:
+        rewardHistory = np.mean(rewardHistory,axis=0)
+        rewardHistory.resize(1,rewardHistory.shape[0])
 
       # Merge Results
       if aggregate == True and len(unpackedResults) > 0:
@@ -63,7 +66,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
             unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
 
      ## Plotting the individual experiment results
-        
+     
      for resId, r in enumerate(unpackedResults):
       
       cumulativeObsArr, rewardHistory, trainingRewardThreshold = r
@@ -132,7 +135,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
 
       # Updating color index
-      colCurrIndex = colCurrIndex + (1.0 / float(len(unpackedResults)-1)) - 0.0001
+      if len(unpackedResults)>1:
+        colCurrIndex = colCurrIndex + (1.0 / float(len(unpackedResults)-1)) - 0.0001
         
 
       
@@ -386,6 +390,10 @@ if __name__ == '__main__':
       help='Aggregate multiple runs and plot result summary.',
       action='store_true')
  parser.add_argument(
+      '--average',
+      help='Average multiple agents and plot result summary.',
+      action='store_true')
+ parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
@@ -445,10 +453,10 @@ if __name__ == '__main__':
      
  ### Creating plots
  if args.dir2[0] == '':
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.label1)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average,args.label1)
     plt.draw()
  else:
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.label1, args.dir2, results2, args.label2)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average,args.label1, args.dir2, results2, args.label2)
     plt.draw()
  
  ### Printing live results if update frequency > 0

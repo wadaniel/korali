@@ -17,10 +17,15 @@ parser.add_argument('--opt', help='Off Policy Target.', required=False, type=flo
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
+parser.add_argument('--multpolicies', help='If set to True, train with N policies', required=False, type=bool, default = False)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-#model '0' or '' weakly dependent model, model '1' has agent id as additional input,
-#model '2' changes to Collaboration model, model '3' individual policy for each agent
-#model '4' strongly dependent model
+#model '0' or '' weakly Dependent Individualist 
+#model '1' strongly Dependent Individualist I 
+#model '2' strongly Dependent Individualist II 
+#model '3' weakly Dependent Collectivist  
+#model '4' strongly Dependent Collectivist I 
+#model '5' strongly Dependent Collectivist II 
+
 args = parser.parse_args()
 print(args)
 
@@ -38,7 +43,7 @@ e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
 
-initEnvironment(e, args.env, args.model)
+initEnvironment(e, args.env, args.multpolicies)
 
 ### Defining Agent Configuration 
 
@@ -51,10 +56,26 @@ e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 e["Solver"]["Relationship"] = 'Individual'
 e["Solver"]["Relationship Correlation"] = 'Weak'
-if(args.model == '2'):
-	e["Solver"]["Relationship"] = 'Collaboration'
-elif(args.model == '4'):
+e["Solver"]["Strong Truncation Variant"] = True
+
+if(args.model == '1'):
 	e["Solver"]["Relationship Correlation"] = 'Strong'
+
+elif(args.model == '2'):
+	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Strong Truncation Variant"] = False
+
+elif(args.model == '3'):
+	e["Solver"]["Relationship"] = 'Collaboration'
+
+elif(args.model == '4'):
+	e["Solver"]["Relationship"] = 'Collaboration'
+	e["Solver"]["Relationship Correlation"] = 'Strong'
+
+elif(args.model == '5'):
+	e["Solver"]["Relationship"] = 'Collaboration'
+	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Strong Truncation Variant"] = False
 
 ### Setting Experience Replay and REFER settings
 

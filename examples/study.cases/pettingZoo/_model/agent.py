@@ -8,7 +8,7 @@ import sys
 from PIL import Image
 import matplotlib.pyplot as plt
 
-def initEnvironment(e, envName, model = ''):
+def initEnvironment(e, envName, multPolicies):
 
  # Creating environment 
  if (envName ==  'Waterworld'):
@@ -54,13 +54,13 @@ def initEnvironment(e, envName, model = ''):
  if (envName == 'Waterworld') or (envName == 'Multiwalker'):
 
    e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
-   e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
+   e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
    e["Problem"]["Training Reward Threshold"] = math.inf
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
-   if model == '3' :
+   if multPolicies :
       e["Problem"]["Policies Per Environment"] = numIndividuals
     
    # Generating state variable index list
@@ -73,11 +73,6 @@ def initEnvironment(e, envName, model = ''):
       e["Variables"][i]["Type"] = "State"
       e["Variables"][i]["Lower Bound"] = float(obs_low)
       e["Variables"][i]["Upper Bound"] = float(obs_upper)
-
-   if model == '1' :
-      e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
-      e["Variables"][stateVariableCount ]["Type"] = "State"
-      stateVariableCount += 1
 
      
    # Defining Action Variables
@@ -96,14 +91,14 @@ def initEnvironment(e, envName, model = ''):
  elif (envName ==  'Pursuit'):
    ### Defining problem configuration for pettingZoo environments
    e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-   e["Problem"]["Environment Function"] = lambda x : agent(x, env, model)
+   e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
    e["Problem"]["Training Reward Threshold"] = math.inf
    e["Problem"]["Possible Actions"] = [ [0], [1], [2], [3], [4] ]
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
-   if model == '3' :
+   if multPolicies :
       e["Problem"]["Policies Per Environment"] = numIndividuals
  
    # Generating state variable index list
@@ -116,10 +111,6 @@ def initEnvironment(e, envName, model = ''):
       e["Variables"][i]["Type"] = "State"
       e["Variables"][i]["Lower Bound"] = float(obs_low)
       e["Variables"][i]["Upper Bound"] = float(obs_upper)
-   if model == '1' :
-      e["Variables"][stateVariableCount ]["Name"] = "State Variable " + str(i)
-      e["Variables"][stateVariableCount ]["Type"] = "State"
-      stateVariableCount += 1
   
    # Defining Action Variables
  
@@ -128,7 +119,7 @@ def initEnvironment(e, envName, model = ''):
       e["Variables"][stateVariableCount + i]["Type"] = "Action"
 
 
-def agent(s, env, model = ''):
+def agent(s, env):
 
 
  if (s["Custom Settings"]["Print Step Information"] == "Enabled"):
@@ -144,16 +135,12 @@ def agent(s, env, model = ''):
  if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
    for ag in env.agents:
       state = env.observe(ag).tolist()
-      if model == '1':
-         state.append(float(ag[-1]))
       states.append(state)
  else:
    for ag in env.agents:
       state = env.observe(ag)
       state = state.reshape(147)
       state = state.tolist()
-      if model == '1':
-         state.append(float(ag[-1]))
       states.append(state)
  
  s["State"] = states
@@ -221,16 +208,12 @@ def agent(s, env, model = ''):
   if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
    for ag in env.agents:
       state = env.observe(ag).tolist()
-      if model == '1':
-         state.append(float(ag[-1]))
       states.append(state)
   else:
    for ag in env.agents:
       state = env.observe(ag)
       state = state.reshape(147)
       state = state.tolist()
-      if model == '1':
-         state.append(float(ag[-1]))
       states.append(state)
 
   s["State"] = states

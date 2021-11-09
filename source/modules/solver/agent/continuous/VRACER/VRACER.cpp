@@ -142,9 +142,9 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expAction = _actionVector[expId];
 
     // Gathering metadata
-    const std::vector<float> V = _stateValueVector[expId];
     const auto &curPolicy = _curPolicyVector[expId];
-    const std::vector<float> expVtbc = _retraceValueVector[expId];
+    const auto &V = _stateValueVector[expId];
+    const auto &expVtbc = _retraceValueVector[expId];
 
     // Storage for the update gradient
     if (_relationship == "Individual")
@@ -212,8 +212,8 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
             // Compute Off-Policy Objective (eq. 5)
             lossOffPolicy = Qret - V[d];
           }
-          else //Chain Rule 
-            lossOffPolicy = lossOffPolicySum * prodImportanceWeight / _importanceWeightVector[expId][d];
+          else /* _relationshipCorrelation == "Strong" */
+            lossOffPolicy = lossOffPolicySum * prodImportanceWeight / _importanceWeightVector[expId][d]; //Chain Rule 
 
           auto polGrad = calculateImportanceWeightGradient(expAction[d], curPolicy[d], expPolicy[d]);
 

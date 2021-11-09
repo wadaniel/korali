@@ -582,7 +582,7 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
     _episodePosVector.add(expId);
 
     // Adding placeholder for retrace value
-    _retraceValueVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 0.0f));
+    _retraceValueVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 0.0f)); //TODO: for collaborative we can take size == 1 (DW)
 
     // If there's an outgoing experience and it's off policy, subtract the off policy counter; Probably problematic
 
@@ -722,7 +722,7 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   if (_rewardRescalingEnabled)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9);
+      _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9); //TODO: this might be adjusted for collective mode
 }
 
 std::vector<size_t> __className__::generateMiniBatch(size_t miniBatchSize)
@@ -778,7 +778,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
     std::vector<float> stateValue(_problem->_agentsPerEnvironment, 0.0f);
     std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
     std::vector<float> truncatedImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment, false);
+    std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment, false); // TODO: use size == 1 for relationShipCorrelation == "strong" (DW)
     float logProdImportanceWeight = 0.0f;
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -830,6 +830,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       bool onPolicy = (logProdImportanceWeight > (-1)* _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight <  _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
 
 
+      //TODO: for-loop not needed (DW)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         isOnPolicy[d] = onPolicy;
@@ -923,20 +924,20 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       // Now iterating backwards to calculate the rest of vTbc
       for (ssize_t curId = endId; curId >= startId; curId--)
       {
-        float prodImportanceWeight = 1.0f;
+        float truncatedProdImportanceWeight = 1.0f;
         if (_relationshipCorrelation == "Strong")
         {
           if (_strongTruncationVariant == true)
           {
             for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
-              prodImportanceWeight *= _importanceWeightVector[curId][d];
+              truncatedProdImportanceWeight *= _importanceWeightVector[curId][d];
 
-            prodImportanceWeight = std::min(_importanceWeightTruncationLevel,prodImportanceWeight);
+            truncatedProdImportanceWeight = std::min(_importanceWeightTruncationLevel,truncatedProdImportanceWeight);
           }
           else
           {
             for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
-              prodImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
+              truncatedProdImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
           }
         }
 
@@ -951,7 +952,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
           if (_relationshipCorrelation == "Strong")
           {
             // Truncate importance weight
-            retV[d] = curV + prodImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
+            retV[d] = curV + truncatedProdImportanceWeight * (curReward + _discountFactor * retV[d] - curV);
           }
           else
           {
@@ -993,7 +994,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
         //Initialize variable for sum of rewards, state value and product of IW
         float sumCurReward = 0.0f;
         float sumCurV = 0.0f;
-        float prodImportanceWeight = 1.0f;
+        float truncatedProdImportanceWeight = 1.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Add reward of all agents together
@@ -1003,21 +1004,21 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
           sumCurV += _stateValueVector[curId][d];
 
           // Calculate product of all agents IW depending on setting
-          if ((_relationshipCorrelation == "Strong") & (_strongTruncationVariant == true))
-            prodImportanceWeight *= _importanceWeightVector[curId][d];
+          if ((_relationshipCorrelation == "Strong") && (_strongTruncationVariant == true))
+            truncatedProdImportanceWeight *= _importanceWeightVector[curId][d];
           else
-            prodImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
+            truncatedProdImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
         }
         //after multiplication we need to truncate this version afterwards 
-        if ((_relationshipCorrelation == "Strong") & (_strongTruncationVariant == true))
-          prodImportanceWeight = std::min(_importanceWeightTruncationLevel,prodImportanceWeight);
+        if ((_relationshipCorrelation == "Strong") && (_strongTruncationVariant == true))
+          truncatedProdImportanceWeight = std::min(_importanceWeightTruncationLevel,truncatedProdImportanceWeight);
 
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           if (_relationshipCorrelation == "Strong")
           {
             // Truncate importance weight
-            retV[d] = sumCurV + prodImportanceWeight * (sumCurReward + _discountFactor * retVSum - sumCurV);
+            retV[d] = sumCurV + truncatedProdImportanceWeight * (sumCurReward + _discountFactor * retVSum - sumCurV);
           }
           else 
             retV[d] = sumCurV + _truncatedImportanceWeightVector[curId][d] * (sumCurReward + _discountFactor * retV[d] - sumCurV);

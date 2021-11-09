@@ -461,7 +461,9 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Storage for the episode's cumulative reward
   std::vector<float> cumulativeReward(_problem->_agentsPerEnvironment, 0.0f);
 
-  for (size_t expId = 0; expId < episode["Experiences"].size(); expId++)
+  const size_t episodeExperienceCount = episode["Experiences"].size();
+
+  for (size_t expId = 0; expId < episodeExperienceCount; expId++)
   {
     // Getting state
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<std::vector<float>>>());
@@ -605,7 +607,7 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
   ssize_t endId = (ssize_t)_stateVector.size() - 1;
 
   // Getting the starting ID of the initial experience of the episode in the replay memory
-  ssize_t startId = endId - (ssize_t)episode.size() + 1;
+  ssize_t startId = endId - episodeExperienceCount + 1;
 
   if (_relationship == "Individual")
   {

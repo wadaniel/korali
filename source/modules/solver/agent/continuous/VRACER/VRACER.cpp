@@ -154,14 +154,12 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       V = std::vector<float>(_problem->_agentsPerEnvironment, sumV);
     }
 
-    // If Multi Agent Coorelation importance weight is product of individual importance weight
-    std::vector<float> importanceWeights = _importanceWeightVector[expId];
+    // If Multi Agent Correlation calculate product of importance weights
+    float prodImportanceWeight = 1.0f;
     if (_multiAgentCorrelation)
     {
-      float prodImportanceWeight = 1.0f;
       for( size_t d = 0; d<_problem->_agentsPerEnvironment; d++)
-        prodImportanceWeight *= importanceWeights[d];
-      importanceWeights = std::vector<float>(_problem->_agentsPerEnvironment, prodImportanceWeight);
+        prodImportanceWeight *= _importanceWeightVector[expId][d];
     }
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -201,7 +199,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // If multi-agent correlation, multiply with additional factor
         if (_multiAgentCorrelation)
         {
-          float correlationFactor = importanceWeights[d] / _importanceWeightVector[expId][d];
+          float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
           for(size_t i = 0; i<polGrad.size(); i++)
             polGrad[i] *= correlationFactor;
         }

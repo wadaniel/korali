@@ -715,10 +715,12 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
   {
     auto batchId = updateBatch[i];
     auto expId = miniBatch[batchId];
-    std::vector<float> stateValue(_problem->_agentsPerEnvironment, 0.0f);
-    std::vector<float> importanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<float> truncatedImportanceWeight(_problem->_agentsPerEnvironment);
-    std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment, false); // TODO: use size == 1 for relationShipCorrelation == "strong" (DW)
+
+    auto& stateValue = _stateValueVector[expId];
+    auto& importanceWeight = _importanceWeightVector[expId];
+    auto& truncatedImportanceWeight = _truncatedImportanceWeightVector[expId];
+    auto& isOnPolicy = _isOnPolicyVector[expId];
+    
     float logProdImportanceWeight = 0.0f;
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -783,12 +785,6 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       }
     }
 
-    // Store computed information for use in replay memory.
-    _stateValueVector[expId] = stateValue;
-    _truncatedStateValueVector[expId] = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
-    _importanceWeightVector[expId] = importanceWeight;
-    _isOnPolicyVector[expId] = isOnPolicy;
-    _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
   }
 
   // Calculating updated truncated policy state values

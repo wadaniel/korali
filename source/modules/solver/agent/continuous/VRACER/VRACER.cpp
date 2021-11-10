@@ -96,8 +96,7 @@ void VRACER::trainPolicy()
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
-  // policyIdx input fixed to zero, since case where polidyIdx matters not reached from trainPolicy
-  const auto policyInfo = runPolicy(stateSequence,0);
+  const auto policyInfo = runPolicy(stateSequence);
 
   // Using policy information to update experience's metadata
   updateExperienceMetadata(miniBatch, policyInfo);
@@ -147,12 +146,12 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expVtbc = _retraceValueVector[expId];
 
     // Storage for the update gradient
-    if (_relationship == "Individual")
+    if (_multiAgentRelationship == "Individual")
     {
       float lossOffPolicySum = 0.0f;
       float prodImportanceWeight= 1.0;
 
-      if (_relationshipCorrelation == "Strong")
+      if (_multiAgentCorrelation)
       { 
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
@@ -190,7 +189,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (_isOnPolicyVector[expId][d])
         {
           float lossOffPolicy;
-          if (_relationshipCorrelation == "Weak")
+          if ( not _multiAgentCorrelation )
           {
             // Qret for terminal state is just reward
             float Qret = getScaledReward(_rewardVector[expId][d], d);
@@ -250,7 +249,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
           _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
       }
     }
-    else if (_relationship== "Collaboration")
+    else if (_multiAgentRelationship== "Collaboration")
     {
       //TODO: Check the on policy comment, at the moment no special treatment also we are using different betas, hence not exactly like formular different scales
       //Calculating sum or product terms which will be needed for gradients
@@ -263,7 +262,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       {
         sumR += getScaledReward(_rewardVector[expId][d], d);
 
-        if (_relationshipCorrelation == "Strong")
+        if (_multiAgentCorrelation)
         {
           prodImportanceWeight *= _importanceWeightVector[expId][d];
           sumV += V[d];
@@ -279,7 +278,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // Storage for the update gradient
         std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
-        if (_relationshipCorrelation == "Strong")
+        if (_multiAgentCorrelation)
         {
           gradientLoss[0] = expVtbc[d] - sumV;
           // Compute policy gradient only if inside trust region (or offPolicy disabled)
@@ -383,40 +382,20 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
+  
   // Storage for policy
   std::vector<policy_t> policyVector(batchSize);
 
-  if (_problem->_policiesPerEnvironment == 1)
+  // inference operation
+  if (batchSize==1) 
   {
     // Forward the neural network for this state
-    const auto evaluation = _criticPolicyLearner[0]->getEvaluation(stateBatch);
-
-  #pragma omp parallel for
-    for (size_t b = 0; b < batchSize; b++)
-    {
-      // Getting state value
-      policyVector[b].stateValue = evaluation[b][0];
-
-      // Getting distribution parameters
-      policyVector[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
-    }
-
-    return policyVector;
-  }
-  else if (batchSize==1) 
-  { 
-    
-    // Storage for policy, where we feed the same input into all policies
-    std::vector<policy_t> policyVector(batchSize);
-    
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
+
     policyVector[0].stateValue = evaluation[0][0];
     policyVector[0].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
-
-  
-    return policyVector;
   }
-  else
+  else // training operation
   {
     // Storage for each sample for all Policies
     std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
@@ -428,15 +407,15 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     {
       const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
-    #pragma omp parallel for
+      #pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
         policyVector[b * _problem->_agentsPerEnvironment + p].stateValue = evaluation[b][0];
         policyVector[b * _problem->_agentsPerEnvironment + p].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
       }
     }
-    return policyVector;
   }
+  return policyVector;
 }
 
 knlohmann::json VRACER::getAgentPolicy()

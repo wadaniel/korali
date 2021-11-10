@@ -98,8 +98,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Setting mode to traing to add exploratory noise or random actions
   agent["Mode"] = "Training";
 
-  // Reserving message storage for sending back the episodes
-  knlohmann::json episodes;
+  // Reserving message storage for sending back the episode
+  knlohmann::json episode;
 
   // Storage to keep track of cumulative reward
   std::vector<float> trainingRewards(_agentsPerEnvironment, 0.0);
@@ -119,16 +119,13 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     getAction(agent);
 
     // Store the current state in the experience
-
-    episodes["Experiences"][actionCount]["State"] = agent["State"];
+    episode["Experiences"][actionCount]["State"] = agent["State"];
 
     // Storing the current action
-
-    episodes["Experiences"][actionCount]["Action"] = agent["Action"];
+    episode["Experiences"][actionCount]["Action"] = agent["Action"];
 
     // Storing the experience's policy
-
-    episodes["Experiences"][actionCount]["Policy"] = agent["Policy"];
+    episode["Experiences"][actionCount]["Policy"] = agent["Policy"];
 
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
@@ -138,17 +135,15 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     runEnvironment(agent);
 
     // Storing experience's reward
-
-    episodes["Experiences"][actionCount]["Reward"] = agent["Reward"];
+    episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
 
     // Storing termination status
+    episode["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
-    episodes["Experiences"][actionCount]["Termination"] = agent["Termination"];
-
-    // If the episodes was truncated, then save the terminal state
+    // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
     {
-      episodes["Experiences"][actionCount]["Truncated State"] = agent["State"];
+      episode["Experiences"][actionCount]["Truncated State"] = agent["State"];
     }
 
     // Adding to cumulative training rewards
@@ -222,7 +217,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   knlohmann::json message;
   message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
-  message["Episodes"] = episodes;
+  message["Episodes"] = episode;
   KORALI_SEND_MSG_TO_ENGINE(message);
 
   // Adding profiling information to agent

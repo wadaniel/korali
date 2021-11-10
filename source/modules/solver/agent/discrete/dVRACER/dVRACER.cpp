@@ -123,11 +123,11 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const std::vector<float> V = _stateValueVector[expId];
     const std::vector<float> expVtbc = _retraceValueVector[expId];
 
-    if (_relationship == "Individual")
+    if (_multiAgentRelationship == "Individual")
     {
       float lossOffPolicySum = 0.0f;
       float prodImportanceWeight= 1.0;
-      if (_relationshipCorrelation == "Strong")
+      if (_multiAgentCorrelation)
       {
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
@@ -167,7 +167,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (_isOnPolicyVector[expId][d])
         {
           float lossOffPolicy;
-          if (_relationshipCorrelation == "Weak")
+          if ( not _multiAgentCorrelation)
           {
             // Qret for terminal state is just reward
             float Qret = getScaledReward(_rewardVector[expId][d], d);
@@ -222,7 +222,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
           _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
       }
     }
-    else if (_relationship== "Collaboration")
+    else if (_multiAgentRelationship== "Cooperation")
     {
       //Calculating sum or product terms which will be needed for gradients
       float sumV = 0.0;
@@ -233,7 +233,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         sumR += getScaledReward(_rewardVector[expId][d], d); 
-        if (_relationshipCorrelation == "Strong")
+        if ( _multiAgentCorrelation )
         {
           prodImportanceWeight *= _importanceWeightVector[expId][d];
           sumV += V[d];
@@ -248,7 +248,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // Storage for the update gradient
         std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
 
-        if (_relationshipCorrelation == "Strong")
+        if ( _multiAgentCorrelation )
         {
           // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
           gradientLoss[0] = expVtbc[d] - sumV;

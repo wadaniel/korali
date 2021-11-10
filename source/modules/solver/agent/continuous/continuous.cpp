@@ -112,9 +112,12 @@ void Continuous::getAction(korali::Sample &sample)
     std::vector<float> action(_problem->_actionVectorSize);
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
-    //in case of multiple polices it runs the i-th policy otherwise standard
-    auto policy = runPolicy({_stateTimeSequence.getVector()},i)[0];
-
+    // in case of multiple polices it runs the i-th policy otherwise standard
+    policy_t policy;
+    if (_problem->_policiesPerEnvironment == 1)
+      policy = runPolicy({_stateTimeSequence.getVector()})[0];
+    else
+      policy = runPolicy({_stateTimeSequence.getVector()},i)[0];
 
     /*****************************************************************************
      * During Training we select action according to policy's probability

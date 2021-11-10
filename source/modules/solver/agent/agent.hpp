@@ -206,11 +206,11 @@ class Agent : public Solver
   /**
   * @brief Specifies whether we are in an individual setting or collaborator setting.
   */
-   std::string _relationship;
+   std::string _multiAgentRelationship;
   /**
-  * @brief Specifies whether we have a weak or strong correlation.
+  * @brief Specifies whether we take into account the dependencies of the agents or not.
   */
-   std::string _relationshipCorrelation;
+   int _multiAgentCorrelation;
   /**
   * @brief Only important in strong correlation case, if set to True we first multiplicate and then truncate, if set to False we first truncate and then multiplicate.
   */
@@ -672,7 +672,7 @@ class Agent : public Solver
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx) = 0;
+  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0 ) = 0;
 
   /**
    * @brief Calculates the starting experience index of the time sequence for the selected experience

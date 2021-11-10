@@ -53,7 +53,6 @@ void ReinforcementLearning::initialize()
   if ((_policiesPerEnvironment != _agentsPerEnvironment) && (_policiesPerEnvironment != 1))
     KORALI_LOG_ERROR("Number of Policies: %lu is neither 1 nor %lu.\n", _policiesPerEnvironment, _agentsPerEnvironment);
 
-
   // Setting initial launch id (0)
   _launchId = 0;
 }

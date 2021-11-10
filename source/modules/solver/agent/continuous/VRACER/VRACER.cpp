@@ -30,11 +30,11 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment.resize(_problem->_policiesPerEnvironment);
   _criticPolicyProblem.resize(_problem->_policiesPerEnvironment);
 
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
     _criticPolicyExperiment[p]["Problem"]["Type"] = "Supervised Learning";
     _criticPolicyExperiment[p]["Problem"]["Max Timesteps"] = _timeSequenceLength;
-    if(_problem->_policiesPerEnvironment == 1)
+    if (_problem->_policiesPerEnvironment == 1)
       _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
     else
       _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize;
@@ -68,10 +68,10 @@ void VRACER::initializeAgent()
 
     // Running initialization to verify that the configuration is correct
     _criticPolicyExperiment[p].initialize();
-    _criticPolicyProblem[p]= dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment[p]._problem);
+    _criticPolicyProblem[p] = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment[p]._problem);
     _criticPolicyLearner[p] = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment[p]._solver);
   }
-  
+
   _maxMiniBatchPolicyMean.resize(_problem->_agentsPerEnvironment);
   _maxMiniBatchPolicyStdDev.resize(_problem->_agentsPerEnvironment);
 
@@ -146,7 +146,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expVtbc = _retraceValueVector[expId];
 
     // If Cooporative setting Value is the sum of individual values
-    if (_multiAgentRelationship == "Cooperation") 
+    if (_multiAgentRelationship == "Cooperation")
     {
       float sumV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -158,7 +158,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     float prodImportanceWeight = 1.0f;
     if (_multiAgentCorrelation)
     {
-      for( size_t d = 0; d<_problem->_agentsPerEnvironment; d++)
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         prodImportanceWeight *= _importanceWeightVector[expId][d];
     }
 
@@ -200,7 +200,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (_multiAgentCorrelation)
         {
           float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
-          for(size_t i = 0; i<polGrad.size(); i++)
+          for (size_t i = 0; i < polGrad.size(); i++)
             polGrad[i] *= correlationFactor;
         }
 
@@ -248,12 +248,12 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
-  
+
   // Storage for policy
   std::vector<policy_t> policyVector(batchSize);
 
   // inference operation
-  if (batchSize==1) 
+  if (batchSize == 1)
   {
     // Forward the neural network for this state
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
@@ -273,7 +273,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     {
       const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
-      #pragma omp parallel for
+#pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
         policyVector[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
@@ -287,14 +287,14 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 knlohmann::json VRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     hyperparameters["Policy Hyperparameters"][p] = _criticPolicyLearner[p]->getHyperparameters();
   return hyperparameters;
 }
 
 void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
-{ 
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
+{
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->setHyperparameters(hyperparameters[p].get<std::vector<float>>());
 }
 

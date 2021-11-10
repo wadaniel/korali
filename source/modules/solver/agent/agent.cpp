@@ -78,14 +78,14 @@ void Agent::initialize()
     _experienceCount = 0;
 
     // Initializing training and episode statistics //TODO go through all
-    _testingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
-    _testingBestReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
-    _testingWorstReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
-    _trainingBestReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
-    _trainingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment,0);
-    _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,0.0f);
-    _testingBestAverageReward = std::vector<float>(_problem->_agentsPerEnvironment,-korali::Inf);
-    _testingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment,0);
+    _testingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
+    _testingBestReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
+    _testingWorstReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
+    _trainingBestReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
+    _trainingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
+    _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
+    _testingBestAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
+    _testingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
 
     /* Initializing REFER information */
 
@@ -105,7 +105,6 @@ void Agent::initialize()
 
     // Getting agent's initial policy
     _trainingCurrentPolicies = getAgentPolicy();
-
   }
 
   // Setting current agent's training state
@@ -199,7 +198,7 @@ void Agent::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+        for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
           _agents[agentId]["Policy Hyperparameters"][p] = _trainingCurrentPolicies["Policy Hyperparameters"][p];
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
@@ -275,13 +274,13 @@ void Agent::trainingGeneration()
 
   // Updating average cumulative reward statistics
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
-  for(size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+  for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
   {
     ssize_t startEpisodeId = _trainingRewardHistory[d].size() - _trainingAverageDepth;
     ssize_t endEpisodeId = _trainingRewardHistory[d].size() - 1;
     if (startEpisodeId < 0) startEpisodeId = 0;
-      for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-        _trainingAverageReward[d] += _trainingRewardHistory[d][e];
+    for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+      _trainingAverageReward[d] += _trainingRewardHistory[d][e];
     _trainingAverageReward[d] /= (float)(endEpisodeId - startEpisodeId + 1);
   }
 
@@ -300,7 +299,7 @@ void Agent::testingGeneration()
     testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
-    for(size_t p = 0; p<_problem->_policiesPerEnvironment; p++)
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
       testingAgents[agentId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
@@ -386,7 +385,7 @@ void Agent::attendAgent(size_t agentId)
       _trainingLastReward = _agents[agentId]["Training Rewards"].get<std::vector<float>>();
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
-      for(size_t d = 0; d < _problem->_agentsPerEnvironment;d++)
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         if (_trainingLastReward[d] > _trainingBestReward[d])
         {
@@ -406,7 +405,7 @@ void Agent::attendAgent(size_t agentId)
       if (_agents[agentId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;
-        for(size_t d = 0; d < _problem->_agentsPerEnvironment;d++)
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           _testingAverageReward[d] = _agents[agentId]["Average Testing Reward"][d].get<float>();
           _testingBestReward[d] = _agents[agentId]["Best Testing Reward"][d].get<float>();
@@ -504,7 +503,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     }
 
     // For cooporative multi-agent model rewards are summed
-    if (_multiAgentRelationship == "Cooperation") 
+    if (_multiAgentRelationship == "Cooperation")
     {
       float sumReward = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -596,7 +595,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        if ( _isOnPolicyVector[0][d] == false && _experienceReplayOffPolicyCount[d] > 0)
+        if (_isOnPolicyVector[0][d] == false && _experienceReplayOffPolicyCount[d] > 0)
           _experienceReplayOffPolicyCount[d]--;
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
@@ -633,18 +632,18 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       if (_problem->_policiesPerEnvironment == 1)
         truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
       else
-        truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
+        truncatedPolicy = runPolicy({expTruncatedStateSequence}, d)[0];
 
       // Get value of trucated state
       if (std::isfinite(truncatedPolicy.stateValue) == false)
         KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
 
       // Add Truncated state value
-      retV[d] +=  truncatedPolicy.stateValue;
+      retV[d] += truncatedPolicy.stateValue;
     }
 
     // For cooporative multi-agent model truncated state-values are summed
-    if (_multiAgentRelationship == "Cooperation") 
+    if (_multiAgentRelationship == "Cooperation")
     {
       float sumRetV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -705,7 +704,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-  // Calculate offpolicy count difference in minibatch
+      // Calculate offpolicy count difference in minibatch
 #pragma omp declare reduction(vec_int_plus                                                                                          \
                               : std::vector <int>                                                                                   \
                               : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <int>())) \
@@ -720,11 +719,11 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     auto batchId = updateBatch[i];
     auto expId = miniBatch[batchId];
 
-    auto& stateValue = _stateValueVector[expId];
-    auto& importanceWeight = _importanceWeightVector[expId];
-    auto& truncatedImportanceWeight = _truncatedImportanceWeightVector[expId];
-    auto& isOnPolicy = _isOnPolicyVector[expId];
-    
+    auto &stateValue = _stateValueVector[expId];
+    auto &importanceWeight = _importanceWeightVector[expId];
+    auto &truncatedImportanceWeight = _truncatedImportanceWeightVector[expId];
+    auto &isOnPolicy = _isOnPolicyVector[expId];
+
     float logProdImportanceWeight = 0.0f;
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -749,7 +748,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         KORALI_LOG_ERROR("Calculated value of importanceWeight returned an invalid value: %f\n", importanceWeight[d]);
 
       // Sum log-prod of importance weights
-      if( _multiAgentCorrelation )
+      if (_multiAgentCorrelation)
       {
         if (std::isfinite(importanceWeight[d]) == 0)
           KORALI_LOG_ERROR("Calculated importanceWeight[%ld]) == 0.\n", d);
@@ -771,24 +770,23 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     }
 
     // Update on-policy vector
-    if ( _multiAgentCorrelation )
+    if (_multiAgentCorrelation)
     {
-      bool onPolicy = (logProdImportanceWeight > (-1)* _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight <  _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
+      bool onPolicy = (logProdImportanceWeight > (-1) * _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight < _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
 
       isOnPolicy = std::vector<bool>(_problem->_agentsPerEnvironment, onPolicy);
 
-      if( _isOnPolicyVector[expId][0] == true && onPolicy == false )
+      if (_isOnPolicyVector[expId][0] == true && onPolicy == false)
       {
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
           offPolicyCountDelta[d]++;
       }
-      else if ( _isOnPolicyVector[expId][0] == false && onPolicy == true )
+      else if (_isOnPolicyVector[expId][0] == false && onPolicy == true)
       {
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
           offPolicyCountDelta[d]--;
       }
     }
-
   }
 
   // Calculating updated truncated policy state values
@@ -809,7 +807,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         if (_problem->_policiesPerEnvironment == 1)
           truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
         else
-          truncatedPolicy = runPolicy({expTruncatedStateSequence},d)[0];
+          truncatedPolicy = runPolicy({expTruncatedStateSequence}, d)[0];
 
         // Get value of trucated state
         if (std::isfinite(truncatedPolicy.stateValue) == false)
@@ -820,7 +818,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       }
 
       // For cooporative multi-agent model truncated state-values are summed
-      if (_multiAgentRelationship == "Cooperation") 
+      if (_multiAgentRelationship == "Cooperation")
       {
         float sumTruncV = 0.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -885,18 +883,18 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
       // Calculate truncated product of importance weights for multi-agent correlation
       float truncatedProdImportanceWeight = 1.0f;
-      if ( _multiAgentCorrelation )
+      if (_multiAgentCorrelation)
       {
         if (_strongTruncationVariant == true)
         {
-          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
+          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
             truncatedProdImportanceWeight *= _importanceWeightVector[curId][d];
 
-          truncatedProdImportanceWeight = std::min(_importanceWeightTruncationLevel,truncatedProdImportanceWeight);
+          truncatedProdImportanceWeight = std::min(_importanceWeightTruncationLevel, truncatedProdImportanceWeight);
         }
         else
         {
-          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
+          for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
             truncatedProdImportanceWeight *= _truncatedImportanceWeightVector[curId][d];
         }
         truncatedImportanceWeights = std::vector<float>(_problem->_agentsPerEnvironment, truncatedProdImportanceWeight);
@@ -904,7 +902,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
       // Get state-value and replace by sum for cooporating multi-agent setting
       std::vector<float> curV = _stateValueVector[curId];
-      if( _multiAgentRelationship == "Cooperation")
+      if (_multiAgentRelationship == "Cooperation")
       {
         float sumV = 0.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -1232,9 +1230,12 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
       _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta[d]);
 
-      _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f/%f\n",d, _trainingLastReward[d], _problem->_trainingRewardThreshold);
-      _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth,d, _trainingAverageReward[d]);
-      _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n",d, _trainingBestReward[d], _trainingBestEpisodeId[d]);
+      _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f/%f\n", d, _trainingLastReward[d], _problem->_trainingRewardThreshold);
+      _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth, d, _trainingAverageReward[d]);
+      _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n", d, _trainingBestReward[d], _trainingBestEpisodeId[d]);
+      
+      if (_rewardRescalingEnabled)
+        _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma[d]);
 
       if (isinf(_problem->_trainingRewardThreshold) == false)
       {
@@ -1242,17 +1243,13 @@ void Agent::printGenerationAfter()
 
         _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-        _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent %lu: %f (%f / %f / %f)\n",d, _testingAverageReward[d], _testingWorstReward[d], _testingBestReward[d]);
+        _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent %lu: %f (%f / %f / %f)\n", d, _testingAverageReward[d], _testingWorstReward[d], _testingBestReward[d]);
       }
 
-    
-      _k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n",d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
+      _k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n", d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
     }
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
-
-    if (_rewardRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma);
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
@@ -1275,7 +1272,7 @@ void Agent::printGenerationAfter()
     {
       _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward for agent %lu:           %f\n",d, _testingReward[d]);
+        _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward for agent %lu:           %f\n", d, _testingReward[d]);
     }
   }
 }

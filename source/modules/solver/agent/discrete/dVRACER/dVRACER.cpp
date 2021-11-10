@@ -28,11 +28,11 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment.resize(_problem->_policiesPerEnvironment);
   _criticPolicyProblem.resize(_problem->_policiesPerEnvironment);
 
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
     _criticPolicyExperiment[p]["Problem"]["Type"] = "Supervised Learning";
     _criticPolicyExperiment[p]["Problem"]["Max Timesteps"] = _timeSequenceLength;
-    if(_problem->_policiesPerEnvironment == 1)
+    if (_problem->_policiesPerEnvironment == 1)
       _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
     else
       _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize;
@@ -123,7 +123,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const std::vector<float> expVtbc = _retraceValueVector[expId];
 
     // If Cooporative setting Value is the sum of individual values
-    if (_multiAgentRelationship == "Cooperation") 
+    if (_multiAgentRelationship == "Cooperation")
     {
       float sumV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -135,7 +135,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     float prodImportanceWeight = 1.0f;
     if (_multiAgentCorrelation)
     {
-      for( size_t d = 0; d<_problem->_agentsPerEnvironment; d++)
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         prodImportanceWeight *= _importanceWeightVector[expId][d];
     }
 
@@ -177,7 +177,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (_multiAgentCorrelation)
         {
           float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
-          for(size_t i = 0; i<polGrad.size(); i++)
+          for (size_t i = 0; i < polGrad.size(); i++)
             polGrad[i] *= correlationFactor;
         }
 
@@ -212,17 +212,17 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch,size_t policyIdx)
+std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
-  
+
   // Storage for policy
   std::vector<policy_t> policyVector(batchSize);
 
   //inference operation
-  if (batchSize==1)
-  { 
+  if (batchSize == 1)
+  {
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
 
     // Getting state value
@@ -275,7 +275,6 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     policyVector[0].actionProbabilities = pActions;
     policyVector[0].distributionParameters = qValAndInvTemp;
 
-    
     return policyVector;
   }
   else //training operation
@@ -290,9 +289,8 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     {
-
       const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
-    #pragma omp parallel for
+#pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
         // Getting state value
@@ -343,7 +341,6 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
         // Storing the action probabilities into the policy
         policyVector[b * _problem->_policiesPerEnvironment + p].actionProbabilities = pActions;
         policyVector[b * _problem->_policiesPerEnvironment + p].distributionParameters = qValAndInvTemp;
-
       }
     }
     return policyVector;
@@ -353,14 +350,14 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
 knlohmann::json dVRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
-    hyperparameters["Policy Hyperparameters"][p]= _criticPolicyLearner[p]->getHyperparameters();
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+    hyperparameters["Policy Hyperparameters"][p] = _criticPolicyLearner[p]->getHyperparameters();
   return hyperparameters;
 }
 
 void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  for(size_t p = 0; p < _problem->_policiesPerEnvironment;p++)
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->setHyperparameters(hyperparameters[p].get<std::vector<float>>());
 }
 

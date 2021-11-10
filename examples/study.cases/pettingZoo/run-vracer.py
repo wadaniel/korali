@@ -54,27 +54,27 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
-e["Solver"]["Relationship"] = 'Individual'
-e["Solver"]["Relationship Correlation"] = 'Weak'
+e["Solver"]["Multi Agent Relationship"] = 'Individual'
+e["Solver"]["Multi Agent Correlation"] = False
 e["Solver"]["Strong Truncation Variant"] = True
 
 if(args.model == '1'):
-	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Multi Agent Correlation"] = True
 
 elif(args.model == '2'):
-	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Multi Agent Correlation"] = True
 	e["Solver"]["Strong Truncation Variant"] = False
 
 elif(args.model == '3'):
-	e["Solver"]["Relationship"] = 'Collaboration'
+	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 
 elif(args.model == '4'):
-	e["Solver"]["Relationship"] = 'Collaboration'
-	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
+	e["Solver"]["Multi Agent Correlation"] = True
 
 elif(args.model == '5'):
-	e["Solver"]["Relationship"] = 'Collaboration'
-	e["Solver"]["Relationship Correlation"] = 'Strong'
+	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
+	e["Solver"]["Multi Agent Correlation"] = True
 	e["Solver"]["Strong Truncation Variant"] = False
 
 ### Setting Experience Replay and REFER settings

@@ -30,7 +30,11 @@ void Discrete::getAction(korali::Sample &sample)
     _stateTimeSequence.add(state);
 
     // Getting the probability of the actions given by the agent's policy
-    auto policy = runPolicy({_stateTimeSequence.getVector()},i)[0];
+    policy_t policy;
+    if (_problem->_policiesPerEnvironment == 1)
+      policy = runPolicy({_stateTimeSequence.getVector()})[0];
+    else
+      policy = runPolicy({_stateTimeSequence.getVector()},i)[0];
     const auto &qValAndInvTemp = policy.distributionParameters;
     const auto &pActions = policy.actionProbabilities;
 

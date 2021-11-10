@@ -34,6 +34,7 @@ def initEnvironment(e, envName, multPolicies):
     ac_low = -1 
     numIndividuals = 3
 
+
  elif (envName ==  'Pursuit'):
    from pettingzoo.sisl import pursuit_v3
     

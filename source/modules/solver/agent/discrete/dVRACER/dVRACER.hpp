@@ -91,7 +91,7 @@ class dVRACER : public Discrete
    */
   void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
 
-  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch,size_t policyIdx = 0) override;
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0) override;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

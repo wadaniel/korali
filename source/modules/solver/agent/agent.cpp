@@ -642,6 +642,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       // Add Truncated state value
       retV[d] +=  truncatedPolicy.stateValue;
     }
+
+    // For cooporative multi-agent model truncated state-values are summed
+    if (_multiAgentRelationship == "Cooperation") 
+    {
+      float sumRetV = 0.0f;
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        sumRetV += retV[d];
+      retV = std::vector<float>(_problem->_agentsPerEnvironment, sumRetV);
+    }
   }
 
   // Now going backwards, setting the retrace value of every experience
@@ -658,7 +667,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   // Recale rewards
   if (_rewardRescalingEnabled)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9); //TODO: this might be adjusted for collective mode, Why? The aren't the rewards stored as 
+      _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9);
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
@@ -813,6 +822,16 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         // Save truncated state value
         truncStateValue[d] = truncatedPolicy.stateValue;
       }
+
+      // For cooporative multi-agent model truncated state-values are summed
+      if (_multiAgentRelationship == "Cooperation") 
+      {
+        float sumTruncV = 0.0f;
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+          sumTruncV += truncStateValue[d];
+        truncStateValue = std::vector<float>(_problem->_agentsPerEnvironment, sumTruncV);
+      }
+
       _truncatedStateValueVector[expId] = truncStateValue;
     }
   }
@@ -863,15 +882,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (_terminationVector[endId] == e_nonTerminal)
       retV = _retraceValueVector[endId + 1];
 
-    // If coorporating multi-agent setting sum trucated states
-    if( _multiAgentRelationship == "Cooperation" )
-    {
-      float sumRetV = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++) 
-        sumRetV += retV[d];
-      retV = std::vector<float>(_problem->_agentsPerEnvironment, sumRetV);
-    }
-
     // Now iterating backwards to calculate the rest of vTbc
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
@@ -917,7 +927,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       }
       // Storing retrace value into the experience's cache
       _retraceValueVector[curId] = retV;
-  
     }
   }
 }

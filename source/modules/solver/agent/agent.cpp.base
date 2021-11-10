@@ -1229,7 +1229,7 @@ void __className__::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f/%f\n", d, _trainingLastReward[d], _problem->_trainingRewardThreshold);
       _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth, d, _trainingAverageReward[d]);
       _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n", d, _trainingBestReward[d], _trainingBestEpisodeId[d]);
-      
+
       if (_rewardRescalingEnabled)
         _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma[d]);
 

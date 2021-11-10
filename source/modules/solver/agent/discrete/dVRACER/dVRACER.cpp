@@ -218,7 +218,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
   size_t batchSize = stateBatch.size();
   
   // Storage for policy
-    std::vector<policy_t> policyVector(batchSize);
+  std::vector<policy_t> policyVector(batchSize);
 
   //inference operation
   if (batchSize==1)
@@ -282,20 +282,21 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
   {
     // Storage for each sample for all Policies
     std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
+
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_agentsPerEnvironment].push_back(stateBatch[b]);
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     {
+
       const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
     #pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
         // Getting state value
-        policyVector[b * _problem->_agentsPerEnvironment + p].stateValue = evaluation[b][0];
-
+        policyVector[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
         // Storage for action probabilities
         float maxq = -korali::Inf;
         std::vector<float> qValAndInvTemp(_policyParameterCount);
@@ -340,8 +341,8 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
         qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
 
         // Storing the action probabilities into the policy
-        policyVector[b * _problem->_agentsPerEnvironment + p].actionProbabilities = pActions;
-        policyVector[b * _problem->_agentsPerEnvironment + p].distributionParameters = qValAndInvTemp;
+        policyVector[b * _problem->_policiesPerEnvironment + p].actionProbabilities = pActions;
+        policyVector[b * _problem->_policiesPerEnvironment + p].distributionParameters = qValAndInvTemp;
 
       }
     }

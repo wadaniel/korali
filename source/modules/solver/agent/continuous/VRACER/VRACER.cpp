@@ -267,7 +267,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_agentsPerEnvironment].push_back(stateBatch[b]);
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
@@ -276,8 +276,8 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
       #pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
-        policyVector[b * _problem->_agentsPerEnvironment + p].stateValue = evaluation[b][0];
-        policyVector[b * _problem->_agentsPerEnvironment + p].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
+        policyVector[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
+        policyVector[b * _problem->_policiesPerEnvironment + p].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
       }
     }
   }

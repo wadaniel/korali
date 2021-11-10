@@ -87,9 +87,7 @@ else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
 
-refer_beta = []
-for i in range(numAg):
-	refer_beta.append(0.3)
+refer_beta = [0.3] * numAg
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 #e["Solver"]["Experience Replay"]["Start Size"] = 500

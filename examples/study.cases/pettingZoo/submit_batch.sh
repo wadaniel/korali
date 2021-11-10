@@ -3,7 +3,7 @@ for env in Multiwalker Waterworld
 do 
     for model in 0 2
     do
-        for run in 1 2 3 4 5 6 7 8 9 10 11
+        for run in {1..10}
         do
             export ENV=$env
             export MODEL=$model
@@ -19,7 +19,7 @@ for env in Pursuit
 do 
     for model in 0 2
     do
-        for run in 1 2 3 4 5 6 7 8 9 10 11
+        for run in {1..10}
         do
             export ENV=$env
             export MODEL=$model

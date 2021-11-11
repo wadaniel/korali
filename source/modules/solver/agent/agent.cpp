@@ -782,7 +782,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       }
       else if (_isOnPolicyVector[expId][0] == false && onPolicy == true)
       {
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
           offPolicyCountDelta[d]--;
       }
     }

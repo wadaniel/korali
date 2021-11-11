@@ -1,30 +1,37 @@
 # Launch continuous envs
 for env in Multiwalker Waterworld
 do 
-    for model in 0 2
+    for model in {0..5}
     do
-        for run in {1..10}
+        for run in {0..9}
         do
-            export ENV=$env
-            export MODEL=$model
-            export RUN=$run
-            ./sbatch-vracer-zoo.sh
+            for multi in false true 
+            do
+                export ENV=$env
+                export MODEL=$model
+                export RUN=$run
+                export MULTI=$multi 
+                ./sbatch-vracer-zoo.sh
+            done
         done
-
     done
 done
 
 # Launch discrete envs
 for env in Pursuit
 do 
-    for model in 0 2
+    for model in {0..5}
     do
-        for run in {1..10}
+        for run in {0..9}
         do
-            export ENV=$env
-            export MODEL=$model
-            export RUN=$run
-            ./sbatch-dvracer-zoo.sh 
+            for multi in false true
+            do
+                export ENV=$env
+                export MODEL=$model
+                export RUN=$run
+                export MULTI=$multi
+                ./sbatch-dvracer-zoo.sh 
+            done
         done
     done
 done

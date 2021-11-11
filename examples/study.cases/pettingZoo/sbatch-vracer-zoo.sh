@@ -10,8 +10,9 @@ echo "Off-policy target:"   $OPT
 echo "Learning rate:"       $LR
 echo "NN size:"             $NN
 echo "RUN"					$RUN
+echo "Multi"				$MULTI
 
-RUNPATH=${SCRATCH}/korali/pettingZoo/${ENV}_model${MODEL}
+RUNPATH=${SCRATCH}/pettingZoo/${ENV}_model_${MODEL}_multi_pol_${MULTI}
 mkdir -p $RUNPATH
 
 cp run-vracer.py $RUNPATH
@@ -34,7 +35,7 @@ cat > run.sbatch <<EOF
 #SBATCH --account=s929
 
 export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
-python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --run $RUN
+python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --run $RUN --multpolicies $MULTI
 EOF
 
 chmod 755 run.sbatch

@@ -95,6 +95,8 @@ void Agent::initialize()
     _experienceReplayOffPolicyCount = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
     _experienceReplayOffPolicyRatio = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
     _currentLearningRate = _learningRate;
+    
+    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
 
     // Rescaling information
     _stateRescalingMeans = std::vector<std::vector<float>>(_problem->_agentsPerEnvironment, std::vector<float>(_problem->_stateVectorSize, 0.0f));

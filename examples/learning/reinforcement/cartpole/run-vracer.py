@@ -44,7 +44,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
-
+e.loadState("_korali_result/latest")
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Environment Count"] = 3
@@ -106,11 +106,14 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["Serialize"] = True
+k["Conduit"]["Type"] = "Distributed"
+k.setMPIComm(MPI.COMM_WORLD)
 
 ### Running Experiment
 

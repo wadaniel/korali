@@ -770,7 +770,9 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
     // Update on-policy vector
     if (_multiAgentCorrelation)
     {
-      bool onPolicy = (logProdImportanceWeight > (-1) * _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight < _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
+      const double logCutOff = (double) _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff);
+      const bool onPolicy = (logProdImportanceWeight > (-1. * logCutOff)) && (logProdImportanceWeight < logCutOff);
+      
       std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
 
       for(size_t d = 0; d < _problem->_agentsPerEnvironment; d++)

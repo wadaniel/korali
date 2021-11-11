@@ -1,22 +1,87 @@
 #!/bin/bash -l
-#SBATCH --job-name=greasy_submit
+
+if [ $# -lt 1 ] ; then
+echo "Usage: ./submit_greasy.sh RUNNAME"
+exit 1
+fi
+
+# create base folder for running and move necessary files
+RUNNAME=$1
+BASEPATH="${SCRATCH}/korali"
+FOLDERNAME=${BASEPATH}/${RUNNAME}
+mkdir -p ${FOLDERNAME}
+cp submit_greasy.sh settings.sh run-vracer.py run-dvracer.py ${FOLDERNAME}
+cd ${FOLDERNAME}
+
+# get default values needed for run
+source settings.sh
+
+# count number of runs
+let NUMNODES=0
+
+# Write continuous env tasks
+for env in Multiwalker Waterworld
+do 
+    for model in {0..5}
+    do
+        for run in {0..9}
+        do
+            for multi in false true 
+            do
+                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}_${run}
+                mkdir -p ${RUNFOLDER}
+                cp run-vracer.py ${RUNFOLDER}
+                cat << EOF >> tasks.txt
+[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --run $RUN --multpolicies $MULTI
+EOF
+                let NUMNODES++
+            done
+        done
+    done
+done
+
+# Write discrete env tasks
+for env in Pursuit
+do 
+    for model in {0..5}
+    do
+        for run in {0..9}
+        do
+            for multi in false true
+            do
+                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}_${run}
+                mkdir -p ${RUNFOLDER}
+                cp run-dvracer.py ${RUNFOLDER}
+                cat << EOF >> tasks.txt
+[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --nn $NN --run $RUN --multpolicies $MULTI
+EOF
+                let NUMNODES++
+            done
+        done
+    done
+done
+
+# Write and submit sbatch script
+cat << EOF > daint_sbatch
+#!/bin/bash -l
+#SBATCH --account=s929
+#SBATCH --job-name=${RUNNAME}
+#SBATCH --output=${RUNNAME}_out_%j.txt
+#SBATCH --error=${RUNNAME}_err_%j.txt
 #SBATCH --time=24:00:00
-#SBATCH --nodes=1
+#SBATCH --nodes=${NUMNODES}
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
-#SBATCH --ntasks-per-core=1
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
-#SBATCH --account=s929
 #SBATCH --gres=gpu:0,craynetwork:4
-
-module load GREASY
 
 export CRAY_CUDA_MPS=1
 export CUDA_VISIBLE_DEVICES=0
 export GPU_DEVICE_ORDINAL=0
+export OMP_NUM_THREADS=12
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export GREASY_NWORKERS_PER_NODE=$SLURM_NTASKS_PER_NODE
+greasy tasks.txt
+EOF
 
-greasy submit_batch.sh
+sbatch daint_sbatch

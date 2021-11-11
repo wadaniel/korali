@@ -722,8 +722,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     auto &stateValue = _stateValueVector[expId];
     auto &importanceWeight = _importanceWeightVector[expId];
     auto &truncatedImportanceWeight = _truncatedImportanceWeightVector[expId];
-    auto &isOnPolicy = _isOnPolicyVector[expId];
-
+    
+    std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment);
     float logProdImportanceWeight = 0.0f;
 
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
@@ -773,12 +773,11 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (_multiAgentCorrelation)
     {
       bool onPolicy = (logProdImportanceWeight > (-1) * _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff)) && (logProdImportanceWeight < _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff));
+      std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
 
-      isOnPolicy = std::vector<bool>(_problem->_agentsPerEnvironment, onPolicy);
-
+      for(size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       if (_isOnPolicyVector[expId][0] == true && onPolicy == false)
       {
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
           offPolicyCountDelta[d]++;
       }
       else if (_isOnPolicyVector[expId][0] == false && onPolicy == true)
@@ -787,6 +786,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
           offPolicyCountDelta[d]--;
       }
     }
+    _isOnPolicyVector[expId] = isOnPolicy;
   }
 
   // Calculating updated truncated policy state values

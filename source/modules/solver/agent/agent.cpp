@@ -110,9 +110,10 @@ void Agent::initialize()
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicy);
 
-  // If this continues a previous training run, deserialize previous input experience replay
+  // If this continues a previous training run, deserialize previous input experience replay. Only for the root (engine) rank
   if (_k->_currentGeneration > 0)
     if (_mode == "Training" || _trainingBestPolicy.empty())
+     if (_k->_engine->_conduit != NULL)
       deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
@@ -915,7 +916,7 @@ void Agent::deserializeExperienceReplay()
   std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
-  _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
+  _k->_logger->logInfo("Normal", "Loading previous run training state from file %s...\n", statePath.c_str());
   if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
     KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from from file %s...\n", statePath.c_str());
 
@@ -976,7 +977,7 @@ void Agent::deserializeExperienceReplay()
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
-  _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
+  _k->_logger->logInfo("Normal", "Took %fs to deserialize training state.\n", deserializationTime);
 }
 
 void Agent::printGenerationAfter()

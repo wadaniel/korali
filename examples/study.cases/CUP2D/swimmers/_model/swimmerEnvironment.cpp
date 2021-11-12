@@ -79,7 +79,7 @@ void runEnvironment(korali::Sample &s)
              break;
   }
   s["Environment Id"] = task;
-  std::cout << "argumentString=" << argumentString << std::endl;
+  // std::cout << "argumentString=" << argumentString << std::endl;
   std::stringstream ss(argumentString);
   std::string item;
   std::vector<std::string> arguments;

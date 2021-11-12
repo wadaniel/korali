@@ -490,6 +490,15 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
+    // For cooporative multi-agent model rewards are summed
+    if (_multiAgentRelationship == "Cooperation")
+    {
+      float sumReward = 0.0f;
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        sumReward += reward[d];
+      reward = std::vector<float>(_problem->_agentsPerEnvironment, sumReward);
+    }
+
     // Update reward rescaling moments
     if (_rewardRescalingEnabled)
     {
@@ -504,14 +513,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-    // For cooporative multi-agent model rewards are summed
-    if (_multiAgentRelationship == "Cooperation")
-    {
-      float sumReward = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        sumReward += reward[d];
-      reward = std::vector<float>(_problem->_agentsPerEnvironment, sumReward);
-    }
 
     // Put reward to replay memory
     _rewardVector.add(reward);
@@ -909,7 +910,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       {
         float sumV = 0.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          sumV = _stateValueVector[curId][d];
+          sumV += _stateValueVector[curId][d];
         curV = std::vector<float>(_problem->_agentsPerEnvironment, sumV);
       }
 

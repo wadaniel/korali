@@ -22,13 +22,13 @@ let NUMNODES=0
 # Write continuous env tasks
 for env in Multiwalker Waterworld
 do 
-    for model in {0..5}
+    for model in 0 1 3 4
     do
-        for run in {0..9}
+        for run in 0
         do
-            for multi in false true 
+            for multi in false  
             do
-                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}_${run}
+                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-vracer.py ${RUNFOLDER}
                 cat << EOF >> tasks.txt
@@ -43,13 +43,13 @@ done
 # Write discrete env tasks
 for env in Pursuit
 do 
-    for model in {0..5}
+    for model in 0 1 3 4
     do
-        for run in {0..9}
+        for run in 0
         do
-            for multi in false true
+            for multi in false 
             do
-                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}_${run}
+                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-dvracer.py ${RUNFOLDER}
                 cat << EOF >> tasks.txt

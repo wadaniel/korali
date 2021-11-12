@@ -171,48 +171,58 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
+      if average == True:
+        rewardHistory = np.mean(rewardHistory,axis=0)
+        rewardHistory.resize(1,rewardHistory.shape[0])
 
       # Merge Results
       if len(unpackedResults) > 0:
-        coH, rH, trTh, teTh = unpackedResults[0]
-        aggCumObs = np.append(coH, cumulativeObsCountHistory)
-        aggRewards = np.append(rH, rewardHistory)
+        for d in range(rewardHistory.shape[0]):
+            coH, rH, trTh = unpackedResults[d]
+            aggCumObs = np.append(coH, cumulativeObsCountHistory)
+            aggRewards = np.append(rH, rewardHistory[d])
 
-        sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
-        sortedAggCumObs = np.sort(aggCumObs)
-        unpackedResults[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
+            sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
+            sortedAggCumObs = np.sort(aggCumObs)
+            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
 
       # Append Results
       else:
-        unpackedResults.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold) )
+        for d in range(rewardHistory.shape[0]):
+            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
 
 
      unpackedResults2 = []
      for r in results2:
       
       if (len(r) == 0): continue  
-      
+
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
+      if average == True:
+        rewardHistory = np.mean(rewardHistory,axis=0)
+        rewardHistory.resize(1,rewardHistory.shape[0])
 
       # Merge Results
       if len(unpackedResults2) > 0:
-        coH, rH, trTh, teTh = unpackedResults2[0]
-        aggCumObs = np.append(coH, cumulativeObsCountHistory)
-        aggRewards = np.append(rH, rewardHistory)
+        for d in range(rewardHistory.shape[0]):
+            coH, rH, trTh = unpackedResults2[d]
+            aggCumObs = np.append(coH, cumulativeObsCountHistory)
+            aggRewards = np.append(rH, rewardHistory[d])
 
-        sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
-        sortedAggCumObs = np.sort(aggCumObs)
-        unpackedResults2[0] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
+            sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
+            sortedAggCumObs = np.sort(aggCumObs)
+            unpackedResults2[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
 
       # Append Results
       else:
-        unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory, trainingRewardThreshold) )
+        for d in range(rewardHistory.shape[0]):
+            unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
 
      ## Plotting the individual experiment results
-     coH, rH, trTh, teTh = unpackedResults2[0]
-     unpackedResults.append((coH,rH,trTh,teTh))
+     coH, rH, trTh = unpackedResults2[0]
+     unpackedResults.append((coH,rH,trTh))
         
      for resId, r in enumerate(unpackedResults):
       if resId == 0:

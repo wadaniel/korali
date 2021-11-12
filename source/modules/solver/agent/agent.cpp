@@ -1249,7 +1249,7 @@ void Agent::printGenerationAfter()
         _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent %lu: %f (%f / %f / %f)\n", d, _testingAverageReward[d], _testingWorstReward[d], _testingBestReward[d]);
       }
 
-      _k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n", d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
+      //_k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n", d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
     }
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);

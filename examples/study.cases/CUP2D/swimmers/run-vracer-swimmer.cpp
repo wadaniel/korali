@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   // Check if existing results are there and continuing them
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true){
-    printf("[Korali] Continuing execution from previous run...\n");
+    // printf("[Korali] Continuing execution from previous run...\n");
     // Hack to enable execution after Testing.
     e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + std::numeric_limits<int>::max();
   }
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;
 
   ////// Setting Korali output configuration
-  e["Console Output"]["Verbosity"] = "Detailed";
+  e["Console Output"]["Verbosity"] = "Normal";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
   e["File Output"]["Use Multiple Files"] = false;

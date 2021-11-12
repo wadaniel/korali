@@ -10,8 +10,8 @@
 
 // #define ID
 // #define MULTITASK
-#define SWARM
-#define SINGLE
+// #define SWARM
+// #define SINGLE
 // #define WATERTURBINE
 
 // command line arguments are read in Korali application

@@ -141,17 +141,18 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expAction = _actionVector[expId];
 
     // Gathering metadata
-    const auto &curPolicy = _curPolicyVector[expId];
     auto &V = _stateValueVector[expId];
+    const auto &curPolicy = _curPolicyVector[expId];
     const auto &expVtbc = _retraceValueVector[expId];
 
     // If Cooporative setting Value is the sum of individual values
     if (_multiAgentRelationship == "Cooperation")
     {
-      float sumV = 0.0f;
+      float avgV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        sumV += V[d];
-      V = std::vector<float>(_problem->_agentsPerEnvironment, sumV);
+        avgV += V[d];
+      avgV /= _problem->_agentsPerEnvironment;
+      V = std::vector<float>(_problem->_agentsPerEnvironment, avgV);
     }
 
     // If Multi Agent Correlation calculate product of importance weights
@@ -168,7 +169,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-      gradientLoss[0] = expVtbc[d] - V[d];
+      gradientLoss[0] = (expVtbc[d] - V[d])/_problem->_agentsPerEnvironment;
 
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
@@ -191,7 +192,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         }
 
         // Compute Off-Policy Objective (eq. 5)
-        float lossOffPolicy = Qret - V[d];
+        const float lossOffPolicy = Qret - V[d];
 
         // Compute Off-Policy Gradient
         auto polGrad = calculateImportanceWeightGradient(expAction[d], curPolicy[d], expPolicy[d]);
@@ -199,18 +200,18 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // If multi-agent correlation, multiply with additional factor
         if (_multiAgentCorrelation)
         {
-          float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
+          const float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
           for (size_t i = 0; i < polGrad.size(); i++)
             polGrad[i] *= correlationFactor;
         }
 
         // Set Gradient of Loss wrt Params
         for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i] / _problem->_agentsPerEnvironment;
       }
 
       // Compute derivative of kullback-leibler divergence wrt current distribution params
-      auto klGrad = calculateKLDivergenceGradient(expPolicy[d], curPolicy[d]);
+      const auto klGrad = calculateKLDivergenceGradient(expPolicy[d], curPolicy[d]);
 
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
       const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta[d]);
@@ -225,6 +226,20 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] > _maxMiniBatchPolicyStdDev[d][i]) _maxMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
         if (expPolicy[d].distributionParameters[i] < _minMiniBatchPolicyMean[d][i]) _minMiniBatchPolicyMean[d][i] = expPolicy[d].distributionParameters[i];
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[d][i]) _minMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
+
+        if (std::isfinite(gradientLoss[i + 1]) == false || std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
+        {
+            printf("klgradmu %f\n", klGradMultiplier);
+            printf("piw %f\n", prodImportanceWeight);
+            for(float op : _isOnPolicyVector[expId]) 
+                printf("op %d\n", (int) op);
+            for(float iw : _importanceWeightVector[expId]) 
+                printf("iw %f\n", iw);
+            for (float gl : gradientLoss)
+                printf("gl %f\n", gl);
+            for (float klg : klGrad)
+                printf("klg %f\n", klg);
+        }
 
         if (std::isfinite(gradientLoss[i + 1]) == false)
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);

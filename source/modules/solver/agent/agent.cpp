@@ -490,13 +490,14 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-    // For cooporative multi-agent model rewards are summed
+    // For cooporative multi-agent model rewards are averaged
     if (_multiAgentRelationship == "Cooperation")
     {
-      float sumReward = 0.0f;
+      float avgReward = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        sumReward += reward[d];
-      reward = std::vector<float>(_problem->_agentsPerEnvironment, sumReward);
+        avgReward += reward[d];
+      avgReward /= _problem->_agentsPerEnvironment;
+      reward = std::vector<float>(_problem->_agentsPerEnvironment, avgReward);
     }
 
     // Update reward rescaling moments
@@ -598,7 +599,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        if (_isOnPolicyVector[0][d] == false && _experienceReplayOffPolicyCount[d] > 0)
+        if (_isOnPolicyVector[0][d] == false)
           _experienceReplayOffPolicyCount[d]--;
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
@@ -645,13 +646,14 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       retV[d] += truncatedPolicy.stateValue;
     }
 
-    // For cooporative multi-agent model truncated state-values are summed
+    // For cooporative multi-agent model truncated state-values are averaged
     if (_multiAgentRelationship == "Cooperation")
     {
-      float sumRetV = 0.0f;
+      float avgRetV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        sumRetV += retV[d];
-      retV = std::vector<float>(_problem->_agentsPerEnvironment, sumRetV);
+        avgRetV += retV[d];
+      avgRetV /= _problem->_agentsPerEnvironment;
+      retV = std::vector<float>(_problem->_agentsPerEnvironment, avgRetV);
     }
   }
 
@@ -719,8 +721,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
                                    : offPolicyCountDelta)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
-    auto batchId = updateBatch[i];
-    auto expId = miniBatch[batchId];
+    const size_t batchId = updateBatch[i];
+    const size_t expId = miniBatch[batchId];
 
     auto &stateValue = _stateValueVector[expId];
     auto &importanceWeight = _importanceWeightVector[expId];
@@ -796,8 +798,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   // Calculating updated truncated policy state values
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
-    auto batchId = updateBatch[i];
-    auto expId = miniBatch[batchId];
+    const size_t batchId = updateBatch[i];
+    const size_t expId = miniBatch[batchId];
     if (_terminationVector[expId] == e_truncated)
     {
       std::vector<float> truncStateValue(_problem->_agentsPerEnvironment, 0.0f);
@@ -821,13 +823,14 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         truncStateValue[d] = truncatedPolicy.stateValue;
       }
 
-      // For cooporative multi-agent model truncated state-values are summed
+      // For cooporative multi-agent model truncated state-values are averaged
       if (_multiAgentRelationship == "Cooperation")
       {
-        float sumTruncV = 0.0f;
+        float avgTruncV = 0.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          sumTruncV += truncStateValue[d];
-        truncStateValue = std::vector<float>(_problem->_agentsPerEnvironment, sumTruncV);
+          avgTruncV += truncStateValue[d];
+        avgTruncV /= _problem->_agentsPerEnvironment;
+        truncStateValue = std::vector<float>(_problem->_agentsPerEnvironment, avgTruncV);
       }
 
       _truncatedStateValueVector[expId] = truncStateValue;
@@ -904,14 +907,15 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         truncatedImportanceWeights = std::vector<float>(_problem->_agentsPerEnvironment, truncatedProdImportanceWeight);
       }
 
-      // Get state-value and replace by sum for cooporating multi-agent setting
+      // Get state-value and replace by avg for cooporating multi-agent setting
       std::vector<float> curV = _stateValueVector[curId];
       if (_multiAgentRelationship == "Cooperation")
       {
-        float sumV = 0.0f;
+        float avgV = 0.0f;
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          sumV += _stateValueVector[curId][d];
-        curV = std::vector<float>(_problem->_agentsPerEnvironment, sumV);
+          avgV += _stateValueVector[curId][d];
+        avgV /= _problem->_agentsPerEnvironment;
+        curV = std::vector<float>(_problem->_agentsPerEnvironment, avgV);
       }
 
       // Updated Retrace value

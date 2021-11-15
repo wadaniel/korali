@@ -831,12 +831,23 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       _truncatedStateValueVector[expId] = truncStateValue;
     }
   }
+  if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
+  {
+    int sumOffPolicyCountDelta = 0;
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      sumOffPolicyCountDelta += offPolicyCountDelta[d];
+    offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment,sumOffPolicyCountDelta);
+  }
 
   // Updating the off policy count and ratio
   for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
   {
     _experienceReplayOffPolicyCount[d] += offPolicyCountDelta[d];
     _experienceReplayOffPolicyRatio[d] = (float)_experienceReplayOffPolicyCount[d] / (float)_isOnPolicyVector.size();
+
+    //PolicyCount is integer I couldn't figure out how to include the division in the previous calculations
+    if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
+      _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
     // Updating the off policy cutoff
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }

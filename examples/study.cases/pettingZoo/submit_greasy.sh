@@ -11,6 +11,7 @@ BASEPATH="${SCRATCH}/korali"
 FOLDERNAME=${BASEPATH}/${RUNNAME}
 mkdir -p ${FOLDERNAME}
 cp submit_greasy.sh settings.sh run-vracer.py run-dvracer.py ${FOLDERNAME}
+cp -r _model/ ${FOLDERNAME}
 cd ${FOLDERNAME}
 
 # get default values needed for run
@@ -21,18 +22,19 @@ let NUMNODES=0
 
 # Write continuous env tasks
 for env in Multiwalker Waterworld
-do 
+do
     for model in 0 1 3 4
     do
         for run in 0
         do
-            for multi in false  
+            for multi in false
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-vracer.py ${RUNFOLDER}
+                cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --run $RUN --multpolicies $MULTI
+[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi
 EOF
                 let NUMNODES++
             done
@@ -42,18 +44,19 @@ done
 
 # Write discrete env tasks
 for env in Pursuit
-do 
+do
     for model in 0 1 3 4
     do
         for run in 0
         do
-            for multi in false 
+            for multi in false
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-dvracer.py ${RUNFOLDER}
+                cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$ENV" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --nn $NN --run $RUN --multpolicies $MULTI
+[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$env" --l2 $L2 --opt $OPT --lr $LR --model '$model' --nn $NN --run $run --multpolicies $multi
 EOF
                 let NUMNODES++
             done

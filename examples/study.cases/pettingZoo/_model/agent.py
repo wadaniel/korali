@@ -44,6 +44,18 @@ def initEnvironment(e, envName, multPolicies):
    obs_upper = 30
    obs_low = 0
    numIndividuals = 8
+   possibleActions = [ [0], [1], [2], [3], [4] ]
+
+ elif (envName == 'Gather'):
+   from pettingzoo.magent import gather_v3
+
+   env = gather_v3.env()
+   stateVariableCount = 1125
+   actionVariableCount = 1
+   obs_upper = 2
+   obs_low = 0
+   numIndividuals = 495
+   possibleActions = [ [0], [1], [2], [3], [4], [5], [6], [7], [8], [9],[10], [11], [12], [13], [14], [15], [16], [17], [18], [19],[20], [21], [22], [23], [24],[25], [26], [27], [28], [29],[30], [31], [32] ]
 
  else:
    print("Environment '{}' not recognized! Exit..".format(envName))
@@ -89,13 +101,13 @@ def initEnvironment(e, envName, multPolicies):
 
    #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
 
- elif (envName ==  'Pursuit'):
+ elif (envName ==  'Pursuit') or (envName == 'Gather'):
    ### Defining problem configuration for pettingZoo environments
    e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
    e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
    e["Problem"]["Training Reward Threshold"] = math.inf
-   e["Problem"]["Possible Actions"] = [ [0], [1], [2], [3], [4] ]
+   e["Problem"]["Possible Actions"] = possibleActions
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
@@ -137,12 +149,19 @@ def agent(s, env):
    for ag in env.agents:
       state = env.observe(ag).tolist()
       states.append(state)
- else:
+ elif (env.env.env.metadata['name'] == 'pursuit_v3'):
    for ag in env.agents:
       state = env.observe(ag)
       state = state.reshape(147)
       state = state.tolist()
       states.append(state)
+ else:
+   for ag in env.agents:
+      state = env.observe(ag)
+      state = state.reshape(1125)
+      state = state.tolist()
+      states.append(state)
+
  
  s["State"] = states
  
@@ -166,7 +185,6 @@ def agent(s, env):
   
   actions = s["Action"]
   rewards = []
-  
   for ag in env.agents:
    if s["Mode"] == "Testing" and (env.env.env.metadata['name']== 'waterworld_v3'):
       obs=env.env.env.env.render('rgb_array')
@@ -194,7 +212,7 @@ def agent(s, env):
    
    if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
       env.step(np.array(action,dtype= 'float32'))
-   else:
+   else: # Pursuit or Gather
       if done:
          #if persuit is done only action is NONE
          continue
@@ -210,10 +228,16 @@ def agent(s, env):
    for ag in env.agents:
       state = env.observe(ag).tolist()
       states.append(state)
-  else:
+  elif (env.env.env.metadata['name'] == 'pursuit_v3'):
    for ag in env.agents:
       state = env.observe(ag)
       state = state.reshape(147)
+      state = state.tolist()
+      states.append(state)
+  else:
+   for ag in env.agents:
+      state = env.observe(ag)
+      state = state.reshape(1125)
       state = state.tolist()
       states.append(state)
 

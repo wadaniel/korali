@@ -79,6 +79,8 @@ elif(args.model == '5'):
 
 if (args.env == 'Pursuit'):
 	numAg = 8
+elif (args.env == 'Gather'):
+	numAg = 495
 else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
@@ -87,7 +89,7 @@ for i in range(numAg):
 	refer_beta.append(0.3)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
-#e["Solver"]["Experience Replay"]["Start Size"] = 500
+#e["Solver"]["Experience Replay"]["Start Size"] = 256
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0

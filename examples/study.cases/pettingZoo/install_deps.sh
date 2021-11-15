@@ -2,3 +2,5 @@
 
 pip install pettingzoo
 pip install pettingzoo[sisl]
+pip install pettingzoo[magent]
+

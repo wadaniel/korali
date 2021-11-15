@@ -161,7 +161,7 @@ void __className__::calculatePolicyGradients(const std::vector<size_t> &miniBatc
       std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-      gradientLoss[0] = (expVtbc[d] - V[d])/_problem->_agentsPerEnvironment;
+      gradientLoss[0] = (expVtbc[d] - V[d]) / _problem->_agentsPerEnvironment;
 
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])

@@ -95,7 +95,7 @@ void Agent::initialize()
     _experienceReplayOffPolicyCount = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
     _experienceReplayOffPolicyRatio = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
     _currentLearningRate = _learningRate;
-    
+
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
 
     // Rescaling information
@@ -514,7 +514,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
-
     // Put reward to replay memory
     _rewardVector.add(reward);
 
@@ -727,7 +726,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     auto &stateValue = _stateValueVector[expId];
     auto &importanceWeight = _importanceWeightVector[expId];
     auto &truncatedImportanceWeight = _truncatedImportanceWeightVector[expId];
-    
+
     std::vector<bool> isOnPolicy(_problem->_agentsPerEnvironment);
     float logProdImportanceWeight = 0.0f;
 
@@ -777,20 +776,20 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Update on-policy vector
     if (_multiAgentCorrelation)
     {
-      const double logCutOff = (double) _problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff);
+      const double logCutOff = (double)_problem->_agentsPerEnvironment * std::log(_experienceReplayOffPolicyCurrentCutoff);
       const bool onPolicy = (logProdImportanceWeight > (-1. * logCutOff)) && (logProdImportanceWeight < logCutOff);
-      
+
       std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
 
-      for(size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      if (_isOnPolicyVector[expId][0] == true && onPolicy == false)
-      {
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        if (_isOnPolicyVector[expId][d] == true && onPolicy == false)
+        {
           offPolicyCountDelta[d]++;
-      }
-      else if (_isOnPolicyVector[expId][0] == false && onPolicy == true)
-      {
+        }
+        else if (_isOnPolicyVector[expId][d] == false && onPolicy == true)
+        {
           offPolicyCountDelta[d]--;
-      }
+        }
     }
     _isOnPolicyVector[expId] = isOnPolicy;
   }

@@ -169,7 +169,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-      gradientLoss[0] = (expVtbc[d] - V[d])/_problem->_agentsPerEnvironment;
+      gradientLoss[0] = (expVtbc[d] - V[d]) / _problem->_agentsPerEnvironment;
 
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
@@ -226,20 +226,6 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] > _maxMiniBatchPolicyStdDev[d][i]) _maxMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
         if (expPolicy[d].distributionParameters[i] < _minMiniBatchPolicyMean[d][i]) _minMiniBatchPolicyMean[d][i] = expPolicy[d].distributionParameters[i];
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[d][i]) _minMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
-
-        if (std::isfinite(gradientLoss[i + 1]) == false || std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
-        {
-            printf("klgradmu %f\n", klGradMultiplier);
-            printf("piw %f\n", prodImportanceWeight);
-            for(float op : _isOnPolicyVector[expId]) 
-                printf("op %d\n", (int) op);
-            for(float iw : _importanceWeightVector[expId]) 
-                printf("iw %f\n", iw);
-            for (float gl : gradientLoss)
-                printf("gl %f\n", gl);
-            for (float klg : klGrad)
-                printf("klg %f\n", klg);
-        }
 
         if (std::isfinite(gradientLoss[i + 1]) == false)
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);

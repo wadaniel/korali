@@ -125,10 +125,11 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     // If Cooporative setting Value is the sum of individual values
     if (_multiAgentRelationship == "Cooperation")
     {
-      float sumV = 0.0f;
+      float avgV = 0.0f;
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        sumV += V[d];
-      V = std::vector<float>(_problem->_agentsPerEnvironment, sumV);
+        avgV += V[d];
+      avgV /= _problem->_agentsPerEnvironment;
+      V = std::vector<float>(_problem->_agentsPerEnvironment, avgV);
     }
 
     // If Multi Agent Correlation calculate product of importance weights
@@ -146,6 +147,10 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
       // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
       gradientLoss[0] = expVtbc[d] - V[d];
+
+      //Gradient has to be divided by Number of Agents in Cooperation models
+      if (_multiAgentRelationship == "Cooperation")
+        gradientLoss[0] /= _problem->_agentsPerEnvironment;
 
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])

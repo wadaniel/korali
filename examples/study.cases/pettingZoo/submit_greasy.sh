@@ -25,7 +25,7 @@ for env in Multiwalker Waterworld
 do
     for model in 0 1 3 4
     do
-        for run in 0
+        for run in 0 1 2 3 4
         do
             for multi in false
             do
@@ -47,7 +47,7 @@ for env in Pursuit
 do
     for model in 0 1 3 4
     do
-        for run in 0
+        for run in 0 1 2 3 4
         do
             for multi in false
             do

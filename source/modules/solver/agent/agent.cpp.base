@@ -593,9 +593,20 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
+    {
+      size_t offPolicyCountReduction = 1;
+      if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
+      {
+        offPolicyCountReduction = 0;
+        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+          if (_isOnPolicyVector[0][d] == false)
+            offPolicyCountReduction++;
+      }
+      //If (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1)) we have to subtract from all, otherwise only if isOnPolicy is false
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        if (_isOnPolicyVector[0][d] == false)
-          _experienceReplayOffPolicyCount[d]--;
+        if ((_isOnPolicyVector[0][d] == false) || (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1)))
+          _experienceReplayOffPolicyCount[d] -= offPolicyCountReduction;
+    }
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
     _isOnPolicyVector.add(std::vector<bool>(_problem->_agentsPerEnvironment, true));

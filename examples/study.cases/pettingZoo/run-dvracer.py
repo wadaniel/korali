@@ -16,7 +16,7 @@ parser.add_argument('--opt', help='Off Policy Target.', required=False, type=flo
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
-parser.add_argument('--multpolicies', help='If set to True, train with N policies', required=False, type=bool, default = False)
+parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 #model '0' or '' weakly Dependent Individualist 
 #model '1' strongly Dependent Individualist I 

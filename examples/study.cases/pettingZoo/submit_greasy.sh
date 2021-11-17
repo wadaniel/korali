@@ -25,16 +25,16 @@ for env in Multiwalker Waterworld
 do
     for model in 0 1 3 4
     do
-        for run in 0 1 2 3 4
+        for run in 0 
         do
-            for multi in false
+            for multi in 0
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-vracer.py ${RUNFOLDER}
                 cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi
+[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi >  ${env}_${model}_${multi}_${run}.txt
 EOF
                 let NUMNODES++
             done
@@ -47,16 +47,16 @@ for env in Pursuit
 do
     for model in 0 1 3 4
     do
-        for run in 0 1 2 3 4
+        for run in 0 
         do
-            for multi in false
+            for multi in 0
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-dvracer.py ${RUNFOLDER}
                 cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$env" --l2 $L2 --opt $OPT --lr $LR --model '$model' --nn $NN --run $run --multpolicies $multi
+[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$env" --l2 $L2 --opt $OPT --lr $LR --model '$model' --nn $NN --run $run --multpolicies $multi >  ${env}_${model}_${multi}_${run}.txt
 EOF
                 let NUMNODES++
             done
@@ -78,6 +78,8 @@ cat << EOF > daint_sbatch
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 #SBATCH --gres=gpu:0,craynetwork:4
+
+module load GREASY
 
 export CRAY_CUDA_MPS=1
 export CUDA_VISIBLE_DEVICES=0

@@ -73,7 +73,7 @@ def initEnvironment(e, envName, multPolicies):
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
-   if multPolicies :
+   if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
     
    # Generating state variable index list
@@ -111,7 +111,7 @@ def initEnvironment(e, envName, multPolicies):
    #e["Problem"]["Testing Frequency"] = 2
    e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
-   if multPolicies :
+   if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
  
    # Generating state variable index list

@@ -190,7 +190,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         for (size_t i = 0; i < _policyParameterCount; i++)
         {
           // '-' because the optimizer is maximizing
-          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta[d] * lossOffPolicy * polGrad[i];
+          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[d] * lossOffPolicy * polGrad[i];
         }
       }
 
@@ -200,7 +200,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       for (size_t i = 0; i < _policyParameterCount; i++)
       {
         // Step towards old policy (gradient pointing to larger difference between old and current policy)
-        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta[d]) * klGrad[i];
+        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERCurrentBeta[d]) * klGrad[i];
 
         if (std::isfinite(gradientLoss[i]) == false)
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);

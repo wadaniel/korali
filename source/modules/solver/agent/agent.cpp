@@ -46,6 +46,9 @@ void Agent::initialize()
   if (_experienceReplayStartSize == 0)
     _experienceReplayStartSize = _experienceReplayMaximumSize;
 
+  // Initialize current beta for all agents
+  _experienceReplayOffPolicyREFERCurrentBeta = std::vector<float>(_problem->_agentsPerEnvironment, _experienceReplayOffPolicyREFERBeta);
+
   //  Pre-allocating space for the experience replay memory
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
@@ -247,9 +250,9 @@ void Agent::trainingGeneration()
           // Updating REFER learning rate and beta parameters
           _currentLearningRate = _learningRate / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
           if (_experienceReplayOffPolicyRatio[d] > _experienceReplayOffPolicyTarget)
-            _experienceReplayOffPolicyREFERBeta[d] = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta[d];
+            _experienceReplayOffPolicyREFERCurrentBeta[d] = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERCurrentBeta[d];
           else
-            _experienceReplayOffPolicyREFERBeta[d] = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta[d] + _currentLearningRate;
+            _experienceReplayOffPolicyREFERCurrentBeta[d] = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERCurrentBeta[d] + _currentLearningRate;
         }
       }
 
@@ -296,23 +299,23 @@ void Agent::testingGeneration()
   std::vector<Sample> testingAgents(_testingSampleIds.size());
 
   // Launching  agents
-  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+  for (size_t sampleId = 0; sampleId < _testingSampleIds.size(); sampleId++)
   {
-    testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
-    testingAgents[agentId]["Module"] = "Problem";
-    testingAgents[agentId]["Operation"] = "Run Testing Episode";
+    testingAgents[sampleId]["Sample Id"] = _testingSampleIds[sampleId];
+    testingAgents[sampleId]["Module"] = "Problem";
+    testingAgents[sampleId]["Operation"] = "Run Testing Episode";
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-      testingAgents[agentId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
-    testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
-    testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
+      testingAgents[sampleId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
+    testingAgents[sampleId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+    testingAgents[sampleId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
-    KORALI_START(testingAgents[agentId]);
+    KORALI_START(testingAgents[sampleId]);
   }
 
   KORALI_WAITALL(testingAgents);
 
-  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
-    _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
+  for (size_t sampleId = 0; sampleId < _testingSampleIds.size(); sampleId++)
+    _testingReward[sampleId] = testingAgents[sampleId]["Testing Reward"].get<float>();
 }
 
 void Agent::rescaleStates()
@@ -1257,7 +1260,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", "Off-Policy Statistics for agent %lu: \n", d);
       _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount[d], _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
-      _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta[d]);
+      _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERCurrentBeta[d]);
 
       _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f/%f\n", d, _trainingLastReward[d], _problem->_trainingRewardThreshold);
       _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth, d, _trainingAverageReward[d]);
@@ -1297,11 +1300,10 @@ void Agent::printGenerationAfter()
   if (_mode == "Testing")
   {
     _k->_logger->logInfo("Normal", "Testing Results:\n");
-    for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+    for (size_t sampleId = 0; sampleId < _testingSampleIds.size(); sampleId++)
     {
-      _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward for agent %lu:           %f\n", d, _testingReward[d]);
+      _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[sampleId]);
+      _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward:           %f\n", _testingReward[sampleId]);
     }
   }
 }
@@ -1489,6 +1491,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Replay']['Off Policy']['Current Cutoff']\n%s", e.what()); } 
    eraseValue(js, "Experience Replay", "Off Policy", "Current Cutoff");
+ }
+
+ if (isDefined(js, "Experience Replay", "Off Policy", "REFER Current Beta"))
+ {
+ try { _experienceReplayOffPolicyREFERCurrentBeta = js["Experience Replay"]["Off Policy"]["REFER Current Beta"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Replay']['Off Policy']['REFER Current Beta']\n%s", e.what()); } 
+   eraseValue(js, "Experience Replay", "Off Policy", "REFER Current Beta");
  }
 
  if (isDefined(js, "Current Learning Rate"))
@@ -1790,7 +1800,7 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Experience Replay", "Off Policy", "REFER Beta"))
  {
- try { _experienceReplayOffPolicyREFERBeta = js["Experience Replay"]["Off Policy"]["REFER Beta"].get<std::vector<float>>();
+ try { _experienceReplayOffPolicyREFERBeta = js["Experience Replay"]["Off Policy"]["REFER Beta"].get<float>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Replay']['Off Policy']['REFER Beta']\n%s", e.what()); } 
    eraseValue(js, "Experience Replay", "Off Policy", "REFER Beta");
@@ -1973,6 +1983,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;
+   js["Experience Replay"]["Off Policy"]["REFER Current Beta"] = _experienceReplayOffPolicyREFERCurrentBeta;
    js["Current Learning Rate"] = _currentLearningRate;
    js["Policy Update Count"] = _policyUpdateCount;
    js["Current Sample ID"] = _currentSampleID;

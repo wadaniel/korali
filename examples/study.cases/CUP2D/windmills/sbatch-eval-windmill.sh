@@ -9,23 +9,23 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of agents
-NNODES=64
+NNODES=2
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
-cp 4eval-vracer-windmill ${RUNPATH}
-cp 4settings.sh ${RUNPATH}
+cp eval-vracer-windmill ${RUNPATH}
+cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
 
-source 4settings.sh
+source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=24:00:00
+#SBATCH --time=6:00:00
 #SBATCH --nodes=$((NNODES+1))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
@@ -34,8 +34,8 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-# srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
-srun ./4eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+# srun ./4eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 EOF
 
 chmod 755 daint_sbatch

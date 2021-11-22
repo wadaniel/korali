@@ -43,37 +43,39 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
+
+  ////////////////////////////////////////////////////////// 
   // const size_t numStates = 4;
-  // size_t curVariable = 0;
-  // for (size_t stateIdx = 0; stateIdx < numStates; stateIdx++)
-  // {
-  //   e["Variables"][curVariable++]["Name"] = std::string("Angle ") + std::to_string(stateIdx);
-  //   e["Variables"][curVariable++]["Name"] = std::string("Omega ") + std::to_string(stateIdx);
-  // }
+  // e["Variables"][0]["Name"] = std::string("Angle ") + std::to_string(0);
+  // e["Variables"][1]["Name"] = std::string("Omega ") + std::to_string(0);
+  // e["Variables"][2]["Name"] = std::string("Angle ") + std::to_string(1);
+  // e["Variables"][3]["Name"] = std::string("Omega ") + std::to_string(1);
 
-  // for (size_t i = 0; i < curVariable; i++) e["Variables"][i]["Type"] = "State";
+  // for (size_t i = 0; i < 4; i++) e["Variables"][i]["Type"] = "State";
 
-  std::cout<<"Before state 1"<<std::endl;
+  ///////////////////////////////////////////////////////////
 
-  // use 
   const size_t numStates = 576;
-  size_t curVariable = 0;
   for (size_t i = 0; i < numStates; i++)
   {
     e["Variables"][i]["Name"] = std::string("Vorticity ") + std::to_string(i);
     e["Variables"][i]["Type"] = "State";
   }
 
-  double max_torque = 1e-4;
+  /////////////////////////////////////////////////////////
+
+  // double max_torque = 2.5e-4;
+  // action is now setting the velocity of the fans
+  double max_omega = 15;
   for(size_t j=numStates; j < numStates + 2; ++j){
-    e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
+    e["Variables"][j]["Name"] = "Omega " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";
-    e["Variables"][j]["Lower Bound"] = -max_torque;
-    e["Variables"][j]["Upper Bound"] = +max_torque;
-    e["Variables"][j]["Initial Exploration Noise"] = 0.5;
+    e["Variables"][j]["Lower Bound"] = -max_omega;
+    e["Variables"][j]["Upper Bound"] = +max_omega;
+    e["Variables"][j]["Initial Exploration Noise"] = 15;
   }
 
-  std::cout<<"Before state 2"<<std::endl;
+  // std::cout<<"Before state 2"<<std::endl;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.95;
+  e["Solver"]["Discount Factor"] = 0.99; // used to be 0.95
   e["Solver"]["Mini Batch"]["Size"] =  128;
   //e["Solver"]["Policy"]["Distribution"] = "Normal";
   e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
@@ -101,6 +103,8 @@ int main(int argc, char *argv[])
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
 
   /////////////////////////////////////////////////////////////////////////////////
+
+  // neural network used when state was angle and angular velocity, about 8292 parameters
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
@@ -123,7 +127,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"]   = 4*20*20;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/ReLU";
 
   // Pooling Layer [4x20x20] -> [4x10x10]
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Pooling";
@@ -155,7 +159,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"]   = 12*6*6;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][4]["Function"] = "Elementwise/ReLU";
 
   // Pooling Layer [12x6x6] -> [12x3x3]
   e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Pooling";
@@ -186,16 +190,25 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Bottom"]    = 0;
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Output Channels"]   = 64*1*1;
 
-  std::cout<<"Before state 3"<<std::endl;
+  e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"; // there was a 4 here before, so basically did nothing after
+  e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Elementwise/ReLU"; // the previous conv layer, vel_oui_relu_30s when added
 
-  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Elementwise/Linear"; ///////////////////////////////----------------------------
+
+
+  // addition to original net
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/ReLU";
 
 
   /////////////////////////////////////////////////////////////////////////////////
 
+  // neural network used when state was angle and angular velocity, about 17664 parameters
   
-  // /// Configuring the neural network and its hidden layers
+  /// Configuring the neural network and its hidden layers
   // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   // e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
   
@@ -237,7 +250,7 @@ int main(int argc, char *argv[])
   // set conduit and MPI communicator
   k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
-  std::cout<<"Before state 4"<<std::endl;
+  // std::cout<<"Before state 4"<<std::endl;
 
   // run korali
   k.run(e);

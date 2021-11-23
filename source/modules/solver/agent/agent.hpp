@@ -270,15 +270,15 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingBestReward;
+   float _testingBestReward;
   /**
   * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingWorstReward;
+   float _testingWorstReward;
   /**
   * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
   */
-   std::vector<size_t> _testingBestEpisodeId;
+   size_t _testingBestEpisodeId;
   /**
   * @brief [Internal Use] Remembers the number of candidate policies tested so far.
   */
@@ -286,11 +286,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingAverageReward;
+   float _testingAverageReward;
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
   */
-   std::vector<float> _testingBestAverageReward;
+   float _testingBestAverageReward;
   /**
   * @brief [Internal Use] Stores the best testing policies configuration found so far.
   */

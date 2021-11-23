@@ -77,22 +77,22 @@ void __className__::initialize()
     _experienceCount = 0;
 
     // Initializing training and episode statistics //TODO go through all
-    _testingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
-    _testingBestReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
-    _testingWorstReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
-    _trainingBestReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
-    _trainingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
-    _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
-    _testingBestAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, -korali::Inf);
-    _testingBestEpisodeId = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
+    _testingAverageReward -korali::Inf;
+    _testingBestReward = -korali::Inf;
+    _testingWorstReward = -korali::Inf;
+    _testingBestAverageReward = -korali::Inf;
+    _testingBestEpisodeId = 0;
+    _trainingBestReward.resize(_problem->_agentsPerEnvironment, -korali::Inf);
+    _trainingBestEpisodeId.resize(_problem->_agentsPerEnvironment, 0);
+    _trainingAverageReward.resize(_problem->_agentsPerEnvironment, -korali::Inf);
 
     /* Initializing REFER information */
 
     // If cutoff scale is not defined, use a heuristic value [defaults to 4.0]
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
       KORALI_LOG_ERROR("Experience Replay Cutoff Scale must be larger 0.0");
-    _experienceReplayOffPolicyCount = std::vector<size_t>(_problem->_agentsPerEnvironment, 0);
-    _experienceReplayOffPolicyRatio = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
+    _experienceReplayOffPolicyCount.resize(_problem->_agentsPerEnvironment, 0);
+    _experienceReplayOffPolicyRatio.resize(_problem->_agentsPerEnvironment, 0.0f);
     _currentLearningRate = _learningRate;
 
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
@@ -406,23 +406,18 @@ void __className__::attendAgent(size_t agentId)
       if (_agents[agentId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        {
-          _testingAverageReward[d] = _agents[agentId]["Average Testing Reward"][d].get<float>();
-          _testingBestReward[d] = _agents[agentId]["Best Testing Reward"][d].get<float>();
-          _testingWorstReward[d] = _agents[agentId]["Worst Testing Reward"][d].get<float>();
+        _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
+        _testingBestReward = _agents[agentId]["Best Testing Reward"].get<float>();
+        _testingWorstReward = _agents[agentId]["Worst Testing Reward"].get<float>();
 
-          // If the average testing reward is better than the previous best, replace it
-          // and store hyperparameters as best so far.
-          if (_testingAverageReward[d] > _testingBestAverageReward[d])
-          {
-            _testingBestAverageReward[d] = _testingAverageReward[d];
-            _testingBestEpisodeId[d] = episodeId;
-            if (_problem->_policiesPerEnvironment == 1)
-              _testingBestPolicies["Policy Hyperparameters"][0] = _agents[agentId]["Policy Hyperparameters"][0];
-            else
-              _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
-          }
+        // If the average testing reward is better than the previous best, replace it
+        // and store hyperparameters as best so far.
+        if (_testingAverageReward > _testingBestAverageReward)
+        {
+          _testingBestAverageReward = _testingAverageReward;
+          _testingBestEpisodeId = episodeId;
+          for(size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
+            _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
         }
       }
 
@@ -1264,18 +1259,18 @@ void __className__::printGenerationAfter()
 
       if (_rewardRescalingEnabled)
         _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma[d]);
-
-      if (isinf(_problem->_trainingRewardThreshold) == false)
-      {
-        _k->_logger->logInfo("Normal", "Testing Statistics:\n");
-
-        _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
-
-        _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent %lu: %f (%f / %f / %f)\n", d, _testingAverageReward[d], _testingWorstReward[d], _testingBestReward[d]);
-      }
-
-      //_k->_logger->logInfo("Normal", " + Best Average Reward for agent %lu: %f (%lu)\n", d, _testingBestAverageReward[d], _testingBestEpisodeId[d]);
     }
+
+    if (isinf(_problem->_trainingRewardThreshold) == false || _testingBestEpisodeId > 0)
+    {
+      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+
+      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
+
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
+      _k->_logger->logInfo("Normal", " + Best Average Reward for agent: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
+    }
+
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 

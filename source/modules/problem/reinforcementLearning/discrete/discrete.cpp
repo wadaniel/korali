@@ -21,6 +21,8 @@ void Discrete::initialize()
   if (_possibleActions.empty())
     KORALI_LOG_ERROR("No possible actions have been defined for the discrete RL problem (empty set detected).\n");
 
+  _actionCount = _possibleActions.size();
+
   for (size_t i = 0; i < _possibleActions.size(); i++)
     if (_possibleActions[i].size() != _actionVectorSize)
       KORALI_LOG_ERROR("For possible action %lu, incorrect vector size provided. Expected: %lu, Provided: %lu.\n", i, _actionVectorSize, _possibleActions[i].size());
@@ -29,6 +31,14 @@ void Discrete::initialize()
 void Discrete::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
+
+ if (isDefined(js, "Action Count"))
+ {
+ try { _actionCount = js["Action Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ discrete ] \n + Key:    ['Action Count']\n%s", e.what()); } 
+   eraseValue(js, "Action Count");
+ }
 
  if (isDefined(js, "Possible Actions"))
  {
@@ -62,6 +72,7 @@ void Discrete::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Possible Actions"] = _possibleActions;
+   js["Action Count"] = _actionCount;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  ReinforcementLearning::getConfiguration(js);

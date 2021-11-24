@@ -346,6 +346,8 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         {
           // Computing e^(Q(s,a_i) - maxq)
           float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+
+          // Set probability zer if action not available
           if (policyInfo[b].availableActions.size() > 0)
             if (policyInfo[b].availableActions[i] == false) expCurQVal = 0.;
 

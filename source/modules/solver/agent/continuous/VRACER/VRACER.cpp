@@ -233,9 +233,19 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         if (expPolicy[d].distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[d][i]) _minMiniBatchPolicyStdDev[d][i] = expPolicy[d].distributionParameters[_problem->_actionVectorSize + i];
 
         if (std::isfinite(gradientLoss[i + 1]) == false)
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
+        {
+          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+            gradientLoss[i+1] = 0.0;
+          else
+            KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
+        }
         if (std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
+        {
+          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+            gradientLoss[i + 1 + _problem->_actionVectorSize] = 0.0;
+          else  
+            KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
+        }
       }
 
       // Set Gradient of Loss as Solution

@@ -182,7 +182,7 @@ class Agent : public Solver
   /**
   * @brief Initial value for the penalisation coefficient for off-policiness. (beta in https://arxiv.org/abs/1807.05827)
   */
-   std::vector<float> _experienceReplayOffPolicyREFERBeta;
+   float _experienceReplayOffPolicyREFERBeta;
   /**
   * @brief The number of experiences to receive before training/updating (real number, may be less than < 1.0, for more than one update per experience).
   */
@@ -270,15 +270,15 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingBestReward;
+   float _testingBestReward;
   /**
   * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingWorstReward;
+   float _testingWorstReward;
   /**
   * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
   */
-   std::vector<size_t> _testingBestEpisodeId;
+   size_t _testingBestEpisodeId;
   /**
   * @brief [Internal Use] Remembers the number of candidate policies tested so far.
   */
@@ -286,11 +286,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
   */
-   std::vector<float> _testingAverageReward;
+   float _testingAverageReward;
   /**
   * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
   */
-   std::vector<float> _testingBestAverageReward;
+   float _testingBestAverageReward;
   /**
   * @brief [Internal Use] Stores the best testing policies configuration found so far.
   */
@@ -304,9 +304,13 @@ class Agent : public Solver
   */
    std::vector<float> _experienceReplayOffPolicyRatio;
   /**
-  * @brief [Internal Use] Indicates the current cutoff to classify experiences as on- or off-policy 
+  * @brief [Internal Use] Indicates the current cutoff to classify experiences as on- or off-policy.
   */
    float _experienceReplayOffPolicyCurrentCutoff;
+  /**
+  * @brief [Internal Use] Vector of the current penalisation coefficient for off-policiness for each agent.
+  */
+   std::vector<float> _experienceReplayOffPolicyREFERCurrentBeta;
   /**
   * @brief [Internal Use] The current learning rate to use for the NN hyperparameter optimization.
   */

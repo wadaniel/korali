@@ -357,7 +357,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     agent["Reward"][0] = reward;
 
     // Support returning available actions as vector
-    if(agent.contains("Available Actions") && agent["Available Actions"].is_array())
+    if (agent.contains("Available Actions") && agent["Available Actions"].is_array())
     {
       auto availAct = KORALI_GET(std::vector<bool>, agent, "Available Actions");
       agent._js.getJson().erase("Available Actions");
@@ -400,9 +400,8 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
     if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 
-
   // Checking correct format of availavle actions if provided
-  if(agent.contains("Available Actions") && agent["Available Actions"].is_array())
+  if (agent.contains("Available Actions") && agent["Available Actions"].is_array())
   {
     if (agent["Available Actions"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Available Actions vector returned with the wrong size: %lu, expected: %lu.\n", agent["Available Actions"].size(), _agentsPerEnvironment);
     for (size_t i = 0; i < _agentsPerEnvironment; i++)

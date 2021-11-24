@@ -19,7 +19,7 @@ void Continuous::initializeAgent()
 
   // Only relevant for discrete
   _problem->_actionCount = 0;
-  
+
   // Obtaining action shift and scales for bounded distributions
   _actionShifts.resize(_problem->_actionVectorSize);
   _actionScales.resize(_problem->_actionVectorSize);

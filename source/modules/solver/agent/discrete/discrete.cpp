@@ -17,7 +17,6 @@ void Discrete::initializeAgent()
 
   _problem->_actionCount = _problem->_possibleActions.size();
   _policyParameterCount = _problem->_actionCount + 1; // q values and inverseTemperature
- 
 }
 
 void Discrete::getAction(korali::Sample &sample)
@@ -27,34 +26,34 @@ void Discrete::getAction(korali::Sample &sample)
   {
     // Getting current state
     auto state = sample["State"][i].get<std::vector<float>>();
-    
+
     // Adding state to the state time sequence
     _stateTimeSequence.add(state);
 
     // Preparing storage for policy information and flag available actions if provided
     std::vector<policy_t> policy(1);
-    if(sample.contains("Available Actions") && sample["Available Actions"].is_array())
+    if (sample.contains("Available Actions") && sample["Available Actions"].is_array())
       policy[0].availableActions = sample["Available Actions"][i].get<std::vector<bool>>();
-    
+
     // Getting the probability of the actions given by the agent's policy
     if (_problem->_policiesPerEnvironment == 1)
       runPolicy({_stateTimeSequence.getVector()}, policy);
     else
       runPolicy({_stateTimeSequence.getVector()}, policy, i);
-    
+
     const auto &qValAndInvTemp = policy[0].distributionParameters;
     const auto &pActions = policy[0].actionProbabilities;
 
     // Storage for the action index to use
     size_t actionIdx = 0;
- 
+
     /*****************************************************************************
   * During training, we follow the Epsilon-greedy strategy. Choose, given a
   * probability (pEpsilon), one from the following:
   *  - Uniformly random action among all possible actions
   *  - Sample action guided by the policy's probability distribution
   ****************************************************************************/
- 
+
     if (sample["Mode"] == "Training")
     {
       // Producing random  number for the selection of an available action
@@ -71,11 +70,10 @@ void Discrete::getAction(korali::Sample &sample)
       // Treat rounding errors and choose action with largest pValue
       if (policy[0].availableActions.size() > 0 && policy[0].availableActions[actionIdx] == false)
         actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
-      
+
       // NOTE: In original DQN paper [Minh2015] we choose max
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
-
 
     /*****************************************************************************
   * During testing, we just select the action with the largest probability
@@ -184,7 +182,6 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const policy_t &oldPo
 
   return klGrad;
 }
-
 
 void Discrete::setConfiguration(knlohmann::json& js) 
 {

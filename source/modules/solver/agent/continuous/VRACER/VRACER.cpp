@@ -176,7 +176,6 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       if (_multiAgentRelationship == "Cooperation")
         gradientLoss[0] /= _problem->_agentsPerEnvironment;
 
-
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
       {
@@ -235,16 +234,16 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
         if (std::isfinite(gradientLoss[i + 1]) == false)
         {
-          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
-            gradientLoss[i+1] = 0.0;
+          if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+            gradientLoss[i + 1] = 0.0;
           else
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
         }
         if (std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
         {
-          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+          if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
             gradientLoss[i + 1 + _problem->_actionVectorSize] = 0.0;
-          else  
+          else
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
         }
       }
@@ -263,12 +262,12 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
 float VRACER::calculateStateValue(const std::vector<float> &state, size_t policyIdx)
 {
-    // Forward the neural network for this state to get the state value
-    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({ std::vector<std::vector<float>>{ state }});
-    return evaluation[0][0];
+  // Forward the neural network for this state to get the state value
+  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({std::vector<std::vector<float>>{state}});
+  return evaluation[0][0];
 }
 
-void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t>& policyInfo, size_t policyIdx)
+void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();

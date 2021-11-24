@@ -81,7 +81,7 @@ void Agent::initialize()
     _experienceCount = 0;
 
     // Initializing training and episode statistics //TODO go through all
-    _testingAverageReward -korali::Inf;
+    _testingAverageReward = -korali::Inf;
     _testingBestReward = -korali::Inf;
     _testingWorstReward = -korali::Inf;
     _testingBestAverageReward = -korali::Inf;
@@ -420,7 +420,7 @@ void Agent::attendAgent(size_t agentId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = episodeId;
-          for(size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
+          for (size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
             _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
         }
       }
@@ -560,7 +560,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         expPolicy[d].actionProbabilities = actProb[d];
     }
- 
+
     if (isDefined(episode["Experiences"][expId], "Policy", "Available Actions"))
     {
       const auto availAct = episode["Experiences"][expId]["Policy"]["Available Actions"].get<std::vector<std::vector<bool>>>();
@@ -628,9 +628,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
       std::vector<policy_t> truncatedPolicy;
       if (_problem->_policiesPerEnvironment == 1)
-          retV[d] += calculateStateValue(_stateVector[endId][d]);
+        retV[d] += calculateStateValue(_stateVector[endId][d]);
       else
-          retV[d] += calculateStateValue(_stateVector[endId][d], d);
+        retV[d] += calculateStateValue(_stateVector[endId][d], d);
 
       // Get value of trucated state
       if (std::isfinite(retV[d]) == false)
@@ -670,7 +670,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
-// Producing random (uniform) number for the selection of the experience
+    // Producing random (uniform) number for the selection of the experience
     float x = _uniformGenerator->getRandomNumber();
 
     // Selecting experience
@@ -798,7 +798,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         auto expTruncatedStateSequence = getTruncatedStateSequence(expId, d);
 
         // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
-        if(_problem->_policiesPerEnvironment == 1)
+        if (_problem->_policiesPerEnvironment == 1)
           truncStateValue[d] = calculateStateValue(_stateVector[expId][d]);
         else
           truncStateValue[d] = calculateStateValue(_stateVector[expId][d], d);
@@ -822,7 +822,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
   {
     int sumOffPolicyCountDelta = std::accumulate(offPolicyCountDelta.begin(), offPolicyCountDelta.end(), 0.);
-    offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment,sumOffPolicyCountDelta);
+    offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment, sumOffPolicyCountDelta);
   }
 
   // Updating the off policy count and ratio

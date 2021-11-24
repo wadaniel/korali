@@ -15,7 +15,9 @@ void Discrete::initializeAgent()
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
 
+  _problem->_actionCount = _problem->_possibleActions.size();
   _policyParameterCount = _problem->_actionCount + 1; // q values and inverseTemperature
+ 
 }
 
 void Discrete::getAction(korali::Sample &sample)
@@ -29,44 +31,23 @@ void Discrete::getAction(korali::Sample &sample)
     // Adding state to the state time sequence
     _stateTimeSequence.add(state);
 
+    // Preparing storage for policy information and flag available actions if provided
+    std::vector<policy_t> policy(1);
+    if(sample.contains("Available Actions") && sample["Available Actions"].is_array())
+      policy[0].availableActions = sample["Available Actions"][i].get<std::vector<bool>>();
+    
     // Getting the probability of the actions given by the agent's policy
-    policy_t policy;
     if (_problem->_policiesPerEnvironment == 1)
-      policy = runPolicy({_stateTimeSequence.getVector()})[0];
+      runPolicy({_stateTimeSequence.getVector()}, policy);
     else
-      policy = runPolicy({_stateTimeSequence.getVector()}, i)[0];
-    const auto &qValAndInvTemp = policy.distributionParameters;
-    auto &pActions = policy.actionProbabilities;
+      runPolicy({_stateTimeSequence.getVector()}, policy, i);
+    
+    const auto &qValAndInvTemp = policy[0].distributionParameters;
+    const auto &pActions = policy[0].actionProbabilities;
 
     // Storage for the action index to use
     size_t actionIdx = 0;
  
-    // Cumulative sum of probabilities
-    double cumPvalue = 1.;
-    
-    // Filter out non-available actions
-    if(isDefined(sample["State"][i]["Available Actions"]))
-    {
-        size_t availableActionIdx = 0;
-        
-        // We assume this array to be sorted, storing indices of available actions (no flagging)
-        auto availableActions = sample["State"][i]["Available Actions"].get<std::vector<size_t>>();
-        for (size_t actionIdx = 0; actionIdx < _problem->_actionCount; actionIdx++)
-        {
-            if(availableActions[availableActionIdx] != actionIdx)
-            {
-                // remove action
-                cumPvalue-=pActions[actionIdx];
-                pActions[actionIdx] = 0.;
-            }
-            else
-            {
-                // keep action
-                availableActionIdx++;
-            }
-        }
-    }
-
     /*****************************************************************************
   * During training, we follow the Epsilon-greedy strategy. Choose, given a
   * probability (pEpsilon), one from the following:
@@ -77,7 +58,7 @@ void Discrete::getAction(korali::Sample &sample)
     if (sample["Mode"] == "Training")
     {
       // Producing random  number for the selection of an available action
-      const float x = _uniformGenerator->getRandomNumber() * cumPvalue;
+      const float x = _uniformGenerator->getRandomNumber();
 
       // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
@@ -87,9 +68,14 @@ void Discrete::getAction(korali::Sample &sample)
         if (x < curSum) break;
       }
 
+      // Treat rounding errors and choose action with largest pValue
+      if (policy[0].availableActions.size() > 0 && policy[0].availableActions[actionIdx] == false)
+        actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      
       // NOTE: In original DQN paper [Minh2015] we choose max
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
+
 
     /*****************************************************************************
   * During testing, we just select the action with the largest probability
@@ -105,11 +91,12 @@ void Discrete::getAction(korali::Sample &sample)
  ****************************************************************************/
 
     // Storing action itself, its idx, and probabilities
-    sample["Policy"]["Distribution Parameters"][i] = qValAndInvTemp;
-    sample["Policy"]["Action Probabilities"][i] = pActions;
-    sample["Policy"]["Action Index"][i] = actionIdx;
-    sample["Policy"]["State Value"][i] = policy.stateValue;
     sample["Action"][i] = _problem->_possibleActions[actionIdx];
+    sample["Policy"]["State Value"][i] = policy[0].stateValue;
+    sample["Policy"]["Action Index"][i] = actionIdx;
+    sample["Policy"]["Available Actions"][i] = policy[0].availableActions;
+    sample["Policy"]["Action Probabilities"][i] = pActions;
+    sample["Policy"]["Distribution Parameters"][i] = qValAndInvTemp;
   }
 }
 
@@ -197,6 +184,7 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const policy_t &oldPo
 
   return klGrad;
 }
+
 
 void Discrete::setConfiguration(knlohmann::json& js) 
 {

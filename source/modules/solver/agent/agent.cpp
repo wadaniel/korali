@@ -469,31 +469,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Get reward
     std::vector<float> reward = episode["Experiences"][expId]["Reward"].get<std::vector<float>>();
 
-    // If the action is outside the boundary, applying penalization of reward
-    if (_rewardOutboundPenalizationEnabled == true)
-    {
-      bool outOfBounds = false;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        {
-          if (action[d][i] > _actionUpperBounds[i]) outOfBounds = true;
-          if (action[d][i] < _actionLowerBounds[i]) outOfBounds = true;
-        }
-
-      if (outOfBounds == true)
-      {
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          reward[d] = reward[d] * _rewardOutboundPenalizationFactor;
-        _rewardOutboundPenalizationCount++;
-      }
-    }
-
     // For cooporative multi-agent model rewards are averaged
     if (_multiAgentRelationship == "Cooperation")
     {
-      float avgReward = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        avgReward += reward[d];
+      float avgReward = std::accumulate(reward.begin(), reward.end(), 0.);
       avgReward /= _problem->_agentsPerEnvironment;
       reward = std::vector<float>(_problem->_agentsPerEnvironment, avgReward);
     }
@@ -581,6 +560,13 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         expPolicy[d].actionProbabilities = actProb[d];
     }
+ 
+    if (isDefined(episode["Experiences"][expId], "Policy", "Available Actions"))
+    {
+      const auto availAct = episode["Experiences"][expId]["Policy"]["Available Actions"].get<std::vector<std::vector<bool>>>();
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        expPolicy[d].availableActions = availAct[d];
+    }
 
     // Storing policy information in replay memory
     _expPolicyVector.add(expPolicy);
@@ -640,26 +626,21 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       auto expTruncatedStateSequence = getTruncatedStateSequence(endId, d);
 
       // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
-      policy_t truncatedPolicy;
+      std::vector<policy_t> truncatedPolicy;
       if (_problem->_policiesPerEnvironment == 1)
-        truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+          retV[d] += calculateStateValue(_stateVector[endId][d]);
       else
-        truncatedPolicy = runPolicy({expTruncatedStateSequence}, d)[0];
+          retV[d] += calculateStateValue(_stateVector[endId][d], d);
 
       // Get value of trucated state
-      if (std::isfinite(truncatedPolicy.stateValue) == false)
-        KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
-
-      // Add Truncated state value
-      retV[d] += truncatedPolicy.stateValue;
+      if (std::isfinite(retV[d]) == false)
+        KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", retV[d]);
     }
 
     // For cooporative multi-agent model truncated state-values are averaged
     if (_multiAgentRelationship == "Cooperation")
     {
-      float avgRetV = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        avgRetV += retV[d];
+      float avgRetV = std::accumulate(retV.begin(), retV.end(), 0.);
       avgRetV /= _problem->_agentsPerEnvironment;
       retV = std::vector<float>(_problem->_agentsPerEnvironment, avgRetV);
     }
@@ -676,7 +657,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     }
   }
 
-  // Recale rewards
+  // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9);
@@ -689,7 +670,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
-    // Producing random (uniform) number for the selection of the experience
+// Producing random (uniform) number for the selection of the experience
     float x = _uniformGenerator->getRandomNumber();
 
     // Selecting experience
@@ -817,26 +798,20 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
         auto expTruncatedStateSequence = getTruncatedStateSequence(expId, d);
 
         // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
-        policy_t truncatedPolicy;
-        if (_problem->_policiesPerEnvironment == 1)
-          truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+        if(_problem->_policiesPerEnvironment == 1)
+          truncStateValue[d] = calculateStateValue(_stateVector[expId][d]);
         else
-          truncatedPolicy = runPolicy({expTruncatedStateSequence}, d)[0];
+          truncStateValue[d] = calculateStateValue(_stateVector[expId][d], d);
 
         // Get value of trucated state
-        if (std::isfinite(truncatedPolicy.stateValue) == false)
-          KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedPolicy.stateValue);
-
-        // Save truncated state value
-        truncStateValue[d] = truncatedPolicy.stateValue;
+        if (std::isfinite(truncStateValue[d]) == false)
+          KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncStateValue[d]);
       }
 
       // For cooporative multi-agent model truncated state-values are averaged
       if (_multiAgentRelationship == "Cooperation")
       {
-        float avgTruncV = 0.0f;
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          avgTruncV += truncStateValue[d];
+        float avgTruncV = std::accumulate(truncStateValue.begin(), truncStateValue.end(), 0.);
         avgTruncV /= _problem->_agentsPerEnvironment;
         truncStateValue = std::vector<float>(_problem->_agentsPerEnvironment, avgTruncV);
       }
@@ -846,9 +821,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   }
   if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
   {
-    int sumOffPolicyCountDelta = 0;
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      sumOffPolicyCountDelta += offPolicyCountDelta[d];
+    int sumOffPolicyCountDelta = std::accumulate(offPolicyCountDelta.begin(), offPolicyCountDelta.end(), 0.);
     offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment,sumOffPolicyCountDelta);
   }
 
@@ -930,9 +903,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
       std::vector<float> curV = _stateValueVector[curId];
       if (_multiAgentRelationship == "Cooperation")
       {
-        float avgV = 0.0f;
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          avgV += _stateValueVector[curId][d];
+        float avgV = std::accumulate(curV.begin(), curV.end(), 0.);
         avgV /= _problem->_agentsPerEnvironment;
         curV = std::vector<float>(_problem->_agentsPerEnvironment, avgV);
       }
@@ -1103,6 +1074,7 @@ void Agent::serializeExperienceReplay()
     std::vector<size_t> curActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> curUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].unboundedAction.size()));
     std::vector<std::vector<float>> curActProb(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].actionProbabilities.size()));
+    std::vector<std::vector<bool>> curAvailAct(_problem->_agentsPerEnvironment, std::vector<bool>(_curPolicyVector[0][0].availableActions.size()));
 
     for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
     {
@@ -1117,6 +1089,7 @@ void Agent::serializeExperienceReplay()
       curActionIdx[j] = _curPolicyVector[i][j].actionIndex;
       curUnboundedAct[j] = _curPolicyVector[i][j].unboundedAction;
       curActProb[j] = _curPolicyVector[i][j].actionProbabilities;
+      curAvailAct[j] = _curPolicyVector[i][j].availableActions;
     }
     stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = expStateValue;
     stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"] = expDistributionParameter;
@@ -1129,6 +1102,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Current Policy"]["Action Index"] = curActionIdx;
     stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = curUnboundedAct;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"] = curActProb;
+    stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"] = curAvailAct;
   }
 
   // If results directory doesn't exist, create it
@@ -1212,6 +1186,7 @@ void Agent::deserializeExperienceReplay()
       curPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"][d].get<size_t>();
       curPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"][d].get<std::vector<float>>();
       curPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"][d].get<std::vector<float>>();
+      curPolicy[d].availableActions = stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"][d].get<std::vector<bool>>();
     }
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(curPolicy);
@@ -1271,7 +1246,7 @@ void Agent::printGenerationAfter()
 
       _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
       _k->_logger->logInfo("Normal", " + Best Average Reward for agent: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
     }
 

@@ -84,8 +84,10 @@ void dVRACER::trainPolicy()
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
 
+  std::vector<policy_t> policyInfo = getPolicyInfo(miniBatch);
+  
   // Running policy NN on the Minibatch experiences
-  const auto policyInfo = runPolicy(stateSequence);
+  runPolicy(stateSequence, policyInfo);
 
   // Using policy information to update experience's metadata
   updateExperienceMetadata(miniBatch, policyInfo);
@@ -217,13 +219,20 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx)
+float dVRACER::calculateStateValue(const std::vector<float> &state, size_t policyIdx)
+{
+    // Forward the neural network for this state to get the state value
+    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation( {{state}} );
+    return evaluation[0][0];
+}
+
+void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t>& policyInfo, size_t policyIdx)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
-
-  // Storage for policy
-  std::vector<policy_t> policyVector(batchSize);
+ 
+  // Preparing storage for results
+  policyInfo.resize(batchSize);
 
   //inference operation
   if (batchSize == 1)
@@ -231,7 +240,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
 
     // Getting state value
-    policyVector[0].stateValue = evaluation[0][0];
+    policyInfo[0].stateValue = evaluation[0][0];
 
     // Storage for action probabilities
     float maxq = -korali::Inf;
@@ -258,6 +267,9 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
     {
       // Computing e^(Q(s,a_i) - maxq)
       float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+      if (policyInfo[0].availableActions.size() > 0)
+        if( policyInfo[0].availableActions[i] == false ) expCurQVal = 0.;
+
 
       // Computing Sum_i(e^Q(s,a_i)/e^maxq)
       sumExpQVal += expCurQVal;
@@ -271,16 +283,17 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
 
     // Normalizing action probabilities
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    {
       pActions[i] *= invSumExpQVal;
+    }
 
     // Set inverse temperature parameter
     qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
 
     // Storing the action probabilities into the policy
-    policyVector[0].actionProbabilities = pActions;
-    policyVector[0].distributionParameters = qValAndInvTemp;
+    policyInfo[0].actionProbabilities = pActions;
+    policyInfo[0].distributionParameters = qValAndInvTemp;
 
-    return policyVector;
   }
   else //training operation
   {
@@ -299,7 +312,17 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
       for (size_t b = 0; b < evaluation.size(); b++)
       {
         // Getting state value
-        policyVector[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
+        policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
+        if(isfinite(policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue) == false)
+        {
+            for(auto& p : stateBatchDistributed)
+                for(auto& q : p)
+                    for(auto& r : q)
+                        for(auto& s :r )
+            printf("sbd %f\n", s);
+            KORALI_LOG_ERROR("XXX");
+        }
+
         // Storage for action probabilities
         float maxq = -korali::Inf;
         std::vector<float> qValAndInvTemp(_policyParameterCount);
@@ -313,7 +336,7 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
         {
           // Computing Q(s,a_i)
           qValAndInvTemp[i] = evaluation[b][1 + i];
-
+ 
           // Extracting max Q(s,a_i)
           if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
         }
@@ -325,6 +348,8 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
         {
           // Computing e^(Q(s,a_i) - maxq)
           float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
+          if (policyInfo[b].availableActions.size() > 0)
+              if( policyInfo[b].availableActions[i] == false ) expCurQVal = 0.;
 
           // Computing Sum_i(e^Q(s,a_i)/e^maxq)
           sumExpQVal += expCurQVal;
@@ -338,19 +363,41 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
 
         // Normalizing action probabilities
         for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-          pActions[i] *= invSumExpQVal;
+            pActions[i] *= invSumExpQVal; 
 
         // Set inverse temperature parameter
         qValAndInvTemp[_problem->_possibleActions.size()] = invTemperature;
 
         // Storing the action probabilities into the policy
-        policyVector[b * _problem->_policiesPerEnvironment + p].actionProbabilities = pActions;
-        policyVector[b * _problem->_policiesPerEnvironment + p].distributionParameters = qValAndInvTemp;
+        policyInfo[b * _problem->_policiesPerEnvironment + p].actionProbabilities = pActions;
+        policyInfo[b * _problem->_policiesPerEnvironment + p].distributionParameters = qValAndInvTemp;
       }
     }
-    return policyVector;
   }
 }
+
+std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<size_t> &miniBatch) const
+{
+  // Getting mini batch size
+  const size_t miniBatchSize = miniBatch.size();
+
+  // Allocating policy sequence vector
+  std::vector<policy_t> policyInfo(miniBatchSize * _problem->_agentsPerEnvironment);
+
+#pragma omp parallel for
+  for (size_t b = 0; b < miniBatchSize; b++)
+  {
+    // Getting current expId
+    const size_t expId = miniBatch[b];
+
+    // Filling policy information
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+       policyInfo[b * _problem->_agentsPerEnvironment + d] = _expPolicyVector[expId][d];
+  }
+
+  return policyInfo;
+}
+
 
 knlohmann::json dVRACER::getAgentPolicy()
 {

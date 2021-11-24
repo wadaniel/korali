@@ -74,6 +74,11 @@ struct policy_t
   * @brief [Discrete] Stores the action probabilities of the categorial distribution.
   */
   std::vector<float> actionProbabilities;
+ 
+  /**
+  * @brief [Discrete] Flags the actions that are available at the current state.
+  */
+  std::vector<bool> availableActions;
 
   /**
    * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
@@ -670,13 +675,20 @@ class Agent : public Solver
    * @brief Resets time sequence within the agent, to forget past actions from other episodes
    */
   void resetTimeSequence();
+ 
+  /**
+   * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
+   * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @return A JSON object containing the information produced by the policies given the current state series
+   */
+  virtual float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0) = 0;
+  virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t>& policy, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Calculates the starting experience index of the time sequence for the selected experience

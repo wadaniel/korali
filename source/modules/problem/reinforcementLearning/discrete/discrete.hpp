@@ -32,10 +32,6 @@ class Discrete : public ReinforcementLearning
   * @brief The set of all possible actions.
   */
    std::vector<std::vector<float>> _possibleActions;
-  /**
-  * @brief [Internal Use] The maximum number of actions an agent can take.
-  */
-   size_t _actionCount;
   
  
   /**

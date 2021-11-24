@@ -55,6 +55,7 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 495
 e["Problem"]["Policy Testing Episodes"] = 30
 e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Agents Per Environment"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -84,7 +85,7 @@ e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= [0.1]
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= 0.3
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = float(args.learningRate)
@@ -115,7 +116,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
 ### Setting file output configuration
 

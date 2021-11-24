@@ -91,7 +91,9 @@ class VRACER : public Continuous
    */
   void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
 
-  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0) override;
+  float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) override;
+
+  void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t>& policy, size_t policyIdx = 0) override;
 
   /**
    * @brief [Statistics] Keeps track of the max policy mu of the current minibatch for each action variable

@@ -143,7 +143,7 @@ def agent(s, env):
  env.reset()
  
  states = []
-
+ availAct = []
 
  if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
    for ag in env.agents:
@@ -155,6 +155,7 @@ def agent(s, env):
       state = state.reshape(147)
       state = state.tolist()
       states.append(state)
+      availAct.append([True, True, True, True, False])
  else:
    for ag in env.agents:
       state = env.observe(ag)
@@ -163,6 +164,7 @@ def agent(s, env):
       states.append(state)
 
  
+ s["Available Actions"] = availAct
  s["State"] = states
  
  step = 0

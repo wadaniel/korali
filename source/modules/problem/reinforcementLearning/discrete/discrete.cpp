@@ -32,14 +32,6 @@ void Discrete::setConfiguration(knlohmann::json& js)
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
- if (isDefined(js, "Action Count"))
- {
- try { _actionCount = js["Action Count"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ discrete ] \n + Key:    ['Action Count']\n%s", e.what()); } 
-   eraseValue(js, "Action Count");
- }
-
  if (isDefined(js, "Possible Actions"))
  {
  try { _possibleActions = js["Possible Actions"].get<std::vector<std::vector<float>>>();
@@ -72,7 +64,6 @@ void Discrete::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Possible Actions"] = _possibleActions;
-   js["Action Count"] = _actionCount;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  ReinforcementLearning::getConfiguration(js);

@@ -33,9 +33,17 @@ class dVRACER : public Discrete
 {
   public: 
   /**
-  * @brief [Internal Use] Standard deviation of the actions in the minibatch.
+  * @brief Initial inverse temperature of the softmax distribution. Large values lead to a distribution that is more concentrated around the action with highes Q-value estimate.
   */
-   std::vector<float> _statisticsAverageActionSigmas;
+   float _initialInverseTemperature;
+  /**
+  * @brief [Internal Use] Measure of unlikeability for categorial data, approaches 1.0 for uniform behavior and 0. for deterministic case.
+  */
+   float _statisticsAverageInverseTemperature;
+  /**
+  * @brief [Internal Use] Measure of unlikeability for categorial data, approaches 1.0 for uniform behavior and 0. for deterministic case.
+  */
+   float _statisticsAverageActionUnlikeability;
   
  
   /**

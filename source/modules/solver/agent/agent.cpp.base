@@ -560,7 +560,11 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
     {
       const auto availAct = episode["Experiences"][expId]["Policy"]["Available Actions"].get<std::vector<std::vector<bool>>>();
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      {
         expPolicy[d].availableActions = availAct[d];
+        if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
+            KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
+      }
     }
 
     // Storing policy information in replay memory

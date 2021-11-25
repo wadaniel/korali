@@ -1,27 +1,19 @@
-for E in Swimmer-v2;
-do
-    for D in "Clipped Normal";
-    do
-        for layers in 5;
+        for layers in 1 2 3;
         do
-            for units in 300;
+            for units in 10 20 50;
             do
-                for lr in 0.0005;
-                do
-                    for batch in 512;
+                    for batch in 4 16 32;
                     do
-                        for epoch in 250;
+                        for epoch in 100;
                         do
-                            for p in 0.0;
+                            for p in 0.05;
                             do
-                                for size in 2500000;
+                                for size in 500;
                                 do
-                                    for ws in 0.75; #1.0
+                                    for ws in 2.0 4.0;
                                     do
 
 
-                                        export ENV=$E
-                                        export DIS="$D"
                                         export LRS=$lr
                                         export BATCH=$batch
                                         export EPOCH=$epoch
@@ -30,7 +22,7 @@ do
                                         export P=$p
                                         export SIZE=$size
                                         export WS=$ws
-                                        ./sbatch-grid-search-openAI.sh
+                                        ./sbatch-grid-search-cartpole.sh
                                     done;
                                 done;
                             done;
@@ -38,6 +30,3 @@ do
                     done;
                 done;
             done;
-        done;
-    done;
-done

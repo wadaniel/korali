@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH --job-name="surr_openAIGym_VRACER"
 #SBATCH --output=surr_openAIGym_VRACER_%j.out
-#SBATCH --time=15:00:00
-#SBATCH --nodes=6
+#SBATCH --time=12:00:00
+#SBATCH --nodes=3
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929
@@ -46,13 +46,12 @@ lrRL=0.0001
 # surrogate and korali arguments
 lr=0.0005
 batch=512
-epoch=50
+epoch=4
 layers=5
 units=512
 p=0.0
-ws=0.75
-#0.9
-conf=0.95
+ws=0.9
+conf=1.0000
 expBetPolUp=1
 iniRetrain=5000000
 retrain=500000
@@ -67,7 +66,7 @@ pushd ..
 
 cat run-vracer-openAIgym.py
 
-#expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env/$SLURM_JOB_ID
+#expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env
 expDir=$SCRATCH/Surrogate_OpenAIGym_VRACER/$env
 mkdir -p $expDir
 cp run-vracer-openAIgym.py $expDir

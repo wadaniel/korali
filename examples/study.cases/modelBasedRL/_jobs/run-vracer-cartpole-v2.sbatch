@@ -2,7 +2,7 @@
 #SBATCH --job-name="run-vracer-cartpole-v2"
 #SBATCH --output=run-vracer-cartpole-v2_%j.out
 #SBATCH --account=s929
-#SBATCH --time=04:00:00
+#SBATCH --time=02:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=6
@@ -23,7 +23,7 @@ popd
 
 pushd $expDir
 
-srun -n 6 python3 run-vracer-cartpole-v2.py --epoch 100 --batch 4 --lr 1e-2 --ws 4.0 --hid 10 --iniRetrain 500 --retrain 5000 --trRewTh 500 --tarAvRew 470 --launchNum 2 --dumpBestTrajectory --conf 0.9700 --m "TestFinalNet10Ini500Re5000_u1.0_Results_0.9700_1/" --expBetPolUp 1.0 --testFreq 1
+srun -n 6 python3 run-vracer-cartpole-v2.py --epoch 100 --batch 4 --lr 1e-2 --ws 4.0 --hid 10 --iniRetrain 500 --retrain 5000 --trRewTh 500 --tarAvRew 0 --launchNum 1 --dumpBestTrajectory --conf 1.0000 --m "TestFinalNet10Ini500Re5000_u1.0_Results_1.0000_1/" --expBetPolUp 1.0 --testFreq 1 --maxPolUp 50000 --maxGen 1000000
 
 popd
 

@@ -1,7 +1,17 @@
 #!/bin/bash -l
 
-source ../settings_openAIgym.sh
-
+ENV="Swimmer-v2"
+DIS="Clipped Normal"
+LRS=0.001
+BATCH=512
+EPOCH=100
+LAYERS=3
+UNITS=512
+P=0.0
+SIZE=10000000
+#65526
+WS=1.0
+LOSS="MSE"
 echo $ENV
 echo $DIS
 echo $LRS
@@ -12,13 +22,14 @@ echo $UNITS
 echo $P
 echo $SIZE
 echo $WS
+echo $LOSS
 
-cat > rungs.sh <<EOF
+cat > rungs.sbatch <<EOF
 #!/bin/bash -l
 #SBATCH --job-name="OpenAI_grid_search_$ENV"
 #SBATCH --output=OpenAI_grid_search_$ENV_%j.out
 #SBATCH --error=OpenAI_grid_search_$ENV_err_%j.out
-#SBATCH --time=13:00:00
+#SBATCH --time=06:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
@@ -27,12 +38,12 @@ cat > rungs.sh <<EOF
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-RUNPATH=$SCRATCH/OpenAI_grid_search/$ENV
+RUNPATH=$SCRATCH/OpenAI_grid_search/$ENV/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH
 
 pushd ..
 
-#cat model_openAIgym/model.py
+#cat _model_openAIgym/model.py
 
 cp run-vracer-openAIgym.py \$RUNPATH
 cp settings_openAIgym.sh \$RUNPATH
@@ -42,11 +53,12 @@ popd
 
 pushd \$RUNPATH/_model_openAIgym
 
-OMP_NUM_THREADS=12 srun python3 model.py --env "$ENV" --dis "$DIS" --lr $LRS --batch $BATCH --epoch $EPOCH --layers $LAYERS --units $UNITS --p $P --size $SIZE --ws $WS
+OMP_NUM_THREADS=12 srun python3 model.py --env "$ENV" --dis "$DIS" --loss "$LOSS" --lr $LRS --batch $BATCH --epoch $EPOCH --layers $LAYERS --units $UNITS --p $P --size $SIZE --ws $WS
 
 popd
 
 date
 EOF
 
-sbatch rungs.sh
+sbatch rungs.sbatch
+

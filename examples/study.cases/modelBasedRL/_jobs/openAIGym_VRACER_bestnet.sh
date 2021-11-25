@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH --job-name="surr_openAIGym_VRACER"
 #SBATCH --output=surr_openAIGym_VRACER_%j.out
-#SBATCH --time=15:00:00
-#SBATCH --nodes=6
+#SBATCH --time=12:00:00
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929
@@ -46,22 +46,23 @@ lrRL=0.0001
 # surrogate and korali arguments
 lr=0.0005
 batch=512
-epoch=50
+epoch=2
 layers=5
 units=512
 p=0.0
-ws=0.75
-#0.9
-conf=0.95
+ws=0.9
+conf=0.7000
 expBetPolUp=1
-iniRetrain=5000000
-retrain=500000
+iniRetrain=100000
+retrain=2000000
 #500000
-launchNum=1
-testFreq=100
-maxExp=12000000
+launchNum=4
+testFreq=10
+maxExp=2000000
 #15000000
-m="ThesisFinalNet5x512Ini5000000Re500000_u1.0_Results_${conf}_1"
+#useretrainednet=True
+pathretrainednet="/scratch/snx3000/jclapesr/Surrogate_OpenAIGym_VRACER/Swimmer-v2/best_trained_net.pth"
+m="ThesisFinalBestTwoConf0.70Net5x512Ini100000Re2000000_u1.0_Results_${conf}_${SLURM_JOB_ID}"
 
 pushd ..
 
@@ -77,7 +78,7 @@ popd
 
 pushd $expDir
 
-OMP_NUM_THREADS=12 srun python3 run-vracer-openAIgym.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lrRL $lrRL --lr $lr --batch $batch --epoch $epoch --layers $layers --units $units --p $p --ws $ws --conf $conf --m "$m" --maxExp $maxExp --testFreq $testFreq --dumpBestTrajectory --iniRetrain $iniRetrain --retrain $retrain --expBetPolUp $expBetPolUp --launchNum $launchNum
+OMP_NUM_THREADS=12 srun python3 run-vracer-openAIgym.py --env $env --dis "$dis" --l2 $l2 --opt $opt --lrRL $lrRL --lr $lr --batch $batch --epoch $epoch --layers $layers --units $units --p $p --ws $ws --conf $conf --m "$m" --maxExp $maxExp --testFreq $testFreq --dumpBestTrajectory --iniRetrain $iniRetrain --retrain $retrain --expBetPolUp $expBetPolUp --launchNum $launchNum --useretrainednet --pathretrainednet "${pathretrainednet}"
 resdir=$(ls -d _result_vracer_*)
 
 python3 -m korali.rlview --dir $resdir --output vracer.png

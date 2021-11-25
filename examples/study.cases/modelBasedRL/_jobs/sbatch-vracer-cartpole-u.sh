@@ -6,6 +6,7 @@ echo $CONF
 echo $INI
 echo $RE
 echo $M
+echo $U
 
 cat > run.sh <<EOF
 #!/bin/bash -l
@@ -36,7 +37,7 @@ popd
 
 pushd \$RUNPATH
 
-srun -n 6 python3 run-vracer-cartpole.py --epoch 100 --batch 4 --lr 1e-2 --ws 4.0 --hid 10 --iniRetrain $INI --retrain $RE --trRewTh 500 --tarAvRew 0 --launchNum 10 --maxGen 1000000 --dumpBestTrajectory --conf $CONF --m "${M}" --expBetPolUp 1.0 --testFreq 1 --maxPolUp 100000
+srun -n 6 python3 run-vracer-cartpole.py --epoch 100 --batch 4 --lr 1e-2 --ws 4.0 --hid 10 --iniRetrain $INI --retrain $RE --trRewTh 500 --tarAvRew 0 --launchNum 10 --maxGen 1000000 --dumpBestTrajectory --conf $CONF --m "${M}" --expBetPolUp $U --testFreq 1 --maxPolUp 100000
 
 popd
 

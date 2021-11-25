@@ -1073,9 +1073,7 @@ void Agent::serializeExperienceReplay()
     std::vector<size_t> curActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> curUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].unboundedAction.size()));
     std::vector<std::vector<float>> curActProb(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].actionProbabilities.size()));
-    printf("X\n");
     std::vector<std::vector<bool>> curAvailAct(_problem->_agentsPerEnvironment, std::vector<bool>(_curPolicyVector[0][0].availableActions.size()));
-    printf("Y\n");
 
     for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
     {
@@ -1090,7 +1088,6 @@ void Agent::serializeExperienceReplay()
       curActionIdx[j] = _curPolicyVector[i][j].actionIndex;
       curUnboundedAct[j] = _curPolicyVector[i][j].unboundedAction;
       curActProb[j] = _curPolicyVector[i][j].actionProbabilities;
-      printf("A\n");
       curAvailAct[j] = _curPolicyVector[i][j].availableActions;
     }
     stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = expStateValue;
@@ -1105,7 +1102,6 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = curUnboundedAct;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"] = curActProb;
     stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"] = curAvailAct;
-    printf("Q\n");
   }
 
   // If results directory doesn't exist, create it

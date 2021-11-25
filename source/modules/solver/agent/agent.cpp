@@ -13,14 +13,16 @@ namespace solver
 void Agent::initialize()
 {
   _variableCount = _k->_variables.size();
-
+  
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
+  // Formatting reward history for each agent
+  _trainingRewardHistory.resize(_problem->_agentsPerEnvironment);
+  
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
-  _trainingRewardHistory.resize(_problem->_agentsPerEnvironment);
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
@@ -409,9 +411,10 @@ void Agent::attendAgent(size_t agentId)
       if (_agents[agentId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;
-        _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
         _testingBestReward = _agents[agentId]["Best Testing Reward"].get<float>();
         _testingWorstReward = _agents[agentId]["Worst Testing Reward"].get<float>();
+        _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
+        _testingAverageRewardHistory.push_back(_testingAverageReward);
 
         // If the average testing reward is better than the previous best, replace it
         // and store hyperparameters as best so far.
@@ -1329,6 +1332,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Training", "Experience History");
  }
 
+ if (isDefined(js, "Testing", "Average Reward History"))
+ {
+ try { _testingAverageRewardHistory = js["Testing"]["Average Reward History"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Average Reward History']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Average Reward History");
+ }
+
  if (isDefined(js, "Training", "Average Reward"))
  {
  try { _trainingAverageReward = js["Training"]["Average Reward"].get<std::vector<float>>();
@@ -1907,6 +1918,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Current Episode"] = _currentEpisode;
    js["Training"]["Reward History"] = _trainingRewardHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
+   js["Testing"]["Average Reward History"] = _testingAverageRewardHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;
    js["Training"]["Last Reward"] = _trainingLastReward;
    js["Training"]["Best Reward"] = _trainingBestReward;

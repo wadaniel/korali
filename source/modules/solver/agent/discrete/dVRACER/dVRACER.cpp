@@ -312,14 +312,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         // Getting state value
         policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
         if (isfinite(policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue) == false)
-        {
-          for (auto &p : stateBatchDistributed)
-            for (auto &q : p)
-              for (auto &r : q)
-                for (auto &s : r)
-                  printf("sbd %f\n", s);
-          KORALI_LOG_ERROR("XXX");
-        }
+          KORALI_LOG_ERROR("State value not finite (%f) in policy evaluation during training step.", policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue);
 
         // Storage for action probabilities
         float maxq = -korali::Inf;

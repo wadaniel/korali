@@ -201,14 +201,6 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief If enabled, the learner penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
-  */
-   int _rewardOutboundPenalizationEnabled;
-  /**
-  * @brief The factor (f) by which te reward is scaled down. R = f * R
-  */
-   float _rewardOutboundPenalizationFactor;
-  /**
   * @brief Specifies whether we are in an individual setting or collaborator setting.
   */
    std::string _multiAgentRelationship;
@@ -344,10 +336,6 @@ class Agent : public Solver
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
    std::vector<float> _rewardRescalingSumSquaredRewards;
-  /**
-  * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
-  */
-   size_t _rewardOutboundPenalizationCount;
   /**
   * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */

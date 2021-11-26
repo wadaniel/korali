@@ -797,7 +797,9 @@ void TMCMC::setBurnIn()
 void TMCMC::finalize()
 {
   // Setting results
-  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
+  (*_k)["Results"]["Posterior Sample Database"] = _sampleDatabase;
+  (*_k)["Results"]["Posterior Samples LogPrior Database"] = _sampleLogPriorDatabase;
+  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = _sampleLogLikelihoodDatabase;
   (*_k)["Results"]["Log Evidence"] = _currentAccumulatedLogEvidence;
 }
 

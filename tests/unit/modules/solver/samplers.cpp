@@ -836,12 +836,12 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["LogEvidence"] = "Not a Number";
+   samplerJs["CurrentAccumulatedLogEvidence"] = "Not a Number";
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["LogEvidence"] = 1.0;
+   samplerJs["CurrentAccumulatedLogEvidence"] = 1.0;
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;

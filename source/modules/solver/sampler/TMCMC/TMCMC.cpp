@@ -90,7 +90,7 @@ void TMCMC::setInitialConfiguration()
 
   // Init
   _annealingExponent = 0.0;
-  _logEvidence = 0.0;
+  _currentAccumulatedLogEvidence = 0.0;
   _coefficientOfVariation = 0.0;
   _maxLoglikelihood = -Inf;
   _chainCount = _populationSize;
@@ -294,7 +294,7 @@ void TMCMC::processGeneration()
   double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
   for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight;
 
-  _logEvidence += log(sum_weight) + loglikemax - log(_populationSize);
+  _currentAccumulatedLogEvidence += log(sum_weight) + loglikemax - log(_populationSize);
 
   /* Sample candidate selections based on database entries */
   std::vector<unsigned int> numselections(_populationSize);
@@ -798,6 +798,7 @@ void TMCMC::finalize()
 {
   // Setting results
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
+  (*_k)["Results"]["Log Evidence"] = _currentAccumulatedLogEvidence;
 }
 
 void TMCMC::printGenerationBefore()
@@ -809,7 +810,7 @@ void TMCMC::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
-  _k->_logger->logInfo("Normal", "log of accumulated Plausibility Weights: %.3f\n", _logEvidence);
+  _k->_logger->logInfo("Normal", "log of accumulated evidence: %.3f\n", _currentAccumulatedLogEvidence);
   _k->_logger->logInfo("Detailed", "max logLikelihood: %.3f\n", _maxLoglikelihood);
   _k->_logger->logInfo("Detailed", "Number of finite Evaluations (prior / likelihood): (%zu / %zu)\n", _numFinitePriorEvaluations, _numFiniteLikelihoodEvaluations);
 
@@ -1070,12 +1071,12 @@ void TMCMC::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Accepted Samples Count");
  }
 
- if (isDefined(js, "LogEvidence"))
+ if (isDefined(js, "Current Accumulated LogEvidence"))
  {
- try { _logEvidence = js["LogEvidence"].get<double>();
+ try { _currentAccumulatedLogEvidence = js["Current Accumulated LogEvidence"].get<double>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['LogEvidence']\n%s", e.what()); } 
-   eraseValue(js, "LogEvidence");
+ { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['Current Accumulated LogEvidence']\n%s", e.what()); } 
+   eraseValue(js, "Current Accumulated LogEvidence");
  }
 
  if (isDefined(js, "Proposals Acceptance Rate"))
@@ -1394,7 +1395,7 @@ void TMCMC::getConfiguration(knlohmann::json& js)
    js["Num Finite Prior Evaluations"] = _numFinitePriorEvaluations;
    js["Num Finite Likelihood Evaluations"] = _numFiniteLikelihoodEvaluations;
    js["Accepted Samples Count"] = _acceptedSamplesCount;
-   js["LogEvidence"] = _logEvidence;
+   js["Current Accumulated LogEvidence"] = _currentAccumulatedLogEvidence;
    js["Proposals Acceptance Rate"] = _proposalsAcceptanceRate;
    js["Selection Acceptance Rate"] = _selectionAcceptanceRate;
    js["Covariance Matrix"] = _covarianceMatrix;

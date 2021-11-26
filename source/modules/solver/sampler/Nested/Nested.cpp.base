@@ -144,8 +144,6 @@ void __className__::setInitialConfiguration()
   {
     initEllipseVector();
   }
-
-  (*_k)["Results"]["Posterior Samples"] = {};
 }
 
 void __className__::runGeneration()
@@ -1019,6 +1017,7 @@ void __className__::finalize()
   if (_k->_currentGeneration <= 1) return;
   if (_addLivePoints == true) consumeLiveSamples();
 
+  (*_k)["Results"]["LogEvidence"] = _logEvidence;
   generatePosterior();
 
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, std::sqrt(_logEvidenceVar));

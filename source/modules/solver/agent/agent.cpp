@@ -990,7 +990,7 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
       for (size_t t = 0; t < T; t++)
       {
         size_t curId = startId + t;
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[curId][d].begin(), _stateVector[curId][d].end());
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t] = _stateVector[curId][d];
         if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin()+_problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
       }
     }

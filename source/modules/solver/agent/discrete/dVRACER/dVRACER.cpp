@@ -322,6 +322,9 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
     for (size_t b = 0; b < batchSize; b++)
     {
       stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]); 
+      printf("%zu l\n", stateBatchDistributed[b % _problem->_policiesPerEnvironment].size());
+      printf("%zu m\n", stateBatch[b].size());
+      printf("%zu n\n", stateBatch[b][0].size());
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)

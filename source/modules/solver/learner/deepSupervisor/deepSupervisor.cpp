@@ -144,7 +144,13 @@ void DeepSupervisor::runGeneration()
 
     // If using direct gradient, backward propagating the gradients directly through the training neural network
     if (_lossFunction == "Direct Gradient")
+    {
+      for (const auto &vec : _problem->_solutionData)
+        for (const float g : vec)
+          if (std::isfinite(g) == false)
+            KORALI_LOG_ERROR("Backpropagating non-finite gradient through NN."); //TODO: move check to optimizer
       _neuralNetwork->backward(_problem->_solutionData);
+    }
 
     // Getting hyperparameter gradients
     auto nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
@@ -158,8 +164,16 @@ void DeepSupervisor::runGeneration()
         nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
     }
 
+    for (const float g : nnHyperparameterGradients)
+      if (std::isfinite(g) == false)
+        KORALI_LOG_ERROR("Backpropagation returned non-finite gradient for NN update."); //TODO: move check to optimizer
+
     // Passing hyperparameter gradients through an optimizer update
     _optimizer->processResult(0.0f, nnHyperparameterGradients);
+
+    for (const float v : _optimizer->_currentValue)
+      if (std::isfinite(v) == false)
+        KORALI_LOG_ERROR("Optimizer returning non-finite hyperparam."); //TODO: move check to optimizer
 
     // Getting new set of hyperparameters from optimizer
     _neuralNetwork->setHyperparameters(_optimizer->_currentValue);

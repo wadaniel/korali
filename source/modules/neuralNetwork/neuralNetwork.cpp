@@ -400,17 +400,21 @@ std::vector<float> &NeuralNetwork::getHyperparameterGradients(const size_t batch
 
 std::vector<float> NeuralNetwork::getHyperparameters()
 {
-  auto params = std::vector<float>(_hyperparameterCount);
+  auto hyperparameters = std::vector<float>(_hyperparameterCount);
 
   size_t layerCount = _pipelines[0][0]._layerVector.size();
 
   for (size_t i = 0; i < layerCount; i++)
   {
     auto index = _pipelines[0][0]._layerVector[i]->_hyperparameterIndex;
-    _pipelines[0][0]._layerVector[i]->getHyperparameters(&params[index]);
+    _pipelines[0][0]._layerVector[i]->getHyperparameters(&hyperparameters[index]);
   }
 
-  return params;
+  for (const float h : hyperparameters)
+    if (std::isfinite(h) == false)
+      KORALI_LOG_ERROR("Returning non-finite hyperparameters"); //TODO: move check to optimizer
+
+  return hyperparameters;
 }
 
 void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters)
@@ -419,8 +423,8 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
 
   for (const float h : hyperparameters)
-  if(std::isfinite(h) == false)
-        KORALI_LOG_ERROR("Assigning non-finite value to hyperparameters"); //TODO: move check to optimizer
+    if (std::isfinite(h) == false)
+      KORALI_LOG_ERROR("Assigning non-finite value to hyperparameters"); //TODO: move check to optimizer
 
   size_t layerCount = _pipelines[0][0]._layerVector.size();
 

@@ -109,12 +109,13 @@ void dVRACER::trainPolicy()
 void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 {
   const size_t miniBatchSize = miniBatch.size();
-  
+
   // Init statistics
   _statisticsAverageInverseTemperature = 0.;
   _statisticsAverageActionUnlikeability = 0.;
 
-#pragma omp parallel for reduction(+: _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
+#pragma omp parallel for reduction(+ \
+                                   : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
@@ -224,14 +225,14 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     }
 
     // Update statistics
-    for(size_t p = 0; p < _problem->_policiesPerEnvironment; ++p)
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; ++p)
     {
-        _statisticsAverageInverseTemperature += (curPolicy[p].distributionParameters[_problem->_actionCount]/(float)_problem->_policiesPerEnvironment);
-        
-        float unlikeability = 1.0;
-        for(size_t i = 0; i < _problem->_actionCount; ++i)
-            unlikeability -= curPolicy[p].actionProbabilities[i] * curPolicy[p].actionProbabilities[i];
-        _statisticsAverageActionUnlikeability += (unlikeability/(float)_problem->_policiesPerEnvironment);
+      _statisticsAverageInverseTemperature += (curPolicy[p].distributionParameters[_problem->_actionCount] / (float)_problem->_policiesPerEnvironment);
+
+      float unlikeability = 1.0;
+      for (size_t i = 0; i < _problem->_actionCount; ++i)
+        unlikeability -= curPolicy[p].actionProbabilities[i] * curPolicy[p].actionProbabilities[i];
+      _statisticsAverageActionUnlikeability += (unlikeability / (float)_problem->_policiesPerEnvironment);
     }
   }
 
@@ -321,10 +322,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]); 
-      printf("%zu l\n", stateBatchDistributed[b % _problem->_policiesPerEnvironment].size());
-      printf("%zu m\n", stateBatch[b].size());
-      printf("%zu n\n", stateBatch[b][0].size());
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
@@ -339,7 +337,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         {
           serializeExperienceReplay();
           _k->saveState();
-          for(float e : evaluation[b]) printf("e: %f\n", e);
+          for (float e : evaluation[b]) printf("e: %f\n", e);
           KORALI_LOG_ERROR("State value not finite (%f) in policy evaluation during training step.", policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue);
         }
 

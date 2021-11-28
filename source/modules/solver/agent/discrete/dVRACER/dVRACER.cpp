@@ -210,7 +210,11 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERCurrentBeta[d]) * klGrad[i];
 
         if (std::isfinite(gradientLoss[i]) == false)
+        {
+          serializeExperienceReplay();
+          _k->saveState();
           KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
+        }
       }
       // Set Gradient of Loss as Solution
       if (_problem->_policiesPerEnvironment == 1)
@@ -317,7 +321,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]); 
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
@@ -329,7 +333,12 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         // Getting state value
         policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
         if (isfinite(policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue) == false)
+        {
+          serializeExperienceReplay();
+          _k->saveState();
+          for(float e : evaluation[b]) printf("e: %f\n", e);
           KORALI_LOG_ERROR("State value not finite (%f) in policy evaluation during training step.", policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue);
+        }
 
         // Storage for action probabilities
         float maxq = -korali::Inf;

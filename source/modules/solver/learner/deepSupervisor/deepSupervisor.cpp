@@ -158,10 +158,10 @@ void DeepSupervisor::runGeneration()
         nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
     }
 
-    // Passing hyperparameter gradients through an ADAM update
+    // Passing hyperparameter gradients through an optimizer update
     _optimizer->processResult(0.0f, nnHyperparameterGradients);
 
-    // Getting new set of hyperparameters from Adam
+    // Getting new set of hyperparameters from optimizer
     _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
 }

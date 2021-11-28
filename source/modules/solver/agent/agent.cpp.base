@@ -977,22 +977,21 @@ std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSeq
     // Calculating time sequence length
     const size_t T = expId - startId + 1;
 
-    // Resizing state sequence vector to the correct time sequence length
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
-
-    // Now adding states (and actions, if required)
-    for (size_t t = 0; t < T; t++)
     {
-      size_t curId = startId + t;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+      // Resizing state sequence vector to the correct time sequence length
+      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T, std::vector<float>(stateSize)); //TODO rearrange order, then no reshuffling required in runPolicy()
+      
+      // Now adding states (and actions, if required)
+      for (size_t t = 0; t < T; t++)
       {
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(stateSize);
+        size_t curId = startId + t;
         stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[curId][d].begin(), _stateVector[curId][d].end());
-        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _actionVector[curId][d].begin(), _actionVector[curId][d].end());
+        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin()+_problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
       }
     }
   }
+  
   return stateSequence;
 }
 

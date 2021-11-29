@@ -260,26 +260,26 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-float VRACER::calculateStateValue(const std::vector<float> &state, size_t policyIdx)
+float VRACER::calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx)
 {
   // Forward the neural network for this state to get the state value
-  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({std::vector<std::vector<float>>{state}});
+  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({stateSequence});
   return evaluation[0][0];
 }
 
-void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
+void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
 {
   // Getting batch size
-  size_t batchSize = stateBatch.size();
+  size_t batchSize = stateSequenceBatch.size();
 
   // Preparing storage for results
   policyInfo.resize(batchSize);
 
-  // inference operation
+  // inference operation (getAction)
   if (batchSize == 1)
   {
     // Forward the neural network for this state
-    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
+    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
     policyInfo[0].stateValue = evaluation[0][0];
     policyInfo[0].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
@@ -290,7 +290,7 @@ void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &state
     std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)

@@ -24,7 +24,7 @@ parser.add_argument(
      required=False)   
 parser.add_argument(
     '--rnnType',
-    help='Optimizer to use for NN parameter updates',
+    help='Type of the RNN (GRU or LSTM)',
     default='GRU',
     required=False)
 parser.add_argument(

@@ -109,7 +109,7 @@ void Continuous::getAction(korali::Sample &sample)
     auto state = sample["State"][i];
 
     // Adding state to the state time sequence
-    _stateTimeSequence.add(state);
+    _stateTimeSequence[i].add(state);
 
     // Storage for the action to select
     std::vector<float> action(_problem->_actionVectorSize);
@@ -118,9 +118,9 @@ void Continuous::getAction(korali::Sample &sample)
     // in case of multiple polices it runs the i-th policy otherwise standard
     std::vector<policy_t> policy(_problem->_policiesPerEnvironment);
     if (_problem->_policiesPerEnvironment == 1)
-      runPolicy({_stateTimeSequence.getVector()}, policy);
+      runPolicy({_stateTimeSequence[i].getVector()}, policy);
     else
-      runPolicy({_stateTimeSequence.getVector()}, policy, i);
+      runPolicy({_stateTimeSequence[i].getVector()}, policy, i);
 
     /*****************************************************************************
      * During Training we select action according to policy's probability

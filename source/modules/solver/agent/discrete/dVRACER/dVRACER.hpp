@@ -99,9 +99,9 @@ class dVRACER : public Discrete
    */
   void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
 
-  float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) override;
+  float calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx = 0) override;
 
-  void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) override;
+  void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) override;
 
   std::vector<policy_t> getPolicyInfo(const std::vector<size_t> &miniBatch) const;
 

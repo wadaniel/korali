@@ -241,25 +241,25 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   _statisticsAverageActionUnlikeability /= (float)miniBatchSize;
 }
 
-float dVRACER::calculateStateValue(const std::vector<float> &state, size_t policyIdx)
+float dVRACER::calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx)
 {
   // Forward the neural network for this state to get the state value
-  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({{state}});
+  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({stateSequence});
   return evaluation[0][0];
 }
 
-void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
+void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
 {
   // Getting batch size
-  size_t batchSize = stateBatch.size();
+  size_t batchSize = stateSequenceBatch.size();
 
   // Preparing storage for results
   policyInfo.resize(batchSize);
 
-  //inference operation
+  //inference operation (getAction)
   if (batchSize == 1)
   {
-    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
+    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
     // Getting state value
     policyInfo[0].stateValue = evaluation[0][0];
@@ -322,7 +322,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
     for (size_t b = 0; b < batchSize; b++)
     {
-      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateBatch[b]);
+      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
     }
 
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)

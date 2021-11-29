@@ -436,7 +436,7 @@ class Agent : public Solver
   /**
    * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
    */
-  cBuffer<std::vector<float>> _stateTimeSequence;
+  std::vector<cBuffer<std::vector<float>>> _stateTimeSequence;
 
   /**
    * @brief Episode that experience belongs to
@@ -673,14 +673,14 @@ class Agent : public Solver
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) = 0;
+  virtual float calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) = 0;
+  virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Calculates the starting experience index of the time sequence for the selected experience

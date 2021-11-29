@@ -65,7 +65,9 @@ void __className__::initialize()
   _episodeIdVector.resize(_experienceReplayMaximumSize);
 
   //  Pre-allocating space for state time sequence
-  _stateTimeSequence.resize(_timeSequenceLength);
+  _stateTimeSequence.resize(_problem->_agentsPerEnvironment); 
+  for(size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
+    _stateTimeSequence[agentId].resize(_timeSequenceLength); 
 
   /*********************************************************************
    * If initial generation, set initial agent configuration
@@ -373,6 +375,9 @@ void __className__::attendAgent(size_t agentId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
+      // Reset time sequence at the end of an episode
+      //resetTimeSequence();
+
       // Process every episode received and its experiences (add them to replay memory)
       processEpisode(episodeId, message["Episodes"]);
 
@@ -565,6 +570,7 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         expPolicy[d].availableActions = availAct[d];
+        if (expPolicy[d].availableActions.size() > 0)
         if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
           KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
       }
@@ -630,9 +636,9 @@ void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
       // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
       std::vector<policy_t> truncatedPolicy;
       if (_problem->_policiesPerEnvironment == 1)
-        retV[d] += calculateStateValue(_stateVector[endId][d]);
+        retV[d] += calculateStateValue(expTruncatedStateSequence);
       else
-        retV[d] += calculateStateValue(_stateVector[endId][d], d);
+        retV[d] += calculateStateValue(expTruncatedStateSequence, d);
 
       // Get value of trucated state
       if (std::isfinite(retV[d]) == false)
@@ -801,9 +807,9 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
 
         // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
         if (_problem->_policiesPerEnvironment == 1)
-          truncStateValue[d] = calculateStateValue(_stateVector[expId][d]);
+          truncStateValue[d] = calculateStateValue(expTruncatedStateSequence);
         else
-          truncStateValue[d] = calculateStateValue(_stateVector[expId][d], d);
+          truncStateValue[d] = calculateStateValue(expTruncatedStateSequence, d);
 
         // Get value of trucated state
         if (std::isfinite(truncStateValue[d]) == false)
@@ -951,7 +957,8 @@ size_t __className__::getTimeSequenceStartExpId(size_t expId)
 
 void __className__::resetTimeSequence()
 {
-  _stateTimeSequence.clear();
+  for(size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
+    _stateTimeSequence[agentId].clear();
 }
 
 std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
@@ -977,17 +984,20 @@ std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSeq
     // Calculating time sequence length
     const size_t T = expId - startId + 1;
 
+    // Calculating offset between requested and real sequence length
+    const size_t offSet = _timeSequenceLength - T;
+
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       // Resizing state sequence vector to the correct time sequence length
-      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T, std::vector<float>(stateSize)); //TODO rearrange order, then no reshuffling required in runPolicy()
+      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(_timeSequenceLength, std::vector<float>(stateSize)); //TODO rearrange order, then no reshuffling required in runPolicy()
 
       // Now adding states (and actions, if required)
       for (size_t t = 0; t < T; t++)
       {
         size_t curId = startId + t;
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t] = _stateVector[curId][d];
-        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin() + _problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
+        stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t] = _stateVector[curId][d];
+        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].begin() + _problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
       }
     }
   }
@@ -1069,6 +1079,7 @@ void __className__::serializeExperienceReplay()
     std::vector<size_t> expActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> expUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].unboundedAction.size()));
     std::vector<std::vector<float>> expActProb(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].actionProbabilities.size()));
+    std::vector<std::vector<bool>> expAvailAct(_problem->_agentsPerEnvironment, std::vector<bool>(_expPolicyVector[0][0].availableActions.size()));
 
     std::vector<float> curStateValue(_problem->_agentsPerEnvironment, 0.0f);
     std::vector<std::vector<float>> curDistributionParameter(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].distributionParameters.size()));
@@ -1084,6 +1095,7 @@ void __className__::serializeExperienceReplay()
       expActionIdx[j] = _expPolicyVector[i][j].actionIndex;
       expUnboundedAct[j] = _expPolicyVector[i][j].unboundedAction;
       expActProb[j] = _expPolicyVector[i][j].actionProbabilities;
+      expAvailAct[j] = _expPolicyVector[i][j].availableActions;
 
       curStateValue[j] = _curPolicyVector[i][j].stateValue;
       curDistributionParameter[j] = _curPolicyVector[i][j].distributionParameters;
@@ -1097,6 +1109,7 @@ void __className__::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = expActionIdx;
     stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"] = expUnboundedAct;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"] = expActProb;
+    stateJson["Experience Replay"][i]["Experience Policy"]["Available Action"] = expAvailAct;
 
     stateJson["Experience Replay"][i]["Current Policy"]["State Value"] = curStateValue;
     stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"] = curDistributionParameter;
@@ -1113,8 +1126,10 @@ void __className__::serializeExperienceReplay()
   std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Storing database to file
+  _k->_logger->logInfo("Detailed", "Saving json..\n");
   if (saveJsonToFile(statePath.c_str(), stateJson) != 0)
     KORALI_LOG_ERROR("Could not serialize training state into file %s\n", statePath.c_str());
+  _k->_logger->logInfo("Detailed", "Agent's Training State serialized\n");
 
   auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
   _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling

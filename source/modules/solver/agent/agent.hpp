@@ -76,6 +76,11 @@ struct policy_t
   std::vector<float> actionProbabilities;
 
   /**
+  * @brief [Discrete] Flags the actions that are available at the current state.
+  */
+  std::vector<bool> availableActions;
+
+  /**
    * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
    */
   std::vector<float> unboundedAction;
@@ -196,14 +201,6 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
-  * @brief If enabled, the learner penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
-  */
-   int _rewardOutboundPenalizationEnabled;
-  /**
-  * @brief The factor (f) by which te reward is scaled down. R = f * R
-  */
-   float _rewardOutboundPenalizationFactor;
-  /**
   * @brief Specifies whether we are in an individual setting or collaborator setting.
   */
    std::string _multiAgentRelationship;
@@ -239,6 +236,10 @@ class Agent : public Solver
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
    std::vector<size_t> _trainingExperienceHistory;
+  /**
+  * @brief [Internal Use] Keeps a history of all training episode rewards.
+  */
+   std::vector<float> _testingAverageRewardHistory;
   /**
   * @brief [Internal Use] Contains a running average of the training episode rewards.
   */
@@ -339,10 +340,6 @@ class Agent : public Solver
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
    std::vector<float> _rewardRescalingSumSquaredRewards;
-  /**
-  * @brief [Internal Use] Keeps track of the number of out of bound actions taken.
-  */
-   size_t _rewardOutboundPenalizationCount;
   /**
   * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
@@ -676,7 +673,14 @@ class Agent : public Solver
    * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @return A JSON object containing the information produced by the policies given the current state series
    */
-  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0) = 0;
+  virtual float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) = 0;
+
+  /**
+   * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
+   * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @return A JSON object containing the information produced by the policies given the current state series
+   */
+  virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Calculates the starting experience index of the time sequence for the selected experience

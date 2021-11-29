@@ -6,66 +6,61 @@ import numpy as np
 import os
 import sys
 from PIL import Image
+import pettingzoo
+import pettingzoo.sisl
 import matplotlib.pyplot as plt
 
 def initEnvironment(e, envName, multPolicies):
 
  # Creating environment 
  if (envName ==  'Waterworld'):
-    from pettingzoo.sisl import waterworld_v3
-    
-    env = waterworld_v3.env()
+    env = pettingzoo.sisl.waterworld_v3.env()
     stateVariableCount = 242
     actionVariableCount = 2
-    obs_upper = 2 * math.sqrt(2)
-    obs_low = -1 * math.sqrt(2)
     ac_upper = 0.01 
     ac_low = -0.01 
     numIndividuals = 5
 
  elif (envName == 'Multiwalker'):
-    from pettingzoo.sisl import multiwalker_v7
-    env = multiwalker_v7.env()
+    env = pettingzoo.sisl.multiwalker_v7.env()
     stateVariableCount = 31
     actionVariableCount = 4
-    obs_upper =  math.inf
-    obs_low = -1 * math.inf
     ac_upper = 1 
     ac_low = -1 
     numIndividuals = 3
 
 
  elif (envName ==  'Pursuit'):
-   from pettingzoo.sisl import pursuit_v3
-    
-   env = pursuit_v3.env()
+   env = pettingzoo.sisl.pursuit_v3.env()
    stateVariableCount = 147
    actionVariableCount = 1
-   obs_upper = 30
-   obs_low = 0
    numIndividuals = 8
    possibleActions = [ [0], [1], [2], [3], [4] ]
 
  elif (envName == 'Gather'):
-   from pettingzoo.magent import gather_v3
-
-   env = gather_v3.env()
+   env = pettingzoo.magnet.gather_v3.env()
    stateVariableCount = 1125
    actionVariableCount = 1
-   obs_upper = 2
-   obs_low = 0
    numIndividuals = 495
-   possibleActions = [ [0], [1], [2], [3], [4], [5], [6], [7], [8], [9],[10], [11], [12], [13], [14], [15], [16], [17], [18], [19],[20], [21], [22], [23], [24],[25], [26], [27], [28], [29],[30], [31], [32] ]
+   possibleActions = [ [a] for a in range(33) ]
 
  else:
    print("Environment '{}' not recognized! Exit..".format(envName))
    sys.exit()
  
  
- 
- ### Defining problem configuration for pettingZoo environments
- if (envName == 'Waterworld') or (envName == 'Multiwalker'):
+ ## Defining State Variables
+ for i in range(stateVariableCount):
+   e["Variables"][i]["Name"] = "State Variable " + str(i)
+   e["Variables"][i]["Type"] = "State"
 
+ ## Defining Action Variables
+ for i in range(actionVariableCount):
+   e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i) 
+   e["Variables"][stateVariableCount + i]["Type"] = "Action"
+
+ if (envName == 'Waterworld') or (envName == 'Multiwalker'):
+   ### Defining problem configuration for continuous environments
    e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
    e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
@@ -76,33 +71,16 @@ def initEnvironment(e, envName, multPolicies):
    if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
     
-   # Generating state variable index list
-   stateVariablesIndexes = range(stateVariableCount)
-    
-   # Defining State Variables
-    
-   for i in stateVariablesIndexes:
-      e["Variables"][i]["Name"] = "State Variable " + str(i)
-      e["Variables"][i]["Type"] = "State"
-      e["Variables"][i]["Lower Bound"] = float(obs_low)
-      e["Variables"][i]["Upper Bound"] = float(obs_upper)
-
-     
    # Defining Action Variables
-    
    for i in range(actionVariableCount):
       e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
       e["Variables"][stateVariableCount + i]["Type"] = "Action"
       e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ac_low)
       e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ac_upper)
       e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = math.sqrt(0.2) * (ac_upper - ac_low)
-    
-   ### Defining Termination Criteria
-
-   #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = math.inf
 
  elif (envName ==  'Pursuit') or (envName == 'Gather'):
-   ### Defining problem configuration for pettingZoo environments
+   ### Defining problem configuration for discrete environments
    e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
    e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
@@ -114,26 +92,7 @@ def initEnvironment(e, envName, multPolicies):
    if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
  
-   # Generating state variable index list
-   stateVariablesIndexes = range(stateVariableCount)
- 
-   # Defining State Variables
- 
-   for i in stateVariablesIndexes:
-      e["Variables"][i]["Name"] = "State Variable " + str(i)
-      e["Variables"][i]["Type"] = "State"
-      e["Variables"][i]["Lower Bound"] = float(obs_low)
-      e["Variables"][i]["Upper Bound"] = float(obs_upper)
-  
-   # Defining Action Variables
- 
-   for i in range(actionVariableCount):
-      e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
-      e["Variables"][stateVariableCount + i]["Type"] = "Action"
-
-
 def agent(s, env):
-
 
  if (s["Custom Settings"]["Print Step Information"] == "Enabled"):
   printStep = True
@@ -143,7 +102,6 @@ def agent(s, env):
  env.reset()
  
  states = []
-
 
  if (env.env.env.metadata['name']== 'waterworld_v3') or (env.env.env.metadata['name']== 'multiwalker_v7'):
    for ag in env.agents:
@@ -162,7 +120,6 @@ def agent(s, env):
       state = state.tolist()
       states.append(state)
 
- 
  s["State"] = states
  
  step = 0
@@ -175,7 +132,6 @@ def agent(s, env):
  if s["Mode"] == "Testing":
    image_count = 0
 
-  
  while not done and step < 500:
 
   s.update()

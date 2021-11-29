@@ -92,7 +92,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = [0.3]
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
@@ -120,7 +120,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 250
 
 ### Setting file output configuration
 

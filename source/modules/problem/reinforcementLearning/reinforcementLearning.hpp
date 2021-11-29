@@ -76,6 +76,10 @@ class ReinforcementLearning : public Problem
   * @brief [Internal Use] Stores the indexes of the variables that constitute the action vector.
   */
    std::vector<size_t> _stateVectorIndexes;
+  /**
+  * @brief [Internal Use] The maximum number of actions an agent can take (only relevant for discrete).
+  */
+   size_t _actionCount;
   
  
   /**

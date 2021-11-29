@@ -33,9 +33,17 @@ class dVRACER : public Discrete
 {
   public: 
   /**
-  * @brief [Internal Use] Standard deviation of the actions in the minibatch.
+  * @brief Initial inverse temperature of the softmax distribution. Large values lead to a distribution that is more concentrated around the action with highes Q-value estimate.
   */
-   std::vector<float> _statisticsAverageActionSigmas;
+   float _initialInverseTemperature;
+  /**
+  * @brief [Internal Use] Measure of unlikeability for categorial data, approaches 1.0 for uniform behavior and 0. for deterministic case.
+  */
+   float _statisticsAverageInverseTemperature;
+  /**
+  * @brief [Internal Use] Measure of unlikeability for categorial data, approaches 1.0 for uniform behavior and 0. for deterministic case.
+  */
+   float _statisticsAverageActionUnlikeability;
   
  
   /**
@@ -91,7 +99,11 @@ class dVRACER : public Discrete
    */
   void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
 
-  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx = 0) override;
+  float calculateStateValue(const std::vector<float> &state, size_t policyIdx = 0) override;
+
+  void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) override;
+
+  std::vector<policy_t> getPolicyInfo(const std::vector<size_t> &miniBatch) const;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

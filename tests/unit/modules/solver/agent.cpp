@@ -160,8 +160,6 @@ namespace
   episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
 
   // Reward adjusted due to out of bounds action
-  a->_rewardOutboundPenalizationEnabled = true;
-  a->_rewardOutboundPenalizationFactor = 0.5f;
   episode["Experiences"][0]["Reward"] = 1.0f;
   episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
   a->_rewardVector.clear();

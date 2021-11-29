@@ -343,12 +343,26 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
-  // In case of this being a single agent, support returning state as only vector
+  // In case of this being a single agent, preprocess state and reward if necessary
   if (_agentsPerEnvironment == 1)
   {
+    // Support returning state as vector
     auto state = KORALI_GET(std::vector<float>, agent, "State");
     agent._js.getJson().erase("State");
     agent["State"][0] = state;
+
+    // Support returning reward as scalar
+    auto reward = KORALI_GET(float, agent, "Reward");
+    agent._js.getJson().erase("Reward");
+    agent["Reward"][0] = reward;
+
+    // Support returning available actions as vector
+    if (agent.contains("Available Actions") && agent["Available Actions"].is_array())
+    {
+      auto availAct = KORALI_GET(std::vector<bool>, agent, "Available Actions");
+      agent._js.getJson().erase("Available Actions");
+      agent["Available Actions"][0] = availAct;
+    }
   }
 
   // Checking correct format of state
@@ -378,21 +392,23 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     agent["State"][i] = state;
   }
 
-  // Parsing reward
-  if (_agentsPerEnvironment == 1)
-  {
-    auto reward = KORALI_GET(float, agent, "Reward");
-    agent._js.getJson().erase("Reward");
-    agent["Reward"][0] = reward;
-  }
-
-  // Checking correct format of state
+  // Checking correct format of reward
   if (agent["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (agent["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", agent["Reward"].size(), _agentsPerEnvironment);
 
   // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
     if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
+
+  // Checking correct format of availavle actions if provided
+  if (agent.contains("Available Actions") && agent["Available Actions"].is_array())
+  {
+    if (agent["Available Actions"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Available Actions vector returned with the wrong size: %lu, expected: %lu.\n", agent["Available Actions"].size(), _agentsPerEnvironment);
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
+    {
+      if (agent["Available Actions"][i].size() != _actionCount) KORALI_LOG_ERROR("Available Actions vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["Available"][i].size(), _actionCount);
+    }
+  }
 }
 
 void ReinforcementLearning::setConfiguration(knlohmann::json& js) 
@@ -429,6 +445,14 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['State Vector Indexes']\n%s", e.what()); } 
    eraseValue(js, "State Vector Indexes");
+ }
+
+ if (isDefined(js, "Action Count"))
+ {
+ try { _actionCount = js["Action Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Action Count']\n%s", e.what()); } 
+   eraseValue(js, "Action Count");
  }
 
  if (isDefined(js, "Agents Per Environment"))
@@ -569,6 +593,7 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
    js["State Vector Size"] = _stateVectorSize;
    js["Action Vector Indexes"] = _actionVectorIndexes;
    js["State Vector Indexes"] = _stateVectorIndexes;
+   js["Action Count"] = _actionCount;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
    _k->_js["Variables"][i]["Type"] = _k->_variables[i]->_type;
    _k->_js["Variables"][i]["Lower Bound"] = _k->_variables[i]->_lowerBound;

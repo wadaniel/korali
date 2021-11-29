@@ -17,6 +17,9 @@ void Continuous::initializeAgent()
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
+  // Only relevant for discrete
+  _problem->_actionCount = 0;
+
   // Obtaining action shift and scales for bounded distributions
   _actionShifts.resize(_problem->_actionVectorSize);
   _actionScales.resize(_problem->_actionVectorSize);
@@ -56,14 +59,14 @@ void Continuous::initializeAgent()
       if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
       // Identity mask for Means
+      _policyParameterTransformationMasks[i] = "Identity";
       _policyParameterScaling[i] = 1.0; //_actionScales[i];
       _policyParameterShifting[i] = _actionShifts[i];
-      _policyParameterTransformationMasks[i] = "Identity";
 
       // Softplus mask for Sigmas
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus"; // x = 0.5 * (x + std::sqrt(1. + x * x));
       _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
-      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus";
     }
   }
 
@@ -113,34 +116,34 @@ void Continuous::getAction(korali::Sample &sample)
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
     // in case of multiple polices it runs the i-th policy otherwise standard
-    policy_t policy;
+    std::vector<policy_t> policy(_problem->_policiesPerEnvironment);
     if (_problem->_policiesPerEnvironment == 1)
-      policy = runPolicy({_stateTimeSequence.getVector()})[0];
+      runPolicy({_stateTimeSequence.getVector()}, policy);
     else
-      policy = runPolicy({_stateTimeSequence.getVector()}, i)[0];
+      runPolicy({_stateTimeSequence.getVector()}, policy, i);
 
     /*****************************************************************************
      * During Training we select action according to policy's probability
      * distribution
      ****************************************************************************/
 
-    if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
+    if (sample["Mode"] == "Training") action = generateTrainingAction(policy[0]);
 
     /*****************************************************************************
      * During testing, we select the means (point of highest density) for all
      * elements of the action vector
      ****************************************************************************/
 
-    if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
+    if (sample["Mode"] == "Testing") action = generateTestingAction(policy[0]);
 
     /*****************************************************************************
      * Storing the action and its policy
      ****************************************************************************/
 
-    sample["Policy"]["Distribution Parameters"][i] = policy.distributionParameters;
-    sample["Policy"]["State Value"][i] = policy.stateValue;
-    sample["Policy"]["Unbounded Action"][i] = policy.unboundedAction;
     sample["Action"][i] = action;
+    sample["Policy"]["State Value"][i] = policy[0].stateValue;
+    sample["Policy"]["Unbounded Action"][i] = policy[0].unboundedAction;
+    sample["Policy"]["Distribution Parameters"][i] = policy[0].distributionParameters;
   }
 }
 

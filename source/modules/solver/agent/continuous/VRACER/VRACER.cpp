@@ -54,16 +54,16 @@ void VRACER::initializeAgent()
     _criticPolicyExperiment[p]["Solver"]["Output Weights Scaling"] = 0.001;
 
     // No transformations for the state value output
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
 
     // Setting transformations for the selected policy distribution output
     for (size_t i = 0; i < _policyParameterCount; i++)
     {
+      _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
       _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = _policyParameterScaling[i];
       _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = _policyParameterShifting[i];
-      _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
     }
 
     // Running initialization to verify that the configuration is correct
@@ -96,7 +96,8 @@ void VRACER::trainPolicy()
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
-  const auto policyInfo = runPolicy(stateSequence);
+  std::vector<policy_t> policyInfo;
+  runPolicy(stateSequence, policyInfo);
 
   // Using policy information to update experience's metadata
   updateExperienceMetadata(miniBatch, policyInfo);
@@ -175,7 +176,6 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       if (_multiAgentRelationship == "Cooperation")
         gradientLoss[0] /= _problem->_agentsPerEnvironment;
 
-
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
       {
@@ -234,16 +234,16 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
         if (std::isfinite(gradientLoss[i + 1]) == false)
         {
-          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
-            gradientLoss[i+1] = 0.0;
+          if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+            gradientLoss[i + 1] = 0.0;
           else
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
         }
         if (std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
         {
-          if  ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
+          if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
             gradientLoss[i + 1 + _problem->_actionVectorSize] = 0.0;
-          else  
+          else
             KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
         }
       }
@@ -260,13 +260,20 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
 }
 
-std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, size_t policyIdx)
+float VRACER::calculateStateValue(const std::vector<float> &state, size_t policyIdx)
+{
+  // Forward the neural network for this state to get the state value
+  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation({std::vector<std::vector<float>>{state}});
+  return evaluation[0][0];
+}
+
+void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
 
-  // Storage for policy
-  std::vector<policy_t> policyVector(batchSize);
+  // Preparing storage for results
+  policyInfo.resize(batchSize);
 
   // inference operation
   if (batchSize == 1)
@@ -274,8 +281,8 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     // Forward the neural network for this state
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateBatch);
 
-    policyVector[0].stateValue = evaluation[0][0];
-    policyVector[0].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
+    policyInfo[0].stateValue = evaluation[0][0];
+    policyInfo[0].distributionParameters.assign(evaluation[0].begin() + 1, evaluation[0].end());
   }
   else // training operation
   {
@@ -292,12 +299,11 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 #pragma omp parallel for
       for (size_t b = 0; b < evaluation.size(); b++)
       {
-        policyVector[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
-        policyVector[b * _problem->_policiesPerEnvironment + p].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
+        policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
+        policyInfo[b * _problem->_policiesPerEnvironment + p].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
       }
     }
   }
-  return policyVector;
 }
 
 knlohmann::json VRACER::getAgentPolicy()

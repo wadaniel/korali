@@ -11,6 +11,12 @@ Installation:
 ------------------
 ./install_deps.sh
 
+Potential installation errors :
+---------------------------------
+.. code-block::bash
+   error: command 'swig' failed with exit status 1
+If this error appears, please follow step 1 and 2 to install the latest version of swig on: http://swig.org/svn.html 
+
 Running an environment:
 -------------------------
 

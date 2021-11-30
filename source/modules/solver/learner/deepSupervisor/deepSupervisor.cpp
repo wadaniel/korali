@@ -167,8 +167,8 @@ void DeepSupervisor::runGeneration()
     for (const float g : nnHyperparameterGradients)
       if (std::isfinite(g) == false)
       {
-        fprintf(stderr,"Optimizer returning non-finite hyperparam.\n"); 
-        return;
+        //fprintf(stderr,"Optimizer returning non-finite hyperparam.\n"); 
+        //return;
 
         for (const auto &vec : _problem->_solutionData)
         {

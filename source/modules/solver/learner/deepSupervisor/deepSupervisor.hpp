@@ -148,15 +148,13 @@ class DeepSupervisor : public Learner
    * @brief A neural network to be trained based on inputs and solutions
    */
   NeuralNetwork *_neuralNetwork;
-
-  // Only needed for DDPG
-  //
-  //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
-  //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
-  //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
-  //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-  //
-  //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
+ 
+  /**
+   * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
+   * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+   * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
+   */
+  std::vector<std::vector<float>> &getInputGradients(const std::vector<std::vector<std::vector<float>>> &input);
 
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getHyperparameters() override;

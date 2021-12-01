@@ -12,17 +12,32 @@ class __className__ : public __parentClassName__
   /**
    * @brief Pointer to training the actor network
    */
-  learner::DeepSupervisor *_criticPolicyLearner;
+  learner::DeepSupervisor *_policyLearner;
 
   /**
    * @brief Korali experiment for obtaining the agent's action
    */
-  korali::Experiment _criticPolicyExperiment;
+  korali::Experiment _policyExperiment;
 
   /**
    * @brief Pointer to actor's experiment problem
    */
-  problem::SupervisedLearning *_criticPolicyProblem;
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
+   * @brief Pointer to training the critic network
+   */
+  learner::DeepSupervisor *_criticLearner;
+
+  /**
+   * @brief Korali experiment for obtaining the q value
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
+   * @brief Pointer to critic experiment problem
+   */
+  problem::SupervisedLearning *_criticProblem;
 
   /**
    * @brief Update the V-target or current and previous experiences in the episode
@@ -31,12 +46,25 @@ class __className__ : public __parentClassName__
   void updateVtbc(size_t expId);
 
   /**
-   * @brief Calculates the gradients for the policy/critic neural network
+   * @brief Calculates the gradients for the critic neural network
    * @param miniBatch The indexes of the experience mini batch
    */
-  void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
+  void calculateCriticGradient(const std::vector<size_t> &miniBatch);
 
-  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+  /**
+   * @brief Calculates the gradients for the policy neural network
+   * @param sampledStateActionSequence Sampled state action sequences for policy update
+   * @param miniBatch The indexes of the experience mini batch
+   */
+  void calculatePolicyGradient(const std::vector<std::vector<std::vector<float>>> &sampledStateActionSequence, const std::vector<size_t> &miniBatch);
+
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateActionBatchSequence) override;
+
+  /**
+   * @brief Sample new set of actions for given state batch sequence
+   * @param stateActionBatchSequence The indexes of the experience mini batch
+   */
+  std::vector<std::vector<std::vector<float>>> sampleStateActionBatchSequence(const std::vector<size_t> &miniBatch);
 
   /**
    * @brief [Statistics] Keeps track of the max policy mu of the current minibatch for each action variable

@@ -44,6 +44,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       if (len(r) == 0): continue  
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
+      testingHistory = np.array(r["Solver"]["Testing"]["Average Reward History"])
       trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
       if average == True:
         rewardHistory = np.mean(rewardHistory,axis=0)
@@ -63,13 +64,13 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       # Append Results
       else:
         for d in range(rewardHistory.shape[0]):
-            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
+            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold, testingHistory) )
 
      ## Plotting the individual experiment results
      
      for resId, r in enumerate(unpackedResults):
       
-      cumulativeObsArr, rewardHistory, trainingRewardThreshold = r
+      cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingHistory = r
       
       currObsCount = cumulativeObsArr[-1]
       
@@ -121,6 +122,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
       # Plotting common plot
 
+      numTestRuns = len(testingHistory)
+      testingExp = np.linspace(0, cumulativeObsArr[-1], numTestRuns+2) 
+      ax.plot(testingExp[1:-1], testingHistory, ':', color=cmap(colCurrIndex), lineWidth=1.0, zorder=0) 
+    
       if (label1 == ''):
         #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 

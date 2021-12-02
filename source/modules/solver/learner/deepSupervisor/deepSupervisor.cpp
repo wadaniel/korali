@@ -166,31 +166,7 @@ void DeepSupervisor::runGeneration()
 
     for (const float g : nnHyperparameterGradients)
       if (std::isfinite(g) == false)
-      {
-        //fprintf(stderr,"Optimizer returning non-finite hyperparam.\n"); 
-        //return;
-
-        for (const auto &vec : _problem->_solutionData)
-        {
-          fprintf(stderr,"s:\t");
-          for (const float s : vec)
-            fprintf(stderr, "%f\t", s);
-          fprintf(stderr, "\n");
-        }
-
-        const auto& theta = _neuralNetwork->getHyperparameters();
-        fprintf(stderr,"th:\t");
-        for (const float th : theta)
-            fprintf(stderr, "%f\t", th);
-        fprintf(stderr, "\n");
-
-
-        fprintf(stderr,"g:\t");
-        for (const float g : nnHyperparameterGradients)
-            fprintf(stderr, "%f\t", g);
-        fprintf(stderr, "\n");
         KORALI_LOG_ERROR("Backpropagation returned non-finite gradient for NN update."); //TODO: move check to optimizer
-      }
 
     // Passing hyperparameter gradients through an optimizer update
     _optimizer->processResult(0.0f, nnHyperparameterGradients);
@@ -229,18 +205,6 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   // Returning the output values for the last given timestep
   return _neuralNetwork->getOutputValues(N);
 }
-
-// Only needed for DDPG
-// std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-//{
-//  const size_t N = input.size();
-//
-//  // Running the input values through the neural network
-//  _neuralNetwork->backward(outputGradients);
-//
-//  // Returning the input data gradients
-//  return _neuralNetwork->getInputGradients(N);
-//}
 
 void DeepSupervisor::printGenerationAfter()
 {

@@ -68,7 +68,7 @@ void dVRACER::initializeAgent()
     // Transofrmation for the inverse temperature
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_actionCount] = "Softplus"; // x = 0.5 * (x + std::sqrt(1. + x * x));
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Scale"][1 + _problem->_actionCount] = 1.0f;
-    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_actionCount] = 0.5f + _initialInverseTemperature;
+    _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Output Layer"]["Shift"][1 + _problem->_actionCount] = _initialInverseTemperature - 0.5;
 
     // Running initialization to verify that the configuration is correct
     _criticPolicyExperiment[p].initialize();
@@ -352,11 +352,17 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         // Iterating all Q(s,a)
         for (size_t i = 0; i < _problem->_actionCount; i++)
         {
-          // Computing Q(s,a_i)
+          // Copying Q(s,a_i)
           qValAndInvTemp[i] = evaluation[b][1 + i];
 
           // Extracting max Q(s,a_i)
           if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+         
+          if (isfinite(qValAndInvTemp[i]) == false)
+          {
+            for (float e : evaluation[b]) printf("e: %f\n", e);
+            KORALI_LOG_ERROR("Q value not finite %f (%f) in policy evaluation during training step.", qValAndInvTemp[i], invTemperature);
+          }
         }
 
         // Storage for the cumulative e^Q(s,a_i)/maxq
@@ -371,19 +377,32 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
           if (policyInfo[b].availableActions.size() > 0)
             if (policyInfo[b].availableActions[i] == false) expCurQVal = 0.;
 
-          // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+          // Computing Sum_i(e^beta*Q(s,a_i)/e^maxq)
           sumExpQVal += expCurQVal;
 
           // Storing partial value of the probability of the action
           pActions[i] = expCurQVal;
+
+          if (isfinite(pActions[i]) == false)
+          {
+            for (float e : evaluation[b]) printf("e: %f\n", e);
+            KORALI_LOG_ERROR("Q value not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, sumExpQVal, expCurQVal);
+          }
         }
 
-        // Calculating inverse of Sum_i(e^Q(s,a_i))
+        // Calculating inverse of Sum_i(e^beta*Q(s,a_i))
         float invSumExpQVal = 1.0f / sumExpQVal;
 
         // Normalizing action probabilities
         for (size_t i = 0; i < _problem->_actionCount; i++)
+        {
           pActions[i] *= invSumExpQVal;
+          if (isfinite(pActions[i]) == false)
+          {
+            for (float e : evaluation[b]) printf("e: %f\n", e);
+            KORALI_LOG_ERROR("Q value not finite %f (%f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, invSumExpQVal);
+          }
+        }
 
         // Set inverse temperature parameter
         qValAndInvTemp[_problem->_actionCount] = invTemperature;

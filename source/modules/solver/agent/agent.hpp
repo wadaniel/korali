@@ -233,10 +233,6 @@ class Agent : public Solver
   */
    std::vector<std::vector<float>> _trainingRewardHistory;
   /**
-  * @brief [Internal Use] Keeps a history of all training environment ids.
-  */
-   std::vector<size_t> _trainingEnvironmentIdHistory;
-  /**
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
    std::vector<size_t> _trainingExperienceHistory;
@@ -336,10 +332,6 @@ class Agent : public Solver
   * @brief [Internal Use] Count of the number of experiences produced so far.
   */
    size_t _experienceCount;
-  /**
-  * @brief [Internal Use] Count of the number of experiences in the replay memory per environment.
-  */
-   std::vector<size_t> _experienceCountPerEnvironment;
   /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
@@ -512,11 +504,6 @@ class Agent : public Solver
   cBuffer<std::vector<std::vector<float>>> _truncatedStateVector;
 
   /**
-   * @brief Contains the environment id of every experience
-   */
-  cBuffer<size_t> _environmentIdVector;
-
-  /**
    * @brief Contains the rewards of every experience
    */
   cBuffer<std::vector<float>> _rewardVector;
@@ -660,7 +647,7 @@ class Agent : public Solver
    * @param episodeId The unique identifier of the provided episode
    * @param episode A vector of experiences pertaining to the episode.
    */
-  void processEpisode(size_t episodeId, knlohmann::json &episode);
+  void processEpisode(knlohmann::json &episode);
 
   /**
    * @brief Generates an experience mini batch from the replay memory
@@ -759,16 +746,16 @@ class Agent : public Solver
 
   /**
    * @brief Rescales a given reward by the square root of the sum of squarred rewards
-   * @param environmentId The id of the environment to which this reward belongs
+   * @param agentId The id of the environment to which this reward belongs
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward, const size_t agentIdx)
+  inline float getScaledReward(const float reward, const size_t agentId)
   {
-    float rescaledReward = reward / _rewardRescalingSigma[agentIdx];
+    float rescaledReward = reward / _rewardRescalingSigma[agentId];
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentIdx]);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentId]);
 
     return rescaledReward;
   }

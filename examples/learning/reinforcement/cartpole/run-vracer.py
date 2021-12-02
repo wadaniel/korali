@@ -22,16 +22,19 @@ parser.add_argument(
     '--optimizer',
     help='Optimizer to use for NN parameter updates',
     default='Adam',
+    type=str,
     required=False)
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
     default=3e-3,
+    type=float,
     required=False)
 parser.add_argument(
     '--concurrentEnvironments',
     help='Number of environments to run concurrently',
     default=1,
+    type=int,
     required=False)
 args = parser.parse_args()
 
@@ -48,6 +51,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+#e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -72,15 +76,14 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
+e["Solver"]["Concurrent Environments"] = args.concurrentEnvironments
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= 0.3
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = float(args.learningRate)
+e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
@@ -107,11 +110,12 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
+e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 5
 
 ### Running Experiment
 

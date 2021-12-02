@@ -33,6 +33,9 @@ void Agent::initialize()
     if (_actionUpperBounds[i] - _actionLowerBounds[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", _actionUpperBounds[i], _actionLowerBounds[i], i);
   }
 
+  if (_episodesPerGeneration < 1)
+      KORALI_LOG_ERROR("Episodes Per Generation must be larger equal 1 (is %zu)", _episodesPerGeneration);
+
   // Initializing selected policy
   initializeAgent();
 
@@ -56,7 +59,6 @@ void Agent::initialize()
   _actionVector.resize(_experienceReplayMaximumSize);
   _retraceValueVector.resize(_experienceReplayMaximumSize);
   _rewardVector.resize(_experienceReplayMaximumSize);
-  _environmentIdVector.resize(_experienceReplayMaximumSize);
   _stateValueVector.resize(_experienceReplayMaximumSize);
   _importanceWeightVector.resize(_experienceReplayMaximumSize);
   _truncatedImportanceWeightVector.resize(_experienceReplayMaximumSize);
@@ -373,17 +375,15 @@ void Agent::attendAgent(size_t agentId)
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
     {
-      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicies);
+      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicies["Policy Hyperparameters"]);
     }
 
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
-      // Reset time sequence at the end of an episode
-      //resetTimeSequence();
-
       // Process every episode received and its experiences (add them to replay memory)
-      processEpisode(episodeId, message["Episodes"]);
+      _episodeIdVector.add(episodeId);
+      processEpisode(message["Episodes"]);
 
       // Increasing total experience counters
       _experienceCount += message["Episodes"]["Experiences"].size();
@@ -442,6 +442,9 @@ void Agent::attendAgent(size_t agentId)
 
       // Set agent as finished
       _isAgentRunning[agentId] = false;
+
+      // Increasing session episode count
+      _sessionEpisodeCount++;
     }
   }
 
@@ -450,12 +453,12 @@ void Agent::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
+void Agent::processEpisode(knlohmann::json &episode)
 {
   /*********************************************************************
    * Adding episode's experiences into the replay memory
    *********************************************************************/
-
+ 
   // Storage for the episode's cumulative reward
   std::vector<float> cumulativeReward(_problem->_agentsPerEnvironment, 0.0f);
 
@@ -582,7 +585,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _curPolicyVector.add(expPolicy);
 
     // Storing Episode information in replay memory
-    _episodeIdVector.add(episodeId);
     _episodePosVector.add(expId);
 
     // Adding placeholder for retrace value
@@ -1066,7 +1068,6 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["State"] = _stateVector[i];
     stateJson["Experience Replay"][i]["Action"] = _actionVector[i];
     stateJson["Experience Replay"][i]["Reward"] = _rewardVector[i];
-    stateJson["Experience Replay"][i]["Environment Id"] = _environmentIdVector[i];
     stateJson["Experience Replay"][i]["State Value"] = _stateValueVector[i];
     stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
     stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
@@ -1158,7 +1159,6 @@ void Agent::deserializeExperienceReplay()
   _actionVector.clear();
   _retraceValueVector.clear();
   _rewardVector.clear();
-  _environmentIdVector.clear();
   _stateValueVector.clear();
   _importanceWeightVector.clear();
   _truncatedImportanceWeightVector.clear();
@@ -1221,10 +1221,6 @@ void Agent::printGenerationAfter()
   if (_mode == "Training")
   {
     _k->_logger->logInfo("Normal", "Experience Replay Statistics:\n");
-    if (_problem->_environmentCount > 1)
-      for (size_t i = 0; i < _problem->_environmentCount; ++i)
-        _k->_logger->logInfo("Normal", " + Experience Count Env %zu:      %lu\n", i, _experienceCountPerEnvironment[i]);
-
     _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _stateVector.size(), _experienceReplayMaximumSize);
     if (_maxEpisodes > 0)
       _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
@@ -1337,14 +1333,6 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Reward History']\n%s", e.what()); } 
    eraseValue(js, "Training", "Reward History");
- }
-
- if (isDefined(js, "Training", "Environment Id History"))
- {
- try { _trainingEnvironmentIdHistory = js["Training"]["Environment Id History"].get<std::vector<size_t>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Environment Id History']\n%s", e.what()); } 
-   eraseValue(js, "Training", "Environment Id History");
  }
 
  if (isDefined(js, "Training", "Experience History"))
@@ -1543,14 +1531,6 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Count']\n%s", e.what()); } 
    eraseValue(js, "Experience Count");
- }
-
- if (isDefined(js, "Experience Count Per Environment"))
- {
- try { _experienceCountPerEnvironment = js["Experience Count Per Environment"].get<std::vector<size_t>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Count Per Environment']\n%s", e.what()); } 
-   eraseValue(js, "Experience Count Per Environment");
  }
 
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
@@ -1948,7 +1928,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Action Upper Bounds"] = _actionUpperBounds;
    js["Current Episode"] = _currentEpisode;
    js["Training"]["Reward History"] = _trainingRewardHistory;
-   js["Training"]["Environment Id History"] = _trainingEnvironmentIdHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
    js["Testing"]["Average Reward History"] = _testingAverageRewardHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;
@@ -1974,7 +1953,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Current Sample ID"] = _currentSampleID;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
-   js["Experience Count Per Environment"] = _experienceCountPerEnvironment;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;

@@ -112,9 +112,6 @@ void __className__::runTrainingEpisode(Sample &agent)
   // "Success" or "Truncated".
   agent["Termination"] = "Non Terminal";
 
-  // Setting standard value for environment Id
-  agent["Environment Id"] = 0;
-
   // Getting first state
   runEnvironment(agent);
 
@@ -124,15 +121,6 @@ void __className__::runTrainingEpisode(Sample &agent)
     finalizeEnvironment();
     return;
   }
-
-  // Get environment iId value from agent
-  auto environmentId = KORALI_GET(size_t, agent, "Environment Id");
-
-  // Check whether the env id provided does not exceed the maximum specified
-  if (environmentId >= _environmentCount) KORALI_LOG_ERROR("Environment Id provided (%lu) exceeds the maximum environment count defined (>= %lu).\n", environmentId, _environmentCount);
-
-  // Store the current environment Id in the experience
-  for (size_t i = 0; i < _agentsPerEnvironment; i++) episode[i]["Environment Id"] = environmentId;
 
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
@@ -145,12 +133,11 @@ void __className__::runTrainingEpisode(Sample &agent)
 
     // Storing the current action
     episode["Experiences"][actionCount]["Action"] = agent["Action"];
-
+ 
     // Storing the experience's policy
     episode["Experiences"][actionCount]["Policy"] = agent["Policy"];
 
     // If single agent, put action into a single vector
-    // In case of this being a single agent, support returning state as only vector
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
 
     // Jumping back into the agent's environment
@@ -187,6 +174,50 @@ void __className__::runTrainingEpisode(Sample &agent)
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
 
+  // Finalizing Environment
+  finalizeEnvironment();
+
+  // Setting tested policy flag to false, unless we do testing
+  agent["Tested Policy"] = false;
+
+  // If the training reward of all the agents exceeds the threshold or meets the periodic conditions, then also run testing on it
+  bool runTest = (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
+
+  if (runTest)
+  {
+    float averageTestingReward = 0.0;
+    float stdevTestingReward = 0.0;
+    float bestTestingReward = -Inf;
+    float worstTestingReward = +Inf;
+
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    {
+      runTestingEpisode(agent);
+
+      // Getting current testing reward
+      auto currentTestingReward = agent["Testing Reward"].get<float>();
+
+      // Adding current testing reward to the average and keeping statistics
+      averageTestingReward += currentTestingReward;
+      stdevTestingReward += currentTestingReward * currentTestingReward;
+      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+    }
+
+    // Normalizing average
+    averageTestingReward /= (float)_policyTestingEpisodes;
+    stdevTestingReward = std::sqrt(stdevTestingReward / ((float)_policyTestingEpisodes) - averageTestingReward * averageTestingReward);
+
+    // Storing testing information
+    agent["Average Testing Reward"] = averageTestingReward;
+    agent["Stdev Testing Reward"] = stdevTestingReward;
+    agent["Best Testing Reward"] = bestTestingReward;
+    agent["Worst Testing Reward"] = worstTestingReward;
+
+    // Indicate that the agent has been tested
+    agent["Tested Policy"] = true;
+  }
+
   // Sending last experience last (after testing)
   // This is important to prevent the engine for block-waiting for the return of the sample
   // while the testing runs are being performed.
@@ -195,9 +226,6 @@ void __className__::runTrainingEpisode(Sample &agent)
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episode;
   KORALI_SEND_MSG_TO_ENGINE(message);
-
-  // Finalizing Environment
-  finalizeEnvironment();
 
   // Adding profiling information to agent
   agent["Computation Time"] = _agentComputationTime;
@@ -385,14 +413,6 @@ void __className__::runEnvironment(Sample &agent)
     agent["State"][i] = state;
   }
 
-  // Parsing reward
-  if (_agentsPerEnvironment == 1)
-  {
-    auto reward = KORALI_GET(float, agent, "Reward");
-    agent._js.getJson().erase("Reward");
-    agent["Reward"][0] = reward;
-  }
-
   // Checking correct format of reward
   if (agent["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (agent["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", agent["Reward"].size(), _agentsPerEnvironment);
@@ -407,7 +427,7 @@ void __className__::runEnvironment(Sample &agent)
     if (agent["Available Actions"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Available Actions vector returned with the wrong size: %lu, expected: %lu.\n", agent["Available Actions"].size(), _agentsPerEnvironment);
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
-      if (agent["Available Actions"][i].size() != _actionCount) KORALI_LOG_ERROR("Available Actions vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["Available"][i].size(), _actionCount);
+      if (agent["Available Actions"][i].size() != _actionCount) KORALI_LOG_ERROR("Available Actions vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["Available Actions"][i].size(), _actionCount);
     }
   }
 }

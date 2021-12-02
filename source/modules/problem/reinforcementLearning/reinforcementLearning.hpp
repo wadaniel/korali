@@ -49,6 +49,14 @@ class ReinforcementLearning : public Problem
   */
    size_t _actionsBetweenPolicyUpdates;
   /**
+  * @brief Number of generations after which the policy will be tested.
+  */
+   size_t _testingFrequency;
+  /**
+  * @brief Number of test episodes to run the policy (without noise) for, for which the average sum of rewards will serve to evaluate the termination criteria.
+  */
+   size_t _policyTestingEpisodes;
+  /**
   * @brief Any used-defined settings required by the environment.
   */
    knlohmann::json _customSettings;

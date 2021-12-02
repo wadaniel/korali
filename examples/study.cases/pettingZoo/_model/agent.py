@@ -64,9 +64,6 @@ def initEnvironment(e, envName, multPolicies):
    e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
    e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
-   e["Problem"]["Training Reward Threshold"] = math.inf
-   #e["Problem"]["Testing Frequency"] = 2
-   e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
    if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
@@ -84,10 +81,7 @@ def initEnvironment(e, envName, multPolicies):
    e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
    e["Problem"]["Environment Function"] = lambda x : agent(x, env)
    e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
-   e["Problem"]["Training Reward Threshold"] = math.inf
    e["Problem"]["Possible Actions"] = possibleActions
-   #e["Problem"]["Testing Frequency"] = 2
-   e["Problem"]["Policy Testing Episodes"] = 20
    e["Problem"]["Agents Per Environment"] = numIndividuals
    if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals

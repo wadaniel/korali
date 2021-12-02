@@ -49,7 +49,7 @@ void __className__::initializeAgent()
   _policyExperiment.initialize();
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
-
+ 
   /*********************************************************************
    * Initializing Critic Neural Network Optimization Experiment
    *********************************************************************/
@@ -109,16 +109,16 @@ void __className__::trainPolicy()
 
   // Now calculating critic gradients
   calculateCriticGradient(miniBatch);
-
+ 
   // Updating learning rate for critic learner guided by REFER
   _criticLearner->_learningRate = _currentLearningRate;
 
   // Now applying gradients to update policy NN
   _criticLearner->runGeneration();
-
+  
   // Now calculating critic gradients
   calculatePolicyGradient(sampledStateActionSequence, miniBatch);
-
+      
   // Updating learning rate for policy learner guided by REFER
   _policyLearner->_learningRate = _currentLearningRate;
 
@@ -134,7 +134,7 @@ void __className__::calculateCriticGradient(const std::vector<size_t> &miniBatch
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     std::vector<float> gradientLoss(1, 0.);
-
+    
     // Getting index of current experiment
     size_t expId = miniBatch[b];
 
@@ -144,13 +144,14 @@ void __className__::calculateCriticGradient(const std::vector<size_t> &miniBatch
 
     // Gradient of Q Function Q(s,a) (step. (13); *-1 because the optimizer is maximizing)
     gradientLoss[0] += 2. * (expVtbc - V);
-
+    
     _criticProblem->_solutionData[b] = gradientLoss;
   }
 }
 
 void __className__::calculatePolicyGradient(const std::vector<std::vector<std::vector<float>>> &sampledStateAction, const std::vector<size_t> &miniBatch)
 {
+  
   // std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
   const size_t miniBatchSize = miniBatch.size();
 
@@ -158,46 +159,69 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     std::vector<float> gradientLoss(_policyParameterCount, 0.);
-
+    
     // Getting index of current experiment
     size_t expId = miniBatch[b];
 
     const auto &curPolicy = _curPolicyVector[expId];
-
+    
     // Gradient of Q Function Q(s,a) (step. (14); *-1 because the optimizer is maximizing)
     if (_policyDistribution == "Normal")
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
         const float mu = curPolicy.distributionParameters[i];
-        const float var = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-        const float invVar = 1. / var;
-
+        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
+        const float invSigma = 1./sigma;
+        
         // Gradient of output wrt mean
-        gradientLoss[i] += (sampledStateAction[b][0][i] - mu) * invVar;
-
-        // Gradient of output wrt var
-        gradientLoss[_problem->_actionVectorSize + i] += -0.5 * invVar + 0.5 * (sampledStateAction[b][0][i] - mu) * (sampledStateAction[b][0][i] - mu) * invVar * invVar;
+        gradientLoss[i] += (sampledStateAction[b][0][i] - mu) * invSigma * invSigma;
+        
+        // Gradient of output wrt sig
+        gradientLoss[_problem->_actionVectorSize+i] += -invSigma + (sampledStateAction[b][0][i] - mu)*(sampledStateAction[b][0][i] - mu) * invSigma * invSigma * invSigma;
       }
     }
-    else if (_policyDistribution == "Clipped Normal")
+    else if(_policyDistribution == "Clipped Normal")
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
         const float mu = curPolicy.distributionParameters[i];
-        const float var = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-        const float invVar = 1. / var;
-        // TODO
-        KORALI_LOG_ERROR("Policy Gradient not yet implemented for selected policy distribution");
+        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
+        const float invSigma = 1./sigma;
+        const float action = sampledStateAction[b][0][i];
+        
+        if (action <= _actionLowerBounds[i])
+        {
+          // gradient mu: -pdf
+          gradientLoss[i] -= normalLogDensity(action, mu, sigma);
+          // gradient sig: -(x-mu)/sigma*pdf
+          gradientLoss[_problem->_actionVectorSize+i] -= (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+        }
+        else if (action >= _actionUpperBounds[i])
+        {
+          // gradient mu: pdf
+          gradientLoss[i] += normalLogDensity(action, mu, sigma);
+          // gradient sig: (x-mu)/sigma*pdf
+          gradientLoss[_problem->_actionVectorSize+i] += (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+        }
+        else
+        {
+          // Gradient of output wrt mean
+          gradientLoss[i] += (action - mu) * invSigma * invSigma;
+          // Gradient of output wrt sig
+          gradientLoss[_problem->_actionVectorSize+i] += -invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
+        }
       }
     }
     else
     {
       KORALI_LOG_ERROR("Policy Gradient not yet implemented for selected policy distribution");
     }
-
+    
     _criticProblem->_solutionData[b] = gradientLoss;
   }
+
+
 }
 
 std::vector<policy_t> __className__::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateActionBatchSequence)
@@ -228,21 +252,22 @@ std::vector<std::vector<std::vector<float>>> __className__::sampleStateActionBat
 {
   // Getting batch size
   size_t batchSize = miniBatch.size();
-
+    
   std::vector<std::vector<std::vector<float>>> sampledStateActionBatchSequence(batchSize);
   for (size_t b = 0; b < batchSize; b++)
   {
-    auto &curPolicy = _curPolicyVector[miniBatch[b]];
-    const auto &action = generateTrainingAction(curPolicy);
-
+    auto& curPolicy = _curPolicyVector[miniBatch[b]];
+    const auto& action = generateTrainingAction(curPolicy);
+    
     auto stateAction = _stateVector[miniBatch[b]];
-    stateAction.insert(stateAction.end(), action.begin(), action.end());
+    stateAction.insert(stateAction.end(), action.begin(), action.end()); 
 
     sampledStateActionBatchSequence[b] = {stateAction}; //TODO: add sequence
   }
 
   return sampledStateActionBatchSequence;
 }
+
 
 knlohmann::json __className__::getAgentPolicy()
 {

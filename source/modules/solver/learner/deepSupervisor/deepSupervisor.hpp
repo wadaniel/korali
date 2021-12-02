@@ -148,7 +148,7 @@ class DeepSupervisor : public Learner
    * @brief A neural network to be trained based on inputs and solutions
    */
   NeuralNetwork *_neuralNetwork;
- 
+
   /**
    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)

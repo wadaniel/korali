@@ -134,7 +134,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
         ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label = label1) 
         plt.legend(loc="lower right")
       
-
       # Plotting confidence intervals
       if showCI > 0.:
         ax.fill_between(cumulativeObsArr, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
@@ -316,8 +315,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
      ax.set_xlim([0, maxPlotObservations-1])
      ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
 
-
-     
 ##################### Results parser
 
 def parseResults(dir):
@@ -340,7 +337,7 @@ def parseResults(dir):
 ##################### Main Routine: Parsing arguments and result files
   
 if __name__ == '__main__':
- 
+
  # Setting termination signal handler
  
  signal.signal(signal.SIGINT, lambda x, y: exit(0))

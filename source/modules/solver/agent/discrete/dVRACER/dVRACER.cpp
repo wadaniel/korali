@@ -125,7 +125,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expPolicy = _expPolicyVector[expId];
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
-
+    
     // Getting value evaluation
     auto &V = _stateValueVector[expId];
     const std::vector<float> expVtbc = _retraceValueVector[expId];
@@ -300,7 +300,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
     }
 
     // Calculating inverse of Sum_i(e^Q(s,a_i))
-    float invSumExpQVal = 1.0f / sumExpQVal;
+    const float invSumExpQVal = 1.0f / sumExpQVal;
 
     // Normalizing action probabilities
     for (size_t i = 0; i < _problem->_actionCount; i++)

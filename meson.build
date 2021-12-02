@@ -1,6 +1,6 @@
 project('korali', ['c', 'cpp'],
   version: '3.0.0',
-  license: 'GPL-3.0-only', # or also later?
+  license: 'MIT', # or also later?
   default_options: [
     'cpp_std=c++17',
     'b_ndebug=if-release',

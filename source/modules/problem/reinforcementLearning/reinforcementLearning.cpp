@@ -25,6 +25,11 @@ size_t __envFunctionId;
 solver::Agent *_agent;
 
 /**
+ * @brief Pointer to the engine's conduit
+ */
+Conduit *_conduit;
+
+/**
  * @brief Stores the environment thread (coroutine).
  */
 cothread_t _envThread;
@@ -68,6 +73,9 @@ void __environmentWrapper()
   (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
+  // If this is not the leader rank within the worker group, return immediately without checking termination state
+  if (_conduit->isWorkerLeadRank() == false) return;
+
   if ((*agent)["Termination"] == "Non Terminal") KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
   bool terminationRecognized = false;
@@ -108,8 +116,27 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // "Success" or "Truncated".
   agent["Termination"] = "Non Terminal";
 
+  // Setting standard value for environment Id
+  agent["Environment Id"] = 0;
+
   // Getting first state
   runEnvironment(agent);
+
+  // If this is not the leader rank within the worker group, return immediately
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false)
+  {
+    finalizeEnvironment();
+    return;
+  }
+
+  // Get environment iId value from agent
+  auto environmentId = KORALI_GET(size_t, agent, "Environment Id");
+
+  // Check whether the env id provided does not exceed the maximum specified
+  if (environmentId >= _environmentCount) KORALI_LOG_ERROR("Environment Id provided (%lu) exceeds the maximum environment count defined (>= %lu).\n", environmentId, _environmentCount);
+
+  // Store the current environment Id in the experience
+  for (size_t i = 0; i < _agentsPerEnvironment; i++) episode[i]["Environment Id"] = environmentId;
 
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
@@ -164,52 +191,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
 
-  // Finalizing Environment
-  finalizeEnvironment();
-
-  // Setting tested policy flag to false, unless we do testing
-  agent["Tested Policy"] = false;
-
-  // If the training reward of all the agents exceeds the threshold or meets the periodic conditions, then also run testing on it
-  bool runTest = false;
-  for (size_t i = 0; i < _agentsPerEnvironment; i++) runTest |= trainingRewards[i] > _trainingRewardThreshold;
-  runTest |= (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
-
-  if (runTest)
-  {
-    float averageTestingReward = 0.0;
-    float stdevTestingReward = 0.0;
-    float bestTestingReward = -Inf;
-    float worstTestingReward = +Inf;
-
-    for (size_t i = 0; i < _policyTestingEpisodes; i++)
-    {
-      runTestingEpisode(agent);
-
-      // Getting current testing reward
-      auto currentTestingReward = agent["Testing Reward"].get<float>();
-
-      // Adding current testing reward to the average and keeping statistics
-      averageTestingReward += currentTestingReward;
-      stdevTestingReward += currentTestingReward * currentTestingReward;
-      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
-      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
-    }
-
-    // Normalizing average
-    averageTestingReward /= (float)_policyTestingEpisodes;
-    stdevTestingReward = std::sqrt(stdevTestingReward / ((float)_policyTestingEpisodes) - averageTestingReward * averageTestingReward);
-
-    // Storing testing information
-    agent["Average Testing Reward"] = averageTestingReward;
-    agent["Stdev Testing Reward"] = stdevTestingReward;
-    agent["Best Testing Reward"] = bestTestingReward;
-    agent["Worst Testing Reward"] = worstTestingReward;
-
-    // Indicate that the agent has been tested
-    agent["Tested Policy"] = true;
-  }
-
   // Sending last experience last (after testing)
   // This is important to prevent the engine for block-waiting for the return of the sample
   // while the testing runs are being performed.
@@ -218,6 +199,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episode;
   KORALI_SEND_MSG_TO_ENGINE(message);
+
+  // Finalizing Environment
+  finalizeEnvironment();
 
   // Adding profiling information to agent
   agent["Computation Time"] = _agentComputationTime;
@@ -240,6 +224,13 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
 
   // Getting first state
   runEnvironment(agent);
+
+  // If this is not the leader rank within the worker group, return immediately
+  if (_k->_engine->_conduit->isWorkerLeadRank() == false)
+  {
+    finalizeEnvironment();
+    return;
+  }
 
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
@@ -272,6 +263,9 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
 {
   // Getting RL-compatible solver
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
+
+  // Getting agent's conduit
+  _conduit = _agent->_k->_engine->_conduit;
 
   // First, we update the initial policy's hyperparameters
   _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
@@ -344,6 +338,9 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // In case of this being a single agent, preprocess state and reward if necessary
+  if (_conduit->isWorkerLeadRank() == false) return;
+
+  // In case of this being a single agent, support returning state as only vector
   if (_agentsPerEnvironment == 1)
   {
     // Support returning state as vector
@@ -390,6 +387,14 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
     // Re-storing state into agent
     agent["State"][i] = state;
+  }
+
+  // Parsing reward
+  if (_agentsPerEnvironment == 1)
+  {
+    auto reward = KORALI_GET(float, agent, "Reward");
+    agent._js.getJson().erase("Reward");
+    agent["Reward"][0] = reward;
   }
 
   // Checking correct format of reward
@@ -473,6 +478,15 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Policies Per Environment'] required by reinforcementLearning.\n"); 
 
+ if (isDefined(js, "Environment Count"))
+ {
+ try { _environmentCount = js["Environment Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Environment Count']\n%s", e.what()); } 
+   eraseValue(js, "Environment Count");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Environment Count'] required by reinforcementLearning.\n"); 
+
  if (isDefined(js, "Environment Function"))
  {
  try { _environmentFunction = js["Environment Function"].get<std::uint64_t>();
@@ -490,33 +504,6 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Actions Between Policy Updates");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Actions Between Policy Updates'] required by reinforcementLearning.\n"); 
-
- if (isDefined(js, "Testing Frequency"))
- {
- try { _testingFrequency = js["Testing Frequency"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Testing Frequency']\n%s", e.what()); } 
-   eraseValue(js, "Testing Frequency");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing Frequency'] required by reinforcementLearning.\n"); 
-
- if (isDefined(js, "Training Reward Threshold"))
- {
- try { _trainingRewardThreshold = js["Training Reward Threshold"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Training Reward Threshold']\n%s", e.what()); } 
-   eraseValue(js, "Training Reward Threshold");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Training Reward Threshold'] required by reinforcementLearning.\n"); 
-
- if (isDefined(js, "Policy Testing Episodes"))
- {
- try { _policyTestingEpisodes = js["Policy Testing Episodes"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Policy Testing Episodes']\n%s", e.what()); } 
-   eraseValue(js, "Policy Testing Episodes");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Policy Testing Episodes'] required by reinforcementLearning.\n"); 
 
  if (isDefined(js, "Custom Settings"))
  {
@@ -583,11 +570,9 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Agents Per Environment"] = _agentsPerEnvironment;
    js["Policies Per Environment"] = _policiesPerEnvironment;
+   js["Environment Count"] = _environmentCount;
    js["Environment Function"] = _environmentFunction;
    js["Actions Between Policy Updates"] = _actionsBetweenPolicyUpdates;
-   js["Testing Frequency"] = _testingFrequency;
-   js["Training Reward Threshold"] = _trainingRewardThreshold;
-   js["Policy Testing Episodes"] = _policyTestingEpisodes;
    js["Custom Settings"] = _customSettings;
    js["Action Vector Size"] = _actionVectorSize;
    js["State Vector Size"] = _stateVectorSize;
@@ -605,7 +590,7 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
 void ReinforcementLearning::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Agents Per Environment\": 1, \"Policies Per Environment\": 1, \"Testing Frequency\": 0, \"Policy Testing Episodes\": 5, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
+ std::string defaultString = "{\"Agents Per Environment\": 1, \"Policies Per Environment\": 1, \"Testing Frequency\": 0, \"Policy Testing Episodes\": 5, \"Environment Count\": 1, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Problem::applyModuleDefaults(js);

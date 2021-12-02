@@ -34,7 +34,7 @@ void Agent::initialize()
   }
 
   if (_episodesPerGeneration < 1)
-      KORALI_LOG_ERROR("Episodes Per Generation must be larger equal 1 (is %zu)", _episodesPerGeneration);
+    KORALI_LOG_ERROR("Episodes Per Generation must be larger equal 1 (is %zu)", _episodesPerGeneration);
 
   // Initializing selected policy
   initializeAgent();
@@ -72,9 +72,9 @@ void Agent::initialize()
   _episodeIdVector.resize(_experienceReplayMaximumSize);
 
   //  Pre-allocating space for state time sequence
-  _stateTimeSequence.resize(_problem->_agentsPerEnvironment); 
-  for(size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
-    _stateTimeSequence[agentId].resize(_timeSequenceLength); 
+  _stateTimeSequence.resize(_problem->_agentsPerEnvironment);
+  for (size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
+    _stateTimeSequence[agentId].resize(_timeSequenceLength);
 
   /*********************************************************************
    * If initial generation, set initial agent configuration
@@ -371,7 +371,7 @@ void Agent::attendAgent(size_t agentId)
   {
     // Getting episode Id
     size_t episodeId = message["Sample Id"];
-    
+
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
     {
@@ -458,7 +458,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   /*********************************************************************
    * Adding episode's experiences into the replay memory
    *********************************************************************/
- 
+
   // Storage for the episode's cumulative reward
   std::vector<float> cumulativeReward(_problem->_agentsPerEnvironment, 0.0f);
 
@@ -575,8 +575,8 @@ void Agent::processEpisode(knlohmann::json &episode)
       {
         expPolicy[d].availableActions = availAct[d];
         if (expPolicy[d].availableActions.size() > 0)
-        if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
-          KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
+          if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
+            KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
       }
     }
 
@@ -960,7 +960,7 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
 
 void Agent::resetTimeSequence()
 {
-  for(size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
+  for (size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
     _stateTimeSequence[agentId].clear();
 }
 

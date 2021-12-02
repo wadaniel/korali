@@ -125,7 +125,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     const auto &expPolicy = _expPolicyVector[expId];
     // Getting current policy data
     const auto &curPolicy = _curPolicyVector[expId];
-    
+
     // Getting value evaluation
     auto &V = _stateValueVector[expId];
     const std::vector<float> expVtbc = _retraceValueVector[expId];
@@ -357,7 +357,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
           // Extracting max Q(s,a_i)
           if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
-         
+
           if (isfinite(qValAndInvTemp[i]) == false)
           {
             for (float e : evaluation[b]) printf("e: %f\n", e);

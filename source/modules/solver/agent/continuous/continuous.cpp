@@ -130,7 +130,7 @@ void Continuous::getAction(korali::Sample &sample)
     if (sample["Mode"] == "Training") action = generateTrainingAction(policy[0]);
 
     /*****************************************************************************
-     * During testing, we select the means (point of highest density) for all
+     * During testing, we select the modes for all
      * elements of the action vector
      ****************************************************************************/
 

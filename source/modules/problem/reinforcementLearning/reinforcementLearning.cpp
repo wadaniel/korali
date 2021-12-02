@@ -137,7 +137,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Storing the current action
     episode["Experiences"][actionCount]["Action"] = agent["Action"];
- 
+
     // Storing the experience's policy
     episode["Experiences"][actionCount]["Policy"] = agent["Policy"];
 

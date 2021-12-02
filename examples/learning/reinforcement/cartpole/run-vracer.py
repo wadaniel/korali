@@ -27,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=3e-3,
+    default=1e-4,
     type=float,
     required=False)
 parser.add_argument(
@@ -76,6 +76,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Episodes Per Generation"] = 10 
 e["Solver"]["Concurrent Environments"] = args.concurrentEnvironments
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
@@ -91,7 +92,6 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### Configuring the neural network and its hidden layers
 
-e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Neural Network"]["Engine"] = args.engine
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"

@@ -21,16 +21,19 @@ parser.add_argument(
     '--optimizer',
     help='Optimizer to use for NN parameter updates',
     default='Adam',
+    type=str,
     required=False)
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=1e-3,
+    default=1e-4,
+    type=float,
     required=False)
 parser.add_argument(
     '--concurrentEnvironments',
     help='Number of environments to run concurrently',
     default=1,
+    type=int,
     required=False)
 args = parser.parse_args()
 
@@ -72,9 +75,9 @@ e["Solver"]["Type"] = "Agent / Discrete / dVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Learning Rate"] = float(args.learningRate)
+e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
-e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
+e["Solver"]["Concurrent Environments"] = args.concurrentEnvironments
 
 ### Defining Experience Replay configuration
 

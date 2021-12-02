@@ -9,11 +9,11 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of workers
-NWORKER=32
+NWORKER=64
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=4
+NRANKS=1
 # NRANKS=9
 
 # number of cores per worker

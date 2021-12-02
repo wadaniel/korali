@@ -10,7 +10,7 @@
 
 // #define ID
 // #define MULTITASK
-// #define SWARM
+#define SWARM
 // #define SINGLE
 // #define WATERTURBINE
 

@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     e["Variables"][j]["Type"] = "Action";
     e["Variables"][j]["Lower Bound"] = -max_omega;
     e["Variables"][j]["Upper Bound"] = +max_omega;
-    e["Variables"][j]["Initial Exploration Noise"] = 15;
+    e["Variables"][j]["Initial Exploration Noise"] = 10;
   }
 
   // std::cout<<"Before state 2"<<std::endl;
@@ -190,8 +190,8 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Padding Bottom"]    = 0;
   e["Solver"]["Neural Network"]["Hidden Layers"][6]["Output Channels"]   = 64*1*1;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"; // there was a 4 here before, so basically did nothing after
-  e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Elementwise/ReLU"; // the previous conv layer, vel_oui_relu_30s when added
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Type"] = "Layer/Activation"; // there was a 4 here before, so basically did nothing after
+  // e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Elementwise/ReLU"; // the previous conv layer, vel_oui_relu_30s when added
 
 
 

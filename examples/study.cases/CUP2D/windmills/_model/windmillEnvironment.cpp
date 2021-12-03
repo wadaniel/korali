@@ -3,6 +3,8 @@
 #include "Definitions.h"
 #include <chrono>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
 int _argc;
 char **_argv;
@@ -36,6 +38,50 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
+
+  // copy the contents of the profile.dat file into vector c++
+
+  std::vector<std::vector<double>> profiles(200, std::vector<double> (33, 0.0)); // initialize vector of size 200 x 33
+
+  std::ifstream myfile;
+  myfile.open("../../profile.dat", ios::in);
+
+  if (myfile.is_open()){
+    std::cout<<"File is open"<<std::endl;
+
+  } else{
+    std::cout<<"File is closed"<<std::endl;
+    std::cerr<<"Failed to open the file"<<std::endl;
+  }
+
+  std::string line;
+  int i = 0;
+  int j_copy = 0;
+
+  while (std::getline(myfile, line))
+  {
+    std::istringstream data_line(line);
+    int j = 0;
+    for (j=0; j < 33; ++j)
+    {
+      if (data_line >> profiles[i][j])
+      {
+
+      } else{
+        std::cout<<"Failed to read number"<<std::endl;
+      }
+    }
+    i += 1;
+    j_copy = j;
+  }
+  myfile.close();
+
+  std::cout<<"ij"<<i<<" "<<j_copy<<std::endl;
+
+
+
+  //if(std::filesystem::copy_file("../../profile.dat", "profile.dat")) std::cout<<"File was copied successfully"<<std::endl;;
+
   // Creating simulation environment
   Simulation *_environment = new Simulation(_argc, _argv);
   _environment->init();
@@ -60,20 +106,6 @@ void runEnvironment(korali::Sample &s)
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
-  // Set target
-  std::array<Real,2> target_pos{0.7,0.6};
-  std::array<Real, 2> target_vel={0.0,0.0};
-
-  agent1->setTarget(target_pos);
-  agent2->setTarget(target_pos);
-
-  
-
-  //std::array<Real, 2> center_area = {target_pos[0], target_pos[1]};
-  std::vector<double> dim = {0.2, 0.2};
-
-  // std::cout<<"Before state "<<std::endl;
-
 
   // std::vector<double> state1 = agent1->state();
   // std::vector<double> state2 = agent2->state();
@@ -93,7 +125,24 @@ void runEnvironment(korali::Sample &s)
   size_t curStep = 0;  // current Step
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 3000; // 2000 for training
+  size_t maxSteps = 200; // 2000 for training
+
+  // std::fstream myfile;
+  // myfile.open("profile.dat", ios::in);
+
+  // if (myfile.is_open()){
+  //   std::cout<<"File is open"<<std::endl;
+  // } else{
+  //   std::cout<<"File is closed"<<std::endl;
+  // }
+
+  std::vector<double> true_prof = {19.9993, 0.0531483, 0.053797, 0.0541452, 0.05426, 0.0542343, 0.0541726, 0.0541775, 0.0543413, 0.0547629,
+                                   0.0555199, 0.0567263, 0.0584773, 0.0608873, 0.063975, 0.0675119, 0.0707227, 0.0725255, 0.0724874,
+                                   0.0722369, 0.0752008, 0.0817008, 0.0888002, 0.0975837, 0.109082, 0.121681, 0.133602, 0.143548,
+                                   0.150564, 0.153644, 0.151996, 0.145743, 0.136029};
+  
+
+  int index_step = 0;
 
   while (curStep < maxSteps)
   {
@@ -108,7 +157,7 @@ void runEnvironment(korali::Sample &s)
     agent2->act( action[1] );
 
     // Run the simulation until next action is required
-    tNextAct += 0.01;
+    tNextAct += 0.1;
     while ( t < tNextAct )
     {
       // Calculate simulation timestep
@@ -119,45 +168,34 @@ void runEnvironment(korali::Sample &s)
       _environment->advance(dt);
     }
 
-    // used for "both" run
-    // Real en = 5.0e4;
-    // Real flow = 2.5;
+    // std::vector<double> profile;
+    // std::string line;
 
-    // used for "energy_zero" run
-    // Real en = 5.0e4;
-    // Real flow = 0.0;
+    // if (myfile.is_open()){
+    //   std::cout<<"File is open"<<std::endl;
+    // } 
 
-    // used for "flow_zero" run
-    Real en = 0.0;
-    Real flow = 1.0;
+    // std::getline(myfile, line);
+    // std::istringstream data_line(line);
+    // std::cout<<line<<std::endl;
+    
 
-    double r1 = agent1->reward( target_vel,  en, flow);
-    double r2 = agent2->reward( target_vel,  en, flow);
-    double reward = (r1 + r2);
+    // double value = 0.0;
 
-    // // Obtaining new agent state
-    // state1 = agent1->state();
-    // state2 = agent2->state();
-    // state = {state1[0], state1[1], state2[0], state2[1]};
-
-    // // Printing Information:
-    // printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    // printf("[Korali] State: [ ");
-    // for (size_t i = 0; i < state.size(); i++){
-    //   if (i%2 == 0){
-    //     printf("[%.3f, ", state[i]);
-    //   } else {
-    //     printf("%.3f]", state[i]);
-    //   }
+    // while (data_line >> value)
+    // {
+    //   profile.push_back(value);
     // }
-    // printf("]\n");
-    // printf("[Korali] Action: [ %.8f, %.8f ]\n", action[0], action[1]);
-    // printf("[Korali] Reward: %.3f+%.3f=%.3f\n", r1, r2, reward);
-    // printf("[Korali] -------------------------------------------------------\n");
-    // fflush(stdout);
+    // std::cout<<" After reading file line "<<profile[0]<<std::endl;
+
+    Real factor = 10.0;
+
+    double reward = agent1->reward(factor, profiles[index_step]);
 
     // Storing reward
     s["Reward"] = reward;
+
+    index_step += 1;
 
     // get state
     // state1 = agent1->state();
@@ -175,6 +213,8 @@ void runEnvironment(korali::Sample &s)
     // Advancing to next step
     curStep++;
   }
+
+  // myfile.close();
 
   // Flush CUP logger
   logger.flush();

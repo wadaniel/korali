@@ -25,7 +25,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=6:00:00
+#SBATCH --time=3:00:00
 #SBATCH --nodes=$((NNODES+1))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12

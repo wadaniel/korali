@@ -9,16 +9,16 @@ CUBISMLIBS= ${CUPFOLDER}/makefiles/libcup.a $(shell cat ${CUPFOLDER}/makefiles/c
 
 .SECONDARY:
 .PHONY: all
-all: windmill 4windmill
+all: windmill #4windmill
 
 windmill: $(WINDMILL)
-4windmill: $(WINDMILL4)
+#4windmill: $(WINDMILL4)
 
 $(WINDMILL): %: %.o windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
-$(WINDMILL4): %: %.o 4windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
-	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
+#$(WINDMILL4): %: %.o 4windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
+#	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
@@ -26,9 +26,9 @@ $(WINDMILL4): %: %.o 4windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a
 windmillEnvironment.o: _model/windmillEnvironment.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
-4windmillEnvironment.o: _model/4windmillEnvironment.cpp
-	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
+#4windmillEnvironment.o: _model/4windmillEnvironment.cpp
+#	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
 .PHONY: clean
 clean:
-	$(RM) $(WINDMILL) *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(WINDMILL) *.o *.ti *.optrpt *.h5 *.xmf

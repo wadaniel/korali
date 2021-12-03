@@ -16,6 +16,8 @@ RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
+cp profiles/freqnu.dat ${RUNPATH}/profile.dat
+cp profiles/freqnu.dat ${RUNPATH} # indication of which data file to use
 cd ${RUNPATH}
 
 source settings.sh

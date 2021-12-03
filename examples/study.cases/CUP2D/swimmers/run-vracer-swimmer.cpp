@@ -37,16 +37,20 @@ int main(int argc, char *argv[])
   // Check if existing results are there and continuing them
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true){
-    printf("[Korali] Continuing execution from previous run...\n");
+    // printf("[Korali] Continuing execution from previous run...\n");
     // Hack to enable execution after Testing.
-    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
+    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + std::numeric_limits<int>::max();
   }
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
   #ifdef MULTITASK
+  #ifdef WATERTURBINE
+  e["Problem"]["Environment Count"] = 4;
+  #else
   e["Problem"]["Environment Count"] = 3;
+  #endif
   #endif
 
   // Setting results path and dumping frequency in CUP
@@ -55,7 +59,7 @@ int main(int argc, char *argv[])
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the state variables
-  #ifdef NOSENSOR
+  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
   #else
   size_t numStates = 16;
@@ -131,7 +135,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;
 
   ////// Setting Korali output configuration
-  e["Console Output"]["Verbosity"] = "Detailed";
+  e["Console Output"]["Verbosity"] = "Normal";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
   e["File Output"]["Use Multiple Files"] = false;

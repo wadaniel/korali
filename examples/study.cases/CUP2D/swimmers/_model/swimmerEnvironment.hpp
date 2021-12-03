@@ -9,8 +9,10 @@
 #include "Utils/BufferedLogger.h"
 
 // #define ID
-// #define NOSENSOR
 // #define MULTITASK
+#define SWARM
+// #define SINGLE
+// #define WATERTURBINE
 
 // command line arguments are read in Korali application
 extern int _argc;

@@ -8,9 +8,10 @@ RTOL=${RTOL-2}
 CTOL=${CTOL-1}
 EXTENT=${EXTENT:-2}
 CFL=${CFL:-0.4}
-PT=${PT:-1e-7}
+PT=${PT:-1e-4}
 PTR=${PTR:-0}
-PR=${PR:-5}
+PR=${PR:-10}
+PI=${PI:-1000}
 
 # Defaults for follower
 LENGTH=${LENGTH:-0.2}
@@ -91,6 +92,27 @@ else
 		stefanfish L=$LENGTH T=$PERIOD xpos=$XPOSFOLLOWER
 	"
 		echo $OBJECTS
+	elif [ "$OBSTACLE" = "single" ]
+	then
+		echo "setting options for single"
+		# options for swarm4
+		NAGENTS=1
+		EXTENT=4
+		# set object string
+		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1
+	"
+		echo $OBJECTS
+	elif [ "$OBSTACLE" = "swarm2" ]
+	then
+		echo "setting options for swarm2"
+		# options for swarm4
+		NAGENTS=1
+		EXTENT=4
+		# set object string
+		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
+	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.00
+	"
+		echo $OBJECTS
 	elif [ "$OBSTACLE" = "swarm4" ]
 	then
 		echo "setting options for swarm4"
@@ -98,7 +120,6 @@ else
 		NAGENTS=3
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 4 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -113,7 +134,6 @@ else
 		NAGENTS=8
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 9 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -133,7 +153,6 @@ else
 		NAGENTS=15
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 16 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -160,7 +179,6 @@ else
 		NAGENTS=24
 		EXTENT=4
 		# set object string
-		### for L=0.2 and extentx=extenty=2, 25 swimmers
 		OBJECTS="stefanfish L=$LENGTH T=$PERIOD xpos=0.60 ypos=1.00 bFixed=1 pid=$PID
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=0.90
 	stefanfish L=$LENGTH T=$PERIOD xpos=0.90 ypos=1.10
@@ -191,7 +209,7 @@ else
 	fi
 echo "----------------------------"
 echo "setting simulation options"
-OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -maxPoissonRestarts $PR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 1 -verbose 0"
+OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -levelStart 4  -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bMeanConstraint 1 -maxPoissonRestarts $PR -maxPoissonIterations $PI -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 0 -muteAll 1 -verbose 0"
 echo $OPTIONS
 echo "----------------------------"
 fi

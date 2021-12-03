@@ -32,6 +32,7 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  if( rank == 0 )
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
   {
@@ -44,7 +45,7 @@ void runEnvironment(korali::Sample &s)
   if( rank == 0 ) {
     char logFilePath[128];
     sprintf(logFilePath, "%s/log.txt", resDir);
-    logFile = freopen(logFilePath, "a", stdout);
+    logFile = freopen(logFilePath, "w", stdout);
     if (logFile == NULL)
     {
       printf("[Korali] Error creating log file: %s.\n", logFilePath);
@@ -60,7 +61,11 @@ void runEnvironment(korali::Sample &s)
 
   // Sample task and save in vector
   #ifdef MULTITASK
+  #ifdef WATERTURBINE
+  std::uniform_int_distribution<> disT(0, 3);
+  #else
   std::uniform_int_distribution<> disT(0, 2);
+  #endif
   int task = disT(_randomGenerator);
   std::string argumentString;
   switch(task) {
@@ -70,9 +75,11 @@ void runEnvironment(korali::Sample &s)
              break;
     case 2 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSstefanfish;
              break;
+    case 3 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSwaterturbine;
+             break;
   }
   s["Environment Id"] = task;
-  std::cout << "argumentString=" << argumentString << std::endl;
+  // std::cout << "argumentString=" << argumentString << std::endl;
   std::stringstream ss(argumentString);
   std::string item;
   std::vector<std::string> arguments;
@@ -94,10 +101,16 @@ void runEnvironment(korali::Sample &s)
 
   // Obtaining agents
   std::vector<Shape*> shapes = _environment->getShapes();
+  #ifndef SINGLE
   size_t nAgents = shapes.size() - 1;
   std::vector<StefanFish *> agents(nAgents);
   for( size_t i = 1; i<nAgents+1; i++ )
     agents[i-1] = dynamic_cast<StefanFish *>(shapes[i]);
+  #else
+  size_t nAgents = 1;
+  std::vector<StefanFish *> agents(nAgents);
+  agents[0] = dynamic_cast<StefanFish *>(shapes[0]);
+  #endif
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
@@ -161,7 +174,7 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time of next action     
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 1;
+  size_t maxSteps = 200;
 
   // // File to write actions
   // std::stringstream filename;
@@ -197,10 +210,6 @@ void runEnvironment(korali::Sample &s)
     for( size_t i = 0; i<nAgents; i++ )
     {
       MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
-      // std::cout << "Applying action(" << t<< ") = [ ";
-      // for( size_t j = 0; j<actions[i].size(); j++ )
-      //   std::cout << actions[i][j] << " ";
-      // std::cout << "] for agent "<< i << "\n";
       if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
     }
@@ -359,10 +368,10 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
     initialPosition[1] = initialPosition[1] + disY(_randomGenerator);
   }
 
-  printf("[Korali] Initial Condition Agent %ld:\n", agentId);
-  printf("[Korali] angle: %f\n", initialAngle);
-  printf("[Korali] x: %f\n", initialPosition[0]);
-  printf("[Korali] y: %f\n", initialPosition[1]);
+  // printf("[Korali] Initial Condition Agent %ld:\n", agentId);
+  // printf("[Korali] angle: %f\n", initialAngle);
+  // printf("[Korali] x: %f\n", initialPosition[0]);
+  // printf("[Korali] y: %f\n", initialPosition[1]);
 
   // // Write initial condition to file
   // std::stringstream filename;
@@ -387,10 +396,21 @@ bool isTerminal(StefanFish *agent, size_t nAgents)
 {
   double xMin, xMax, yMin, yMax;
   if( nAgents == 1 ){
+    #ifndef SINGLE
     xMin = 0.8;
     xMax = 1.4;
+    #else
+    xMin = 0.4;
+    xMax = 1.4;
+    #endif
+    #ifdef SWARM
+    yMin = 0.8;
+    yMax = 1.2;
+    #else
     yMin = 0.3;
     yMax = 0.7;
+    #endif
+
   }
   else if( nAgents == 3 ){
     xMin = 0.4;

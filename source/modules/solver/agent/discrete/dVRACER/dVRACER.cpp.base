@@ -17,16 +17,16 @@ void __className__::initializeAgent()
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Testing Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount; // The value function, action q values, and inverse temperature
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["Mode"] = "Training";
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
@@ -51,9 +51,14 @@ void __className__::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][1 + _problem->_possibleActions.size()] = "Sigmoid";
 
   // Running initialization to verify that the configuration is correct
+  _criticPolicyExperiment.setEngine(_k->_engine);
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
+
+  // Preallocating space in the underlying supervised problem's input and solution data structures (for performance, we don't reinitialize it every time)
+  _criticPolicyProblem->_inputData.resize(_miniBatchSize);
+  _criticPolicyProblem->_solutionData.resize(_miniBatchSize);
 }
 
 void __className__::trainPolicy()

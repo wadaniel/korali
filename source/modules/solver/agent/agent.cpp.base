@@ -1249,14 +1249,11 @@ void __className__::printGenerationAfter()
         _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma[d]);
     }
 
-    if (isinf(_testingBestEpisodeId > 0))
+    if (_testingBestEpisodeId > 0)
     {
       _k->_logger->logInfo("Normal", "Testing Statistics:\n");
-
-      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
-
-      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
       _k->_logger->logInfo("Normal", " + Best Average Reward for agent: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
     }
 
     printAgentInformation();

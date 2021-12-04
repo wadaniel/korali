@@ -149,11 +149,14 @@ void __className__::calculateCriticGradient(const std::vector<size_t> &miniBatch
   }
 }
 
-void __className__::calculatePolicyGradient(const std::vector<std::vector<std::vector<float>>> &sampledStateAction, const std::vector<size_t> &miniBatch)
+void __className__::calculatePolicyGradient(const std::vector<std::vector<std::vector<float>>> &sampledStateActionBatch, const std::vector<size_t> &miniBatch)
 {
   
   // std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
   const size_t miniBatchSize = miniBatch.size();
+
+  // Get gradient of Q function wrt to input
+  const auto qInputGradient = _criticLearner->getInputGradients(sampledStateActionBatch);
 
 #pragma omp parallel for
   for (size_t b = 0; b < miniBatchSize; b++)
@@ -165,7 +168,7 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
 
     const auto &curPolicy = _curPolicyVector[expId];
     
-    // Gradient of Q Function Q(s,a) (step. (14); *-1 because the optimizer is maximizing)
+    // Gradient of Q Function Q(s,a) (step. (13); *-1 because the optimizer is maximizing)
     if (_policyDistribution == "Normal")
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -173,12 +176,13 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
         const float mu = curPolicy.distributionParameters[i];
         const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
         const float invSigma = 1./sigma;
+        const float action = sampledStateActionBatch[b][0][i];
         
         // Gradient of output wrt mean
-        gradientLoss[i] += (sampledStateAction[b][0][i] - mu) * invSigma * invSigma;
+        gradientLoss[i] -= (action - mu) * invSigma * invSigma;
         
         // Gradient of output wrt sig
-        gradientLoss[_problem->_actionVectorSize+i] += -invSigma + (sampledStateAction[b][0][i] - mu)*(sampledStateAction[b][0][i] - mu) * invSigma * invSigma * invSigma;
+        gradientLoss[_problem->_actionVectorSize+i] -= -2.*invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
       }
     }
     else if(_policyDistribution == "Clipped Normal")
@@ -188,28 +192,83 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
         const float mu = curPolicy.distributionParameters[i];
         const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
         const float invSigma = 1./sigma;
-        const float action = sampledStateAction[b][0][i];
+        const float action = sampledStateActionBatch[b][0][i];
         
         if (action <= _actionLowerBounds[i])
         {
           // gradient mu: -pdf
-          gradientLoss[i] -= normalLogDensity(action, mu, sigma);
+          gradientLoss[i] -= -normalLogDensity(action, mu, sigma);
           // gradient sig: -(x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] -= (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+          gradientLoss[_problem->_actionVectorSize+i] -= -(action-mu)*invSigma*normalLogDensity(action, mu, sigma);
         }
         else if (action >= _actionUpperBounds[i])
         {
           // gradient mu: pdf
-          gradientLoss[i] += normalLogDensity(action, mu, sigma);
+          gradientLoss[i] -= normalLogDensity(action, mu, sigma);
           // gradient sig: (x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] += (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+          gradientLoss[_problem->_actionVectorSize+i] -= (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
         }
         else
         {
           // Gradient of output wrt mean
-          gradientLoss[i] += (action - mu) * invSigma * invSigma;
+          gradientLoss[i] -= (action - mu) * invSigma * invSigma;
           // Gradient of output wrt sig
-          gradientLoss[_problem->_actionVectorSize+i] += -invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
+          gradientLoss[_problem->_actionVectorSize+i] -= -invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
+        }
+      }
+    }
+    else
+    {
+      KORALI_LOG_ERROR("Policy Gradient not yet implemented for selected policy distribution");
+    }
+  
+    // Gradient of policy and Q(s,a) function wrt action (step. (14); *-1 because the optimizer is maximizing)
+    if (_policyDistribution == "Normal")
+    {
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        const float mu = curPolicy.distributionParameters[i];
+        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
+        const float invSigma = 1./sigma;
+        const float action = sampledStateActionBatch[b][0][i];
+        
+        // Gradient of Q(s,a) and policy wrt action
+        gradientLoss[i] -= qInputGradient[b][i] - (action - mu) * invSigma * invSigma;
+        
+        // Gradient of Q(s, a) and policy wrt action
+        gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] - (action - mu) * invSigma * invSigma;
+      }
+    }
+    else if(_policyDistribution == "Clipped Normal")
+    {
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        KORALI_LOG_ERROR("Policy Gradient not yet implemented for Clipped Normal distribution");
+        const float mu = curPolicy.distributionParameters[i];
+        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
+        const float invSigma = 1./sigma;
+        const float action = sampledStateActionBatch[b][0][i];
+        
+        if (action <= _actionLowerBounds[i])
+        {
+          // gradient mu: -pdf
+          gradientLoss[i] -= qInputGradient[b][i] + 0;
+          // gradient sig: -(x-mu)/sigma*pdf
+          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
+        }
+        else if (action >= _actionUpperBounds[i])
+        {
+          // gradient mu: pdf
+          gradientLoss[i] -= qInputGradient[b][i] + 0;
+          // gradient sig: (x-mu)/sigma*pdf
+          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
+        }
+        else
+        {
+          // Gradient of output wrt mean
+          gradientLoss[i] -= qInputGradient[b][i] + 0;
+          // Gradient of output wrt sig
+          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
         }
       }
     }
@@ -258,11 +317,7 @@ std::vector<std::vector<std::vector<float>>> __className__::sampleStateActionBat
   {
     auto& curPolicy = _curPolicyVector[miniBatch[b]];
     const auto& action = generateTrainingAction(curPolicy);
-    
-    auto stateAction = _stateVector[miniBatch[b]];
-    stateAction.insert(stateAction.end(), action.begin(), action.end()); 
-
-    sampledStateActionBatchSequence[b] = {stateAction}; //TODO: add sequence
+    sampledStateActionBatchSequence[b] = { action }; //TODO: add stae and make it a sequence
   }
 
   return sampledStateActionBatchSequence;

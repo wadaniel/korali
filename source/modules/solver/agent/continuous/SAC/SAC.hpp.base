@@ -23,7 +23,7 @@ class __className__ : public __parentClassName__
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_policyProblem;
-
+  
   /**
    * @brief Pointer to training the critic network
    */
@@ -50,16 +50,16 @@ class __className__ : public __parentClassName__
    * @param miniBatch The indexes of the experience mini batch
    */
   void calculateCriticGradient(const std::vector<size_t> &miniBatch);
-
+  
   /**
    * @brief Calculates the gradients for the policy neural network
    * @param sampledStateActionSequence Sampled state action sequences for policy update
    * @param miniBatch The indexes of the experience mini batch
    */
   void calculatePolicyGradient(const std::vector<std::vector<std::vector<float>>> &sampledStateActionSequence, const std::vector<size_t> &miniBatch);
-
+ 
   std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateActionBatchSequence) override;
-
+ 
   /**
    * @brief Sample new set of actions for given state batch sequence
    * @param stateActionBatchSequence The indexes of the experience mini batch

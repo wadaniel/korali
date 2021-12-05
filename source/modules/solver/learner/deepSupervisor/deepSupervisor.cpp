@@ -197,7 +197,7 @@ std::vector<std::vector<float>> &DeepSupervisor::getInputGradients(const std::ve
   const size_t N = input.size();
 
   // Running the input values through the neural network
-  _neuralNetwork->forward(input); //TODO is this needed? (DW)
+  _neuralNetwork->forward(input);
 
   // Returning the input data gradients
   return _neuralNetwork->getInputGradients(N);

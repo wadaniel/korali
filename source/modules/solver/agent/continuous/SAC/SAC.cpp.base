@@ -176,13 +176,15 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
         const float mu = curPolicy.distributionParameters[i];
         const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
         const float invSigma = 1./sigma;
+        const float invVar = invSigma * invSigma;
         const float action = sampledStateActionBatch[b][0][i];
+        const float eps = (action - mu) * invSigma;
         
         // Gradient of output wrt mean
-        gradientLoss[i] -= (action - mu) * invSigma * invSigma;
+        gradientLoss[i] -= (action - mu) * invVar + (-invVar*(action-mu) - qInputGradient[b][i]);
         
         // Gradient of output wrt sig
-        gradientLoss[_problem->_actionVectorSize+i] -= -2.*invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
+        gradientLoss[_problem->_actionVectorSize+i] -= -2.*invSigma + (action - mu)*(action - mu) * invVar * invSigma + (-invVar*(action-mu) - qInputGradient[b][i]) * eps;
       }
     }
     else if(_policyDistribution == "Clipped Normal")
@@ -192,28 +194,32 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
         const float mu = curPolicy.distributionParameters[i];
         const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
         const float invSigma = 1./sigma;
+        const float invVar = invSigma * invSigma;
         const float action = sampledStateActionBatch[b][0][i];
-        
+        const float eps = (curPolicy.unboundedAction[i] - mu) * invSigma;
+        const float logPdf = normalLogDensity(action, mu, sigma);
+
         if (action <= _actionLowerBounds[i])
         {
           // gradient mu: -pdf
-          gradientLoss[i] -= -normalLogDensity(action, mu, sigma);
+          gradientLoss[i] -= -logPdf;
           // gradient sig: -(x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] -= -(action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+          gradientLoss[_problem->_actionVectorSize+i] -= -(action-mu)*invSigma*logPdf;
         }
         else if (action >= _actionUpperBounds[i])
         {
           // gradient mu: pdf
-          gradientLoss[i] -= normalLogDensity(action, mu, sigma);
+          gradientLoss[i] -= logPdf;
           // gradient sig: (x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] -= (action-mu)*invSigma*normalLogDensity(action, mu, sigma);
+          gradientLoss[_problem->_actionVectorSize+i] -= (action-mu)*invSigma*logPdf;
         }
         else
         {
           // Gradient of output wrt mean
-          gradientLoss[i] -= (action - mu) * invSigma * invSigma;
+          gradientLoss[i] -= (action - mu) * invVar + (-invVar*(action-mu) - qInputGradient[b][i]);
+        
           // Gradient of output wrt sig
-          gradientLoss[_problem->_actionVectorSize+i] -= -invSigma + (action - mu)*(action - mu) * invSigma * invSigma * invSigma;
+          gradientLoss[_problem->_actionVectorSize+i] -= -2.*invSigma + (action - mu)*(action - mu) * invVar * invSigma + (-invVar*(action-mu) - qInputGradient[b][i]) * eps;
         }
       }
     }
@@ -222,61 +228,6 @@ void __className__::calculatePolicyGradient(const std::vector<std::vector<std::v
       KORALI_LOG_ERROR("Policy Gradient not yet implemented for selected policy distribution");
     }
   
-    // Gradient of policy and Q(s,a) function wrt action (step. (14); *-1 because the optimizer is maximizing)
-    if (_policyDistribution == "Normal")
-    {
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        const float mu = curPolicy.distributionParameters[i];
-        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
-        const float invSigma = 1./sigma;
-        const float action = sampledStateActionBatch[b][0][i];
-        
-        // Gradient of Q(s,a) and policy wrt action
-        gradientLoss[i] -= qInputGradient[b][i] - (action - mu) * invSigma * invSigma;
-        
-        // Gradient of Q(s, a) and policy wrt action
-        gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] - (action - mu) * invSigma * invSigma;
-      }
-    }
-    else if(_policyDistribution == "Clipped Normal")
-    {
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        KORALI_LOG_ERROR("Policy Gradient not yet implemented for Clipped Normal distribution");
-        const float mu = curPolicy.distributionParameters[i];
-        const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize+i];
-        const float invSigma = 1./sigma;
-        const float action = sampledStateActionBatch[b][0][i];
-        
-        if (action <= _actionLowerBounds[i])
-        {
-          // gradient mu: -pdf
-          gradientLoss[i] -= qInputGradient[b][i] + 0;
-          // gradient sig: -(x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
-        }
-        else if (action >= _actionUpperBounds[i])
-        {
-          // gradient mu: pdf
-          gradientLoss[i] -= qInputGradient[b][i] + 0;
-          // gradient sig: (x-mu)/sigma*pdf
-          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
-        }
-        else
-        {
-          // Gradient of output wrt mean
-          gradientLoss[i] -= qInputGradient[b][i] + 0;
-          // Gradient of output wrt sig
-          gradientLoss[_problem->_actionVectorSize+i] -= qInputGradient[b][i] + 0;
-        }
-      }
-    }
-    else
-    {
-      KORALI_LOG_ERROR("Policy Gradient not yet implemented for selected policy distribution");
-    }
-    
     _criticProblem->_solutionData[b] = gradientLoss;
   }
 

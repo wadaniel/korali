@@ -157,7 +157,7 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
 
   if (_policyDistribution == "Squashed Normal")
   {
-    std::vector<float> unboundedAction(_problem->_actionVectorSize);
+    curPolicy.unboundedAction.resize(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       const float mu = curPolicy.distributionParameters[i];
@@ -165,31 +165,33 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float scale = _actionScales[i];
       const float shift = _actionShifts[i];
 
-      unboundedAction[i] = mu + sigma * _normalGenerator->getRandomNumber();
-      action[i] = (std::tanh(unboundedAction[i]) * scale) + shift;
+      curPolicy.unboundedAction[i] = mu + sigma * _normalGenerator->getRandomNumber();
+      action[i] = (std::tanh(curPolicy.unboundedAction[i]) * scale) + shift;
 
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
-    curPolicy.unboundedAction = unboundedAction;
   }
 
   if (_policyDistribution == "Clipped Normal")
   {
+    curPolicy.unboundedAction.resize(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       const float mu = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      action[i] = mu + sigma * _normalGenerator->getRandomNumber();
+      curPolicy.unboundedAction[i] = mu + sigma * _normalGenerator->getRandomNumber();
 
-      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
-      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+      if (curPolicy.unboundedAction[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      else if (curPolicy.unboundedAction[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+      else action[i] = curPolicy.unboundedAction[i];
     }
   }
 
   if (_policyDistribution == "Truncated Normal")
   {
+    curPolicy.unboundedAction.resize(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       const float mu = curPolicy.distributionParameters[i];
@@ -201,11 +203,12 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       // Sampling via naive inverse sampling (not the safest approach due to numerical precision)
       const float u = _uniformGenerator->getRandomNumber();
       const float z = u * normalCDF(beta, 0.f, 1.f) + (1. - u) * normalCDF(alpha, 0.f, 1.f);
-      action[i] = mu + M_SQRT2 * ierf(2. * z - 1.) * sigma;
+      curPolicy.unboundedAction[i] = mu + M_SQRT2 * ierf(2. * z - 1.) * sigma;
 
       // Safety check
-      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
-      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+      if (curPolicy.unboundedAction[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      else if (curPolicy.unboundedAction[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+      else action[i] = curPolicy.unboundedAction[i];
     }
   }
 

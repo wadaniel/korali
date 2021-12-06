@@ -271,7 +271,16 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
       qValAndInvTemp[i] = evaluation[0][1 + i];
 
       // Extracting max Q(s,a_i)
-      if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+      if (policyInfo[0].availableActions.size() > 0)
+      {
+        if (policyInfo[0].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
+            maxq = qValAndInvTemp[i];
+      }
+      else
+      {
+        if (qValAndInvTemp[i] > maxq) 
+            maxq = qValAndInvTemp[i];
+      }
     }
 
     // Storage for the cumulative e^Q(s,a_i)/maxq
@@ -282,7 +291,7 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
       // Computing e^(beta(Q(s,a_i) - maxq))
       float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
       if (policyInfo[0].availableActions.size() > 0)
-        if (policyInfo[0].availableActions[i] == false) expCurQVal = 0.;
+        if (policyInfo[0].availableActions[i] == 0) expCurQVal = 0.;
 
       // Computing Sum_i(e^Q(s,a_i)/e^maxq)
       sumExpQVal += expCurQVal;
@@ -348,11 +357,21 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
           qValAndInvTemp[i] = evaluation[b][1 + i];
 
           // Extracting max Q(s,a_i)
-          if (qValAndInvTemp[i] > maxq) maxq = qValAndInvTemp[i];
+          if (policyInfo[b].availableActions.size() > 0)
+          {
+            if (policyInfo[b].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
+                maxq = qValAndInvTemp[i];
+          }
+          else
+          {
+            if (qValAndInvTemp[i] > maxq) 
+                maxq = qValAndInvTemp[i];
+          }
 
           if (isfinite(qValAndInvTemp[i]) == false)
           {
             for (float e : evaluation[b]) printf("e: %f\n", e);
+            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
             KORALI_LOG_ERROR("Q value not finite %f (%f) in policy evaluation during training step.", qValAndInvTemp[i], invTemperature);
           }
         }
@@ -367,7 +386,7 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
 
           // Set probability zer if action not available
           if (policyInfo[b].availableActions.size() > 0)
-            if (policyInfo[b].availableActions[i] == false) expCurQVal = 0.;
+            if (policyInfo[b].availableActions[i] == 0) expCurQVal = 0.;
 
           // Computing Sum_i(e^beta*Q(s,a_i)/e^maxq)
           sumExpQVal += expCurQVal;
@@ -375,10 +394,11 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
           // Storing partial value of the probability of the action
           pActions[i] = expCurQVal;
 
-          if (isfinite(pActions[i]) == false)
+          if (isfinite(pActions[i]) == false || isfinite(sumExpQVal) == false )
           {
             for (float e : evaluation[b]) printf("e: %f\n", e);
-            KORALI_LOG_ERROR("Q value not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, sumExpQVal, expCurQVal);
+            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
+            KORALI_LOG_ERROR("(1) pAction not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, sumExpQVal, expCurQVal);
           }
         }
 
@@ -392,7 +412,8 @@ void __className__::runPolicy(const std::vector<std::vector<std::vector<float>>>
           if (isfinite(pActions[i]) == false)
           {
             for (float e : evaluation[b]) printf("e: %f\n", e);
-            KORALI_LOG_ERROR("Q value not finite %f (%f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, invSumExpQVal);
+            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
+            KORALI_LOG_ERROR("(2) pAction not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, invSumExpQVal, sumExpQVal);
           }
         }
 

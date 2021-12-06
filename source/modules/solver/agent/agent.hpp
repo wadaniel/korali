@@ -78,7 +78,7 @@ struct policy_t
   /**
   * @brief [Discrete] Flags the actions that are available at the current state.
   */
-  std::vector<bool> availableActions;
+  std::vector<size_t> availableActions;
 
   /**
    * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution

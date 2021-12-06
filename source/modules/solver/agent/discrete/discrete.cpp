@@ -33,7 +33,7 @@ void Discrete::getAction(korali::Sample &sample)
     // Preparing storage for policy information and flag available actions if provided
     std::vector<policy_t> policy(1);
     if (sample.contains("Available Actions") && sample["Available Actions"].is_array())
-      policy[0].availableActions = sample["Available Actions"][i].get<std::vector<bool>>();
+      policy[0].availableActions = sample["Available Actions"][i].get<std::vector<size_t>>();
 
     // Getting the probability of the actions given by the agent's policy
     if (_problem->_policiesPerEnvironment == 1)
@@ -68,7 +68,7 @@ void Discrete::getAction(korali::Sample &sample)
       }
 
       // Treat rounding errors and choose action with largest pValue
-      if (policy[0].availableActions.size() > 0 && policy[0].availableActions[actionIdx] == false)
+      if (policy[0].availableActions.size() > 0 && policy[0].availableActions[actionIdx] == 0)
         actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
 
       // NOTE: In original DQN paper [Minh2015] we choose max

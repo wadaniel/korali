@@ -45,7 +45,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
       testingHistory = np.array(r["Solver"]["Testing"]["Average Reward History"])
-      trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
       if average == True:
         rewardHistory = np.mean(rewardHistory,axis=0)
         rewardHistory.resize(1,rewardHistory.shape[0])
@@ -59,18 +58,18 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
             sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
             sortedAggCumObs = np.sort(aggCumObs)
-            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
+            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards)
 
       # Append Results
       else:
         for d in range(rewardHistory.shape[0]):
-            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold, testingHistory) )
+            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], testingHistory) )
 
      ## Plotting the individual experiment results
      
      for resId, r in enumerate(unpackedResults):
       
-      cumulativeObsArr, rewardHistory, trainingRewardThreshold, testingHistory = r
+      cumulativeObsArr, rewardHistory, testingHistory = r
       
       currObsCount = cumulativeObsArr[-1]
       
@@ -87,13 +86,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
        if (max(rewardHistory) < math.inf):
         maxPlotReward = max(rewardHistory)
 
-      if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
-       if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
-
-      
-      if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
-       if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-     
       # Getting average cumulative reward statistics
       cumRewards = np.cumsum(rewardHistory)
       meanHistoryStart = cumRewards[:averageDepth]/np.arange(1,averageDepth+1)
@@ -174,7 +166,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       if (len(r) == 0): continue  
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
-      trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
       if average == True:
         rewardHistory = np.mean(rewardHistory,axis=0)
         rewardHistory.resize(1,rewardHistory.shape[0])
@@ -188,12 +179,12 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
             sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
             sortedAggCumObs = np.sort(aggCumObs)
-            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
+            unpackedResults[d] = (sortedAggCumObs, sortedAggRewards)
 
       # Append Results
       else:
         for d in range(rewardHistory.shape[0]):
-            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
+            unpackedResults.append( (cumulativeObsCountHistory, rewardHistory[d]) )
 
 
      unpackedResults2 = []
@@ -203,7 +194,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
-      trainingRewardThreshold = r["Problem"]["Training Reward Threshold"]
       if average == True:
         rewardHistory = np.mean(rewardHistory,axis=0)
         rewardHistory.resize(1,rewardHistory.shape[0])
@@ -217,12 +207,12 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
             sortedAggRewards = np.array([r for _, r in sorted(zip(aggCumObs, aggRewards), key=lambda pair: pair[0])])
             sortedAggCumObs = np.sort(aggCumObs)
-            unpackedResults2[d] = (sortedAggCumObs, sortedAggRewards, trainingRewardThreshold)
+            unpackedResults2[d] = (sortedAggCumObs, sortedAggRewards)
 
       # Append Results
       else:
         for d in range(rewardHistory.shape[0]):
-            unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory[d], trainingRewardThreshold) )
+            unpackedResults2.append( (cumulativeObsCountHistory, rewardHistory[d]) )
 
      ## Plotting the individual experiment results
      coH, rH, trTh = unpackedResults2[0]
@@ -234,7 +224,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
       else:
         label = label2
       
-      cumulativeObsArr, rewardHistory, trainingRewardThreshold = r
+      cumulativeObsArr, rewardHistory = r
       
       currObsCount = cumulativeObsArr[-1]
       
@@ -251,12 +241,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
        if (max(rewardHistory) < math.inf):
         maxPlotReward = max(rewardHistory)
 
-      if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
-       if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
-      
-      if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
-       if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-     
       # Getting average cumulative reward statistics
       cumRewards = np.cumsum(rewardHistory)
       meanHistoryStart = cumRewards[:averageDepth]/np.arange(1,averageDepth+1)

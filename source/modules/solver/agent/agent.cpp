@@ -570,7 +570,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     if (isDefined(episode["Experiences"][expId], "Policy", "Available Actions"))
     {
-      const auto availAct = episode["Experiences"][expId]["Policy"]["Available Actions"].get<std::vector<std::vector<bool>>>();
+      const auto availAct = episode["Experiences"][expId]["Policy"]["Available Actions"].get<std::vector<std::vector<size_t>>>();
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         expPolicy[d].availableActions = availAct[d];
@@ -1082,14 +1082,14 @@ void Agent::serializeExperienceReplay()
     std::vector<size_t> expActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> expUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].unboundedAction.size()));
     std::vector<std::vector<float>> expActProb(_problem->_agentsPerEnvironment, std::vector<float>(_expPolicyVector[0][0].actionProbabilities.size()));
-    std::vector<std::vector<bool>> expAvailAct(_problem->_agentsPerEnvironment, std::vector<bool>(_expPolicyVector[0][0].availableActions.size()));
+    std::vector<std::vector<size_t>> expAvailAct(_problem->_agentsPerEnvironment, std::vector<size_t>(_expPolicyVector[0][0].availableActions.size()));
 
     std::vector<float> curStateValue(_problem->_agentsPerEnvironment, 0.0f);
     std::vector<std::vector<float>> curDistributionParameter(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].distributionParameters.size()));
     std::vector<size_t> curActionIdx(_problem->_agentsPerEnvironment, 0);
     std::vector<std::vector<float>> curUnboundedAct(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].unboundedAction.size()));
     std::vector<std::vector<float>> curActProb(_problem->_agentsPerEnvironment, std::vector<float>(_curPolicyVector[0][0].actionProbabilities.size()));
-    std::vector<std::vector<bool>> curAvailAct(_problem->_agentsPerEnvironment, std::vector<bool>(_curPolicyVector[0][0].availableActions.size()));
+    std::vector<std::vector<size_t>> curAvailAct(_problem->_agentsPerEnvironment, std::vector<size_t>(_curPolicyVector[0][0].availableActions.size()));
 
     for (size_t j = 0; j < _problem->_agentsPerEnvironment; j++)
     {
@@ -1205,7 +1205,7 @@ void Agent::deserializeExperienceReplay()
       curPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"][d].get<size_t>();
       curPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"][d].get<std::vector<float>>();
       curPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"][d].get<std::vector<float>>();
-      curPolicy[d].availableActions = stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"][d].get<std::vector<bool>>();
+      curPolicy[d].availableActions = stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"][d].get<std::vector<size_t>>();
     }
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(curPolicy);
@@ -1253,14 +1253,11 @@ void Agent::printGenerationAfter()
         _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", 0.0, _rewardRescalingSigma[d]);
     }
 
-    if (isinf(_testingBestEpisodeId > 0))
+    if (_testingBestEpisodeId > 0)
     {
       _k->_logger->logInfo("Normal", "Testing Statistics:\n");
-
-      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
-
-      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
       _k->_logger->logInfo("Normal", " + Best Average Reward for agent: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward for agent: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
     }
 
     printAgentInformation();

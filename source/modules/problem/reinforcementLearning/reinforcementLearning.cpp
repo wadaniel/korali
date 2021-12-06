@@ -384,7 +384,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     // Support returning available actions as vector
     if (agent.contains("Available Actions") && agent["Available Actions"].is_array())
     {
-      auto availAct = KORALI_GET(std::vector<bool>, agent, "Available Actions");
+      auto availAct = KORALI_GET(std::vector<size_t>, agent, "Available Actions");
       agent._js.getJson().erase("Available Actions");
       agent["Available Actions"][0] = availAct;
     }

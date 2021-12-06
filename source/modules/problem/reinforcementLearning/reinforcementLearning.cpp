@@ -183,14 +183,16 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Setting tested policy flag to false, unless we do testing
   agent["Tested Policy"] = false;
+ 
+  // Get current "true" episode count
+  size_t episodeCount = agent["Sample Id"];
 
   // If the training reward of all the agents exceeds the threshold or meets the periodic conditions, then also run testing on it
-  bool runTest = (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
+  bool runTest = (_testingFrequency > 0) && (episodeCount % _testingFrequency == 0);
 
   if (runTest)
   {
     float averageTestingReward = 0.0;
-    float stdevTestingReward = 0.0;
     float bestTestingReward = -Inf;
     float worstTestingReward = +Inf;
 
@@ -203,18 +205,15 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
       // Adding current testing reward to the average and keeping statistics
       averageTestingReward += currentTestingReward;
-      stdevTestingReward += currentTestingReward * currentTestingReward;
       if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
       if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
     }
 
     // Normalizing average
     averageTestingReward /= (float)_policyTestingEpisodes;
-    stdevTestingReward = std::sqrt(stdevTestingReward / ((float)_policyTestingEpisodes) - averageTestingReward * averageTestingReward);
 
     // Storing testing information
     agent["Average Testing Reward"] = averageTestingReward;
-    agent["Stdev Testing Reward"] = stdevTestingReward;
     agent["Best Testing Reward"] = bestTestingReward;
     agent["Worst Testing Reward"] = worstTestingReward;
 
@@ -280,7 +279,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
     rewardSum += testingRewards[i];
 
-  // Storing the average cumulative reward of the testing episode
+  // Storing the average cumulative reward among agents of the testing episode
   agent["Testing Reward"] = rewardSum / _agentsPerEnvironment;
 
   // Finalizing Environment

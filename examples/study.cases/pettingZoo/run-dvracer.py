@@ -18,6 +18,7 @@ parser.add_argument('--nn', help='Neural net width of two hidden layers.', requi
 parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
+parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 1000000)
 #model '0' or '' weakly Dependent Individualist 
 #model '1' strongly Dependent Individualist I 
 #model '2' strongly Dependent Individualist II 
@@ -118,7 +119,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6 
+e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

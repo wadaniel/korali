@@ -988,6 +988,20 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
     // Calculating time sequence length
     const size_t T = expId - startId + 1;
 
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+    {
+      // Resizing state sequence vector to the correct time sequence length
+      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
+      for (size_t t = 0; t < T; t++)
+      {
+        // Now adding states (and actions, if required)
+        const size_t curId = startId + t;
+ 
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(stateSize);
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[curId][d].begin(), _stateVector[curId][d].end());
+        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _actionVector[curId][d].begin(), _actionVector[curId][d].end());
+
+    /*
     // Calculating offset between requested and real sequence length
     const size_t offSet = _timeSequenceLength - T;
 
@@ -1002,6 +1016,7 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
         size_t curId = startId + t;
         stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t] = _stateVector[curId][d];
         if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].begin() + _problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
+    */
       }
     }
   }

@@ -37,7 +37,7 @@ cat > run.sbatch <<EOF
 export OMP_NUM_THREADS=\$SLURM_CPUS_PER_TASK
 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$MODEL' --run $RUN --multpolicies $MULTI
 
-export RESDIR=1`s -d ./results/_result*`
+export RESDIR=\`ls -d ./results/_result*\`
 python3 -m korali.rlview --dir \$RESDIR --out dvracer.png --average
 EOF
 

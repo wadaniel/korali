@@ -205,7 +205,7 @@ void Agent::trainingGeneration()
     for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
-        _agents[agentId]["Sample Id"] = _currentSampleID++;
+        _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
         for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
@@ -371,6 +371,7 @@ void Agent::attendAgent(size_t agentId)
   {
     // Getting episode Id
     size_t episodeId = message["Sample Id"];
+    message["Episodes"] = episodeId;
 
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
@@ -382,7 +383,6 @@ void Agent::attendAgent(size_t agentId)
     if (message["Action"] == "Send Episodes")
     {
       // Process every episode received and its experiences (add them to replay memory)
-      _episodeIdVector.add(episodeId);
       processEpisode(message["Episodes"]);
 
       // Increasing total experience counters
@@ -458,6 +458,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   /*********************************************************************
    * Adding episode's experiences into the replay memory
    *********************************************************************/
+  size_t episodeId = episode["Sample Id"];
 
   // Storage for the episode's cumulative reward
   std::vector<float> cumulativeReward(_problem->_agentsPerEnvironment, 0.0f);
@@ -585,6 +586,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     _curPolicyVector.add(expPolicy);
 
     // Storing Episode information in replay memory
+    _episodeIdVector.add(episodeId);
     _episodePosVector.add(expId);
 
     // Adding placeholder for retrace value

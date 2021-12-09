@@ -8,8 +8,8 @@ stages:
 
   
 variables: # apply to all jobs
-  PERSIST_IMAGE_NAME: korali_cscs_ci/cpu
-  #PERSIST_IMAGE_NAME_GPU: korali_cscs_ci/gpu:
+  PERSIST_IMAGE_NAME: korali_cscs_ci_cpu
+  #PERSIST_IMAGE_NAME_GPU: korali_cscs_ci_gpu:
   VERBOSE: 'YES' # debugging
   SARUS_VERBOSE: 'YES' # debugging
 
@@ -48,7 +48,7 @@ run_non_mpi_cpu_test:
   extends: .test_korali
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME}
   script:
-    - echo "Hello from korali test in Sarus container on node \${SLURMD_NODENAME} (node ID \${SLURM_NODEID}, proc ID \${SLURM_PROCID}, replacing MPI ${USE_MPI})"
+    - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
   variables:
     SLURM_JOB_NUM_NODES: 1
     SLURM_NTASKS: 1
@@ -58,9 +58,9 @@ run_mpi_cpu_test:
   extends: .test_korali
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME}
   script:
-    - echo "Hello from korali test in Sarus container on node \${SLURMD_NODENAME} (node ID \${SLURM_NODEID}, proc ID \${SLURM_PROCID}, replacing MPI ${USE_MPI})"
+    - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
   variables:
-    SLURM_JOB_NUM_NODES: 2
+    SLURM_JOB_NUM_NODES: 1
     SLURM_NTASKS: 4
     SLURM_CONSTRAINT: 'mc'
 

@@ -1,6 +1,4 @@
-ARG BUILD_ENV
-
-FROM $BUILD_ENV
+FROM lukasgd/korali_cscs_ci_gpu:base
 
 RUN git clone https://github.com/cselab/korali.git
 RUN cd korali; CC=gcc CXX=g++ meson setup build --prefix=/usr/local --buildtype=release -Donednn=true -Dmpi=true

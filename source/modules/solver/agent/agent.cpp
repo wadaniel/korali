@@ -974,7 +974,7 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
   std::vector<std::vector<std::vector<float>>> stateSequence(miniBatchSize * _problem->_agentsPerEnvironment);
 
   // Calculating size of state vector
-  const size_t stateSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
+  const size_t stateActionSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
 
 #pragma omp parallel for
   for (size_t b = 0; b < miniBatchSize; b++)
@@ -994,29 +994,12 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
       stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
       for (size_t t = 0; t < T; t++)
       {
-        // Now adding states (and actions, if required)
-        const size_t curId = startId + t;
- 
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(stateSize);
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[curId][d].begin(), _stateVector[curId][d].end());
-        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _actionVector[curId][d].begin(), _actionVector[curId][d].end());
+        // Now adding states from sequence (and actions, if required)
+        const size_t sequenceId = startId + t;
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(stateActionSize);
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[sequenceId][d].begin(), _stateVector[sequenceId][d].end());
+        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _actionVector[sequenceId][d].begin(), _actionVector[sequenceId][d].end());
 
-    /*
-    // Calculating offset between requested and real sequence length
-    const size_t offSet = _timeSequenceLength - T;
-
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      // Resizing state sequence vector to the correct time sequence length
-      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(_timeSequenceLength, std::vector<float>(stateSize)); //TODO rearrange order, then no reshuffling required in runPolicy()
-
-      // Now adding states (and actions, if required)
-      for (size_t t = 0; t < T; t++)
-      {
-        size_t curId = startId + t;
-        stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t] = _stateVector[curId][d];
-        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][offSet + t].begin() + _problem->_stateVectorSize, _actionVector[curId][d].begin(), _actionVector[curId][d].end());
-    */
       }
     }
   }

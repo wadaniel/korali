@@ -23,7 +23,7 @@ def validateOutput(output):
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate,average,label1, dir2 = '', result2 = '', label2 = ''):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate, average, showTesting, label1, dir2 = '', result2 = '', label2 = ''):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  if (dir2 == ''):
@@ -39,12 +39,14 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
      ## Reading the individual results
 
      unpackedResults = []
+     testingHistory = []
      for r in results:
       
       if (len(r) == 0): continue  
       cumulativeObsCountHistory = np.cumsum(np.array(r["Solver"]["Training"]["Experience History"]))
       rewardHistory = np.array(r["Solver"]["Training"]["Reward History"])
-      testingHistory = np.array(r["Solver"]["Testing"]["Average Reward History"])
+      if showTesting:
+        testingHistory = np.array(r["Solver"]["Testing"]["Average Reward History"])
       if average == True:
         rewardHistory = np.mean(rewardHistory,axis=0)
         rewardHistory.resize(1,rewardHistory.shape[0])
@@ -114,9 +116,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
       # Plotting common plot
 
-      numTestRuns = len(testingHistory)
-      testingExp = np.linspace(0, cumulativeObsArr[-1], numTestRuns+2) 
-      ax.plot(testingExp[1:-1], testingHistory, ':', color=cmap(colCurrIndex), lineWidth=1.0, zorder=0) 
+      if showTesting:
+        numTestRuns = len(testingHistory)
+        testingExp = np.linspace(0, cumulativeObsArr[-1], numTestRuns+2) 
+        ax.plot(testingExp[1:-1], testingHistory, ':', color=cmap(colCurrIndex), lineWidth=1.0, zorder=0) 
     
       if (label1 == ''):
         #ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
@@ -390,6 +393,10 @@ if __name__ == '__main__':
       help='Average multiple agents and plot result summary.',
       action='store_true')
  parser.add_argument(
+      '--showTesting',
+      help='Plot rewards of tesing episodes.',
+      action='store_true')
+ parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
@@ -449,10 +456,10 @@ if __name__ == '__main__':
      
  ### Creating plots
  if args.dir2[0] == '':
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average,args.label1)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average, args.showTesting, args.label1)
     plt.draw()
  else:
-    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average,args.label1, args.dir2, results2, args.label2)
+    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average, args.showTesting, args.label1, args.dir2, results2, args.label2)
     plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -466,7 +473,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate, args.average, args.showTesting, args.label1)
    plt.draw()
    
    # Check if maximum time exceeded

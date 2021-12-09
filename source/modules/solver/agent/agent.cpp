@@ -371,7 +371,7 @@ void Agent::attendAgent(size_t agentId)
   {
     // Getting episode Id
     size_t episodeId = message["Sample Id"];
-    message["Episodes"] = episodeId;
+    message["Episodes"]["Sample Id"] = episodeId;
 
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")

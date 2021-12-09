@@ -49,7 +49,7 @@ run_non_mpi_cpu_test:
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd korali/examples/features/running.cxx && make -j4 && ./run-cmaes
+    - cd /home/ubuntu/korali/examples/features/running.cxx && make -j4 && ./run-cmaes
   variables:
     SLURM_JOB_NUM_NODES: 1
     SLURM_NTASKS: 1
@@ -60,7 +60,7 @@ run_mpi_cpu_test:
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd korali/examples/features/running.mpi.cxx && ./.test-run.py
+    - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && ./.test-run.py
   variables:
     SLURM_JOB_NUM_NODES: 1
     SLURM_NTASKS: 9

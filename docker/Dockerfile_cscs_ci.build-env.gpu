@@ -22,12 +22,10 @@ RUN apt-get -y install pkg-config
 
 # Install MPI
 RUN cd /tmp \
-    && echo "Using $(which gfortran)" \
-    && gfortran --version \
     && wget -q http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
     && tar xf mpich-${MPICH_VERSION}.tar.gz \
     && cd mpich-${MPICH_VERSION} \
-    && ./configure --enable-g=debug --enable-fast=O0 --prefix=/usr \
+    && ./configure --disable-fortran --enable-fast=all,O3 --prefix=/usr \
     && make -j3 \
     && make install \
     && ldconfig \

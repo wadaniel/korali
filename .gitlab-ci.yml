@@ -40,7 +40,7 @@ build_cpu:
   variables:
     PULL_IMAGE: 'YES'
     CSCS_REGISTRY_LOGIN: 'YES'
-    USE_MPI: 'YES'
+    USE_MPI: 'NO'
     # SLURM_PARTITION: normal
     # SLURM_TIMELIMIT: '15:00'
 

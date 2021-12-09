@@ -933,26 +933,17 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
 
 size_t __className__::getTimeSequenceStartExpId(size_t expId)
 {
-  size_t startId = expId;
+  const size_t episodePos = _episodePosVector[expId];
+  
+  // Determine actual length of time sequence
+  const size_t lookBack = std::min(_timeSequenceLength, episodePos);
 
-  // Adding (tmax-1) time sequences to the given experience
-  for (size_t t = 0; t < _timeSequenceLength - 1; t++)
-  {
-    // If we reached the start of the ER, this is the starting episode in the sequence
-    if (startId == 0) break;
-
-    // Now going back one experience
-    startId--;
-
-    // If we reached the end of the previous episode, then add one (this covers the case where the provided experience is also terminal) and break.
-    if (_terminationVector[startId] != e_nonTerminal)
-    {
-      startId++;
-      break;
-    }
-  }
-
-  return startId;
+  if (lookBack > expId)
+    // Return start of buffer if expId is part of a cut episode
+    return 0;
+  else 
+    // Return time sequence start
+    return expId - lookBack;
 }
 
 void __className__::resetTimeSequence()

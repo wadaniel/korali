@@ -6,15 +6,15 @@ import numpy as np
 import os
 import sys
 from PIL import Image
-import pettingzoo
-import pettingzoo.sisl
 import matplotlib.pyplot as plt
 
 def initEnvironment(e, envName, multPolicies):
 
  # Creating environment 
  if (envName ==  'Waterworld'):
-    env = pettingzoo.sisl.waterworld_v3.env()
+    from pettingzoo.sisl import waterworld_v3
+    env = waterworld_v3.env()
+    
     stateVariableCount = 242
     actionVariableCount = 2
     ac_upper = 0.01 
@@ -22,7 +22,8 @@ def initEnvironment(e, envName, multPolicies):
     numIndividuals = 5
 
  elif (envName == 'Multiwalker'):
-    env = pettingzoo.sisl.multiwalker_v7.env()
+    from pettingzoo.sisl import waterworld_v3
+    env = waterworld_v3.env()
     stateVariableCount = 31
     actionVariableCount = 4
     ac_upper = 1 
@@ -31,14 +32,16 @@ def initEnvironment(e, envName, multPolicies):
 
 
  elif (envName ==  'Pursuit'):
-   env = pettingzoo.sisl.pursuit_v3.env()
+   from pettingzoo.sisl import pursuit_v3
+   env = pursuit_v3.env()
    stateVariableCount = 147
    actionVariableCount = 1
    numIndividuals = 8
    possibleActions = [ [0], [1], [2], [3], [4] ]
 
  elif (envName == 'Gather'):
-   env = pettingzoo.magnet.gather_v3.env()
+   from pettingzoo.sisl import pursuit_v3
+   env = pursuit_v3.env()
    stateVariableCount = 1125
    actionVariableCount = 1
    numIndividuals = 495

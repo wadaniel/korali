@@ -79,7 +79,6 @@ void __className__::initialize()
   {
     _currentEpisode = 0;
     _policyUpdateCount = 0;
-    _currentSampleID = 0;
     _experienceCount = 0;
 
     // Initializing training and episode statistics //TODO go through all

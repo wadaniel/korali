@@ -321,10 +321,6 @@ class Agent : public Solver
   */
    size_t _policyUpdateCount;
   /**
-  * @brief [Internal Use] Keeps track of the current Sample ID, and makes sure no two equal sample IDs are produced such that this value can be used as random seed.
-  */
-   size_t _currentSampleID;
-  /**
   * @brief [Internal Use] Uniform random number generator.
   */
    korali::distribution::univariate::Uniform* _uniformGenerator;

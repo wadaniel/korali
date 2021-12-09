@@ -83,7 +83,6 @@ void Agent::initialize()
   {
     _currentEpisode = 0;
     _policyUpdateCount = 0;
-    _currentSampleID = 0;
     _experienceCount = 0;
 
     // Initializing training and episode statistics //TODO go through all
@@ -1507,14 +1506,6 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Policy Update Count");
  }
 
- if (isDefined(js, "Current Sample ID"))
- {
- try { _currentSampleID = js["Current Sample ID"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Current Sample ID']\n%s", e.what()); } 
-   eraseValue(js, "Current Sample ID");
- }
-
  if (isDefined(js, "Uniform Generator"))
  {
  _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(js["Uniform Generator"], _k));
@@ -1949,7 +1940,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experience Replay"]["Off Policy"]["REFER Current Beta"] = _experienceReplayOffPolicyREFERCurrentBeta;
    js["Current Learning Rate"] = _currentLearningRate;
    js["Policy Update Count"] = _policyUpdateCount;
-   js["Current Sample ID"] = _currentSampleID;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;

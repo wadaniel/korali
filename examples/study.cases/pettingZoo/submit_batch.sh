@@ -1,11 +1,11 @@
 # Launch continuous envs
 for env in Multiwalker Waterworld
 do 
-    for model in {0..5}
+    for model in {0..0}
     do
-        for run in {0..9}
+        for run in {0..0}
         do
-            for multi in false true 
+            for multi in {0..0}
             do
                 export ENV=$env
                 export MODEL=$model
@@ -20,11 +20,11 @@ done
 # Launch discrete envs
 for env in Pursuit
 do 
-    for model in {0..5}
+    for model in {0..0}
     do
-        for run in {0..9}
+        for run in {0..0}
         do
-            for multi in false true
+            for multi in {0..0}
             do
                 export ENV=$env
                 export MODEL=$model

@@ -708,7 +708,7 @@ std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSeq
   // Allocating state sequence vector
   std::vector<std::vector<std::vector<float>>> stateSequence(_effectiveMinibatchSize);
 
-#pragma omp parallel for
+  #pragma omp parallel for
   for (size_t b = 0; b < _effectiveMinibatchSize; b++)
   {
     // Getting current expId and agentId
@@ -739,15 +739,17 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 {
   const size_t miniBatchSize = miniBatch.size();
   const size_t numAgents = _problem->_agentsPerEnvironment;
+
   /* Creating a selection of unique experiences from the mini batch
    * Important: this assumes the minibatch ids are sorted.
    *            AND that for each expId all agents were sampled
    */
+
   std::vector<size_t> updateBatch;
   updateBatch.push_back(0);
-  for (size_t b = numAgents; b < _miniBatchSize; b += numAgents)
+  for (size_t b = numAgents; b < miniBatchSize; b += numAgents)
     if (miniBatch[b * numAgents].first != miniBatch[(b - 1)*numAgents].first)
-        updateBatch.push_back(b);
+      updateBatch.push_back(b);
 
   // Calculate offpolicy count difference in minibatch
   std::vector<int> offPolicyCountDelta(_problem->_agentsPerEnvironment, 0);

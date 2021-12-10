@@ -120,7 +120,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
   _statisticsAverageInverseTemperature = 0.;
   _statisticsAverageActionUnlikeability = 0.;
 
-#pragma omp parallel for reduction(+ \
+  #pragma omp parallel for reduction(+ \
                                    : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
   for (size_t b = 0; b < miniBatchSize; b += _problem->_agentsPerEnvironment)
   {

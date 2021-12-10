@@ -17,6 +17,7 @@ do
     done
 done
 
+exit
 # Launch discrete envs
 for env in Pursuit
 do 

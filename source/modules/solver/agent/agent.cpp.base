@@ -842,9 +842,10 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
     //PolicyCount is integer I couldn't figure out how to include the division in the previous calculations
     if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
       _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
-    // Updating the off policy cutoff
-    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }
+    
+  // Updating the off policy cutoff
+  _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 
   // Now filtering experiences from the same episode
   std::vector<size_t> retraceMiniBatch;

@@ -25,6 +25,7 @@ build_cpu:
     # we are using a Dockerfile that contains the real build instructions, this script will be ignored by the docker_jfrog runner if DOCKERFILE is set
     - "true"
   variables:
+    PERSIST_IMAGE_NAME: ${PERSIST_IMAGE_NAME_CPU}
     DOCKERFILE:  docker/Dockerfile_cscs_ci.deploy.cpu
     
 build_gpu:
@@ -35,6 +36,7 @@ build_gpu:
     # we are using a Dockerfile that contains the real build instructions, this script will be ignored by the docker_jfrog runner if DOCKERFILE is set
     - "true"
   variables:
+    PERSIST_IMAGE_NAME: ${PERSIST_IMAGE_NAME_GPU}
     DOCKERFILE:  docker/Dockerfile_cscs_ci.deploy.gpu
     
 

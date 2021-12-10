@@ -12,10 +12,10 @@ fi
 NAGENTS=14
 
 # number of workers
-NWORKER=1
+NWORKER=16
 
 # number of nodes per worker
-NRANKS=32
+NRANKS=64
 
 # number of workers * number of nodes per worker
 NNODES=$(( $NWORKER * $NRANKS ))
@@ -31,21 +31,28 @@ source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
+#SBATCH --account=s929
+#SBATCH --constraint=gpu
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=05:00:00
-#SBATCH --nodes=$((NNODES+1))
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=12
-#SBATCH --ntasks-per-core=1
+#SBATCH --time=24:00:00
 #SBATCH --partition=normal
-#SBATCH --constraint=gpu
-#SBATCH --account=s929
+# #SBATCH --time=00:30:00
+# #SBATCH --partition=debug
+#SBATCH --nodes=$((NNODES+1))
 
-export OMP_NUM_THREADS=12
+## OLD HOMOGENEOUS JOB SETTING ##
+# #SBATCH --ntasks-per-node=1
+# #SBATCH --cpus-per-task=12
+# #SBATCH --threads-per-core=1
+# export OMP_NUM_THREADS=12
+# srun ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $NRANKS
+#################################
 
-srun ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $NRANKS
+## HETEROGENEOUS JOB SETTING ##
+# Korali engine gets 12 threads and 1 rank, CUP gets 1 threads and 12 ranks
+srun --nodes=$NNODES --ntasks-per-node=12 --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=12 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 ))
 EOF
 
 chmod 755 daint_sbatch

@@ -1,9 +1,9 @@
-#include "_model/swimmerEnvironment.hpp"
+#include "_model/predictionEnvironment.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
 {
-  // Gathering actual arguments from MPI
+  // Initialize MPI
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   if (provided != MPI_THREAD_FUNNELED)
@@ -16,19 +16,16 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
-  // retreiving number of agents and ranks
-  int nAgents = atoi(argv[argc-3]);
-  int nRanks  = atoi(argv[argc-1]);
+  // retrieving number of agents
+  int nAgents = atoi(argv[argc-1]);
 
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-  N = (int)(N / nRanks); // Divided by the ranks per worker
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
-  std::string testingResultsPath = "_testingResults/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -38,12 +35,15 @@ int main(int argc, char *argv[])
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true){
     printf("[Korali] Continuing execution from previous run...\n");
+    // Hack to enable execution after Testing.
     e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + 10000;
   }
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
+  // e["Problem"]["Training Reward Threshold"] = 100.0; // can be estimated as number_of_steps * reward_per_step Merge
+  // e["Problem"]["Policy Testing Episodes"] = 5;
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path and dumping frequency in CUP
@@ -51,11 +51,8 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
-  #ifndef STEFANS_SENSORS_STATE
-  size_t numStates = 10;
-  #else
-  size_t numStates = 16;
-  #endif
+  size_t numStates = 15;
+
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {
@@ -63,17 +60,24 @@ int main(int argc, char *argv[])
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  e["Variables"][curVariable]["Name"] = "Curvature";
+  e["Variables"][curVariable]["Name"] = "P";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -1.0;
-  e["Variables"][curVariable]["Upper Bound"] = +1.0;
+  // e["Variables"][curVariable]["Lower Bound"] = -1.0;
+  // e["Variables"][curVariable]["Upper Bound"] = +1.0;
   e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   curVariable++;
-  e["Variables"][curVariable]["Name"] = "Swimming Period";
+  e["Variables"][curVariable]["Name"] = "U";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -0.25;
-  e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  // e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  // e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
+
+  curVariable++;
+  e["Variables"][curVariable]["Name"] = "V";
+  e["Variables"][curVariable]["Type"] = "Action";
+  // e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  // e["Variables"][curVariable]["Upper Bound"] = +0.25;
   e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   /// Defining Agent Configuration
@@ -95,9 +99,9 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Normal"; // "Clipped Normal"
   e["Solver"]["State Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false;
 
   //// Defining Neural Network
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
@@ -138,7 +142,6 @@ int main(int argc, char *argv[])
 
   // Configuring conduit / communicator
   k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Ranks Per Worker"] = nRanks;
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   // ..and run

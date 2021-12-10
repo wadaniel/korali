@@ -170,7 +170,7 @@ namespace
   episode["Experiences"][0]["Reward"] = 1.0f;
   episode["Experiences"][0]["Termination"] = "Terminal";
   episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
+  ASSERT_NO_THROW(a->processEpisode(episode));
 
   // No state value provided error
   episode["Experiences"][0]["Policy"].erase("State Value");

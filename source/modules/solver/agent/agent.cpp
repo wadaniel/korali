@@ -676,10 +676,10 @@ void Agent::processEpisode(knlohmann::json &episode)
       _rewardRescalingSigma[d] = std::sqrt(_rewardRescalingSumSquaredRewards[d] / (float)_rewardVector.size() + 1e-9);
 }
 
-std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
+std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch(size_t miniBatchSize)
 {
   // Allocating storage for mini batch experiecne indexes
-  std::vector<size_t> miniBatch(miniBatchSize);
+  std::vector<std::pair<size_t,size_t>> miniBatch(miniBatchSize);
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
@@ -690,7 +690,8 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
 
     // Setting experience
-    miniBatch[i] = expId;
+    miniBatch[i].first = expId;
+    miniBatch[i].second = 0;
   }
 
   // Sorting minibatch -- this helps with locality and also
@@ -701,7 +702,44 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   return miniBatch;
 }
 
-void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
+std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<std::pair<size_t,size_t>> &miniBatch)
+{
+  // Getting mini batch size
+  const size_t miniBatchSize = miniBatch.size();
+
+  // Allocating state sequence vector
+  std::vector<std::vector<std::vector<float>>> stateSequence(miniBatchSize * _problem->_agentsPerEnvironment);
+
+#pragma omp parallel for
+  for (size_t b = 0; b < miniBatchSize; b++)
+  {
+    // Getting current expId
+    const size_t expId = miniBatch[b].first;
+
+    // Getting starting expId
+    const size_t startId = getTimeSequenceStartExpId(expId);
+
+    // Calculating time sequence length
+    const size_t T = expId - startId + 1;
+
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+    {
+      // Resizing state sequence vector to the correct time sequence length
+      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
+      for (size_t t = 0; t < T; t++)
+      {
+        // Now adding states from sequence (and actions, if required)
+        const size_t sequenceId = startId + t;
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(_problem->_stateVectorSize);
+        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[sequenceId][d].begin(), _stateVector[sequenceId][d].end());
+      }
+    }
+  }
+
+  return stateSequence;
+}
+
+void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
   // Creating a selection of unique experiences from the mini batch
@@ -724,7 +762,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     const size_t batchId = updateBatch[i];
-    const size_t expId = miniBatch[batchId];
+    const size_t expId = miniBatch[batchId].first;
 
     auto &stateValue = _stateValueVector[expId];
     auto &importanceWeight = _importanceWeightVector[expId];
@@ -801,7 +839,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     const size_t batchId = updateBatch[i];
-    const size_t expId = miniBatch[batchId];
+    const size_t expId = miniBatch[batchId].first;
     if (_terminationVector[expId] == e_truncated)
     {
       std::vector<float> truncStateValue(_problem->_agentsPerEnvironment, 0.0f);
@@ -855,13 +893,13 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   std::vector<size_t> retraceMiniBatch;
 
   // Adding last experience from the sorted minibatch
-  retraceMiniBatch.push_back(miniBatch[miniBatchSize - 1]);
+  retraceMiniBatch.push_back(miniBatch[miniBatchSize - 1].first);
 
   // Adding experiences so long as they do not repeat episodes
   for (ssize_t i = miniBatchSize - 2; i >= 0; i--)
   {
-    size_t currExpId = miniBatch[i];
-    size_t nextExpId = miniBatch[i + 1];
+    size_t currExpId = miniBatch[i].first;
+    size_t nextExpId = miniBatch[i + 1].first;
     size_t curEpisode = _episodeIdVector[currExpId];
     size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
@@ -955,48 +993,6 @@ void Agent::resetTimeSequence()
 {
   for (size_t agentId = 0; agentId < _problem->_agentsPerEnvironment; ++agentId)
     _stateTimeSequence[agentId].clear();
-}
-
-std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
-{
-  // Getting mini batch size
-  const size_t miniBatchSize = miniBatch.size();
-
-  // Allocating state sequence vector
-  std::vector<std::vector<std::vector<float>>> stateSequence(miniBatchSize * _problem->_agentsPerEnvironment);
-
-  // Calculating size of state vector
-  const size_t stateActionSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
-
-#pragma omp parallel for
-  for (size_t b = 0; b < miniBatchSize; b++)
-  {
-    // Getting current expId
-    const size_t expId = miniBatch[b];
-
-    // Getting starting expId
-    const size_t startId = getTimeSequenceStartExpId(expId);
-
-    // Calculating time sequence length
-    const size_t T = expId - startId + 1;
-
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      // Resizing state sequence vector to the correct time sequence length
-      stateSequence[b * _problem->_agentsPerEnvironment + d].resize(T);
-      for (size_t t = 0; t < T; t++)
-      {
-        // Now adding states from sequence (and actions, if required)
-        const size_t sequenceId = startId + t;
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].reserve(stateActionSize);
-        stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _stateVector[sequenceId][d].begin(), _stateVector[sequenceId][d].end());
-        if (includeAction) stateSequence[b * _problem->_agentsPerEnvironment + d][t].insert(stateSequence[b * _problem->_agentsPerEnvironment + d][t].begin(), _actionVector[sequenceId][d].begin(), _actionVector[sequenceId][d].end());
-
-      }
-    }
-  }
-
-  return stateSequence;
 }
 
 std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId, size_t agentId)

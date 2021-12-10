@@ -121,7 +121,7 @@ void VRACER::trainPolicy()
   }
 }
 
-void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
+void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch)
 {
   // Resetting statistics
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
@@ -141,7 +141,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t expId = miniBatch[b];
+    size_t expId = miniBatch[b].first;
 
     // Get state, action and policy for this experience
     const auto &expPolicy = _expPolicyVector[expId];

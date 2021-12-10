@@ -112,7 +112,7 @@ void dVRACER::trainPolicy()
   }
 }
 
-void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
+void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch)
 {
   const size_t miniBatchSize = miniBatch.size();
 
@@ -125,7 +125,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t expId = miniBatch[b];
+    size_t expId = miniBatch[b].first;
 
     // Getting experience policy data
     const auto &expPolicy = _expPolicyVector[expId];
@@ -442,7 +442,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   }
 }
 
-std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<size_t> &miniBatch) const
+std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t,size_t>> &miniBatch) const
 {
   // Getting mini batch size
   const size_t miniBatchSize = miniBatch.size();
@@ -454,7 +454,7 @@ std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<size_t> &miniBatc
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting current expId
-    const size_t expId = miniBatch[b];
+    const size_t expId = miniBatch[b].first;
 
     // Filling policy information
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)

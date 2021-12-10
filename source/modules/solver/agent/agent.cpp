@@ -1545,6 +1545,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "State Rescaling", "Sigmas");
  }
 
+ if (isDefined(js, "Effective Minibatch Size"))
+ {
+ try { _effectiveMinibatchSize = js["Effective Minibatch Size"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Effective Minibatch Size']\n%s", e.what()); } 
+   eraseValue(js, "Effective Minibatch Size");
+ }
+
  if (isDefined(js, "Mode"))
  {
  try { _mode = js["Mode"].get<std::string>();
@@ -1936,6 +1944,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;
+   js["Effective Minibatch Size"] = _effectiveMinibatchSize;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Solver::getConfiguration(js);

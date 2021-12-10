@@ -8,13 +8,17 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
+# number of nodes per worker
+NRANKS=1
+
+# number of cores per worker
+NUMCORES=11
+
 # Set number of nodes here
-mpiflags="mpirun -n 2"
+mpiflags="mpirun -n 12"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- # mpiflags="srun -N $N -n $((N+1)) -c 12"
- mpiflags="srun -n $N -c 12"
 fi
 
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
@@ -27,6 +31,5 @@ source settings.sh
 
 set -ux
 
-# gdb --args $mpiflags ./run-vracer-swimmer
-# gdb --args ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS
-$mpiflags ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks 3
+$mpiflags ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
+# srun --nodes=$((N-1)) --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))

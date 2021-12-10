@@ -940,7 +940,7 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
   const size_t episodePos = _episodePosVector[expId];
   
   // Determine actual length of time sequence
-  const size_t lookBack = std::min(_timeSequenceLength, episodePos);
+  const size_t lookBack = std::min(_timeSequenceLength - 1, episodePos);
 
   if (lookBack > expId)
     // Return start of buffer if expId is part of a cut episode

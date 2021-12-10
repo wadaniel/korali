@@ -86,7 +86,7 @@ void dVRACER::initializeAgent()
 void dVRACER::trainPolicy()
 {
   // Obtaining Minibatch experience ids
-  const auto miniBatch = generateMiniBatch(_miniBatchSize);
+  const auto miniBatch = generateMiniBatch();
 
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
@@ -122,7 +122,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
 
 #pragma omp parallel for reduction(+ \
                                    : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
-  for (size_t b = 0; b < miniBatchSize; b++)
+  for (size_t b = 0; b < miniBatchSize; b += _problem->_agentsPerEnvironment)
   {
     // Getting index of current experiment
     size_t expId = miniBatch[b].first;

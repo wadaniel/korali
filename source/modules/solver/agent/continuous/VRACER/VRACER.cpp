@@ -96,7 +96,7 @@ void VRACER::initializeAgent()
 void VRACER::trainPolicy()
 {
   // Obtaining Minibatch experience ids
-  const auto miniBatch = generateMiniBatch(_miniBatchSize);
+  const auto miniBatch = generateMiniBatch();
 
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);

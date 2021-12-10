@@ -339,7 +339,7 @@ class __className__ : public __parentClassName__
    * @param miniBatchSize Size of the mini batch to create
    * @return A vector with the indexes to the experiences in the mini batch
    */
-  std::vector<std::pair<size_t,size_t>> generateMiniBatch(size_t miniBatchSize);
+  std::vector<std::pair<size_t,size_t>> generateMiniBatch();
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index

@@ -644,6 +644,7 @@ void Agent::processEpisode(knlohmann::json &episode)
       else
         retV[d] += calculateStateValue(expTruncatedStateSequence, d);
 
+
       // Get value of trucated state
       if (std::isfinite(retV[d]) == false)
         KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", retV[d]);
@@ -656,6 +657,9 @@ void Agent::processEpisode(knlohmann::json &episode)
       avgRetV /= _problem->_agentsPerEnvironment;
       retV = std::vector<float>(_problem->_agentsPerEnvironment, avgRetV);
     }
+      
+    // The value of the truncated state equals initial retrace Value
+    _truncatedStateValueVector[endId] = retV;
   }
 
   // Now going backwards, setting the retrace value of every experience

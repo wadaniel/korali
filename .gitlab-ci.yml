@@ -62,9 +62,10 @@ run_mpi_cpu_test:
     - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && make -j4 && ./run-cmaes 4
   variables:
     USE_MPI: 'YES'
-    SLURM_JOB_NUM_NODES: 1
+    SLURM_JOB_NUM_NODES: 2
     SLURM_NTASKS: 9
     SLURM_CONSTRAINT: 'mc'
+    SLURM_PARTITION: 'normal'
 
 #run_mpi_gpu_test:
   #extends: .test_korali

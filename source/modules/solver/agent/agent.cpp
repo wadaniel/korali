@@ -119,9 +119,10 @@ void Agent::initialize()
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicies["Policy Hyperparameters"]);
 
-  // If this continues a previous training run, deserialize previous input experience replay
+  // If this continues a previous training run, deserialize previous input experience replay. Only for the root (engine) rank
   if (_k->_currentGeneration > 0)
-    if (_mode == "Training" || _testingBestPolicies.empty())
+    if (_mode == "Training" || _trainingBestPolicies.empty())
+     if (_k->_engine->_conduit != NULL)
       deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
@@ -1145,7 +1146,7 @@ void Agent::deserializeExperienceReplay()
   std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
-  _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
+  _k->_logger->logInfo("Normal", "Loading previous run training state from file %s...\n", statePath.c_str());
   if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
     KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from from file %s...\n", statePath.c_str());
 
@@ -1208,7 +1209,7 @@ void Agent::deserializeExperienceReplay()
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
-  _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
+  _k->_logger->logInfo("Normal", "Took %fs to deserialize training state.\n", deserializationTime);
 }
 
 void Agent::printGenerationAfter()
@@ -1547,6 +1548,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['State Rescaling']['Sigmas']\n%s", e.what()); } 
    eraseValue(js, "State Rescaling", "Sigmas");
+ }
+
+ if (isDefined(js, "Effective Minibatch Size"))
+ {
+ try { _effectiveMinibatchSize = js["Effective Minibatch Size"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Effective Minibatch Size']\n%s", e.what()); } 
+   eraseValue(js, "Effective Minibatch Size");
  }
 
  if (isDefined(js, "Mode"))
@@ -1940,6 +1949,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;
+   js["Effective Minibatch Size"] = _effectiveMinibatchSize;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Solver::getConfiguration(js);

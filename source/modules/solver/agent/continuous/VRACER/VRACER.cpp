@@ -30,24 +30,25 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment.resize(_problem->_policiesPerEnvironment);
   _criticPolicyProblem.resize(_problem->_policiesPerEnvironment);
 
+  _effectiveMinibatchSize = _miniBatchSize;
+  if (_problem->_policiesPerEnvironment == 1)
+    _effectiveMinibatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
+
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
     _criticPolicyExperiment[p]["Problem"]["Type"] = "Supervised Learning";
     _criticPolicyExperiment[p]["Problem"]["Max Timesteps"] = _timeSequenceLength;
-    if (_problem->_policiesPerEnvironment == 1)
-      _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize * _problem->_agentsPerEnvironment;
-    else
-      _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _miniBatchSize;
-    _criticPolicyExperiment[p]["Problem"]["Inference Batch Size"] = 1;
+    _criticPolicyExperiment[p]["Problem"]["Training Batch Size"] = _effectiveMinibatchSize;
+    _criticPolicyExperiment[p]["Problem"]["Testing Batch Size"] = 1;
     _criticPolicyExperiment[p]["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
     _criticPolicyExperiment[p]["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
     _criticPolicyExperiment[p]["Solver"]["Type"] = "Learner/DeepSupervisor";
+    _criticPolicyExperiment[p]["Solver"]["Mode"] = "Training";
     _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
     _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
     _criticPolicyExperiment[p]["Solver"]["Learning Rate"] = _currentLearningRate;
     _criticPolicyExperiment[p]["Solver"]["Loss Function"] = "Direct Gradient";
-    _criticPolicyExperiment[p]["Solver"]["Steps Per Generation"] = 1;
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
     _criticPolicyExperiment[p]["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
@@ -67,9 +68,14 @@ void VRACER::initializeAgent()
     }
 
     // Running initialization to verify that the configuration is correct
+    _criticPolicyExperiment[p].setEngine(_k->_engine);
     _criticPolicyExperiment[p].initialize();
     _criticPolicyProblem[p] = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment[p]._problem);
     _criticPolicyLearner[p] = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment[p]._solver);
+
+    // Preallocating space in the underlying supervised problem's input and solution data structures (for performance, we don't reinitialize it every time)
+    _criticPolicyProblem[p]->_inputData.resize(_effectiveMinibatchSize);
+    _criticPolicyProblem[p]->_solutionData.resize(_effectiveMinibatchSize);
   }
 
   _maxMiniBatchPolicyMean.resize(_problem->_agentsPerEnvironment);

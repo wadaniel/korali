@@ -75,7 +75,6 @@ e["Problem"]["Solution"]["Size"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 1
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
@@ -205,27 +204,27 @@ for epoch in range(epochs):
  print('[Korali] Current Training Loss: ' + str(e["Solver"]["Current Loss"])) 
 
  # Evaluating testing set
- testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
+ # testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
  
  # Getting MSE loss for testing set
- squaredMeanError = 0.0
- for i, res in enumerate(testingInferredVector):
-  sol = testingLabelVector[i]
-  for j, s in enumerate(sol):
-   diff = res[j] - sol[j]
-   squaredMeanError += diff * diff 
- squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
- print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
+ # squaredMeanError = 0.0
+ # for i, res in enumerate(testingInferredVector):
+ #  sol = testingLabelVector[i]
+ #  for j, s in enumerate(sol):
+ #   diff = res[j] - sol[j]
+ #   squaredMeanError += diff * diff 
+ # squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
+ # print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
 
  # Getting prediction accuracy on testing dataset
- count = 0
- for i, res in enumerate(testingInferredVector):
-  correctLabel = np.argmax(testingLabelVector[i])
-  bestGuess    = np.argmax(res)
-  if correctLabel == bestGuess:
-   count += 1
- accuracy = count / testingBatchSize
- print('[Korali] Current Testing Accuracy:  ' + str(accuracy))
+ # count = 0
+ # for i, res in enumerate(testingInferredVector):
+ #  correctLabel = np.argmax(testingLabelVector[i])
+ #  bestGuess    = np.argmax(res)
+ #  if correctLabel == bestGuess:
+ #   count += 1
+ # accuracy = count / testingBatchSize
+ # print('[Korali] Current Testing Accuracy:  ' + str(accuracy))
  
  # Adjusting learning rate via decay
  learningRate = learningRate * (1.0 / (1.0 + decay * (epoch+1)));

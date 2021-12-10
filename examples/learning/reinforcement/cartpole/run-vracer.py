@@ -48,7 +48,6 @@ k = korali.Engine()
 e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
-
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 #e["Problem"]["Actions Between Policy Updates"] = 5
@@ -86,7 +85,6 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= 0.3
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
-
 e["Solver"]["State Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 

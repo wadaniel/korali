@@ -345,6 +345,10 @@ class Agent : public Solver
   */
    std::vector<std::vector<float>> _stateRescalingSigmas;
   /**
+  * @brief [Internal Use] Effective Minibatch Size in the context of MARL.
+  */
+   size_t _effectiveMinibatchSize;
+  /**
   * @brief [Termination Criteria] The solver will stop when the given number of episodes have been run.
   */
    size_t _maxEpisodes;

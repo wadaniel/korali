@@ -17,10 +17,14 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
+  // retreiving number of ranks
+  int nRanks  = atoi(argv[argc-1]);
+
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
+  N = (int)(N / nRanks); // Divided by the ranks per worker
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults/";
@@ -37,18 +41,21 @@ int main(int argc, char *argv[])
   // Creating Korali engine
   auto k = korali::Engine();
 
-  // Set conduit and pass MPI communicator
-  k["Conduit"]["Type"] = "Distributed";
-  korali::setKoraliMPIComm(MPI_COMM_WORLD);
-
-  // Adding custom setting to run the environment dumping the state files during testing
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
+  // Configure Korali
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["File Output"]["Path"] = trainingResultsPath;
   e["Solver"]["Mode"] = "Testing";
-  // e["Solver"]["Testing"]["Best Policy"] = e["Solver"]["Training"]["Best Policy"];
-  // e["Solver"]["Training"]["Current Policy"] = donor["Solver"]["Training"]["Best Policy"];
+
+  // Configuring conduit / communicator
+  k["Conduit"]["Type"] = "Distributed";
+  k["Conduit"]["Ranks Per Worker"] = nRanks;
+  korali::setKoraliMPIComm(MPI_COMM_WORLD);
+
+  // Dump setting for environment
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
+
+  // random seeds for environment
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);

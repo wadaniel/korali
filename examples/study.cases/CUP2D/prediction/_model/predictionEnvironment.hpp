@@ -4,20 +4,15 @@
 #include "korali.hpp"
 #include <algorithm>
 #include <random>
-#include "Obstacles/StefanFish.h"
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
+#include <Cubism/BlockInfo.h>
 
-// #define ID
-// #define MULTITASK
-#define SWARM
-// #define SINGLE
-// #define WATERTURBINE
+using namespace cubism;
 
 // command line arguments are read in Korali application
 extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
-bool isTerminal(StefanFish *agent, size_t nAgents);
+bool isTerminal();

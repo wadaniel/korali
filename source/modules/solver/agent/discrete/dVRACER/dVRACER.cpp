@@ -435,8 +435,8 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         qValAndInvTemp[_problem->_actionCount] = invTemperature;
 
         // Storing the action probabilities into the policy
-        policyInfo[b * _problem->_policiesPerEnvironment + p].actionProbabilities = pActions;
-        policyInfo[b * _problem->_policiesPerEnvironment + p].distributionParameters = qValAndInvTemp;
+        policyInfo[b + p].actionProbabilities = pActions;
+        policyInfo[b + p].distributionParameters = qValAndInvTemp;
       }
     }
   }
@@ -451,14 +451,14 @@ std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t,
   std::vector<policy_t> policyInfo(miniBatchSize * _problem->_agentsPerEnvironment);
 
 #pragma omp parallel for
-  for (size_t b = 0; b < miniBatchSize; b++)
+  for (size_t b = 0; b < miniBatchSize; b += _problem->_agentsPerEnvironment)
   {
     // Getting current expId
     const size_t expId = miniBatch[b].first;
 
     // Filling policy information
     for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      policyInfo[b * _problem->_agentsPerEnvironment + d] = _expPolicyVector[expId][d];
+      policyInfo[b + d] = _expPolicyVector[expId][d];
   }
 
   return policyInfo;

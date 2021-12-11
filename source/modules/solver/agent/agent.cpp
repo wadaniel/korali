@@ -752,7 +752,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   std::vector<size_t> updateBatch;
   updateBatch.push_back(0);
   for (size_t b = numAgents; b < miniBatchSize; b += numAgents)
-    if (miniBatch[b * numAgents].first != miniBatch[(b - 1)*numAgents].first)
+    if (miniBatch[b].first != miniBatch[b - numAgents].first)
       updateBatch.push_back(b);
 
   // Calculate offpolicy count difference in minibatch
@@ -775,7 +775,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       // Get state, action, mean, Sigma for this experience
       const auto &expAction = _actionVector[expId][d];
       const auto &expPolicy = _expPolicyVector[expId][d];
-      const auto &curPolicy = policyData[batchId * _problem->_agentsPerEnvironment + d];
+      const auto &curPolicy = policyData[batchId];
 
       // Store current policy
       _curPolicyVector[expId][d] = curPolicy;
@@ -895,10 +895,10 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   retraceMiniBatch.push_back(miniBatch[miniBatchSize - 1].first);
 
   // Adding experiences so long as they do not repeat episodes
-  for (ssize_t i = miniBatchSize - numAgents - 1; i >= 0; i -= numAgents)
+  for (ssize_t i = miniBatchSize - 1 - numAgents; i >= 0; i -= numAgents)
   {
-    size_t currExpId = miniBatch[i * numAgents].first;
-    size_t nextExpId = miniBatch[(i + 1) * numAgents].first;
+    size_t currExpId = miniBatch[i].first;
+    size_t nextExpId = miniBatch[i + numAgents].first;
     size_t curEpisode = _episodeIdVector[currExpId];
     size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);

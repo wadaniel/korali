@@ -256,7 +256,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
 
       // Set Gradient of Loss as Solution
       if (_problem->_policiesPerEnvironment == 1)
-        _criticPolicyProblem[0]->_solutionData[b * _problem->_agentsPerEnvironment + d] = gradientLoss;
+        _criticPolicyProblem[0]->_solutionData[b + d] = gradientLoss;
       else
         _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
     }

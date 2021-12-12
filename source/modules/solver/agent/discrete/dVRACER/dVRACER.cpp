@@ -89,12 +89,29 @@ void dVRACER::trainPolicy()
   const auto miniBatch = generateMiniBatch();
 
   // Gathering state sequences for selected minibatch
-  const auto stateSequence = getMiniBatchStateSequence(miniBatch);
+  const auto stateSequenceBatch = getMiniBatchStateSequence(miniBatch);
 
+  // Fill policyInfo with behavioral policy (access to availableActions)
   std::vector<policy_t> policyInfo = getPolicyInfo(miniBatch);
 
-  // Running policy NN on the Minibatch experiences
-  runPolicy(stateSequence, policyInfo);
+  // Split the state batch according to agents for multiple policies
+  std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchPerPolicy(_problem->_policiesPerEnvironment);
+  for (size_t b = 0; b < miniBatch.size(); b++)
+  {
+    stateBatchPerPolicy[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
+  }
+
+  // Run policy for each neural network
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  {
+    // Forward NN
+    std::vector<policy_t> policyInfoPerPolicy;
+    runPolicy(stateBatchPerPolicy[p], policyInfoPerPolicy, p);
+
+    // Write information to appropriate location in policyInfo
+    for( size_t b = 0; b<policyInfoPerPolicy.size(); b++ )
+      policyInfo[ p * _problem->_policiesPerEnvironment + b ] = policyInfoPerPolicy[b];
+  }
 
   // Using policy information to update experience's metadata
   updateExperienceMetadata(miniBatch, policyInfo);
@@ -259,35 +276,31 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   // Getting batch size
   size_t batchSize = stateSequenceBatch.size();
 
-  // Preparing storage for results
-  policyInfo.resize(batchSize);
-
-  //inference operation (getAction)
-  if (batchSize == 1)
+  // Forward neural network and update policyInfo
+  for( size_t b = 0; b < batchSize; b++ )
   {
     const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
     // Getting state value
-    policyInfo[0].stateValue = evaluation[0][0];
-
-    // Storage for action probabilities
-    float maxq = -korali::Inf;
-    std::vector<float> qValAndInvTemp(_policyParameterCount);
-    std::vector<float> pActions(_problem->_actionCount);
+    policyInfo[b].stateValue = evaluation[b][0];
 
     // Get the inverse of the temperature for the softmax distribution
-    const float invTemperature = evaluation[0][_policyParameterCount];
+    const float invTemperature = evaluation[b][_policyParameterCount];
 
-    // Iterating all Q(s,a)
+    // Storage for Q(s,a_i) and max_{a_i} Q(s,a_i)
+    std::vector<float> qValAndInvTemp(_policyParameterCount);
+    float maxq = -korali::Inf;
+
+    // Get Q(s,a_i) and max_{a_i} Q(s,a_i)
     for (size_t i = 0; i < _problem->_actionCount; i++)
     {
-      // Computing Q(s,a_i)
-      qValAndInvTemp[i] = evaluation[0][1 + i];
+      // Assign Q(s,a_i)
+      qValAndInvTemp[i] = evaluation[b][1 + i];
 
-      // Extracting max Q(s,a_i)
-      if (policyInfo[0].availableActions.size() > 0)
+      // Update max_{a_i} Q(s,a_i)
+      if (policyInfo[b].availableActions.size() > 0)
       {
-        if (policyInfo[0].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
+        if (policyInfo[b].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
             maxq = qValAndInvTemp[i];
       }
       else
@@ -297,7 +310,10 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
       }
     }
 
-    // Storage for the cumulative e^Q(s,a_i)/maxq
+    // Storage for action probabilities
+    std::vector<float> pActions(_problem->_actionCount);
+
+    // Storage for the normalization factor Sum_i(e^Q(s,a_i)/e^maxq)
     float sumExpQVal = 0.0;
 
     for (size_t i = 0; i < _problem->_actionCount; i++)
@@ -327,118 +343,8 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
     qValAndInvTemp[_problem->_actionCount] = invTemperature;
 
     // Storing the action probabilities into the policy
-    policyInfo[0].actionProbabilities = pActions;
-    policyInfo[0].distributionParameters = qValAndInvTemp;
-  }
-  else //training operation
-  {
-    // Storage for each sample for all Policies
-    std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchDistributed(_problem->_policiesPerEnvironment);
-
-    for (size_t b = 0; b < batchSize; b++)
-    {
-      stateBatchDistributed[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
-    }
-
-    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-    {
-      const auto evaluation = _criticPolicyLearner[p]->getEvaluation(stateBatchDistributed[p]);
-#pragma omp parallel for
-      for (size_t b = 0; b < evaluation.size(); b++)
-      {
-        // Getting state value
-        policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue = evaluation[b][0];
-        if (isfinite(policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue) == false)
-        {
-          serializeExperienceReplay();
-          _k->saveState();
-          for (float e : evaluation[b]) printf("e: %f\n", e);
-          KORALI_LOG_ERROR("State value not finite (%f) in policy evaluation during training step.", policyInfo[b * _problem->_policiesPerEnvironment + p].stateValue);
-        }
-
-        // Storage for action probabilities
-        float maxq = -korali::Inf;
-        std::vector<float> qValAndInvTemp(_policyParameterCount);
-        std::vector<float> pActions(_problem->_actionCount);
-
-        // Get the inverse of the temperature for the softmax distribution
-        const float invTemperature = evaluation[b][_policyParameterCount];
-
-        // Iterating all Q(s,a)
-        for (size_t i = 0; i < _problem->_actionCount; i++)
-        {
-          // Copying Q(s,a_i)
-          qValAndInvTemp[i] = evaluation[b][1 + i];
-
-          // Extracting max Q(s,a_i)
-          if (policyInfo[b].availableActions.size() > 0)
-          {
-            if (policyInfo[b].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
-                maxq = qValAndInvTemp[i];
-          }
-          else
-          {
-            if (qValAndInvTemp[i] > maxq) 
-                maxq = qValAndInvTemp[i];
-          }
-
-          if (isfinite(qValAndInvTemp[i]) == false)
-          {
-            for (float e : evaluation[b]) printf("e: %f\n", e);
-            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
-            KORALI_LOG_ERROR("Q value not finite %f (%f) in policy evaluation during training step.", qValAndInvTemp[i], invTemperature);
-          }
-        }
-
-        // Storage for the cumulative e^Q(s,a_i)/maxq
-        float sumExpQVal = 0.0;
-
-        for (size_t i = 0; i < _problem->_actionCount; i++)
-        {
-          // Computing e^(beta(Q(s,a_i) - maxq))
-          float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
-
-          // Set probability zer if action not available
-          if (policyInfo[b].availableActions.size() > 0)
-            if (policyInfo[b].availableActions[i] == 0) expCurQVal = 0.;
-
-          // Computing Sum_i(e^beta*Q(s,a_i)/e^maxq)
-          sumExpQVal += expCurQVal;
-
-          // Storing partial value of the probability of the action
-          pActions[i] = expCurQVal;
-
-          if (isfinite(pActions[i]) == false || isfinite(sumExpQVal) == false )
-          {
-            for (float e : evaluation[b]) printf("e: %f\n", e);
-            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
-            KORALI_LOG_ERROR("(1) pAction not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, sumExpQVal, expCurQVal);
-          }
-        }
-
-        // Calculating inverse of Sum_i(e^beta*Q(s,a_i))
-        float invSumExpQVal = 1.0f / sumExpQVal;
-
-        // Normalizing action probabilities
-        for (size_t i = 0; i < _problem->_actionCount; i++)
-        {
-          pActions[i] *= invSumExpQVal;
-          if (isfinite(pActions[i]) == false)
-          {
-            for (float e : evaluation[b]) printf("e: %f\n", e);
-            for (size_t a : policyInfo[b].availableActions) printf("a: %zu\n", a);
-            KORALI_LOG_ERROR("(2) pAction not finite %f (%f / %f / %f / %f) in policy evaluation during training step.", pActions[i], maxq, invTemperature, invSumExpQVal, sumExpQVal);
-          }
-        }
-
-        // Set inverse temperature parameter
-        qValAndInvTemp[_problem->_actionCount] = invTemperature;
-
-        // Storing the action probabilities into the policy
-        policyInfo[b + p].actionProbabilities = pActions;
-        policyInfo[b + p].distributionParameters = qValAndInvTemp;
-      }
-    }
+    policyInfo[b].actionProbabilities = pActions;
+    policyInfo[b].distributionParameters = qValAndInvTemp;
   }
 }
 

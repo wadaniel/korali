@@ -123,10 +123,10 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Setting file output configuration
 
 e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
-e["Solver"]["Experience Replay"]["Serialize"] = True
+# e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 50
+e["File Output"]["Frequency"] = 10
 #e["File Output"]["Frequency"] = 2
 e["File Output"]["Path"] = resultFolder
 

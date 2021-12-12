@@ -142,124 +142,103 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
 
   #pragma omp parallel for reduction(+ \
                                    : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
-  for (size_t b = 0; b < miniBatchSize; b += _problem->_agentsPerEnvironment)
+  for ( size_t b = 0; b < miniBatchSize; b ++ )
   {
     // Getting index of current experiment
     size_t expId = miniBatch[b].first;
+    size_t agentId = miniBatch[b].second;
 
-    // Getting experience policy data
-    const auto &expPolicy = _expPolicyVector[expId];
-    // Getting current policy data
-    const auto &curPolicy = _curPolicyVector[expId];
+    // Getting old and current policy
+    const auto &expPolicy = _expPolicyVector[expId][agentId];
+    const auto &curPolicy = _curPolicyVector[expId][agentId];
 
-    // Getting value evaluation
-    auto &V = _stateValueVector[expId];
-    const std::vector<float> expVtbc = _retraceValueVector[expId];
+    // Getting state-value and estimator
+    const auto &stateValue = _stateValueVector[expId][agentId];
+    const auto &expVtbc = _retraceValueVector[expId][agentId];
 
-    // If Cooporative setting Value is the sum of individual values
+    // Storage for the update gradient
+    std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
+
+    // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
+    gradientLoss[0] = expVtbc - stateValue;
+
+    //Gradient has to be divided by Number of Agents in Cooperative models
     if (_multiAgentRelationship == "Cooperation")
+      gradientLoss[0] /= _problem->_agentsPerEnvironment;
+
+    // Compute policy gradient only if inside trust region (or offPolicy disabled)
+    if (_isOnPolicyVector[expId][agentId])
     {
-      float avgV = 0.0f;
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        avgV += V[d];
-      avgV /= _problem->_agentsPerEnvironment;
-      V = std::vector<float>(_problem->_agentsPerEnvironment, avgV);
-    }
+      // Qret for terminal state is just reward
+      float Qret = getScaledReward(_rewardVector[expId][agentId], agentId);
 
-    // If Multi Agent Correlation calculate product of importance weights
-    float prodImportanceWeight = 1.0f;
-    if (_multiAgentCorrelation)
-    {
-      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        prodImportanceWeight *= _importanceWeightVector[expId][d];
-    }
-
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    {
-      // Storage for the update gradient
-      std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
-
-      // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-      gradientLoss[0] = expVtbc[d] - V[d];
-
-      //Gradient has to be divided by Number of Agents in Cooperation models
-      if (_multiAgentRelationship == "Cooperation")
-        gradientLoss[0] /= _problem->_agentsPerEnvironment;
-
-      // Compute policy gradient only if inside trust region (or offPolicy disabled)
-      if (_isOnPolicyVector[expId][d])
+      // If experience is non-terminal, add Vtbc
+      if (_terminationVector[expId] == e_nonTerminal)
       {
-        // Qret for terminal state is just reward
-        float Qret = getScaledReward(_rewardVector[expId][d], d);
-
-        // If experience is non-terminal, add Vtbc
-        if (_terminationVector[expId] == e_nonTerminal)
-        {
-          float nextExpVtbc = _retraceValueVector[expId + 1][d];
-          Qret += _discountFactor * nextExpVtbc;
-        }
-
-        // If experience is truncated, add truncated state value
-        if (_terminationVector[expId] == e_truncated)
-        {
-          float nextExpVtbc = _truncatedStateValueVector[expId][d];
-          Qret += _discountFactor * nextExpVtbc;
-        }
-
-        // Compute Off-Policy Objective (eq. 5)
-        float lossOffPolicy = Qret - V[d];
-
-        // Compute Policy Gradient wrt Params
-        auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
-
-        // If multi-agent correlation, multiply with additional factor
-        if (_multiAgentCorrelation)
-        {
-          float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
-          for (size_t i = 0; i < polGrad.size(); i++)
-            polGrad[i] *= correlationFactor;
-        }
-
-        // Set Gradient of Loss wrt Params
-        for (size_t i = 0; i < _policyParameterCount; i++)
-        {
-          // '-' because the optimizer is maximizing
-          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[d] * lossOffPolicy * polGrad[i];
-        }
+        float nextExpVtbc = _retraceValueVector[expId + 1][agentId];
+        Qret += _discountFactor * nextExpVtbc;
       }
 
-      // Compute derivative of kullback-leibler divergence wrt current distribution params
-      auto klGrad = calculateKLDivergenceGradient(expPolicy[d], curPolicy[d]);
+      // If experience is truncated, add truncated state value
+      if (_terminationVector[expId] == e_truncated)
+      {
+        float nextExpVtbc = _truncatedStateValueVector[expId][agentId];
+        Qret += _discountFactor * nextExpVtbc;
+      }
 
+      // Compute Off-Policy Objective (eq. 5)
+      float lossOffPolicy = Qret - stateValue;
+
+      // Compute Policy Gradient wrt Params
+      auto polGrad = calculateImportanceWeightGradient(curPolicy, expPolicy);
+
+      // If multi-agent correlation, multiply with additional factor
+      if (_multiAgentCorrelation)
+      {
+        float correlationFactor = _productImportanceWeightVector[expId] / _importanceWeightVector[expId][agentId];
+        for (size_t i = 0; i < polGrad.size(); i++)
+          polGrad[i] *= correlationFactor;
+      }
+
+      // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < _policyParameterCount; i++)
       {
-        // Step towards old policy (gradient pointing to larger difference between old and current policy)
-        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERCurrentBeta[d]) * klGrad[i];
-
-        if (std::isfinite(gradientLoss[i]) == false)
-        {
-          serializeExperienceReplay();
-          _k->saveState();
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
-        }
+        // '-' because the optimizer is maximizing
+        gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[agentId] * lossOffPolicy * polGrad[i];
       }
-      // Set Gradient of Loss as Solution
-      if (_problem->_policiesPerEnvironment == 1)
-        _criticPolicyProblem[0]->_solutionData[b + d] = gradientLoss;
-      else
-        _criticPolicyProblem[d]->_solutionData[b] = gradientLoss;
     }
+
+    // Compute derivative of KL divergence
+    auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
+
+    // Compute factor for KL penalization
+    const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERCurrentBeta[agentId]);
+
+    for (size_t i = 0; i < _policyParameterCount; i++)
+    {
+      // Step towards old policy (gradient pointing to larger difference between old and current policy)
+      gradientLoss[1 + i] -= klGradMultiplier * klGrad[i];
+
+      if (std::isfinite(gradientLoss[i]) == false)
+      {
+        serializeExperienceReplay();
+        _k->saveState();
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
+      }
+    }
+    // Set Gradient of Loss as Solution
+    if (_problem->_policiesPerEnvironment == 1)
+      _criticPolicyProblem[0]->_solutionData[b] = gradientLoss;
+    else
+      _criticPolicyProblem[agentId]->_solutionData[ (size_t)b / _problem->_agentsPerEnvironment ] = gradientLoss;
 
     // Update statistics
-    for (size_t p = 0; p < _problem->_policiesPerEnvironment; ++p)
-    {
-      _statisticsAverageInverseTemperature += (curPolicy[p].distributionParameters[_problem->_actionCount] / (float)_problem->_policiesPerEnvironment);
+    _statisticsAverageInverseTemperature += (curPolicy.distributionParameters[_problem->_actionCount] / (float)_problem->_policiesPerEnvironment);
 
-      float unlikeability = 1.0;
-      for (size_t i = 0; i < _problem->_actionCount; ++i)
-        unlikeability -= curPolicy[p].actionProbabilities[i] * curPolicy[p].actionProbabilities[i];
-      _statisticsAverageActionUnlikeability += (unlikeability / (float)_problem->_policiesPerEnvironment);
-    }
+    float unlikeability = 1.0;
+    for (size_t i = 0; i < _problem->_actionCount; ++i)
+      unlikeability -= curPolicy.actionProbabilities[i] * curPolicy.actionProbabilities[i];
+    _statisticsAverageActionUnlikeability += (unlikeability / (float)_problem->_policiesPerEnvironment);
   }
 
   // Compute statistics

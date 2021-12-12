@@ -64,6 +64,7 @@ void Agent::initialize()
   _stateValueVector.resize(_experienceReplayMaximumSize);
   _importanceWeightVector.resize(_experienceReplayMaximumSize);
   _truncatedImportanceWeightVector.resize(_experienceReplayMaximumSize);
+  _productImportanceWeightVector.resize(_experienceReplayMaximumSize);
   _truncatedStateValueVector.resize(_experienceReplayMaximumSize);
   _truncatedStateVector.resize(_experienceReplayMaximumSize);
   _terminationVector.resize(_experienceReplayMaximumSize);
@@ -617,6 +618,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Initialize experience's importance weight (1.0 because its freshly produced)
     _importanceWeightVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 1.0f));
     _truncatedImportanceWeightVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 1.0f));
+    _productImportanceWeightVector.add(1.0f);
   }
 
   /*********************************************************************
@@ -832,7 +834,8 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       // Get truncated state
       auto expTruncatedStateSequence = getTruncatedStateSequence(expId, agentId);
 
-      // Forward tuncated state; TODO: other policy for exp-sharing in multi-policy case??
+      // Forward tuncated state 
+      // TODO: other policy for exp-sharing in multi-policy case??
       float truncatedStateValue;
       if (_problem->_policiesPerEnvironment == 1)
         truncatedStateValue = calculateStateValue(expTruncatedStateSequence);
@@ -881,6 +884,9 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
       _isOnPolicyVector[expId] = isOnPolicy;
 
+      // Write to prodImportanceWeight vector
+      _productImportanceWeightVector[expId] = std::exp(logProdImportanceWeight);
+
       for (size_t d = 0; d < numAgents; d++)
       {
         if (_isOnPolicyVector[expId][d] == true && onPolicy == false)
@@ -894,19 +900,34 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       }
     }
 
-    // Average truncated state value for cooperative MA
+    // Average state values for cooperative MA
     if (_multiAgentRelationship == "Cooperation")
-    if (_terminationVector[expId] == e_truncated )
     {
-      // Load truncated state value
-      auto &truncatedStateValue = _truncatedStateValueVector[expId];
+      // Load state-value
+      auto &stateValue = _stateValueVector[expId];
 
-      // Average truncated state value
-      float averageTruncatedStateValue = std::accumulate(truncatedStateValue.begin(), truncatedStateValue.end(), 0.);
-      averageTruncatedStateValue /= _problem->_agentsPerEnvironment;
+      // Average state-value
+      float averageStateValue = 0.0f;
+      for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+        averageStateValue += stateValue[d];
+      averageStateValue /= _problem->_agentsPerEnvironment;
 
-      // Overwrite value with average
-      truncatedStateValue = std::vector<float>(_problem->_agentsPerEnvironment, averageTruncatedStateValue);
+      // Overwrite state value with average
+      stateValue = std::vector<float>(_problem->_agentsPerEnvironment, averageStateValue);
+
+      // Same for truncated state-value
+      if (_terminationVector[expId] == e_truncated )
+      {
+        // Load truncated state value
+        auto &truncatedStateValue = _truncatedStateValueVector[expId];
+
+        // Average truncated state value
+        float averageTruncatedStateValue = std::accumulate(truncatedStateValue.begin(), truncatedStateValue.end(), 0.);
+        averageTruncatedStateValue /= _problem->_agentsPerEnvironment;
+
+        // Overwrite truncated state value with average
+        truncatedStateValue = std::vector<float>(_problem->_agentsPerEnvironment, averageTruncatedStateValue);
+      }
     }
   }
 
@@ -1097,6 +1118,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
     stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
     stateJson["Experience Replay"][i]["Truncated Importance Weight"] = _truncatedImportanceWeightVector[i];
+    stateJson["Experience Replay"][i]["Product Importance Weight"] = _productImportanceWeightVector[i];
     stateJson["Experience Replay"][i]["Is On Policy"] = _isOnPolicyVector[i];
     stateJson["Experience Replay"][i]["Truncated State"] = _truncatedStateVector[i];
     stateJson["Experience Replay"][i]["Truncated State Value"] = _truncatedStateValueVector[i];
@@ -1188,6 +1210,7 @@ void Agent::deserializeExperienceReplay()
   _importanceWeightVector.clear();
   _truncatedImportanceWeightVector.clear();
   _truncatedStateValueVector.clear();
+  _productImportanceWeightVector.clear();
   _truncatedStateVector.clear();
   _terminationVector.clear();
   _expPolicyVector.clear();
@@ -1210,6 +1233,7 @@ void Agent::deserializeExperienceReplay()
     _retraceValueVector.add(stateJson["Experience Replay"][i]["Retrace Value"].get<std::vector<float>>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<std::vector<float>>());
     _truncatedImportanceWeightVector.add(stateJson["Experience Replay"][i]["Truncated Importance Weight"].get<std::vector<float>>());
+    _productImportanceWeightVector.add(stateJson["Experience Replay"][i]["Product Importance Weight"].get<float>());
     _isOnPolicyVector.add(stateJson["Experience Replay"][i]["Is On Policy"].get<std::vector<bool>>());
     _truncatedStateVector.add(stateJson["Experience Replay"][i]["Truncated State"].get<std::vector<std::vector<float>>>());
     _truncatedStateValueVector.add(stateJson["Experience Replay"][i]["Truncated State Value"].get<std::vector<float>>());

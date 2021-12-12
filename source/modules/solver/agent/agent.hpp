@@ -455,6 +455,11 @@ class Agent : public Solver
   cBuffer<std::vector<float>> _truncatedImportanceWeightVector;
 
   /**
+   * @brief Contains the latest calculation of the product of the product of the experience's importance weights
+   */
+  cBuffer<float> _productImportanceWeightVector;
+
+  /**
    * @brief For prioritized experience replay, this stores the experience's priority
    */
   cBuffer<std::vector<float>> _priorityVector;

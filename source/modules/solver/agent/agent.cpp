@@ -649,6 +649,7 @@ void Agent::processEpisode(knlohmann::json &episode)
       else
         retV[d] += calculateStateValue(expTruncatedStateSequence, d);
 
+
       // Get value of trucated state
       if (std::isfinite(retV[d]) == false)
         KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", retV[d]);
@@ -661,6 +662,9 @@ void Agent::processEpisode(knlohmann::json &episode)
       avgRetV /= _problem->_agentsPerEnvironment;
       retV = std::vector<float>(_problem->_agentsPerEnvironment, avgRetV);
     }
+      
+    // The value of the truncated state equals initial retrace Value
+    _truncatedStateValueVector[endId] = retV;
   }
 
   // Now going backwards, setting the retrace value of every experience
@@ -949,9 +953,10 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
     //PolicyCount is integer I couldn't figure out how to include the division in the previous calculations
     if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
       _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
-    // Updating the off policy cutoff
-    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }
+    
+  // Updating the off policy cutoff
+  _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 
   /* Update Retrace value */
 

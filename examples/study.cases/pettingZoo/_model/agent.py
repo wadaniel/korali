@@ -22,8 +22,8 @@ def initEnvironment(e, envName, multPolicies):
     numIndividuals = 5
 
  elif (envName == 'Multiwalker'):
-    from pettingzoo.sisl import waterworld_v3
-    env = waterworld_v3.env()
+    from pettingzoo.sisl import multiwalker_v7
+    env = multiwalker_v7.env()
     stateVariableCount = 31
     actionVariableCount = 4
     ac_upper = 1 

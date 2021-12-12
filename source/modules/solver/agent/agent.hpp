@@ -209,10 +209,6 @@ class Agent : public Solver
   */
    int _multiAgentCorrelation;
   /**
-  * @brief Only important in strong correlation case, if set to True we first multiplicate and then truncate, if set to False we first truncate and then multiplicate.
-  */
-   int _strongTruncationVariant;
-  /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
    size_t _policyParameterCount;

@@ -86,7 +86,7 @@ else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
 
-#e["Solver"]["Experience Replay"]["Start Size"] = 256
+# e["Solver"]["Experience Replay"]["Start Size"] = 256
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8

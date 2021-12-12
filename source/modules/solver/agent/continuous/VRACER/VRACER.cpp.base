@@ -94,7 +94,7 @@ void __className__::trainPolicy()
   const auto stateSequenceBatch = getMiniBatchStateSequence(miniBatch);
 
   // Create policy info for the selected state sequence
-  std::vector<policy_t> policyInfo;
+  std::vector<policy_t> policyInfo(_effectiveMinibatchSize);
 
   // Split the state batch according to agents for multiple policies
   std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchPerPolicy(_problem->_policiesPerEnvironment);
@@ -111,8 +111,9 @@ void __className__::trainPolicy()
     runPolicy(stateBatchPerPolicy[p], policyInfoPerPolicy, p);
 
     // Write information to appropriate location in policyInfo
-    for( size_t b = 0; b<policyInfoPerPolicy.size(); b++ )
-      policyInfo[ p * _problem->_policiesPerEnvironment + b ] = policyInfoPerPolicy[b];
+    const size_t offset = _problem->_policiesPerEnvironment == 1 ? 1 : _effectiveMinibatchSize;
+    for( size_t b = 0; b<_effectiveMinibatchSize; b++ )
+      policyInfo[ b * offset + p ] = policyInfoPerPolicy[b];
   }
 
   // Using policy information to update experience's metadata

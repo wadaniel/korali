@@ -96,21 +96,24 @@ void dVRACER::trainPolicy()
 
   // Split the state batch according to agents for multiple policies
   std::vector<std::vector<std::vector<std::vector<float>>>> stateBatchPerPolicy(_problem->_policiesPerEnvironment);
+  std::vector<std::vector<policy_t>> policyInfoPerPolicy(_problem->_policiesPerEnvironment);
   for (size_t b = 0; b < miniBatch.size(); b++)
   {
-    stateBatchPerPolicy[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
+    const size_t index = b % _problem->_policiesPerEnvironment;
+    stateBatchPerPolicy[index].push_back(stateSequenceBatch[b]);
+    policyInfoPerPolicy[index].push_back(policyInfo[b]);
   }
 
   // Run policy for each neural network
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
     // Forward NN
-    std::vector<policy_t> policyInfoPerPolicy;
-    runPolicy(stateBatchPerPolicy[p], policyInfoPerPolicy, p);
+    runPolicy(stateBatchPerPolicy[p], policyInfoPerPolicy[p], p);
 
     // Write information to appropriate location in policyInfo
-    for( size_t b = 0; b<policyInfoPerPolicy.size(); b++ )
-      policyInfo[ p * _problem->_policiesPerEnvironment + b ] = policyInfoPerPolicy[b];
+    const size_t offset = _problem->_policiesPerEnvironment == 1 ? 1 : _effectiveMinibatchSize;
+    for( size_t b = 0; b<policyInfoPerPolicy[p].size(); b++ )
+      policyInfo[ b * offset + p ] = policyInfoPerPolicy[p][b];
   }
 
   // Using policy information to update experience's metadata

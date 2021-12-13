@@ -265,7 +265,7 @@ void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &state
   const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
   // Write results to policyInfo
-  #pragma omp parallel
+  #pragma omp parallel for
   for( size_t b = 0; b < batchSize; b++ )
   {
     policyInfo[b].stateValue = evaluation[b][0];

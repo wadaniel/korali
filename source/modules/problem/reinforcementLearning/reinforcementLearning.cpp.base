@@ -377,14 +377,6 @@ void __className__::runEnvironment(Sample &agent)
     auto reward = KORALI_GET(float, agent, "Reward");
     agent._js.getJson().erase("Reward");
     agent["Reward"][0] = reward;
-
-    // Support returning available actions as vector
-    if ( isDefined(agent._js.getJson(), "Available Actions") )
-    {
-      auto availAct = KORALI_GET(std::vector<size_t>, agent, "Available Actions");
-      agent._js.getJson().erase("Available Actions");
-      agent["Available Actions"][0] = availAct;
-    }
   }
 
   // Checking correct format of state

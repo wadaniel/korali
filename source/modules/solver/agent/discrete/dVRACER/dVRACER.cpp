@@ -259,7 +259,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
   // Update policy info
-  #pragma omp parallel
+  #pragma omp parallel for
   for( size_t b = 0; b < batchSize; b++ )
   {
     // Getting state value

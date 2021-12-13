@@ -32,7 +32,7 @@ void Discrete::getAction(korali::Sample &sample)
 
     // Preparing storage for policy information and flag available actions if provided
     std::vector<policy_t> policy(1);
-    policy[0].availableActions = sample["Available Actions"].get<std::vector<size_t>>();
+    policy[0].availableActions = sample["Available Actions"][i].get<std::vector<size_t>>();
 
     // Getting the probability of the actions given by the agent's policy
     if (_problem->_policiesPerEnvironment == 1)

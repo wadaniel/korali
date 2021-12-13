@@ -112,7 +112,7 @@ void dVRACER::trainPolicy()
 
     // Write information to appropriate location in policyInfo
     const size_t offset = _problem->_policiesPerEnvironment == 1 ? 1 : _effectiveMinibatchSize;
-    for( size_t b = 0; b<policyInfoPerPolicy[p].size(); b++ )
+    for( size_t b = 0; b<_effectiveMinibatchSize; b++ )
       policyInfo[ b * offset + p ] = policyInfoPerPolicy[p][b];
   }
 
@@ -219,13 +219,10 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
     {
       gradientLoss[1 + i] -= klGradMultiplier * klGrad[i];
 
-      if (std::isfinite(gradientLoss[i]) == false)
-      {
-        serializeExperienceReplay();
-        _k->saveState();
+      if (std::isfinite(gradientLoss[1 + i]) == false)
         KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
-      }
     }
+
     // Set Gradient of Loss as Solution
     if (_problem->_policiesPerEnvironment == 1)
       _criticPolicyProblem[0]->_solutionData[b] = gradientLoss;
@@ -258,11 +255,13 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   // Getting batch size
   size_t batchSize = stateSequenceBatch.size();
 
-  // Forward neural network and update policyInfo
+  // Forward neural network
+  const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
+
+  // Update policy info
+  #pragma omp parallel
   for( size_t b = 0; b < batchSize; b++ )
   {
-    const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
-
     // Getting state value
     policyInfo[b].stateValue = evaluation[b][0];
 
@@ -280,16 +279,8 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
       qValAndInvTemp[i] = evaluation[b][1 + i];
 
       // Update max_{a_i} Q(s,a_i)
-      if (policyInfo[b].availableActions.size() > 0)
-      {
-        if (policyInfo[b].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
-            maxq = qValAndInvTemp[i];
-      }
-      else
-      {
-        if (qValAndInvTemp[i] > maxq) 
-            maxq = qValAndInvTemp[i];
-      }
+      if (qValAndInvTemp[i] > maxq && policyInfo[b].availableActions[i] == 1) 
+        maxq = qValAndInvTemp[i];
     }
 
     // Storage for action probabilities
@@ -301,9 +292,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
     for (size_t i = 0; i < _problem->_actionCount; i++)
     {
       // Computing e^(beta(Q(s,a_i) - maxq))
-      float expCurQVal = std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
-      if (policyInfo[0].availableActions.size() > 0)
-        if (policyInfo[0].availableActions[i] == 0) expCurQVal = 0.;
+      const float expCurQVal = policyInfo[0].availableActions[i] == 0 ? 0.0f : std::exp(invTemperature * (qValAndInvTemp[i] - maxq));
 
       // Computing Sum_i(e^Q(s,a_i)/e^maxq)
       sumExpQVal += expCurQVal;
@@ -317,9 +306,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
     // Normalizing action probabilities
     for (size_t i = 0; i < _problem->_actionCount; i++)
-    {
       pActions[i] *= invSumExpQVal;
-    }
 
     // Set inverse temperature parameter
     qValAndInvTemp[_problem->_actionCount] = invTemperature;
@@ -336,17 +323,17 @@ std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t,
   const size_t miniBatchSize = miniBatch.size();
 
   // Allocating policy sequence vector
-  std::vector<policy_t> policyInfo(miniBatchSize * _problem->_agentsPerEnvironment);
+  std::vector<policy_t> policyInfo(miniBatchSize);
 
-#pragma omp parallel for
-  for (size_t b = 0; b < miniBatchSize; b += _problem->_agentsPerEnvironment)
+  #pragma omp parallel for schedule(guided, _problem->_agentsPerEnvironment)
+  for ( size_t b = 0; b < miniBatchSize; b++ )
   {
     // Getting current expId
-    const size_t expId = miniBatch[b].first;
+    const size_t expId   = miniBatch[b].first;
+    const size_t agentId = miniBatch[b].second;
 
     // Filling policy information
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      policyInfo[b + d] = _expPolicyVector[expId][d];
+    policyInfo[b] = _expPolicyVector[expId][agentId];
   }
 
   return policyInfo;

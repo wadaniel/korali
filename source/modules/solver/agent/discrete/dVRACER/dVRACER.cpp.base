@@ -126,18 +126,19 @@ void __className__::trainPolicy()
 
 void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch)
 {
-  const size_t miniBatchSize = miniBatch.size();
-
   // Init statistics
   _statisticsAverageInverseTemperature = 0.;
   _statisticsAverageActionUnlikeability = 0.;
 
-  #pragma omp parallel for reduction(+ \
+  const size_t miniBatchSize = miniBatch.size();
+  const size_t numAgents = _problem->_agentsPerEnvironment;
+
+  #pragma omp parallel for schedule(guided, numAgents) reduction(+ \
                                    : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
-  for ( size_t b = 0; b < miniBatchSize; b ++ )
+  for ( size_t b = 0; b < miniBatchSize; b++ )
   {
     // Getting index of current experiment
-    size_t expId = miniBatch[b].first;
+    size_t expId   = miniBatch[b].first;
     size_t agentId = miniBatch[b].second;
 
     // Getting old and current policy
@@ -146,7 +147,7 @@ void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,
 
     // Getting state-value and estimator
     const auto &stateValue = _stateValueVector[expId][agentId];
-    const auto &expVtbc = _retraceValueVector[expId][agentId];
+    const auto &expVtbc    = _retraceValueVector[expId][agentId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
@@ -154,11 +155,11 @@ void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,
     // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
     gradientLoss[0] = expVtbc - stateValue;
 
-    //Gradient has to be divided by Number of Agents in Cooperative models
+    // Gradient has to be divided by Number of Agents in Cooperative models
     if (_multiAgentRelationship == "Cooperation")
-      gradientLoss[0] /= _problem->_agentsPerEnvironment;
+      gradientLoss[0] /= numAgents;
 
-    // Compute policy gradient only if inside trust region (or offPolicy disabled)
+    // Compute policy gradient only if inside trust region
     if (_isOnPolicyVector[expId][agentId])
     {
       // Qret for terminal state is just reward
@@ -208,7 +209,6 @@ void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,
 
     for (size_t i = 0; i < _policyParameterCount; i++)
     {
-      // Step towards old policy (gradient pointing to larger difference between old and current policy)
       gradientLoss[1 + i] -= klGradMultiplier * klGrad[i];
 
       if (std::isfinite(gradientLoss[i]) == false)
@@ -222,7 +222,7 @@ void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,
     if (_problem->_policiesPerEnvironment == 1)
       _criticPolicyProblem[0]->_solutionData[b] = gradientLoss;
     else
-      _criticPolicyProblem[agentId]->_solutionData[ (size_t)b / _problem->_agentsPerEnvironment ] = gradientLoss;
+      _criticPolicyProblem[agentId]->_solutionData[ (size_t)b / numAgents ] = gradientLoss;
 
     // Update statistics
     _statisticsAverageInverseTemperature += (curPolicy.distributionParameters[_problem->_actionCount] / (float)_problem->_policiesPerEnvironment);

@@ -15,13 +15,13 @@ namespace continuous
 {
 ;
 
+// Declare reduction clause for vectors
+#pragma omp declare reduction(vec_float_plus : std::vector<float> : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <float>())) initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
+
 void VRACER::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
-
-  // Init statistics
-  _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 
   /*********************************************************************
    * Initializing Critic/Policy Neural Network Optimization Experiment
@@ -78,19 +78,9 @@ void VRACER::initializeAgent()
     _criticPolicyProblem[p]->_solutionData.resize(_effectiveMinibatchSize);
   }
 
-  _maxMiniBatchPolicyMean.resize(_problem->_agentsPerEnvironment);
-  _maxMiniBatchPolicyStdDev.resize(_problem->_agentsPerEnvironment);
-
-  _minMiniBatchPolicyMean.resize(_problem->_agentsPerEnvironment);
-  _minMiniBatchPolicyStdDev.resize(_problem->_agentsPerEnvironment);
-
-  for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-  {
-    _maxMiniBatchPolicyMean[d].resize(_problem->_actionVectorSize);
-    _maxMiniBatchPolicyStdDev[d].resize(_problem->_actionVectorSize);
-    _minMiniBatchPolicyMean[d].resize(_problem->_actionVectorSize);
-    _minMiniBatchPolicyStdDev[d].resize(_problem->_actionVectorSize);
-  }
+  // Minibatch statistics
+  _miniBatchPolicyMean.resize(_problem->_actionVectorSize);
+  _miniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
 }
 
 void VRACER::trainPolicy()
@@ -143,24 +133,18 @@ void VRACER::trainPolicy()
 void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch)
 {
   // Resetting statistics
-  std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
+  std::fill(_miniBatchPolicyMean.begin(), _miniBatchPolicyMean.end(), 0.0);
+  std::fill(_miniBatchPolicyStdDev.begin(), _miniBatchPolicyStdDev.end(), 0.0);
 
   const size_t miniBatchSize = miniBatch.size();
+  const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      _maxMiniBatchPolicyMean[d][i] = -Inf;
-      _maxMiniBatchPolicyStdDev[d][i] = -Inf;
-      _minMiniBatchPolicyMean[d][i] = +Inf;
-      _minMiniBatchPolicyStdDev[d][i] = +Inf;
-    }
-
-#pragma omp parallel for
+  #pragma omp parallel for schedule(guided, numAgents) reduction(vec_float_plus \
+                                        : _miniBatchPolicyMean, _miniBatchPolicyStdDev) 
   for ( size_t b = 0; b < miniBatchSize; b++ )
   {
     // Getting index of current experiment
-    size_t expId = miniBatch[b].first;
+    size_t expId   = miniBatch[b].first;
     size_t agentId = miniBatch[b].second;
 
     // Get policy and action for this experience
@@ -169,8 +153,8 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
 
     // Gathering metadata
     const auto &stateValue = _stateValueVector[expId][agentId];
-    const auto &curPolicy = _curPolicyVector[expId][agentId];
-    const auto &expVtbc = _retraceValueVector[expId][agentId];
+    const auto &curPolicy  = _curPolicyVector[expId][agentId];
+    const auto &expVtbc    = _retraceValueVector[expId][agentId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
@@ -180,10 +164,10 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
 
     //Gradient has to be divided by Number of Agents in Cooperation models
     if (_multiAgentRelationship == "Cooperation")
-      gradientLoss[0] /= _problem->_agentsPerEnvironment;
+      gradientLoss[0] /= numAgents;
 
-    // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (_isOnPolicyVector[expId][agentId])
+    // Compute policy gradient inside trust region
+    if ( _isOnPolicyVector[expId][agentId] )
     {
       // Qret for terminal state is just reward
       float Qret = getScaledReward(_rewardVector[expId][agentId], agentId);
@@ -191,14 +175,14 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
       {
-        float nextExpVtbc = _retraceValueVector[expId + 1][agentId];
+        const float nextExpVtbc = _retraceValueVector[expId + 1][agentId];
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // If experience is truncated, add truncated state value
       if (_terminationVector[expId] == e_truncated)
       {
-        float nextExpVtbc = _truncatedStateValueVector[expId][agentId];
+        const float nextExpVtbc = _truncatedStateValueVector[expId][agentId];
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -208,7 +192,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
       // Compute Off-Policy Gradient
       auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
 
-      // If multi-agent correlation, multiply with additional factor
+      // Multi-agent correlation implies additional factor
       if (_multiAgentCorrelation)
       {
         const float correlationFactor = _productImportanceWeightVector[expId] / _importanceWeightVector[expId][agentId];
@@ -233,27 +217,11 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
       gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
       gradientLoss[1 + i + _problem->_actionVectorSize] += klGradMultiplier * klGrad[i + _problem->_actionVectorSize];
 
-      if (expPolicy.distributionParameters[i] > _maxMiniBatchPolicyMean[agentId][i]) _maxMiniBatchPolicyMean[agentId][i] = expPolicy.distributionParameters[i];
-      if (expPolicy.distributionParameters[_problem->_actionVectorSize + i] > _maxMiniBatchPolicyStdDev[agentId][i]) _maxMiniBatchPolicyStdDev[agentId][i] = expPolicy.distributionParameters[_problem->_actionVectorSize + i];
-      if (expPolicy.distributionParameters[i] < _minMiniBatchPolicyMean[agentId][i]) _minMiniBatchPolicyMean[agentId][i] = expPolicy.distributionParameters[i];
-      if (expPolicy.distributionParameters[_problem->_actionVectorSize + i] < _minMiniBatchPolicyStdDev[agentId][i]) _minMiniBatchPolicyStdDev[agentId][i] = expPolicy.distributionParameters[_problem->_actionVectorSize + i];
-
       if (std::isfinite(gradientLoss[i + 1]) == false)
-      {
-        // TODO: fix this hack
-        if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
-          gradientLoss[i + 1] = 0.0;
-        else
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
-      }
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1]);
+
       if (std::isfinite(gradientLoss[i + 1 + _problem->_actionVectorSize]) == false)
-      {
-        // TODO: fix this hack
-        if ((_multiAgentRelationship == "Cooperation") && (_multiAgentCorrelation == false))
-          gradientLoss[i + 1 + _problem->_actionVectorSize] = 0.0;
-        else
-          KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
-      }
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i + 1 + _problem->_actionVectorSize]);
     }
 
     // Set Gradient of Loss as Solution
@@ -261,10 +229,21 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
       _criticPolicyProblem[0]->_solutionData[b] = gradientLoss;
     else
       _criticPolicyProblem[agentId]->_solutionData[ (size_t)b / _problem->_agentsPerEnvironment ] = gradientLoss;
+
+    // Compute statistics
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      _miniBatchPolicyMean[i] += curPolicy.distributionParameters[ i ];
+      _miniBatchPolicyStdDev[i] += curPolicy.distributionParameters[ _problem->_actionVectorSize + i ];
+    }
   }
 
-  // Compute average action stadard deviation
-  for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)miniBatchSize;
+  // Normalize statistics
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    _miniBatchPolicyMean[i] /= (float)miniBatchSize;
+    _miniBatchPolicyStdDev[i] /= (float)miniBatchSize;
+  }
 }
 
 float VRACER::calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx)
@@ -310,25 +289,14 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 void VRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
-  _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");
+  _k->_logger->logInfo("Detailed", " + [VRACER] Policy Parameters (Mu & Sigma):\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[0][i], _maxMiniBatchPolicyStdDev[0][i]);
-  _k->_logger->logInfo("Detailed", " + [VRACER] Min Policy Parameters (Mu & Sigma):\n");
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _minMiniBatchPolicyMean[0][i], _minMiniBatchPolicyStdDev[0][i]);
+    _k->_logger->logInfo("Detailed", " + [VRACER] Action %zu: (%.3e,%.3e)\n", i, _miniBatchPolicyMean[i], _miniBatchPolicyStdDev[i]);
 }
 
 void VRACER::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
-
- if (isDefined(js, "Statistics", "Average Action Sigmas"))
- {
- try { _statisticsAverageActionSigmas = js["Statistics"]["Average Action Sigmas"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ VRACER ] \n + Key:    ['Statistics']['Average Action Sigmas']\n%s", e.what()); } 
-   eraseValue(js, "Statistics", "Average Action Sigmas");
- }
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
@@ -352,7 +320,6 @@ void VRACER::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Statistics"]["Average Action Sigmas"] = _statisticsAverageActionSigmas;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
    _k->_js["Variables"][i]["Initial Exploration Noise"] = _k->_variables[i]->_initialExplorationNoise;
  } 

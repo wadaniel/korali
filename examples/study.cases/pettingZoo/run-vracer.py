@@ -20,12 +20,11 @@ parser.add_argument('--run', help='Run Number', required=False, type=int, defaul
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 1000000)
+
 #model '0' or '' weakly Dependent Individualist 
-#model '1' strongly Dependent Individualist I 
-#model '2' strongly Dependent Individualist II 
-#model '3' weakly Dependent Collectivist  
-#model '4' strongly Dependent Collectivist I 
-#model '5' strongly Dependent Collectivist II 
+#model '1' strongly Dependent Individualist
+#model '2' weakly Dependent Collectivist  
+#model '3' strongly Dependent Collectivist
 
 args = parser.parse_args()
 print(args)
@@ -57,26 +56,16 @@ e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 e["Solver"]["Multi Agent Relationship"] = 'Individual'
 e["Solver"]["Multi Agent Correlation"] = False
-e["Solver"]["Strong Truncation Variant"] = True
 
 if(args.model == '1'):
 	e["Solver"]["Multi Agent Correlation"] = True
 
 elif(args.model == '2'):
-	e["Solver"]["Multi Agent Correlation"] = True
-	e["Solver"]["Strong Truncation Variant"] = False
+	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 
 elif(args.model == '3'):
 	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
-
-elif(args.model == '4'):
-	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 	e["Solver"]["Multi Agent Correlation"] = True
-
-elif(args.model == '5'):
-	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
-	e["Solver"]["Multi Agent Correlation"] = True
-	e["Solver"]["Strong Truncation Variant"] = False
 
 ### Setting Experience Replay and REFER settings
 

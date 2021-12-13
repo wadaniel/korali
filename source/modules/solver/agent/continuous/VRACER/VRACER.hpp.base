@@ -41,24 +41,14 @@ class __className__ : public __parentClassName__
   void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) override;
 
   /**
-   * @brief [Statistics] Keeps track of the max policy mu of the current minibatch for each action variable
+   * @brief [Statistics] Keeps track of the mu of the current minibatch for each action variable
    */
-  std::vector<std::vector<float>> _maxMiniBatchPolicyMean;
+  std::vector<float> _miniBatchPolicyMean;
 
   /**
-   * @brief [Statistics] Keeps track of the max policy sigma of the current minibatch for each action variable
+   * @brief [Statistics] Keeps track of the sigma of the current minibatch for each action variable
    */
-  std::vector<std::vector<float>> _maxMiniBatchPolicyStdDev;
-
-  /**
-   * @brief [Statistics] Keeps track of the min policy mu of the current minibatch for each action variable
-   */
-  std::vector<std::vector<float>> _minMiniBatchPolicyMean;
-
-  /**
-   * @brief [Statistics] Keeps track of the min policy sigma of the current minibatch for each action variable
-   */
-  std::vector<std::vector<float>> _minMiniBatchPolicyStdDev;
+  std::vector<float> _miniBatchPolicyStdDev;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -37,6 +37,10 @@ class dVRACER : public Discrete
   */
    float _initialInverseTemperature;
   /**
+  * @brief Number of policy updates until epsilon is fully annealed.
+  */
+   size_t _annealingTime;
+  /**
   * @brief [Internal Use] Measure of unlikeability for categorial data, approaches 1.0 for uniform behavior and 0. for deterministic case.
   */
    float _statisticsAverageInverseTemperature;
@@ -86,7 +90,12 @@ class dVRACER : public Discrete
    * @brief Pointer to actor's experiment problem
    */
   std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
-
+ 
+  /**
+   * @brief Calculates the current value of exploration factor epsilon
+   */
+  inline float getEpsilon() const { return std::max(1.- (float) _policyUpdateCount/ (float) _annealingTime, 0.03); }
+  
   /**
    * @brief Update the V-target or current and previous experiences in the episode
    * @param expId Current Experience Id

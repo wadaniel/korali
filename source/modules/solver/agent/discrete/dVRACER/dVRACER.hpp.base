@@ -23,7 +23,12 @@ class __className__ : public __parentClassName__
    * @brief Pointer to actor's experiment problem
    */
   std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
-
+ 
+  /**
+   * @brief Calculates the current value of exploration factor epsilon
+   */
+  inline float getEpsilon() const { return std::max(1.- (float) _policyUpdateCount/ (float) _annealingTime, 0.03); }
+  
   /**
    * @brief Update the V-target or current and previous experiences in the episode
    * @param expId Current Experience Id

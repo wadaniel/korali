@@ -160,28 +160,31 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       if (_multiAgentRelationship == "Cooperation")
         gradientLoss[0] /= _problem->_agentsPerEnvironment;
 
+      // Exploration annealing epsilon
+      const float epsilon = getEpsilon();
+
       // Compute policy gradient only if inside trust region (or offPolicy disabled)
       if (_isOnPolicyVector[expId][d])
       {
         // Qret for terminal state is just reward
-        float Qret = getScaledReward(_rewardVector[expId][d], d);
+        float Qret = getScaledReward(_rewardVector[expId][d]);
 
         // If experience is non-terminal, add Vtbc
         if (_terminationVector[expId] == e_nonTerminal)
         {
-          float nextExpVtbc = _retraceValueVector[expId + 1][d];
+          const float nextExpVtbc = _retraceValueVector[expId + 1][d];
           Qret += _discountFactor * nextExpVtbc;
         }
 
         // If experience is truncated, add truncated state value
         if (_terminationVector[expId] == e_truncated)
         {
-          float nextExpVtbc = _truncatedStateValueVector[expId][d];
+          const float nextExpVtbc = _truncatedStateValueVector[expId][d];
           Qret += _discountFactor * nextExpVtbc;
         }
 
         // Compute Off-Policy Objective (eq. 5)
-        float lossOffPolicy = Qret - V[d];
+        const float lossOffPolicy = Qret - V[d];
 
         // Compute Policy Gradient wrt Params
         auto polGrad = calculateImportanceWeightGradient(curPolicy[d], expPolicy[d]);
@@ -189,7 +192,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         // If multi-agent correlation, multiply with additional factor
         if (_multiAgentCorrelation)
         {
-          float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
+          const float correlationFactor = prodImportanceWeight / _importanceWeightVector[expId][d];
           for (size_t i = 0; i < polGrad.size(); i++)
             polGrad[i] *= correlationFactor;
         }
@@ -198,7 +201,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
         for (size_t i = 0; i < _policyParameterCount; i++)
         {
           // '-' because the optimizer is maximizing
-          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[d] * lossOffPolicy * polGrad[i];
+          gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[d] * lossOffPolicy * polGrad[i] * epsilon;
         }
       }
 
@@ -208,7 +211,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
       for (size_t i = 0; i < _policyParameterCount; i++)
       {
         // Step towards old policy (gradient pointing to larger difference between old and current policy)
-        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERCurrentBeta[d]) * klGrad[i];
+        gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERCurrentBeta[d]) * klGrad[i] * epsilon;
 
         if (std::isfinite(gradientLoss[i]) == false)
         {
@@ -251,7 +254,7 @@ float dVRACER::calculateStateValue(const std::vector<std::vector<float>> &stateS
 void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policyInfo, size_t policyIdx)
 {
   // Getting batch size
-  size_t batchSize = stateSequenceBatch.size();
+  const size_t batchSize = stateSequenceBatch.size();
 
   // Preparing storage for results
   policyInfo.resize(batchSize);
@@ -271,6 +274,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
     // Get the inverse of the temperature for the softmax distribution
     const float invTemperature = evaluation[0][_policyParameterCount];
+    size_t maxIndex = 0;
 
     // Iterating all Q(s,a)
     for (size_t i = 0; i < _problem->_actionCount; i++)
@@ -282,12 +286,18 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
       if (policyInfo[0].availableActions.size() > 0)
       {
         if (policyInfo[0].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
+        {
             maxq = qValAndInvTemp[i];
+            maxIndex = i;
+        }
       }
       else
       {
         if (qValAndInvTemp[i] > maxq) 
+        {
             maxq = qValAndInvTemp[i];
+            maxIndex = i;
+        }
       }
     }
 
@@ -311,10 +321,15 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
     // Calculating inverse of Sum_i(e^Q(s,a_i))
     const float invSumExpQVal = 1.0f / sumExpQVal;
 
-    // Normalizing action probabilities
+    // Exploration annealing epsilon
+    const float epsilon = getEpsilon();
+
+    // Normalizing action probabilities and annealing
     for (size_t i = 0; i < _problem->_actionCount; i++)
     {
-      pActions[i] *= invSumExpQVal;
+      pActions[i] *= invSumExpQVal * epsilon;
+      if (i == maxIndex)
+        pActions[i] += 1.-epsilon;
     }
 
     // Set inverse temperature parameter
@@ -357,6 +372,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
 
         // Get the inverse of the temperature for the softmax distribution
         const float invTemperature = evaluation[b][_policyParameterCount];
+        size_t maxIndex = 0;
 
         // Iterating all Q(s,a)
         for (size_t i = 0; i < _problem->_actionCount; i++)
@@ -368,12 +384,18 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
           if (policyInfo[b].availableActions.size() > 0)
           {
             if (policyInfo[b].availableActions[i] == 1 && qValAndInvTemp[i] > maxq) 
+            {
                 maxq = qValAndInvTemp[i];
+                maxIndex = i;
+            }
           }
           else
           {
             if (qValAndInvTemp[i] > maxq) 
+            {
                 maxq = qValAndInvTemp[i];
+                maxIndex = i;
+            }
           }
 
           if (isfinite(qValAndInvTemp[i]) == false)
@@ -411,12 +433,18 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
         }
 
         // Calculating inverse of Sum_i(e^beta*Q(s,a_i))
-        float invSumExpQVal = 1.0f / sumExpQVal;
+        const float invSumExpQVal = 1.0f / sumExpQVal;
+    
+        // Exploration annealing epsilon
+        const float epsilon = getEpsilon();
 
-        // Normalizing action probabilities
+        // Normalizing action probabilities and annealing
         for (size_t i = 0; i < _problem->_actionCount; i++)
         {
-          pActions[i] *= invSumExpQVal;
+          pActions[i] *= invSumExpQVal * epsilon;
+          if (i == maxIndex) 
+            pActions[i] += (1. - epsilon);
+
           if (isfinite(pActions[i]) == false)
           {
             for (float e : evaluation[b]) printf("e: %f\n", e);
@@ -508,6 +536,15 @@ void dVRACER::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Initial Inverse Temperature'] required by dVRACER.\n"); 
 
+ if (isDefined(js, "Annealing Time"))
+ {
+ try { _annealingTime = js["Annealing Time"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ dVRACER ] \n + Key:    ['Annealing Time']\n%s", e.what()); } 
+   eraseValue(js, "Annealing Time");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Annealing Time'] required by dVRACER.\n"); 
+
  Discrete::setConfiguration(js);
  _type = "agent/discrete/dVRACER";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
@@ -519,6 +556,7 @@ void dVRACER::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Initial Inverse Temperature"] = _initialInverseTemperature;
+   js["Annealing Time"] = _annealingTime;
    js["Statistics"]["Average Inverse Temperature"] = _statisticsAverageInverseTemperature;
    js["Statistics"]["Average Action Unlikeability"] = _statisticsAverageActionUnlikeability;
  Discrete::getConfiguration(js);
@@ -527,7 +565,7 @@ void dVRACER::getConfiguration(knlohmann::json& js)
 void dVRACER::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Initial Inverse Temperature\": 1.0}";
+ std::string defaultString = "{\"Initial Inverse Temperature\": 1.0, \"Annealing Time\": 10000000}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Discrete::applyModuleDefaults(js);

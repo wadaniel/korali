@@ -217,7 +217,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
 
     for (size_t i = 0; i < _policyParameterCount; i++)
     {
-      gradientLoss[1 + i] -= klGradMultiplier * klGrad[i];
+      gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
 
       if (std::isfinite(gradientLoss[1 + i]) == false)
         KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);

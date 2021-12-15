@@ -101,15 +101,48 @@ void VRACER::trainPolicy()
     stateBatchPerPolicy[b % _problem->_policiesPerEnvironment].push_back(stateSequenceBatch[b]);
   }
 
-  // Run policy for each neural network
-  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  // If using one policy per agent, first update using other agent's experiences
+  const size_t numPolicies = _problem->_policiesPerEnvironment;
+  for ( size_t a = 1; a < numPolicies; a++ )
+  {
+    // Run policy for each neural network
+    for (size_t p = 0; p < numPolicies; p++)
+    {
+      // Forward NN
+      std::vector<policy_t> policyInfoPerPolicy;
+      runPolicy(stateBatchPerPolicy[(p+a)%numPolicies], policyInfoPerPolicy, p);
+
+      // Write information to appropriate location in policyInfo
+      const size_t offset = numPolicies == 1 ? 1 : _effectiveMinibatchSize;
+      for( size_t b = 0; b<_effectiveMinibatchSize; b++ )
+        policyInfo[ b * offset + p ] = policyInfoPerPolicy[b];
+    }
+
+    // Using policy information to update experience's metadata
+    updateExperienceMetadata(miniBatch, policyInfo);
+
+    // Now calculating policy gradients
+    calculatePolicyGradients(miniBatch);
+
+    for (size_t p = 0; p < numPolicies; p++)
+    {
+      // Updating learning rate for critic/policy learner guided by REFER
+      _criticPolicyLearner[p]->_learningRate = _currentLearningRate;
+
+      // Now applying gradients to update policy NN
+      _criticPolicyLearner[p]->runGeneration();
+    }
+  }
+
+  // Foward minibatch with correct neural network
+  for (size_t p = 0; p < numPolicies; p++)
   {
     // Forward NN
     std::vector<policy_t> policyInfoPerPolicy;
     runPolicy(stateBatchPerPolicy[p], policyInfoPerPolicy, p);
 
     // Write information to appropriate location in policyInfo
-    const size_t offset = _problem->_policiesPerEnvironment == 1 ? 1 : _effectiveMinibatchSize;
+    const size_t offset = numPolicies == 1 ? 1 : _effectiveMinibatchSize;
     for( size_t b = 0; b<_effectiveMinibatchSize; b++ )
       policyInfo[ b * offset + p ] = policyInfoPerPolicy[b];
   }
@@ -120,7 +153,7 @@ void VRACER::trainPolicy()
   // Now calculating policy gradients
   calculatePolicyGradients(miniBatch);
 
-  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+  for (size_t p = 0; p < numPolicies; p++)
   {
     // Updating learning rate for critic/policy learner guided by REFER
     _criticPolicyLearner[p]->_learningRate = _currentLearningRate;

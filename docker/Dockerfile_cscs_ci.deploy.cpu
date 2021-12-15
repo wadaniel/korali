@@ -9,3 +9,4 @@ RUN cd korali; meson install -C build
 
 ENV PYTHONPATH=/usr/local/lib/python3/dist-packages/:$PYTHONPATH
 RUN cd korali/examples/features/running.cxx && make -j4
+RUN cd korali/examples/features/running.mpi.cxx && make -j4

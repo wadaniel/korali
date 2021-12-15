@@ -440,12 +440,12 @@ class __className__ : public __parentClassName__
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward, const size_t agentId)
+  inline float getScaledReward(const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma[agentId];
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentId]);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }

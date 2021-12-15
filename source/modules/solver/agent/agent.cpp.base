@@ -765,7 +765,6 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   size_t a;
   for (size_t b = 0; b < miniBatchSize; b += a)
   {
-
     // Add new unique combination
     updateBatch.push_back(b);
     updateMinibatch.push_back(miniBatch[b]);
@@ -975,13 +974,13 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   std::vector<size_t> retraceMiniBatch;
 
   // Adding last experience from the sorted minibatch
-  retraceMiniBatch.push_back(updateBatch.back());
+  retraceMiniBatch.push_back(miniBatch[updateBatch.back()].first);
 
   // Adding experiences so long as they do not repeat episodes
   for (ssize_t i = updateBatch.size() - 2; i >= 0; i -- )
   {
-    size_t currExpId = updateBatch[i];
-    size_t nextExpId = updateBatch[i + 1];
+    size_t currExpId = miniBatch[updateBatch[i]].first;
+    size_t nextExpId = miniBatch[updateBatch[i + 1]].first;
     size_t curEpisode  = _episodeIdVector[currExpId];
     size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);

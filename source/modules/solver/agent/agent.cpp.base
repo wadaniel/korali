@@ -703,6 +703,30 @@ std::vector<std::pair<size_t,size_t>> __className__::generateMiniBatch()
       // Setting experience
       miniBatch[b * numAgents + a].first = expId;
       miniBatch[b * numAgents + a].second = a;
+
+      // Sample agentId
+      if( _multiAgentSampling == "Experience" )
+      {
+        // Producing random (uniform) number for the selection of the experience
+        float ax = _uniformGenerator->getRandomNumber();
+
+        // Selecting agent
+        miniBatch[b * numAgents + a].second = std::floor(ax * (float)(numAgents - 1));
+      }
+
+      // Sample both
+      if( _multiAgentSampling == "Baseline" )
+      {
+        // Producing random (uniform) number for the selection of the experience
+        float ex = _uniformGenerator->getRandomNumber();
+        float ax = _uniformGenerator->getRandomNumber();
+
+        // Selecting experience
+        miniBatch[b * numAgents + a].first = std::floor(ex * (float)(_stateVector.size() - 1));
+
+        // Selecting agent
+        miniBatch[b * numAgents + a].second = std::floor(ax * (float)(numAgents - 1));
+      }
     }
   }
 

@@ -1,8 +1,11 @@
 FROM lukasgd/korali_cscs_ci_cpu:base
 
-RUN git clone https://github.com/cselab/korali.git
+# Docker build context must be the root directory of the `git clone`
+COPY . korali
+
 RUN cd korali; CC=gcc CXX=g++ meson setup build --prefix=/usr/local --buildtype=release -Donednn=true -Dmpi=true
 RUN cd korali; ninja -C build
 RUN cd korali; meson install -C build
-RUN cd korali/examples/features/running.cxx && make -j4
+
 ENV PYTHONPATH=/usr/local/lib/python3/dist-packages/:$PYTHONPATH
+RUN cd korali/examples/features/running.cxx && make -j4

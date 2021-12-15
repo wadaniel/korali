@@ -90,14 +90,14 @@ run_non_mpi_test_cpu:
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME_CPU}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd /home/ubuntu/korali/examples/features/running.cxx && make -j4 && ./run-cmaes
+    - cd /home/ubuntu/korali/examples/features/running.cxx && ./run-cmaes
 
 run_mpi_test_cpu:
   extends: .test_korali_mpi_cpu
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME_CPU}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && make -j4 && ./run-cmaes 4
+    - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && ./run-cmaes 4
   variables:
     SLURM_JOB_NUM_NODES: 9
     SLURM_NTASKS: 9
@@ -108,14 +108,14 @@ run_non_mpi_test_gpu:
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME_GPU}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd /home/ubuntu/korali/examples/features/running.cxx && make -j4 && ./run-cmaes
+    - cd /home/ubuntu/korali/examples/features/running.cxx && ./run-cmaes
 
 run_mpi_test_gpu:
   extends: .test_korali_mpi_gpu
   image: art.cscs.ch/contbuild/testing/anfink/${PERSIST_IMAGE_NAME_GPU}
   script:
     - echo "Hello from korali test in Sarus container on node ${SLURMD_NODENAME} (node ID ${SLURM_NODEID}, proc ID ${SLURM_PROCID}, replacing MPI ${USE_MPI})"
-    - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && make -j4 && ./run-cmaes 4
+    - cd /home/ubuntu/korali/examples/features/running.mpi.cxx && ./run-cmaes 4
   variables:
     SLURM_JOB_NUM_NODES: 9
     SLURM_NTASKS: 9

@@ -694,14 +694,10 @@ std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch()
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
   // Fill minibatch
-  float oldX;
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Producing random (uniform) number for the selection of the experience
     float x = _uniformGenerator->getRandomNumber();
-    if( b == 1 )
-      x = oldX;
-    oldX = x;
 
     // Selecting experience
     size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
@@ -711,8 +707,6 @@ std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch()
       // Setting experience
       miniBatch[b * numAgents + a].first = expId;
       miniBatch[b * numAgents + a].second = a;
-      if( a == 2 )
-      miniBatch[b * numAgents + a].second = a - 1;
     }
   }
 

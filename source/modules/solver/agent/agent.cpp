@@ -694,10 +694,14 @@ std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch()
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
   // Fill minibatch
+  float oldX;
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Producing random (uniform) number for the selection of the experience
     float x = _uniformGenerator->getRandomNumber();
+    if( b == 1 )
+      x = oldX;
+    oldX = x;
 
     // Selecting experience
     size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
@@ -707,11 +711,14 @@ std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch()
       // Setting experience
       miniBatch[b * numAgents + a].first = expId;
       miniBatch[b * numAgents + a].second = a;
+      if( a == 2 )
+      miniBatch[b * numAgents + a].second = a - 1;
     }
   }
 
   // Sorting minibatch -- this helps with locality and also
   // to quickly detect duplicates when updating metadata
+  std::sort(miniBatch.begin(), miniBatch.end(), secondSmaller);
   std::stable_sort(miniBatch.begin(), miniBatch.end());
 
   // Returning generated minibatch
@@ -755,10 +762,8 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   const size_t miniBatchSize = miniBatch.size();
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  /* Creating a selection of unique expIds and update mini batch
+  /* Creating a selection of unique expIds, agentIds
    * Important: this assumes the minibatch ids are sorted.
-   *            AND that for each expId all agents were sampled
-   * TODO: Generalize this to the case where an arbitrary number of agents is sampled per exp
    */
 
   // Create Buffers
@@ -766,28 +771,33 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   std::vector<std::pair<size_t,size_t>> updateMinibatch;
   std::vector<policy_t> updatePolicyData;
 
-  // At first entries
-  updateBatch.push_back(0);
-  for( size_t a = 0; a < numAgents; a++ )
+  // Fill updateMinibatch and updatePolicyData
+  size_t a;
+  for (size_t b = 0; b < miniBatchSize; b += a)
   {
-    updateMinibatch.push_back(miniBatch[a]);
-    updatePolicyData.push_back(policyData[a]);
-  }
 
-  // Fill updateBatch and updateMiniBatch
-  for (size_t b = numAgents; b < miniBatchSize; b += numAgents)
-  if (miniBatch[b].first != miniBatch[b - numAgents].first)
-  {
+    // Add new unique combination
     updateBatch.push_back(b);
-    for( size_t a = 0; a < numAgents; a++ )
+    updateMinibatch.push_back(miniBatch[b]);
+    updatePolicyData.push_back(policyData[b]);
+
+    // Add experiences with same expId
+    a = 1;
+    while( (miniBatch[b + a].first  == miniBatch[b + a - 1].first) && (a+b<miniBatchSize) )
     {
-      updateMinibatch.push_back(miniBatch[b + a]);
-      updatePolicyData.push_back(policyData[b + a]);
+      // Only add unique experiences
+      if( miniBatch[b + a].second != miniBatch[b + a - 1].second )
+      {
+        updateMinibatch.push_back(miniBatch[b+a]);
+        updatePolicyData.push_back(policyData[b+a]);
+      }
+      a++;
     }
   }
 
-  // Calculate offpolicy count difference in minibatch
+  // Container to compute offpolicy count difference in minibatch
   std::vector<int> offPolicyCountDelta(numAgents, 0);
+
   #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) schedule(guided, numAgents)
   for (size_t i = 0; i < updateMinibatch.size(); i++)
   {
@@ -975,14 +985,14 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   std::vector<size_t> retraceMiniBatch;
 
   // Adding last experience from the sorted minibatch
-  retraceMiniBatch.push_back(miniBatch[miniBatchSize - 1].first);
+  retraceMiniBatch.push_back(updateBatch.back());
 
   // Adding experiences so long as they do not repeat episodes
-  for (ssize_t i = miniBatchSize - 1 - numAgents; i >= 0; i -= numAgents)
+  for (ssize_t i = updateBatch.size() - 2; i >= 0; i -- )
   {
-    size_t currExpId = miniBatch[i].first;
-    size_t nextExpId = miniBatch[i + numAgents].first;
-    size_t curEpisode = _episodeIdVector[currExpId];
+    size_t currExpId = updateBatch[i];
+    size_t nextExpId = updateBatch[i + 1];
+    size_t curEpisode  = _episodeIdVector[currExpId];
     size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }

@@ -48,7 +48,6 @@ k = korali.Engine()
 e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
-e.loadState("_korali_result/latest")
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 #e["Problem"]["Actions Between Policy Updates"] = 5

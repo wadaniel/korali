@@ -209,9 +209,9 @@ class Agent : public Solver
   */
    int _multiAgentCorrelation;
   /**
-  * @brief Only important in strong correlation case, if set to True we first multiplicate and then truncate, if set to False we first truncate and then multiplicate.
+  * @brief Specifies how to sample the minibatch.
   */
-   int _strongTruncationVariant;
+   std::string _multiAgentSampling;
   /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
@@ -331,11 +331,11 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
-   std::vector<float> _rewardRescalingSigma;
+   float _rewardRescalingSigma;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
-   std::vector<float> _rewardRescalingSumSquaredRewards;
+   float _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
@@ -457,6 +457,11 @@ class Agent : public Solver
    * @brief Contains the latest calculation of the experience's truncated importance weight
    */
   cBuffer<std::vector<float>> _truncatedImportanceWeightVector;
+
+  /**
+   * @brief Contains the latest calculation of the product of the product of the experience's importance weights
+   */
+  cBuffer<float> _productImportanceWeightVector;
 
   /**
    * @brief For prioritized experience replay, this stores the experience's priority
@@ -654,14 +659,22 @@ class Agent : public Solver
    * @param miniBatchSize Size of the mini batch to create
    * @return A vector with the indexes to the experiences in the mini batch
    */
-  std::vector<size_t> generateMiniBatch(size_t miniBatchSize);
+  std::vector<std::pair<size_t,size_t>> generateMiniBatch();
+
+  /**
+   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
+   * @param miniBatch Indexes to the latest experiences in a batch of sequences
+   * @param includeAction Specifies whether to include the experience's action in the sequence
+   * @return The time step vector of states
+   */
+  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<std::pair<size_t,size_t>> &miniBatch);
 
   /**
    * @brief Updates the state value, retrace, importance weight and other metadata for a given minibatch of experiences
    * @param miniBatch The mini batch of experience ids to update
    * @param policyData The policy to use to evaluate the experiences
    */
-  void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData);
+  void updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**
    * @brief Resets time sequence within the agent, to forget past actions from other episodes
@@ -688,14 +701,6 @@ class Agent : public Solver
    * @return The starting time sequence index
    */
   size_t getTimeSequenceStartExpId(size_t expId);
-
-  /**
-   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
-   * @param miniBatch Indexes to the latest experiences in a batch of sequences
-   * @param includeAction Specifies whether to include the experience's action in the sequence
-   * @return The time step vector of states
-   */
-  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction = false);
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
@@ -750,12 +755,12 @@ class Agent : public Solver
    * @param reward the input reward to rescale
    * @return The normalized reward
    */
-  inline float getScaledReward(const float reward, const size_t agentId)
+  inline float getScaledReward(const float reward)
   {
-    float rescaledReward = reward / _rewardRescalingSigma[agentId];
+    float rescaledReward = reward / _rewardRescalingSigma;
 
     if (std::isfinite(rescaledReward) == false)
-      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma[agentId]);
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f  (Sigma: %f)\n", rescaledReward, _rewardRescalingSigma);
 
     return rescaledReward;
   }

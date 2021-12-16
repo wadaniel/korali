@@ -16,16 +16,15 @@ parser.add_argument('--l2', help='L2 Regularization.', required=False, type=floa
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
-parser.add_argument('--run', help='Run Number', required=True, type=int, default = 0)
+parser.add_argument('--run', help='Run Number', required=False, type=int, default = 0)
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 1000000)
+
 #model '0' or '' weakly Dependent Individualist 
-#model '1' strongly Dependent Individualist I 
-#model '2' strongly Dependent Individualist II 
-#model '3' weakly Dependent Collectivist  
-#model '4' strongly Dependent Collectivist I 
-#model '5' strongly Dependent Collectivist II 
+#model '1' strongly Dependent Individualist
+#model '2' weakly Dependent Collectivist  
+#model '3' strongly Dependent Collectivist
 
 args = parser.parse_args()
 print(args)
@@ -57,26 +56,16 @@ e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 e["Solver"]["Multi Agent Relationship"] = 'Individual'
 e["Solver"]["Multi Agent Correlation"] = False
-e["Solver"]["Strong Truncation Variant"] = True
 
 if(args.model == '1'):
 	e["Solver"]["Multi Agent Correlation"] = True
 
 elif(args.model == '2'):
-	e["Solver"]["Multi Agent Correlation"] = True
-	e["Solver"]["Strong Truncation Variant"] = False
+	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 
 elif(args.model == '3'):
 	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
-
-elif(args.model == '4'):
-	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 	e["Solver"]["Multi Agent Correlation"] = True
-
-elif(args.model == '5'):
-	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
-	e["Solver"]["Multi Agent Correlation"] = True
-	e["Solver"]["Strong Truncation Variant"] = False
 
 ### Setting Experience Replay and REFER settings
 
@@ -88,10 +77,9 @@ else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
 
+# e["Solver"]["Experience Replay"]["Start Size"] = 256
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
-#e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-#e["Solver"]["Experience Replay"]["Maximum Size"] = 2000
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
@@ -123,10 +111,10 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Setting file output configuration
 
 e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
-e["Solver"]["Experience Replay"]["Serialize"] = True
+# e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 50
+e["File Output"]["Frequency"] = 10
 #e["File Output"]["Frequency"] = 2
 e["File Output"]["Path"] = resultFolder
 

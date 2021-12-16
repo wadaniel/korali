@@ -22,6 +22,12 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
+bool secondSmaller(const std::pair<size_t, size_t>& a, 
+                   const std::pair<size_t, size_t>& b)
+{
+    return (a.second < b.second);
+}
+
 std::string getTimestamp()
 {
   time_t rawtime;

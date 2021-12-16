@@ -13,7 +13,7 @@ NWORKER=64
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=1
+NRANKS=2
 # NRANKS=9
 
 # number of cores per worker

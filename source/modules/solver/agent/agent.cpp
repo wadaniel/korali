@@ -896,9 +896,6 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       // Load importance weight for expId
       const auto &importanceWeight = _importanceWeightVector[expId];
 
-      // Load isOnPolicy
-      auto &isOnPolicy = _isOnPolicyVector[expId];
-
       // Compute product of importance weights
       float logProdImportanceWeight = 0.0f;
       for( size_t d = 0; d<numAgents; d++ )
@@ -915,23 +912,26 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       // Check whether experience is onPolicy
       const bool onPolicy = (logProdImportanceWeight > (-1. * logCutOff)) && (logProdImportanceWeight < logCutOff);
 
-      // Overwrite onPolicyVector
-      std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
+      // Load isOnPolicy
+      auto &isOnPolicy = _isOnPolicyVector[expId];
 
       // Write to prodImportanceWeight vector
       _productImportanceWeightVector[expId] = std::exp(logProdImportanceWeight);
 
       for (size_t d = 0; d < numAgents; d++)
       {
-        if (_isOnPolicyVector[expId][d] == true && onPolicy == false)
+        if (isOnPolicy[d] == true && onPolicy == false)
         {
           offPolicyCountDelta[d]++;
         }
-        else if (_isOnPolicyVector[expId][d] == false && onPolicy == true)
+        else if (isOnPolicy[d] == false && onPolicy == true)
         {
           offPolicyCountDelta[d]--;
         }
       }
+
+      // Overwrite onPolicyVector
+      std::fill(isOnPolicy.begin(), isOnPolicy.end(), onPolicy);
     }
   }
 

@@ -887,7 +887,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
 
   if (_multiAgentCorrelation)
   {
-    // #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) schedule(guided, numAgents)
+    #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) schedule(guided, numAgents)
     for( size_t i = 0; i<updateBatch.size(); i++ )
     {
       const size_t batchId = updateBatch[i];

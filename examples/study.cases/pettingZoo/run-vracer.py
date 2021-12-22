@@ -21,10 +21,10 @@ parser.add_argument('--multpolicies', help='If set to 1, train with N policies',
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 10000000)
 
-#model '0' or '' weakly Dependent Individualist 
-#model '1' strongly Dependent Individualist
-#model '2' weakly Dependent Collectivist  
-#model '3' strongly Dependent Collectivist
+#model '0' or '' conditional dynamics individualist 
+#model '1' full dynamics individualist
+#model '2' conditional dynamics cooperation  
+#model '3' full dynamics cooperation
 #model '4' Baseline (Individual)
 
 args = parser.parse_args()

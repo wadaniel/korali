@@ -19,12 +19,13 @@ parser.add_argument('--nn', help='Neural net width of two hidden layers.', requi
 parser.add_argument('--run', help='Run Number', required=False, type=int, default = 0)
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
-parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 1000000)
+parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 10000000)
 
 #model '0' or '' weakly Dependent Individualist 
 #model '1' strongly Dependent Individualist
 #model '2' weakly Dependent Collectivist  
 #model '3' strongly Dependent Collectivist
+#model '4' Baseline (Individual)
 
 args = parser.parse_args()
 print(args)
@@ -38,7 +39,8 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_'+ str(args.nn)+ '_' + str(args.run) +'/'
+# resultFolder = 'results/_result_vracer_' + args.env + '_' + dis_dir + '_'+ str(args.nn)+ '_' + str(args.run) +'/'
+resultFolder = 'run' + str(args.run) +'/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -66,6 +68,9 @@ elif(args.model == '2'):
 elif(args.model == '3'):
 	e["Solver"]["Multi Agent Relationship"] = 'Cooperation'
 	e["Solver"]["Multi Agent Correlation"] = True
+
+elif(args.model == '4'):
+	e["Solver"]["Multi Agent Sampling"] = "Baseline"
 
 ### Setting Experience Replay and REFER settings
 

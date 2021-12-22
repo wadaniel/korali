@@ -96,13 +96,13 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData ):
     episodes = np.arange(1,maxEpisodes+1)
     if showData:
         for i in range(len(returnsHistory)):
-            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, color=cmap(colorIndx), lineWidth=1.5, alpha=0.15, zorder=0)
+            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, color=cmap(colorIndx), linewidth=1.5, alpha=0.15, zorder=0)
     if len(results) == 1:
         if showCI > 0.0: # Plot median together with CI
-            ax.plot(episodes, medianReturns[0], '-', color=cmap(colorIndx), lineWidth=3.0, zorder=1) 
+            ax.plot(episodes, medianReturns[0], '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
             ax.fill_between(episodes, lowerCiReturns[0], upperCiReturns[0][:maxEpisodes], color=cmap(colorIndx), alpha=0.2)
         else: # .. or mean with standard deviation
-            ax.plot(episodes, meanReturns[0], '-', color=cmap(colorIndx), lineWidth=3.0, zorder=1) 
+            ax.plot(episodes, meanReturns[0], '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
             ax.fill_between(episodes, meanReturns[0]-stdReturns[0], meanReturns[0]+stdReturns[0], color=cmap(colorIndx), alpha=0.2)
     else:
         if showCI > 0.0: # Plot median over runs
@@ -119,7 +119,7 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData ):
                 confIntervalLower.append( np.percentile(data, 50-50*showCI) )
                 confIntervalUpper.append( np.percentile(data, 50+50*showCI) )
 
-            ax.plot(episodes, median, '-', color=cmap(colorIndx), lineWidth=3.0, zorder=1) 
+            ax.plot(episodes, median, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
             ax.fill_between(episodes, confIntervalLower, confIntervalUpper, color=cmap(colorIndx), alpha=0.2)
         else: # .. or mean with standard deviation
             meanReturns = np.array(meanReturns)
@@ -135,7 +135,7 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData ):
             mean = np.array(mean)
             std  = np.array(std)
 
-            ax.plot(episodes, mean, '-', color=cmap(colorIndx), lineWidth=3.0, zorder=1) 
+            ax.plot(episodes, mean, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
             ax.fill_between(episodes, mean-std, mean+std, color=cmap(colorIndx), alpha=0.2)
       
     ax.set_ylabel('Cumulative Reward')

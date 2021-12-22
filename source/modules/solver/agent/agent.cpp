@@ -253,6 +253,9 @@ void Agent::trainingGeneration()
         _policyUpdateCount++;
         _sessionPolicyUpdateCount++;
 
+        // Updating the off policy cutoff
+        _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
+
         for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
         {
           // Updating REFER learning rate and beta parameters
@@ -843,8 +846,8 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
     _importanceWeightVector[expId][agentId] = importanceWeight;
     _truncatedImportanceWeightVector[expId][agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
 
-    // Keep track of off-policyness
-    if ( not _multiAgentCorrelation)
+    // Keep track of off-policyness (in principle only necessary for agentId==policyId)
+    if ( not _multiAgentCorrelation )
     {
       // Checking if experience is on policy
       const bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
@@ -883,7 +886,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
     }
   }
 
-  /* Now taking care of advances correlation features for MARL */
+  /* Now taking care of advanced correlation features for MARL */
 
   if (_multiAgentCorrelation)
   {
@@ -991,9 +994,6 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
     if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
       _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
   }
-    
-  // Updating the off policy cutoff
-  _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 
   /* Update Retrace value */
 

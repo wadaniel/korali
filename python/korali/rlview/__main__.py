@@ -270,7 +270,7 @@ if __name__ == '__main__':
     ax.set_ylabel('Cumulative Reward')
     if args.showObservations:
         ax.set_xlabel('# Observations')
-    else 
+    else:
         ax.set_xlabel('# Episodes')
     ax.set_title('Korali RL History Viewer')
 

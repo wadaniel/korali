@@ -88,6 +88,8 @@ def initEnvironment(e, envName, multPolicies):
    e["Problem"]["Agents Per Environment"] = numIndividuals
    if (multPolicies == 1) :
       e["Problem"]["Policies Per Environment"] = numIndividuals
+
+ return numIndividuals
  
 def agent(s, env):
 

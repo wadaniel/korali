@@ -17,7 +17,7 @@ import pdb
 
 ##################### Plotting Reward History
 
-def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, showObservations ):
+def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, showObservations, dir ):
     
     maxEpisodes = math.inf
 
@@ -126,7 +126,7 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, s
                 confIntervalLower.append( np.percentile(data, 50-50*showCI) )
                 confIntervalUpper.append( np.percentile(data, 50+50*showCI) )
 
-            ax.plot(episodes, median, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
+            ax.plot(episodes, median, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1, label=dir)
             ax.fill_between(episodes, confIntervalLower, confIntervalUpper, color=cmap(colorIndx), alpha=0.2)
         else: # .. or mean with standard deviation
             meanReturns = np.array(meanReturns)
@@ -265,7 +265,7 @@ if __name__ == '__main__':
 
     for run in range(len(results)):
         colorIndx = run / float(len(results)-1+1e-10)
-        plotRewardHistory(ax, colorIndx, results[run], args.averageDepth, args.showCI, args.showCumulativeRewards, args.showObservations)
+        plotRewardHistory(ax, colorIndx, results[run], args.averageDepth, args.showCI, args.showCumulativeRewards, args.showObservations, args.dir[run])
 
     ax.set_ylabel('Cumulative Reward')
     if args.showObservations:
@@ -273,6 +273,7 @@ if __name__ == '__main__':
     else:
         ax.set_xlabel('# Episodes')
     ax.set_title('Korali RL History Viewer')
+    ax.legend()
 
     ax.yaxis.grid()
     if args.maxEpisodes < math.inf:

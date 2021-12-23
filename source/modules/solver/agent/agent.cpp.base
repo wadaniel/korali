@@ -579,7 +579,6 @@ void __className__::processEpisode(knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         expPolicy[d].availableActions = availAct[d];
-        if (expPolicy[d].availableActions.size() > 0)
           if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
             KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
       }
@@ -1281,6 +1280,7 @@ void __className__::deserializeExperienceReplay()
       expPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"][d].get<std::vector<float>>();
       expPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"][d].get<size_t>();
       expPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"][d].get<std::vector<float>>();
+      expPolicy[d].availableActions = stateJson["Experience Replay"][i]["Experience Policy"]["Available Actions"][d].get<std::vector<size_t>>();
 
       curPolicy[d].stateValue = stateJson["Experience Replay"][i]["Current Policy"]["State Value"][d].get<float>();
       curPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"][d].get<std::vector<float>>();

@@ -20,21 +20,24 @@ source settings.sh
 # count number of runs
 let NUMNODES=0
 
+# Remove existing task file
+rm tasks.txt
+
 # Write continuous env tasks
 for env in Multiwalker Waterworld
 do
-    for model in 0 1 3 4
+    for model in 0 1 2 3
     do
-        for run in 0 
+        for run in 0 1 2 3 4
         do
-            for multi in 0
+            for multi in 0 1
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-vracer.py ${RUNFOLDER}
                 cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi >  ${env}_${model}_${multi}_${run}.txt
+[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi >  ${run}.txt
 EOF
                 let NUMNODES++
             done
@@ -45,18 +48,18 @@ done
 # Write discrete env tasks
 for env in Pursuit
 do
-    for model in 0 1 3 4
+    for model in 0 1 2 3
     do
-        for run in 0 
+        for run in 0 1 2 3 4
         do
-            for multi in 0
+            for multi in 0 1
             do
                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
                 mkdir -p ${RUNFOLDER}
                 cp run-dvracer.py ${RUNFOLDER}
                 cp -r _model/ ${RUNFOLDER}
                 cat << EOF >> tasks.txt
-[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$env" --l2 $L2 --opt $OPT --lr $LR --model '$model' --nn $NN --run $run --multpolicies $multi >  ${env}_${model}_${multi}_${run}.txt
+[@ ${RUNFOLDER}/ @] python3 run-dvracer.py --env "$env" --l2 $L2 --opt $OPT --lr $LR --model '$model' --nn $NN --run $run --multpolicies $multi >  ${run}.txt
 EOF
                 let NUMNODES++
             done

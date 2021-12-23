@@ -19,11 +19,14 @@ parser.add_argument('--run', help='Run Number', required=False, type=int, defaul
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
 parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 10000000)
+
 #model '0' or '' conditional dynamics individualist 
 #model '1' full dynamics individualist
 #model '2' conditional dynamics cooperation  
 #model '3' full dynamics cooperation
-#model '4' Baseline (Individual)
+#model '4' Baseline (Individual) [1 update/experience]
+#model '5' Baseline (Individual) [1 update/observation]
+#model '6' Baseline (Individual) [1 update/observation, minibatch 256/numAgents ~ effective miniBatchSize = 256]
 
 args = parser.parse_args()
 print(args)
@@ -42,7 +45,7 @@ e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
 
-initEnvironment(e, args.env, args.multpolicies)
+numAgents = initEnvironment(e, args.env, args.multpolicies)
 
 ### Defining Agent Configuration 
 
@@ -68,6 +71,16 @@ elif(args.model == '3'):
 
 elif(args.model == '4'):
 	e["Solver"]["Multi Agent Sampling"] = "Baseline"
+
+elif(args.model == '5'):
+	e["Solver"]["Multi Agent Sampling"] = "Baseline"
+	e["Solver"]["Experiences Between Policy Updates"] = 1/numAgents
+
+elif(args.model == '6'):
+	e["Solver"]["Multi Agent Sampling"] = "Baseline"
+	e["Solver"]["Experiences Between Policy Updates"] = 1/numAgents
+	e["Solver"]["Mini Batch"]["Size"] = 256 // numAgents
+
 
 ### Setting Experience Replay and REFER settings
 
@@ -117,7 +130,7 @@ e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 5
-#e["File Output"]["Frequency"] = 2
+e["File Output"]["Use Multiple Files"] = False
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

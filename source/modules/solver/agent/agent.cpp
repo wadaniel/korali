@@ -1195,7 +1195,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = expActionIdx;
     stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"] = expUnboundedAct;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"] = expActProb;
-    stateJson["Experience Replay"][i]["Experience Policy"]["Available Action"] = expAvailAct;
+    stateJson["Experience Replay"][i]["Experience Policy"]["Available Actions"] = expAvailAct;
 
     stateJson["Experience Replay"][i]["Current Policy"]["State Value"] = curStateValue;
     stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"] = curDistributionParameter;

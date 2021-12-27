@@ -593,23 +593,22 @@ void __className__::processEpisode(knlohmann::json &episode)
     _episodePosVector.add(expId);
 
     // Adding placeholder for retrace value
-    _retraceValueVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 0.0f)); //TODO: for collaborative we can take size == 1 (DW), Agree (PW)
+    _retraceValueVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 0.0f));
 
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
     {
-      size_t offPolicyCountReduction = 1;
-      if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
-      {
-        offPolicyCountReduction = 0;
-        for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-          if (_isOnPolicyVector[0][d] == false)
-            offPolicyCountReduction++;
-      }
-      //If (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1)) we have to subtract from all, otherwise only if isOnPolicy is false
+      const auto &onPolicyVector = _isOnPolicyVector[0];
+
+      size_t count = 1;
+      // Consider all observation for the off-policy statistics 
+      if ( _problem->_policiesPerEnvironment == 1)
+        count = std::count(onPolicyVector.begin(), onPolicyVector.end(), false);
+
+      // Update offPolicyCount
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-        if ((_isOnPolicyVector[0][d] == false) || (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1)))
-          _experienceReplayOffPolicyCount[d] -= offPolicyCountReduction;
+      if ( (onPolicyVector[d] == false) || (_problem->_policiesPerEnvironment == 1) )
+        _experienceReplayOffPolicyCount[d] -= count;
     }
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
@@ -971,22 +970,27 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   }
 
   /* Taking care of off-policy statistics */
-  // TODO: niceify this
 
-  if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
+  if ( _problem->_policiesPerEnvironment == 1)
   {
+    // Consider all observation for the off-policy statistics 
     int sumOffPolicyCountDelta = std::accumulate(offPolicyCountDelta.begin(), offPolicyCountDelta.end(), 0.);
     offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment, sumOffPolicyCountDelta);
   }
 
   // Updating the off policy count and ratio
-  for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+  for (size_t d = 0; d < numAgents; d++)
   {
+    // Safety check for overflow
+    if( (int)_experienceReplayOffPolicyCount[d] < -offPolicyCountDelta[d] )
+      KORALI_LOG_ERROR("Agent %ld: offPolicyCountDelta=%d bigger than _experienceReplayOffPolicyCount=%ld.\n", d, offPolicyCountDelta[d], _experienceReplayOffPolicyCount[d]);
+
+    // Update off policy count
     _experienceReplayOffPolicyCount[d] += offPolicyCountDelta[d];
     _experienceReplayOffPolicyRatio[d] = (float)_experienceReplayOffPolicyCount[d] / (float)_isOnPolicyVector.size();
 
     // Normalize off policy Ratio
-    if (!(_multiAgentCorrelation) && (_problem->_policiesPerEnvironment == 1))
+    if ( _problem->_policiesPerEnvironment == 1 )
       _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
   }
 
@@ -1320,10 +1324,11 @@ void __className__::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
+    size_t numPolicies = _problem->_policiesPerEnvironment;
+    for (size_t d = 0; d < numPolicies; d++)
     {
-      _k->_logger->logInfo("Normal", "Off-Policy Statistics for agent %lu: \n", d);
-      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount[d], _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
+      _k->_logger->logInfo("Normal", "Off-Policy Statistics for policy %lu: \n", d);
+      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", numPolicies > 1 ? _experienceReplayOffPolicyCount[d] : _experienceReplayOffPolicyCount[d]/_problem->_agentsPerEnvironment, _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
       _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERCurrentBeta[d]);
 

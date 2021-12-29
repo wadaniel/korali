@@ -602,13 +602,20 @@ void __className__::processEpisode(knlohmann::json &episode)
 
       size_t count = 1;
       // Consider all observation for the off-policy statistics 
-      if ( _problem->_policiesPerEnvironment == 1)
+      if ( _problem->_policiesPerEnvironment == 1 )
         count = std::count(onPolicyVector.begin(), onPolicyVector.end(), false);
 
       // Update offPolicyCount
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       if ( (onPolicyVector[d] == false) || (_problem->_policiesPerEnvironment == 1) )
+      {
+        // Safety check for overflow
+        if( _experienceReplayOffPolicyCount[d] < count )
+          KORALI_LOG_ERROR("Agent %ld: _experienceReplayOffPolicyCount=%ld smaller than decrement %ld.\n", d, _experienceReplayOffPolicyCount[d], count);
+
+        // Update off-policy count
         _experienceReplayOffPolicyCount[d] -= count;
+      }
     }
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
@@ -915,16 +922,14 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
       // Write to prodImportanceWeight vector
       _productImportanceWeightVector[expId] = std::exp(logProdImportanceWeight);
 
+      // Record change of on-policyness
       for (size_t d = 0; d < numAgents; d++)
       {
         if (isOnPolicy[d] == true && onPolicy == false)
-        {
           offPolicyCountDelta[d]++;
-        }
-        else if (isOnPolicy[d] == false && onPolicy == true)
-        {
+        
+        if (isOnPolicy[d] == false && onPolicy == true)
           offPolicyCountDelta[d]--;
-        }
       }
 
       // Overwrite onPolicyVector
@@ -971,7 +976,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 
   /* Taking care of off-policy statistics */
 
-  if ( _problem->_policiesPerEnvironment == 1)
+  if ( _problem->_policiesPerEnvironment == 1 )
   {
     // Consider all observation for the off-policy statistics 
     int sumOffPolicyCountDelta = std::accumulate(offPolicyCountDelta.begin(), offPolicyCountDelta.end(), 0.);

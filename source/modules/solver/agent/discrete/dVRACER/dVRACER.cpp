@@ -117,16 +117,14 @@ void dVRACER::trainPolicy()
     _criticPolicyLearner[p]->runGeneration();
 
     // Store policyData for agent p for later update of metadata
+    if( numPolicies > 1 )
     for( size_t b = 0; b<_miniBatchSize; b++ )
       policyInfoUpdateMetadata[ b*numPolicies + p ] = policyInfo[ b*numPolicies + p ];
   }
 
   // Correct experience metadata
   if( numPolicies > 1 )
-  {
-    // Using policy information to update experience's metadata
     updateExperienceMetadata(miniBatch, policyInfoUpdateMetadata);
-  }
 }
 
 void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch, const size_t policyIdx)

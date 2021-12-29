@@ -822,7 +822,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   // Container to compute offpolicy count difference in minibatch
   std::vector<int> offPolicyCountDelta(numAgents, 0);
 
-  #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) schedule(guided, numAgents)
+  #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) // schedule(guided, numAgents)
   for (size_t i = 0; i < updateMinibatch.size(); i++)
   {
     // Get current expId and agentId
@@ -1293,8 +1293,8 @@ void Agent::deserializeExperienceReplay()
       expPolicy[d].unboundedAction = stateJson["Experience Replay"][i]["Experience Policy"]["Unbounded Action"][d].get<std::vector<float>>();
       expPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"][d].get<size_t>();
       expPolicy[d].actionProbabilities = stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"][d].get<std::vector<float>>();
-      if (isDefined(stateJson["Experience Replay"][i],"Experience Policy","Available Actions"))
-        expPolicy[d].availableActions = stateJson["Experience Replay"][i]["Experience Policy"]["Available Actions"][d].get<std::vector<size_t>>();
+      expPolicy[d].availableActions = stateJson["Experience Replay"][i]["Experience Policy"]["Available Actions"][d].get<std::vector<size_t>>();
+
       curPolicy[d].stateValue = stateJson["Experience Replay"][i]["Current Policy"]["State Value"][d].get<float>();
       curPolicy[d].distributionParameters = stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"][d].get<std::vector<float>>();
       curPolicy[d].actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"][d].get<size_t>();

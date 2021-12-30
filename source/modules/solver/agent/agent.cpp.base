@@ -904,10 +904,11 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
       float logProdImportanceWeight = 0.0f;
       for( size_t d = 0; d<numAgents; d++ )
       {
+        // Numerical safety
         if ( importanceWeight[d] == 0 )
-          KORALI_LOG_ERROR("Calculated importanceWeight[%ld] == 0.\n", d);
-
-        logProdImportanceWeight += std::log(importanceWeight[d]);
+          logProdImportanceWeight += std::numeric_limits<float>::min_exponent10;
+        else
+          logProdImportanceWeight += std::log(importanceWeight[d]);
       }
 
       // Compute cut-off in log-space

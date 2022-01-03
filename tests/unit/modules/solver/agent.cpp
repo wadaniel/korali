@@ -174,25 +174,25 @@ namespace
 
   // No state value provided error
   episode["Experiences"][0]["Policy"].erase("State Value");
-  ASSERT_ANY_THROW(a->processEpisode(0, episode));
+  ASSERT_ANY_THROW(a->processEpisode(episode));
   episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
 
   // Reward adjusted due to out of bounds action
   episode["Experiences"][0]["Reward"] = 1.0f;
   episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
   a->_rewardVector.clear();
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
+  ASSERT_NO_THROW(a->processEpisode(episode));
   ASSERT_EQ(a->_rewardVector[0], std::vector<float>({0.5f}));
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
   episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
+  ASSERT_NO_THROW(a->processEpisode(episode));
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
   episode["Experiences"][0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
-  ASSERT_ANY_THROW(a->processEpisode(0, episode));
+  ASSERT_ANY_THROW(a->processEpisode(episode));
   episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
 
   // Check truncated state sequence for sequences > 1
@@ -218,7 +218,7 @@ namespace
   episode["Experiences"][2]["Policy"]["State Value"] = 1.0;
   episode["Experiences"][2]["Truncated State"] = std::vector<float>({0.0f});
 
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
+  ASSERT_NO_THROW(a->processEpisode(episode));
   a->_timeSequenceLength = 2;
   ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1,0));
 

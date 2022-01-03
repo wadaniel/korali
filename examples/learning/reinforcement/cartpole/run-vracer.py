@@ -50,7 +50,6 @@ e = korali.Experiment()
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-#e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -85,8 +84,8 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"]= 0.3
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
-e["Solver"]["State Rescaling"]["Enabled"] = False
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 
@@ -113,6 +112,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
+e["File Output"]["Use Multiple Files"] = False
 e["File Output"]["Frequency"] = 5
 
 ### Running Experiment

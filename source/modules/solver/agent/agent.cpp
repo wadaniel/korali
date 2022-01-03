@@ -908,9 +908,9 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
       float logProdImportanceWeight = 0.0f;
       for( size_t d = 0; d<numAgents; d++ )
       {
-        // Numerical safety
+        // Numerical safety [ ln(10)=2.30258509299 ]
         if ( importanceWeight[d] == 0 )
-          logProdImportanceWeight += std::numeric_limits<float>::min_exponent10;
+          logProdImportanceWeight += 2.30258509299 * std::numeric_limits<float>::min_exponent10;
         else
           logProdImportanceWeight += std::log(importanceWeight[d]);
       }

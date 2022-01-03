@@ -181,7 +181,7 @@ void __className__::runTrainingEpisode(Sample &agent)
 
   // Setting tested policy flag to false, unless we do testing
   agent["Tested Policy"] = false;
- 
+
   // Get current "true" episode count
   size_t episodeCount = agent["Sample Id"];
 
@@ -415,8 +415,8 @@ void __className__::runEnvironment(Sample &agent)
     if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 
   // If available actions not given, set all 1s
-  std::vector<size_t> availableActions( _actionCount, 1 );
-  if ( not isDefined(agent._js.getJson(), "Available Actions") )
+  std::vector<size_t> availableActions(_actionCount, 1);
+  if (not isDefined(agent._js.getJson(), "Available Actions"))
   {
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {

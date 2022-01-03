@@ -659,7 +659,7 @@ class Agent : public Solver
    * @param miniBatchSize Size of the mini batch to create
    * @return A vector with the indexes to the experiences in the mini batch
    */
-  std::vector<std::pair<size_t,size_t>> generateMiniBatch();
+  std::vector<std::pair<size_t, size_t>> generateMiniBatch();
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
@@ -667,14 +667,14 @@ class Agent : public Solver
    * @param includeAction Specifies whether to include the experience's action in the sequence
    * @return The time step vector of states
    */
-  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<std::pair<size_t,size_t>> &miniBatch);
+  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<std::pair<size_t, size_t>> &miniBatch);
 
   /**
    * @brief Updates the state value, retrace, importance weight and other metadata for a given minibatch of experiences
    * @param miniBatch The mini batch of experience ids to update
    * @param policyData The policy to use to evaluate the experiences
    */
-  void updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>> &miniBatch, const std::vector<policy_t> &policyData);
+  void updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**
    * @brief Resets time sequence within the agent, to forget past actions from other episodes

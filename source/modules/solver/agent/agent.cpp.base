@@ -793,28 +793,30 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   std::vector<policy_t> updatePolicyData;
 
   // Fill updateMinibatch and updatePolicyData
-  size_t i = 1;
-  for (size_t b = 0; b < miniBatchSize; b += i)
+  size_t b = 0;
+  while(b < miniBatchSize)
   {
     // Add new unique combination
     updateBatch.push_back(b);
     updateMinibatch.push_back(miniBatch[b]);
     updatePolicyData.push_back(policyData[b]);
+ 
+    size_t a = 1;
 
     // Iterate over experiences with same expId
-    while( (miniBatch[b + i].first  == miniBatch[b + i - 1].first) && (b+i<miniBatchSize) )
+    while( (miniBatch[b + a].first  == miniBatch[b + a - 1].first) && (b+a<miniBatchSize) )
     {
-      // Only add unique experiences
-      if( miniBatch[b + i].second != miniBatch[b + i - 1].second )
+      // Add unique experiences from agents
+      if( miniBatch[b + a].second != miniBatch[b + a - 1].second )
       {
-        updateMinibatch.push_back(miniBatch[b+i]);
-        updatePolicyData.push_back(policyData[b+i]);
+        updateMinibatch.push_back(miniBatch[b+a]);
+        updatePolicyData.push_back(policyData[b+a]);
       }
-      i++;
+      a++;
     }
-    
-    // reset
-    i = 1;
+
+    // Increment batch counter by the number of same expIds
+    b += a;
   }
 
   // Container to compute offpolicy count difference in minibatch

@@ -198,7 +198,7 @@ class Conduit : public Module
    */
   virtual size_t getProcessId() = 0;
 
- /**
+  /**
   * @brief Get total Korali worker count in the conduit
   * @return The number of workers
   */

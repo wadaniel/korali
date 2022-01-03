@@ -119,7 +119,7 @@ size_t Sequential::getProcessId()
 
 size_t Sequential::getWorkerCount()
 {
- return 1;
+  return 1;
 }
 
 void Sequential::setConfiguration(knlohmann::json& js) 

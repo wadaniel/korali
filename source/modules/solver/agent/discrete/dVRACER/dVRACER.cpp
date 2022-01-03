@@ -75,7 +75,7 @@ void dVRACER::initializeAgent()
     _criticPolicyProblem[p] = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment[p]._problem);
     _criticPolicyLearner[p] = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment[p]._solver);
 
-      // Preallocating space in the underlying supervised problem's input and solution data structures (for performance, we don't reinitialize it every time)
+    // Preallocating space in the underlying supervised problem's input and solution data structures (for performance, we don't reinitialize it every time)
     _criticPolicyProblem[p]->_inputData.resize(_effectiveMinibatchSize);
     _criticPolicyProblem[p]->_solutionData.resize(_effectiveMinibatchSize);
   }
@@ -117,17 +117,17 @@ void dVRACER::trainPolicy()
     _criticPolicyLearner[p]->runGeneration();
 
     // Store policyData for agent p for later update of metadata
-    if( numPolicies > 1 )
-    for( size_t b = 0; b<_miniBatchSize; b++ )
-      policyInfoUpdateMetadata[ b*numPolicies + p ] = policyInfo[ b*numPolicies + p ];
+    if (numPolicies > 1)
+      for (size_t b = 0; b < _miniBatchSize; b++)
+        policyInfoUpdateMetadata[b * numPolicies + p] = policyInfo[b * numPolicies + p];
   }
 
   // Correct experience metadata
-  if( numPolicies > 1 )
+  if (numPolicies > 1)
     updateExperienceMetadata(miniBatch, policyInfoUpdateMetadata);
 }
 
-void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch, const size_t policyIdx)
+void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t>> &miniBatch, const size_t policyIdx)
 {
   // Init statistics
   _statisticsAverageInverseTemperature = 0.;
@@ -136,12 +136,12 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
   const size_t miniBatchSize = miniBatch.size();
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  #pragma omp parallel for schedule(guided, numAgents) reduction(+ \
-                                   : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
-  for ( size_t b = 0; b < miniBatchSize; b++ )
+#pragma omp parallel for schedule(guided, numAgents) reduction(+ \
+                                                               : _statisticsAverageInverseTemperature, _statisticsAverageActionUnlikeability)
+  for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
-    const size_t expId   = miniBatch[b].first;
+    const size_t expId = miniBatch[b].first;
     const size_t agentId = miniBatch[b].second;
 
     // Getting old and current policy
@@ -150,7 +150,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
 
     // Getting state-value and estimator
     const auto &stateValue = _stateValueVector[expId][agentId];
-    const auto &expVtbc    = _retraceValueVector[expId][agentId];
+    const auto &expVtbc = _retraceValueVector[expId][agentId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
@@ -250,9 +250,9 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   // Forward neural network
   const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
-  // Update policy info
-  #pragma omp parallel for
-  for( size_t b = 0; b < batchSize; b++ )
+// Update policy info
+#pragma omp parallel for
+  for (size_t b = 0; b < batchSize; b++)
   {
     // Getting state value
     policyInfo[b].stateValue = evaluation[b][0];
@@ -271,7 +271,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
       qValAndInvTemp[i] = evaluation[b][1 + i];
 
       // Update max_{a_i} Q(s,a_i)
-      if (qValAndInvTemp[i] > maxq && policyInfo[b].availableActions[i] == 1) 
+      if (qValAndInvTemp[i] > maxq && policyInfo[b].availableActions[i] == 1)
         maxq = qValAndInvTemp[i];
     }
 
@@ -309,7 +309,7 @@ void dVRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stat
   }
 }
 
-std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t,size_t>> &miniBatch) const
+std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t, size_t>> &miniBatch) const
 {
   // Getting mini batch size
   const size_t miniBatchSize = miniBatch.size();
@@ -317,11 +317,11 @@ std::vector<policy_t> dVRACER::getPolicyInfo(const std::vector<std::pair<size_t,
   // Allocating policy sequence vector
   std::vector<policy_t> policyInfo(miniBatchSize);
 
-  #pragma omp parallel for schedule(guided, _problem->_agentsPerEnvironment)
-  for ( size_t b = 0; b < miniBatchSize; b++ )
+#pragma omp parallel for schedule(guided, _problem->_agentsPerEnvironment)
+  for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting current expId
-    const size_t expId   = miniBatch[b].first;
+    const size_t expId = miniBatch[b].first;
     const size_t agentId = miniBatch[b].second;
 
     // Filling policy information

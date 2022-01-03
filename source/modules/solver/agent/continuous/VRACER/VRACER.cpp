@@ -16,7 +16,9 @@ namespace continuous
 ;
 
 // Declare reduction clause for vectors
-#pragma omp declare reduction(vec_float_plus : std::vector<float> : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <float>())) initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
+#pragma omp declare reduction(vec_float_plus        \
+                              : std::vector <float> \
+                              : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <float>())) initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
 
 void VRACER::initializeAgent()
 {
@@ -115,17 +117,17 @@ void VRACER::trainPolicy()
     _criticPolicyLearner[p]->runGeneration();
 
     // Store policyData for agent p for later update of metadata
-    if( numPolicies > 1 )
-    for( size_t b = 0; b<_miniBatchSize; b++ )
-      policyInfoUpdateMetadata[ b*numPolicies + p ] = policyInfo[ b*numPolicies + p ];
+    if (numPolicies > 1)
+      for (size_t b = 0; b < _miniBatchSize; b++)
+        policyInfoUpdateMetadata[b * numPolicies + p] = policyInfo[b * numPolicies + p];
   }
 
   // Correct experience metadata
-  if( numPolicies > 1 )
+  if (numPolicies > 1)
     updateExperienceMetadata(miniBatch, policyInfoUpdateMetadata);
 }
 
-void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>> &miniBatch, const size_t policyIdx)
+void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t>> &miniBatch, const size_t policyIdx)
 {
   // Resetting statistics
   std::fill(_miniBatchPolicyMean.begin(), _miniBatchPolicyMean.end(), 0.0);
@@ -134,12 +136,12 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
   const size_t miniBatchSize = miniBatch.size();
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  #pragma omp parallel for schedule(guided, numAgents) reduction(vec_float_plus \
-                                        : _miniBatchPolicyMean, _miniBatchPolicyStdDev) 
-  for ( size_t b = 0; b < miniBatchSize; b++ )
+#pragma omp parallel for schedule(guided, numAgents) reduction(vec_float_plus \
+                                                               : _miniBatchPolicyMean, _miniBatchPolicyStdDev)
+  for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
-    const size_t expId   = miniBatch[b].first;
+    const size_t expId = miniBatch[b].first;
     const size_t agentId = miniBatch[b].second;
 
     // Get policy and action for this experience
@@ -148,8 +150,8 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
 
     // Gathering metadata
     const auto &stateValue = _stateValueVector[expId][agentId];
-    const auto &curPolicy  = _curPolicyVector[expId][agentId];
-    const auto &expVtbc    = _retraceValueVector[expId][agentId];
+    const auto &curPolicy = _curPolicyVector[expId][agentId];
+    const auto &expVtbc = _retraceValueVector[expId][agentId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
@@ -162,7 +164,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
       gradientLoss[0] /= numAgents;
 
     // Compute policy gradient inside trust region
-    if ( _isOnPolicyVector[expId][agentId] )
+    if (_isOnPolicyVector[expId][agentId])
     {
       // Qret for terminal state is just reward
       float Qret = getScaledReward(_rewardVector[expId][agentId]);
@@ -225,8 +227,8 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
     // Compute statistics
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      _miniBatchPolicyMean[i] += curPolicy.distributionParameters[ i ];
-      _miniBatchPolicyStdDev[i] += curPolicy.distributionParameters[ _problem->_actionVectorSize + i ];
+      _miniBatchPolicyMean[i] += curPolicy.distributionParameters[i];
+      _miniBatchPolicyStdDev[i] += curPolicy.distributionParameters[_problem->_actionVectorSize + i];
     }
   }
 
@@ -256,9 +258,9 @@ void VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &state
   // Forward the neural network
   const auto evaluation = _criticPolicyLearner[policyIdx]->getEvaluation(stateSequenceBatch);
 
-  // Write results to policyInfo
-  #pragma omp parallel for
-  for( size_t b = 0; b < batchSize; b++ )
+// Write results to policyInfo
+#pragma omp parallel for
+  for (size_t b = 0; b < batchSize; b++)
   {
     policyInfo[b].stateValue = evaluation[b][0];
     policyInfo[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());

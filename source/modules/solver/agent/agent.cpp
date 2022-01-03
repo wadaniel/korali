@@ -743,8 +743,8 @@ std::vector<std::pair<size_t,size_t>> Agent::generateMiniBatch()
 
   // Sorting minibatch -- this helps with locality and also
   // to quickly detect duplicates when updating metadata
-  std::sort(miniBatch.begin(), miniBatch.end(), secondSmaller);
-  std::stable_sort(miniBatch.begin(), miniBatch.end());
+  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> & exp0, const std::pair<size_t, size_t> & exp1) -> bool 
+    { return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second; });
 
   // Returning generated minibatch
   return miniBatch;
@@ -797,26 +797,28 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   std::vector<policy_t> updatePolicyData;
 
   // Fill updateMinibatch and updatePolicyData
-  size_t a;
-  for (size_t b = 0; b < miniBatchSize; b += a)
+  size_t i = 1;
+  for (size_t b = 0; b < miniBatchSize; b += i)
   {
     // Add new unique combination
     updateBatch.push_back(b);
     updateMinibatch.push_back(miniBatch[b]);
     updatePolicyData.push_back(policyData[b]);
 
-    // Add experiences with same expId
-    a = 1;
-    while( (miniBatch[b + a].first  == miniBatch[b + a - 1].first) && (a+b<miniBatchSize) )
+    // Iterate over experiences with same expId
+    while( (miniBatch[b + i].first  == miniBatch[b + i - 1].first) && (b+i<miniBatchSize) )
     {
       // Only add unique experiences
-      if( miniBatch[b + a].second != miniBatch[b + a - 1].second )
+      if( miniBatch[b + i].second != miniBatch[b + i - 1].second )
       {
-        updateMinibatch.push_back(miniBatch[b+a]);
-        updatePolicyData.push_back(policyData[b+a]);
+        updateMinibatch.push_back(miniBatch[b+i]);
+        updatePolicyData.push_back(policyData[b+i]);
       }
-      a++;
+      i++;
     }
+    
+    // reset
+    i = 1;
   }
 
   // Container to compute offpolicy count difference in minibatch

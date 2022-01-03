@@ -24,26 +24,26 @@ let NUMNODES=0
 # rm tasks.txt
 
 # Write continuous env tasks
-# for env in Multiwalker Waterworld
-# do
-#     for model in 0 1 2 3
-#     do
-#         for run in 0 1 2 3 4
-#         do
-#             for multi in 1
-#             do
-#                 RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
-#                 mkdir -p ${RUNFOLDER}
-#                 cp run-vracer.py ${RUNFOLDER}
-#                 cp -r _model/ ${RUNFOLDER}
-#                 cat << EOF >> tasks.txt
-# [@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi >  ${run}.txt
-# EOF
-#                 let NUMNODES++
-#             done
-#         done
-#     done
-# done
+for env in Multiwalker Waterworld
+do
+    for model in 0 1 2 3
+    do
+        for run in 0 1 2 3 4
+        do
+            for multi in 1
+            do
+                RUNFOLDER=${FOLDERNAME}/${env}_${model}_${multi}
+                mkdir -p ${RUNFOLDER}
+                cp run-vracer.py ${RUNFOLDER}
+                cp -r _model/ ${RUNFOLDER}
+                cat << EOF >> tasks.txt
+[@ ${RUNFOLDER}/ @] python3 run-vracer.py --env "$env" --dis "$DIS" --l2 $L2 --opt $OPT --lr $LR --model '$model' --run $run --multpolicies $multi >  ${run}.txt
+EOF
+                let NUMNODES++
+            done
+        done
+    done
+done
 
 # Write discrete env tasks
 for env in Pursuit

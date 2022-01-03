@@ -141,8 +141,8 @@ void dVRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t
   for ( size_t b = 0; b < miniBatchSize; b++ )
   {
     // Getting index of current experiment
-    size_t expId   = miniBatch[b].first;
-    size_t agentId = miniBatch[b].second;
+    const size_t expId   = miniBatch[b].first;
+    const size_t agentId = miniBatch[b].second;
 
     // Getting old and current policy
     const auto &expPolicy = _expPolicyVector[expId][agentId];

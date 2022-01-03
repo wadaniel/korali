@@ -139,8 +139,8 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t,size_t>
   for ( size_t b = 0; b < miniBatchSize; b++ )
   {
     // Getting index of current experiment
-    size_t expId   = miniBatch[b].first;
-    size_t agentId = miniBatch[b].second;
+    const size_t expId   = miniBatch[b].first;
+    const size_t agentId = miniBatch[b].second;
 
     // Get policy and action for this experience
     const auto &expPolicy = _expPolicyVector[expId][agentId];

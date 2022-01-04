@@ -145,9 +145,17 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // If single agent, put action into a single vector
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
-
+  
     // Jumping back into the agent's environment
     runEnvironment(agent);
+ 
+    // In case of this being a single agent, rewert action format
+    if (_agentsPerEnvironment == 1)
+    {
+        auto action = KORALI_GET(std::vector<float>, agent, "Action");
+        agent._js.getJson().erase("Action");
+        agent["Action"][0]= action[0];
+    }
 
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
@@ -267,7 +275,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
     getAction(agent);
 
     // If single agent, put action into a single vector
-    // In case of this being a single agent, support returning state as only vector
+    // In case of this being a single agent, support returning action as only vector
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
 
     runEnvironment(agent);
@@ -362,6 +370,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 {
   // Switching back to the environment's thread
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
   co_switch(_envThread);
   auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling

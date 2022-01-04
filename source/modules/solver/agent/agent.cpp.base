@@ -473,8 +473,7 @@ void __className__::processEpisode(knlohmann::json &episode)
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<std::vector<float>>>());
 
     // Get action and put it to replay memory
-    auto action = episode["Experiences"][expId]["Action"].get<std::vector<std::vector<float>>>();
-    _actionVector.add(action);
+    _actionVector.add(episode["Experiences"][expId]["Action"].get<std::vector<std::vector<float>>>());
 
     // Get reward
     std::vector<float> reward = episode["Experiences"][expId]["Reward"].get<std::vector<float>>();

@@ -610,9 +610,9 @@ void Nested::generatePosterior()
     }
   }
 
-  (*_k)["Results"]["Posterior Samples Database"] = posteriorSamples;
-  (*_k)["Results"]["Posterior Samples LogPrior Database"] = posteriorSamplesLogPriorDatabase;
-  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = posteriorSamplesLogLikelihoodDatabase;
+  (*_k)["Results"]["Posterior Sample Database"] = posteriorSamples;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = posteriorSamplesLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = posteriorSamplesLogLikelihoodDatabase;
 }
 
 double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const

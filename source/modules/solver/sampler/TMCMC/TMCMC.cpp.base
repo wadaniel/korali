@@ -67,8 +67,8 @@ void __className__::setInitialConfiguration()
     for (size_t i = 0; i < _populationSize; i++) _chainCandidatesCovariance[i].resize(_variableCount * _variableCount);
     _chainLeadersCovariance.resize(_populationSize);
     for (size_t i = 0; i < _populationSize; i++) _chainLeadersCovariance[i].resize(_variableCount * _variableCount);
-    _sampleCovariancesDatabase.resize(_populationSize);
-    for (size_t i = 0; i < _populationSize; i++) _sampleCovariancesDatabase[i].resize(_variableCount);
+    _sampleCovarianceDatabase.resize(_populationSize);
+    for (size_t i = 0; i < _populationSize; i++) _sampleCovarianceDatabase[i].resize(_variableCount);
 
     _upperExtendedBoundaries.resize(_variableCount);
     _lowerExtendedBoundaries.resize(_variableCount);
@@ -182,7 +182,7 @@ void __className__::prepareGeneration()
 
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
-    _sampleCovariancesDatabase.clear();
+    _sampleCovarianceDatabase.clear();
     if (_k->_currentGeneration > 1)
       std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), 0);
     else
@@ -340,7 +340,7 @@ void __className__::processGeneration()
       {
         _chainLeadersErrors[leaderId] = _sampleErrorDatabase[i];
         _chainLeadersGradients[leaderId] = _sampleGradientDatabase[i];
-        _chainLeadersCovariance[leaderId] = _sampleCovariancesDatabase[i];
+        _chainLeadersCovariance[leaderId] = _sampleCovarianceDatabase[i];
       }
 
       if (numselections[i] > _maxChainLength)
@@ -618,7 +618,7 @@ void __className__::updateDatabase(const size_t sampleId)
   {
     _sampleErrorDatabase.push_back(_chainLeadersErrors[sampleId]);
     _sampleGradientDatabase.push_back(_chainLeadersGradients[sampleId]);
-    _sampleCovariancesDatabase.push_back(_chainLeadersCovariance[sampleId]);
+    _sampleCovarianceDatabase.push_back(_chainLeadersCovariance[sampleId]);
   }
 }
 
@@ -792,8 +792,8 @@ void __className__::finalize()
 {
   // Setting results
   (*_k)["Results"]["Posterior Sample Database"] = _sampleDatabase;
-  (*_k)["Results"]["Posterior Samples LogPrior Database"] = _sampleLogPriorDatabase;
-  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = _sampleLogLikelihoodDatabase;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = _sampleLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = _sampleLogLikelihoodDatabase;
   (*_k)["Results"]["Log Evidence"] = _currentAccumulatedLogEvidence;
 }
 

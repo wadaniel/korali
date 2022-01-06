@@ -73,8 +73,8 @@ void TMCMC::setInitialConfiguration()
     for (size_t i = 0; i < _populationSize; i++) _chainCandidatesCovariance[i].resize(_variableCount * _variableCount);
     _chainLeadersCovariance.resize(_populationSize);
     for (size_t i = 0; i < _populationSize; i++) _chainLeadersCovariance[i].resize(_variableCount * _variableCount);
-    _sampleCovariancesDatabase.resize(_populationSize);
-    for (size_t i = 0; i < _populationSize; i++) _sampleCovariancesDatabase[i].resize(_variableCount);
+    _sampleCovarianceDatabase.resize(_populationSize);
+    for (size_t i = 0; i < _populationSize; i++) _sampleCovarianceDatabase[i].resize(_variableCount);
 
     _upperExtendedBoundaries.resize(_variableCount);
     _lowerExtendedBoundaries.resize(_variableCount);
@@ -188,7 +188,7 @@ void TMCMC::prepareGeneration()
 
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
-    _sampleCovariancesDatabase.clear();
+    _sampleCovarianceDatabase.clear();
     if (_k->_currentGeneration > 1)
       std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), 0);
     else
@@ -346,7 +346,7 @@ void TMCMC::processGeneration()
       {
         _chainLeadersErrors[leaderId] = _sampleErrorDatabase[i];
         _chainLeadersGradients[leaderId] = _sampleGradientDatabase[i];
-        _chainLeadersCovariance[leaderId] = _sampleCovariancesDatabase[i];
+        _chainLeadersCovariance[leaderId] = _sampleCovarianceDatabase[i];
       }
 
       if (numselections[i] > _maxChainLength)
@@ -624,7 +624,7 @@ void TMCMC::updateDatabase(const size_t sampleId)
   {
     _sampleErrorDatabase.push_back(_chainLeadersErrors[sampleId]);
     _sampleGradientDatabase.push_back(_chainLeadersGradients[sampleId]);
-    _sampleCovariancesDatabase.push_back(_chainLeadersCovariance[sampleId]);
+    _sampleCovarianceDatabase.push_back(_chainLeadersCovariance[sampleId]);
   }
 }
 
@@ -798,8 +798,8 @@ void TMCMC::finalize()
 {
   // Setting results
   (*_k)["Results"]["Posterior Sample Database"] = _sampleDatabase;
-  (*_k)["Results"]["Posterior Samples LogPrior Database"] = _sampleLogPriorDatabase;
-  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = _sampleLogLikelihoodDatabase;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = _sampleLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = _sampleLogLikelihoodDatabase;
   (*_k)["Results"]["Log Evidence"] = _currentAccumulatedLogEvidence;
 }
 
@@ -1161,12 +1161,12 @@ void TMCMC::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Sample Error Database");
  }
 
- if (isDefined(js, "Sample Covariances Database"))
+ if (isDefined(js, "Sample Covariance Database"))
  {
- try { _sampleCovariancesDatabase = js["Sample Covariances Database"].get<std::vector<std::vector<double>>>();
+ try { _sampleCovarianceDatabase = js["Sample Covariance Database"].get<std::vector<std::vector<double>>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['Sample Covariances Database']\n%s", e.what()); } 
-   eraseValue(js, "Sample Covariances Database");
+ { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['Sample Covariance Database']\n%s", e.what()); } 
+   eraseValue(js, "Sample Covariance Database");
  }
 
  if (isDefined(js, "Upper Extended Boundaries"))
@@ -1408,7 +1408,7 @@ void TMCMC::getConfiguration(knlohmann::json& js)
    js["Sample LogPrior Database"] = _sampleLogPriorDatabase;
    js["Sample Gradient Database"] = _sampleGradientDatabase;
    js["Sample Error Database"] = _sampleErrorDatabase;
-   js["Sample Covariances Database"] = _sampleCovariancesDatabase;
+   js["Sample Covariance Database"] = _sampleCovarianceDatabase;
    js["Upper Extended Boundaries"] = _upperExtendedBoundaries;
    js["Lower Extended Boundaries"] = _lowerExtendedBoundaries;
    js["Num LU Decomposition Failures Proposal"] = _numLUDecompositionFailuresProposal;

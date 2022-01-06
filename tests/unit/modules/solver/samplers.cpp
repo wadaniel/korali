@@ -946,12 +946,12 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Sample Covariances Database"] = "Not a Number";
+   samplerJs["Sample Covariance Database"] = "Not a Number";
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Sample Covariances Database"] = std::vector<std::vector<double>>({{0.0}});
+   samplerJs["Sample Covariance Database"] = std::vector<std::vector<double>>({{0.0}});
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;

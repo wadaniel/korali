@@ -99,9 +99,9 @@ def plot_lower_triangle(ax, theta):
 
 def plotGen(genList, idx):
   numdim = len(genList[idx]['Variables'])
-  samples = genList[idx]['Results']['Posterior Sample Database']
-  llk = np.array(genList[idx]['Results']['Posterior Sample LogLikelihood Database'])
-  lpr = np.array(genList[idx]['Results']['Posterior Sample LogPrior Database'])
+  samples = genList[idx]['Solver']['Sample Database']
+  llk = np.array(genList[idx]['Solver']['Sample LogLikelihood Database'])
+  lpr = np.array(genList[idx]['Solver']['Sample LogPrior Database'])
   lpo = (llk + lpr).tolist()
   lpo, samples = zip(*sorted(zip(lpo, samples)))
   numentries = len(samples)

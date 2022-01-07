@@ -149,6 +149,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Jumping back into the agent's environment
     runEnvironment(agent);
 
+    // In case of this being a single agent, rewert action format
+    if (_agentsPerEnvironment == 1)
+    {
+      auto action = KORALI_GET(std::vector<float>, agent, "Action");
+      agent._js.getJson().erase("Action");
+      agent["Action"][0] = action[0];
+    }
+
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
 
@@ -185,7 +193,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Setting tested policy flag to false, unless we do testing
   agent["Tested Policy"] = false;
- 
+
   // Get current "true" episode count
   size_t episodeCount = agent["Sample Id"];
 
@@ -267,7 +275,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
     getAction(agent);
 
     // If single agent, put action into a single vector
-    // In case of this being a single agent, support returning state as only vector
+    // In case of this being a single agent, support returning action as only vector
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
 
     runEnvironment(agent);
@@ -362,6 +370,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 {
   // Switching back to the environment's thread
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
   co_switch(_envThread);
   auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
@@ -419,8 +428,8 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     if (std::isfinite(agent["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 
   // If available actions not given, set all 1s
-  std::vector<size_t> availableActions( _actionCount, 1 );
-  if ( not isDefined(agent._js.getJson(), "Available Actions") )
+  std::vector<size_t> availableActions(_actionCount, 1);
+  if (not isDefined(agent._js.getJson(), "Available Actions"))
   {
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {

@@ -197,7 +197,7 @@ size_t __className__::getProcessId()
 
 size_t __className__::getWorkerCount()
 {
- return _concurrentJobs;
+  return _concurrentJobs;
 }
 
 __moduleAutoCode__;

@@ -6,7 +6,9 @@
 
 __startNamespace__;
 
-#pragma omp declare reduction(vec_int_plus : std::vector<int> : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <int>())) initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
+#pragma omp declare reduction(vec_int_plus        \
+                              : std::vector <int> \
+                              : std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus <int>())) initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
 
 void __className__::initialize()
 {
@@ -121,8 +123,8 @@ void __className__::initialize()
   // If this continues a previous training run, deserialize previous input experience replay. Only for the root (engine) rank
   if (_k->_currentGeneration > 0)
     if (_mode == "Training" || _trainingBestPolicies.empty())
-     if (_k->_engine->_conduit != NULL)
-      deserializeExperienceReplay();
+      if (_k->_engine->_conduit != NULL)
+        deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
@@ -473,8 +475,7 @@ void __className__::processEpisode(knlohmann::json &episode)
     _stateVector.add(episode["Experiences"][expId]["State"].get<std::vector<std::vector<float>>>());
 
     // Get action and put it to replay memory
-    auto action = episode["Experiences"][expId]["Action"].get<std::vector<std::vector<float>>>();
-    _actionVector.add(action);
+    _actionVector.add(episode["Experiences"][expId]["Action"].get<std::vector<std::vector<float>>>());
 
     // Get reward
     std::vector<float> reward = episode["Experiences"][expId]["Reward"].get<std::vector<float>>();
@@ -579,8 +580,8 @@ void __className__::processEpisode(knlohmann::json &episode)
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
       {
         expPolicy[d].availableActions = availAct[d];
-          if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
-            KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
+        if (std::accumulate(expPolicy[d].availableActions.begin(), expPolicy[d].availableActions.end(), 0) == 0)
+          KORALI_LOG_ERROR("State with experience id %zu for agent %zu detected with no available actions.", expId, d);
       }
     }
 
@@ -601,21 +602,21 @@ void __className__::processEpisode(knlohmann::json &episode)
       const auto &onPolicyVector = _isOnPolicyVector[0];
 
       size_t count = 1;
-      // Consider all observation for the off-policy statistics 
-      if ( _problem->_policiesPerEnvironment == 1 )
+      // Consider all observation for the off-policy statistics
+      if (_problem->_policiesPerEnvironment == 1)
         count = std::count(onPolicyVector.begin(), onPolicyVector.end(), false);
 
       // Update offPolicyCount
       for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
-      if ( (onPolicyVector[d] == false) || (_problem->_policiesPerEnvironment == 1) )
-      {
-        // Safety check for overflow
-        if( _experienceReplayOffPolicyCount[d] < count )
-          KORALI_LOG_ERROR("Agent %ld: _experienceReplayOffPolicyCount=%ld smaller than decrement %ld.\n", d, _experienceReplayOffPolicyCount[d], count);
+        if ((onPolicyVector[d] == false) || (_problem->_policiesPerEnvironment == 1))
+        {
+          // Safety check for overflow
+          if (_experienceReplayOffPolicyCount[d] < count)
+            KORALI_LOG_ERROR("Agent %ld: _experienceReplayOffPolicyCount=%ld smaller than decrement %ld.\n", d, _experienceReplayOffPolicyCount[d], count);
 
-        // Update off-policy count
-        _experienceReplayOffPolicyCount[d] -= count;
-      }
+          // Update off-policy count
+          _experienceReplayOffPolicyCount[d] -= count;
+        }
     }
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
@@ -667,7 +668,7 @@ void __className__::processEpisode(knlohmann::json &episode)
       avgRetV /= _problem->_agentsPerEnvironment;
       retV = std::vector<float>(_problem->_agentsPerEnvironment, avgRetV);
     }
-      
+
     // The value of the truncated state equals initial retrace Value
     _truncatedStateValueVector[endId] = retV;
   }
@@ -685,13 +686,13 @@ void __className__::processEpisode(knlohmann::json &episode)
 
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
-      _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_problem->_agentsPerEnvironment * (float)_rewardVector.size()) + 1e-9);
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_problem->_agentsPerEnvironment * (float)_rewardVector.size()) + 1e-9);
 }
 
-std::vector<std::pair<size_t,size_t>> __className__::generateMiniBatch()
+std::vector<std::pair<size_t, size_t>> __className__::generateMiniBatch()
 {
   // Allocating storage for mini batch experiecne indexes
-  std::vector<std::pair<size_t,size_t>> miniBatch(_effectiveMinibatchSize);
+  std::vector<std::pair<size_t, size_t>> miniBatch(_effectiveMinibatchSize);
 
   // Get number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
@@ -712,7 +713,7 @@ std::vector<std::pair<size_t,size_t>> __className__::generateMiniBatch()
       miniBatch[b * numAgents + a].second = a;
 
       // Sample agentId
-      if( _multiAgentSampling == "Experience" )
+      if (_multiAgentSampling == "Experience")
       {
         // Producing random (uniform) number for the selection of the experience
         float ax = _uniformGenerator->getRandomNumber();
@@ -722,7 +723,7 @@ std::vector<std::pair<size_t,size_t>> __className__::generateMiniBatch()
       }
 
       // Sample both
-      if( _multiAgentSampling == "Baseline" )
+      if (_multiAgentSampling == "Baseline")
       {
         // Producing random (uniform) number for the selection of the experience
         float ex = _uniformGenerator->getRandomNumber();
@@ -737,21 +738,22 @@ std::vector<std::pair<size_t,size_t>> __className__::generateMiniBatch()
     }
   }
 
-  // Sorting minibatch -- this helps with locality and also
+  // Sorting minibatch: first by expId, second by agentId
   // to quickly detect duplicates when updating metadata
-  std::sort(miniBatch.begin(), miniBatch.end(), secondSmaller);
-  std::stable_sort(miniBatch.begin(), miniBatch.end());
+  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> &exp0, const std::pair<size_t, size_t> &exp1) -> bool {
+    return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second;
+  });
 
   // Returning generated minibatch
   return miniBatch;
 }
 
-std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSequence(const std::vector<std::pair<size_t,size_t>> &miniBatch)
+std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSequence(const std::vector<std::pair<size_t, size_t>> &miniBatch)
 {
   // Allocating state sequence vector
   std::vector<std::vector<std::vector<float>>> stateSequence(_effectiveMinibatchSize);
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (size_t b = 0; b < _effectiveMinibatchSize; b++)
   {
     // Getting current expId and agentId
@@ -778,7 +780,7 @@ std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSeq
   return stateSequence;
 }
 
-void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>> &miniBatch, const std::vector<policy_t> &policyData)
+void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
   const size_t numAgents = _problem->_agentsPerEnvironment;
@@ -789,40 +791,45 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 
   // Create Buffers
   std::vector<size_t> updateBatch;
-  std::vector<std::pair<size_t,size_t>> updateMinibatch;
+  std::vector<std::pair<size_t, size_t>> updateMinibatch;
   std::vector<policy_t> updatePolicyData;
 
   // Fill updateMinibatch and updatePolicyData
-  size_t a;
-  for (size_t b = 0; b < miniBatchSize; b += a)
+  size_t b = 0;
+  while (b < miniBatchSize)
   {
     // Add new unique combination
     updateBatch.push_back(b);
     updateMinibatch.push_back(miniBatch[b]);
     updatePolicyData.push_back(policyData[b]);
 
-    // Add experiences with same expId
-    a = 1;
-    while( (miniBatch[b + a].first  == miniBatch[b + a - 1].first) && (a+b<miniBatchSize) )
+    size_t a = 1;
+
+    // Iterate over experiences with same expId
+    while ((miniBatch[b + a].first == miniBatch[b + a - 1].first) && (b + a < miniBatchSize))
     {
-      // Only add unique experiences
-      if( miniBatch[b + a].second != miniBatch[b + a - 1].second )
+      // Add unique experiences from agents
+      if (miniBatch[b + a].second != miniBatch[b + a - 1].second)
       {
-        updateMinibatch.push_back(miniBatch[b+a]);
-        updatePolicyData.push_back(policyData[b+a]);
+        updateMinibatch.push_back(miniBatch[b + a]);
+        updatePolicyData.push_back(policyData[b + a]);
       }
       a++;
     }
+
+    // Increment batch counter by the number of same expIds
+    b += a;
   }
 
   // Container to compute offpolicy count difference in minibatch
   std::vector<int> offPolicyCountDelta(numAgents, 0);
 
-  #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta)
+#pragma omp parallel for reduction(vec_int_plus \
+                                   : offPolicyCountDelta)
   for (size_t i = 0; i < updateMinibatch.size(); i++)
   {
     // Get current expId and agentId
-    const size_t expId   = updateMinibatch[i].first;
+    const size_t expId = updateMinibatch[i].first;
     const size_t agentId = updateMinibatch[i].second;
 
     // Get and set current policy
@@ -848,7 +855,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
     _truncatedImportanceWeightVector[expId][agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
 
     // Keep track of off-policyness (in principle only necessary for agentId==policyId)
-    if ( not _multiAgentCorrelation )
+    if (not _multiAgentCorrelation)
     {
       // Checking if experience is on policy
       const bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
@@ -870,7 +877,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
       // Get truncated state
       auto expTruncatedStateSequence = getTruncatedStateSequence(expId, agentId);
 
-      // Forward tuncated state 
+      // Forward tuncated state
       // TODO: other policy for exp-sharing in multi-policy case??
       float truncatedStateValue;
       if (_problem->_policiesPerEnvironment == 1)
@@ -891,8 +898,9 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 
   if (_multiAgentCorrelation)
   {
-    #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta)
-    for( size_t i = 0; i<updateBatch.size(); i++ )
+#pragma omp parallel for reduction(vec_int_plus \
+                                   : offPolicyCountDelta)
+    for (size_t i = 0; i < updateBatch.size(); i++)
     {
       const size_t batchId = updateBatch[i];
       const size_t expId = miniBatch[batchId].first;
@@ -902,10 +910,10 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 
       // Compute product of importance weights
       float logProdImportanceWeight = 0.0f;
-      for( size_t d = 0; d<numAgents; d++ )
+      for (size_t d = 0; d < numAgents; d++)
       {
         // Numerical safety [ ln(10)=2.30258509299 ]
-        if ( importanceWeight[d] == 0 )
+        if (importanceWeight[d] == 0)
           logProdImportanceWeight += 2.30258509299 * std::numeric_limits<float>::min_exponent10;
         else
           logProdImportanceWeight += std::log(importanceWeight[d]);
@@ -928,7 +936,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
       {
         if (isOnPolicy[d] == true && onPolicy == false)
           offPolicyCountDelta[d]++;
-        
+
         if (isOnPolicy[d] == false && onPolicy == true)
           offPolicyCountDelta[d]--;
       }
@@ -941,8 +949,8 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   // Average state values for cooperative MA
   if (_multiAgentRelationship == "Cooperation")
   {
-    #pragma omp parallel for
-    for( size_t i = 0; i<updateBatch.size(); i++ )
+#pragma omp parallel for
+    for (size_t i = 0; i < updateBatch.size(); i++)
     {
       const size_t batchId = updateBatch[i];
       const size_t expId = miniBatch[batchId].first;
@@ -960,7 +968,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
       std::fill(stateValue.begin(), stateValue.end(), averageStateValue);
 
       // Same for truncated state-value
-      if (_terminationVector[expId] == e_truncated )
+      if (_terminationVector[expId] == e_truncated)
       {
         // Load truncated state value
         auto &truncatedStateValue = _truncatedStateValueVector[expId];
@@ -977,9 +985,9 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 
   /* Taking care of off-policy statistics */
 
-  if ( _problem->_policiesPerEnvironment == 1 )
+  if (_problem->_policiesPerEnvironment == 1)
   {
-    // Consider all observation for the off-policy statistics 
+    // Consider all observation for the off-policy statistics
     int sumOffPolicyCountDelta = std::accumulate(offPolicyCountDelta.begin(), offPolicyCountDelta.end(), 0.);
     offPolicyCountDelta = std::vector<int>(_problem->_agentsPerEnvironment, sumOffPolicyCountDelta);
   }
@@ -988,7 +996,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   for (size_t d = 0; d < numAgents; d++)
   {
     // Safety check for overflow
-    if( (int)_experienceReplayOffPolicyCount[d] < -offPolicyCountDelta[d] )
+    if ((int)_experienceReplayOffPolicyCount[d] < -offPolicyCountDelta[d])
       KORALI_LOG_ERROR("Agent %ld: offPolicyCountDelta=%d bigger than _experienceReplayOffPolicyCount=%ld.\n", d, offPolicyCountDelta[d], _experienceReplayOffPolicyCount[d]);
 
     // Update off policy count
@@ -996,7 +1004,7 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
     _experienceReplayOffPolicyRatio[d] = (float)_experienceReplayOffPolicyCount[d] / (float)_isOnPolicyVector.size();
 
     // Normalize off policy Ratio
-    if ( _problem->_policiesPerEnvironment == 1 )
+    if (_problem->_policiesPerEnvironment == 1)
       _experienceReplayOffPolicyRatio[d] /= (float)(_problem->_agentsPerEnvironment);
   }
 
@@ -1009,17 +1017,17 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
   retraceMiniBatch.push_back(miniBatch[updateBatch.back()].first);
 
   // Adding experiences so long as they do not repeat episodes
-  for (ssize_t i = updateBatch.size() - 2; i >= 0; i -- )
+  for (ssize_t i = updateBatch.size() - 2; i >= 0; i--)
   {
     size_t currExpId = miniBatch[updateBatch[i]].first;
     size_t nextExpId = miniBatch[updateBatch[i + 1]].first;
-    size_t curEpisode  = _episodeIdVector[currExpId];
+    size_t curEpisode = _episodeIdVector[currExpId];
     size_t nextEpisode = _episodeIdVector[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
-  // Calculating retrace value for the oldest experiences of unique episodes
-  #pragma omp parallel for
+// Calculating retrace value for the oldest experiences of unique episodes
+#pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < retraceMiniBatch.size(); i++)
   {
     // Determine start of the episode
@@ -1078,14 +1086,14 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
 size_t __className__::getTimeSequenceStartExpId(size_t expId)
 {
   const size_t episodePos = _episodePosVector[expId];
-  
+
   // Determine actual length of time sequence
   const size_t lookBack = std::min(_timeSequenceLength - 1, episodePos);
 
   if (lookBack > expId)
     // Return start of buffer if expId is part of a cut episode
     return 0;
-  else 
+  else
     // Return time sequence start
     return expId - lookBack;
 }
@@ -1334,7 +1342,7 @@ void __className__::printGenerationAfter()
     for (size_t d = 0; d < numPolicies; d++)
     {
       _k->_logger->logInfo("Normal", "Off-Policy Statistics for policy %lu: \n", d);
-      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", numPolicies > 1 ? _experienceReplayOffPolicyCount[d] : _experienceReplayOffPolicyCount[d]/_problem->_agentsPerEnvironment, _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
+      _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", numPolicies > 1 ? _experienceReplayOffPolicyCount[d] : _experienceReplayOffPolicyCount[d] / _problem->_agentsPerEnvironment, _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
       _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERCurrentBeta[d]);
 

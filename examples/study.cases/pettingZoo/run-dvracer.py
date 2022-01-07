@@ -17,16 +17,18 @@ parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, d
 parser.add_argument('--nn', help='Neural net width of two hidden layers.', required=False, type=int, default = 128)
 parser.add_argument('--run', help='Run Number', required=False, type=int, default = 0)
 parser.add_argument('--multpolicies', help='If set to 1, train with N policies', required=False, type=int, default = 0)
-parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 parser.add_argument('--exp', help='Max experiences', required=False, type=int, default = 10000000)
+parser.add_argument('--model', help='Model Number', required=False, type=str, default = '')
 
-#model '0' or '' conditional dynamics individualist 
-#model '1' full dynamics individualist
-#model '2' conditional dynamics cooperation  
-#model '3' full dynamics cooperation
-#model '4' Baseline (Individual) [1 update/experience]
-#model '5' Baseline (Individual) [1 update/observation]
-#model '6' Baseline (Individual) [1 update/observation, minibatch 256/numAgents ~ effective miniBatchSize = 256]
+"""
+model '0' or '' conditional dynamics individualist 
+model '1' full dynamics individualist
+model '2' conditional dynamics cooperation  
+model '3' full dynamics cooperation
+model '4' Baseline (Individual) [1 update/experience]
+model '5' Baseline (Individual) [1 update/observation]
+model '6' Baseline (Individual) [1 update/observation, minibatch 256/numAgents ~ effective miniBatchSize = 256]
+"""
 
 args = parser.parse_args()
 print(args)
@@ -39,7 +41,6 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-# resultFolder = 'results/_result_dvracer_' + args.env + '_' + str(args.nn)+ '_'+ str(args.run) +'/'
 resultFolder = 'run' + str(args.run) +'/'
 e.loadState(resultFolder + '/latest');
 
@@ -92,14 +93,12 @@ else:
 	print("Environment '{}' not recognized! Exit..".format(args.env))
 	sys.exit()
 
-# e["Solver"]["Experience Replay"]["Start Size"] = 256
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
-
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True

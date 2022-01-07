@@ -120,7 +120,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Use Multiple Files"] = False
+e["File Output"]["Frequency"] = 5
 
 ### Running Experiment
 

@@ -201,7 +201,7 @@ size_t Concurrent::getProcessId()
 
 size_t Concurrent::getWorkerCount()
 {
- return _concurrentJobs;
+  return _concurrentJobs;
 }
 
 void Concurrent::setConfiguration(knlohmann::json& js) 

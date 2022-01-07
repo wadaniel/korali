@@ -37,10 +37,10 @@ void Distributed::initialize()
   // If this is a root rank, check whether configuration is correct
   if (isRoot())
   {
-   if (_rankCount < 2) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 MPI ranks to run.\n");
-   if (_ranksPerWorker < 1) KORALI_LOG_ERROR("The distributed conduit requires that the ranks per worker is equal or larger than 1, provided: %d\n", _ranksPerWorker);
-   if (_engineRanks < 1) KORALI_LOG_ERROR("The distributed conduit requires that the engine ranks is equal or larger than 1, provided: %d\n", _engineRanks);
-   if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _rankCount, _engineRanks, _workerCount, workerRemainder);
+    if (_rankCount < 2) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 MPI ranks to run.\n");
+    if (_ranksPerWorker < 1) KORALI_LOG_ERROR("The distributed conduit requires that the ranks per worker is equal or larger than 1, provided: %d\n", _ranksPerWorker);
+    if (_engineRanks < 1) KORALI_LOG_ERROR("The distributed conduit requires that the engine ranks is equal or larger than 1, provided: %d\n", _engineRanks);
+    if (workerRemainder != 0) KORALI_LOG_ERROR("Korali was instantiated with %lu MPI ranks (minus %lu for the engine), divided into %lu workers. This setup does not provide a perfectly divisible distribution, and %lu unused ranks remain.\n", _rankCount, _engineRanks, _workerCount, workerRemainder);
   }
 
   // Syncrhonizing all ranks
@@ -96,23 +96,23 @@ void Distributed::initServer()
 {
 #ifdef _KORALI_USE_MPI
 
- // Workers run and synchronize at the end
- if (isRoot() == false && _workerIdSet == true) worker();
+  // Workers run and synchronize at the end
+  if (isRoot() == false && _workerIdSet == true) worker();
 
- // Non root engine ranks passively wait and finish upon synchronization
- if (isRoot() == false && _workerIdSet == false)
- {
-  MPI_Request req;
-  int flag;
-  MPI_Irecv(&flag, 1, MPI_INT, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, MPI_COMM_WORLD, &req);
-  int finalized = 0;
-  while (finalized == 0)
+  // Non root engine ranks passively wait and finish upon synchronization
+  if (isRoot() == false && _workerIdSet == false)
   {
-   // Passive wait, 1s at a time
-   usleep(1000000);
-   MPI_Test(&req, &finalized, MPI_STATUS_IGNORE);
+    MPI_Request req;
+    int flag;
+    MPI_Irecv(&flag, 1, MPI_INT, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, MPI_COMM_WORLD, &req);
+    int finalized = 0;
+    while (finalized == 0)
+    {
+      // Passive wait, 1s at a time
+      usleep(1000000);
+      MPI_Test(&req, &finalized, MPI_STATUS_IGNORE);
+    }
   }
- }
 
 #endif
 }
@@ -128,7 +128,7 @@ void Distributed::terminateServer()
 
   if (isRoot())
   {
-   // Sending message to workers for termination
+    // Sending message to workers for termination
     for (int i = 0; i < _workerCount; i++)
       for (int j = 0; j < _ranksPerWorker; j++)
         MPI_Send(msgData.data(), msgData.size(), MPI_UINT8_T, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
@@ -136,7 +136,7 @@ void Distributed::terminateServer()
     // Sending message to Korali non-root engine ranks for termination
     int flag = 0;
     for (int i = _rankCount - _engineRanks; i < _rankCount - 1; i++)
-     MPI_Send(&flag, 1, MPI_INT, i, __KORALI_MPI_MESSAGE_JSON_TAG, MPI_COMM_WORLD);
+      MPI_Send(&flag, 1, MPI_INT, i, __KORALI_MPI_MESSAGE_JSON_TAG, MPI_COMM_WORLD);
   }
 
 #endif
@@ -297,7 +297,7 @@ size_t Distributed::getProcessId()
 
 size_t Distributed::getWorkerCount()
 {
- return _workerCount;
+  return _workerCount;
 }
 
 void Distributed::setConfiguration(knlohmann::json& js) 

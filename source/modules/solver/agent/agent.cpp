@@ -623,7 +623,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     }
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
-    _isOnPolicyVector.add(std::vector<bool>(_problem->_agentsPerEnvironment, true));
+    _isOnPolicyVector.add(std::vector<char>(_problem->_agentsPerEnvironment, true));
 
     // Initialize experience's importance weight (1.0 because its freshly produced)
     _importanceWeightVector.add(std::vector<float>(_problem->_agentsPerEnvironment, 1.0f));
@@ -822,7 +822,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   // Container to compute offpolicy count difference in minibatch
   std::vector<int> offPolicyCountDelta(numAgents, 0);
 
-  #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) // schedule(guided, numAgents)
+  #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta)
   for (size_t i = 0; i < updateMinibatch.size(); i++)
   {
     // Get current expId and agentId
@@ -895,7 +895,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
 
   if (_multiAgentCorrelation)
   {
-    #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta) schedule(guided, numAgents)
+    #pragma omp parallel for reduction(vec_int_plus : offPolicyCountDelta)
     for( size_t i = 0; i<updateBatch.size(); i++ )
     {
       const size_t batchId = updateBatch[i];
@@ -945,7 +945,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   // Average state values for cooperative MA
   if (_multiAgentRelationship == "Cooperation")
   {
-    #pragma omp parallel for schedule(guided, numAgents)
+    #pragma omp parallel for
     for( size_t i = 0; i<updateBatch.size(); i++ )
     {
       const size_t batchId = updateBatch[i];
@@ -1023,7 +1023,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t,size_t>>
   }
 
   // Calculating retrace value for the oldest experiences of unique episodes
-  #pragma omp parallel for schedule(guided, 1)
+  #pragma omp parallel for
   for (size_t i = 0; i < retraceMiniBatch.size(); i++)
   {
     // Determine start of the episode
@@ -1280,7 +1280,7 @@ void Agent::deserializeExperienceReplay()
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<std::vector<float>>());
     _truncatedImportanceWeightVector.add(stateJson["Experience Replay"][i]["Truncated Importance Weight"].get<std::vector<float>>());
     _productImportanceWeightVector.add(stateJson["Experience Replay"][i]["Product Importance Weight"].get<float>());
-    _isOnPolicyVector.add(stateJson["Experience Replay"][i]["Is On Policy"].get<std::vector<bool>>());
+    _isOnPolicyVector.add(stateJson["Experience Replay"][i]["Is On Policy"].get<std::vector<char>>());
     _truncatedStateVector.add(stateJson["Experience Replay"][i]["Truncated State"].get<std::vector<std::vector<float>>>());
     _truncatedStateValueVector.add(stateJson["Experience Replay"][i]["Truncated State Value"].get<std::vector<float>>());
     _terminationVector.add(stateJson["Experience Replay"][i]["Termination"].get<termination_t>());

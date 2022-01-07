@@ -486,7 +486,7 @@ class Agent : public Solver
   /**
    * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
    */
-  cBuffer<std::vector<bool>> _isOnPolicyVector;
+  cBuffer<std::vector<char>> _isOnPolicyVector;
 
   /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.

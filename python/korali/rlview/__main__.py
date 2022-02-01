@@ -15,9 +15,16 @@ from korali.plot.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
 import pdb
 
+import seaborn as sns
+sns.set_theme()
+sns.set_style("whitegrid")
+sns.color_palette("tab10")
+
+from korali.rlview.utils import get_figure
+
 ##################### Plotting Reward History
 
-def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, showObservations, dir ):
+def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservations, dir ):
     
     maxEpisodes = math.inf
 
@@ -103,14 +110,14 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, s
         episodes = observationHistory[0]
     if showData:
         for i in range(len(returnsHistory)):
-            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, color=cmap(colorIndx), linewidth=1.5, alpha=0.15, zorder=0)
+            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, linewidth=2.0, alpha=0.2, zorder=0)
     if len(results) == 1:
         if showCI > 0.0: # Plot median together with CI
-            ax.plot(episodes, medianReturns[0], '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
-            ax.fill_between(episodes, lowerCiReturns[0], upperCiReturns[0][:maxEpisodes], color=cmap(colorIndx), alpha=0.2)
+            ax.plot(episodes, medianReturns[0], '-', linewidth=2.0, zorder=1)
+            ax.fill_between(episodes, lowerCiReturns[0], upperCiReturns[0][:maxEpisodes], alpha=0.5)
         else: # .. or mean with standard deviation
-            ax.plot(episodes, meanReturns[0], '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
-            ax.fill_between(episodes, meanReturns[0]-stdReturns[0], meanReturns[0]+stdReturns[0], color=cmap(colorIndx), alpha=0.2)
+            ax.plot(episodes, meanReturns[0], '-', linewidth=2.0, zorder=1)
+            ax.fill_between(episodes, meanReturns[0]-stdReturns[0], meanReturns[0]+stdReturns[0], alpha=0.2)
     else:
         if showCI > 0.0: # Plot median over runs
             medianReturns = np.array(medianReturns)
@@ -126,8 +133,8 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, s
                 confIntervalLower.append( np.percentile(data, 50-50*showCI) )
                 confIntervalUpper.append( np.percentile(data, 50+50*showCI) )
 
-            ax.plot(episodes, median, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1, label=dir)
-            ax.fill_between(episodes, confIntervalLower, confIntervalUpper, color=cmap(colorIndx), alpha=0.2)
+            ax.plot(episodes, median, '-', linewidth=2.0, zorder=1, label=dir)
+            ax.fill_between(episodes, confIntervalLower, confIntervalUpper, alpha=0.5)
         else: # .. or mean with standard deviation
             meanReturns = np.array(meanReturns)
 
@@ -142,13 +149,8 @@ def plotRewardHistory( ax, colorIndx, results, averageDepth, showCI, showData, s
             mean = np.array(mean)
             std  = np.array(std)
 
-            ax.plot(episodes, mean, '-', color=cmap(colorIndx), linewidth=3.0, zorder=1)
-            ax.fill_between(episodes, mean-std, mean+std, color=cmap(colorIndx), alpha=0.2)
-      
-    ax.set_ylabel('Cumulative Reward')
-    ax.set_xlabel('# Observations')
-    ax.set_title('Korali RL History Viewer')
- 
+            ax.plot(episodes, mean, '-', linewidth=2.0, zorder=1, label=dir)
+            ax.fill_between(episodes, mean-std, mean+std, alpha=0.5)
 
 ##################### Results parser
 
@@ -247,25 +249,17 @@ if __name__ == '__main__':
         exit(-1)
 
     if args.output:
-        if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg")):
-            print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(output))
-            sys.exit(-1)
         matplotlib.use('Agg')
  
     ### Reading values from result files
     results = parseResults(args.dir, args.numRuns)
- 
-    ### Creating figure
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-     
-    ### Creating plot
-    colorIndx = 0.0
-    cmap = matplotlib.cm.get_cmap('brg')
 
+    ### Creating figure
+    fig, ax = get_figure(width='article')
+
+    ### Creating plot
     for run in range(len(results)):
-        colorIndx = run / float(len(results)-1+1e-10)
-        plotRewardHistory(ax, colorIndx, results[run], args.averageDepth, args.showCI, args.showCumulativeRewards, args.showObservations, args.dir[run])
+        plotRewardHistory(ax, results[run], args.averageDepth, args.showCI, args.showCumulativeRewards, args.showObservations, args.dir[run])
 
     ax.set_ylabel('Cumulative Reward')
     if args.showObservations:
@@ -275,13 +269,13 @@ if __name__ == '__main__':
     ax.set_title('Korali RL History Viewer')
     ax.legend()
 
-    ax.yaxis.grid()
     if args.maxEpisodes < math.inf:
         ax.set_xlim([0, args.maxEpisodes-1])
     if (args.minReward < math.inf) and (args.maxReward > -math.inf):
         ax.set_ylim([args.minReward - 0.1*abs(args.minReward), args.maxReward + 0.1*abs(args.maxReward)])
 
     ### Show/save plot
+    fig.tight_layout()
     if (args.output is None):
         plt.show()
     else:

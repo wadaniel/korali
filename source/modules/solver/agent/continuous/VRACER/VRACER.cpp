@@ -212,19 +212,19 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
   return policyVector;
 }
 
-knlohmann::json VRACER::getAgentPolicy()
+knlohmann::json VRACER::getPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
-void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+void VRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void VRACER::printAgentInformation()
+void VRACER::printInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");

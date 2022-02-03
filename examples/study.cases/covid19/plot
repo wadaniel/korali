@@ -1,4 +1,0 @@
-d=data
-
-./plot_intervals_infected.py --dataFolder "$d"
-python -m korali.plot --dir $d/_korali_samples/  --output $d/figures/samples.png

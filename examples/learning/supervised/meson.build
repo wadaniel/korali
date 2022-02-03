@@ -1,2 +1,0 @@
-subdir('mnist')
-subdir('sineWave')

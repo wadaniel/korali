@@ -10,7 +10,7 @@ namespace solver
 {
 ;
 
-void Agent::initializeAgent()
+void Agent::initialize()
 {
   _variableCount = _k->_variables.size();
 

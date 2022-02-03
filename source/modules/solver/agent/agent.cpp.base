@@ -6,7 +6,7 @@
 
 __startNamespace__;
 
-void __className__::initializeAgent()
+void __className__::initialize()
 {
   _variableCount = _k->_variables.size();
 

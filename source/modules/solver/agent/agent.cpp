@@ -136,8 +136,8 @@ void Agent::initialize()
   if (_mode == "Training")
   {
     // Creating storage for _workers and their status
-    _workers.resize(_concurrentEnvironments);
-    _isWorkerRunning.resize(_concurrentEnvironments, false);
+    _workers.resize(_concurrentWorkers);
+    _isWorkerRunning.resize(_concurrentWorkers, false);
   }
 
   if (_mode == "Testing")
@@ -180,7 +180,7 @@ void Agent::trainingGeneration()
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == false)
       {
         _workers[workerId]["Sample Id"] = _currentSampleID++;
@@ -198,7 +198,7 @@ void Agent::trainingGeneration()
     KORALI_LISTEN(_workers);
 
     // Attending to running agents, checking if any experience has been received
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == true)
         attendWorker(workerId);
 
@@ -844,7 +844,7 @@ void Agent::finalize()
   do
   {
     agentsRemain = false;
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == true)
       {
         attendWorker(workerId);
@@ -1323,14 +1323,14 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Training']['Average Depth'] required by agent.\n"); 
 
- if (isDefined(js, "Concurrent Environments"))
+ if (isDefined(js, "Concurrent Workers"))
  {
- try { _concurrentEnvironments = js["Concurrent Environments"].get<size_t>();
+ try { _concurrentWorkers = js["Concurrent Workers"].get<size_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Concurrent Environments']\n%s", e.what()); } 
-   eraseValue(js, "Concurrent Environments");
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Concurrent Workers']\n%s", e.what()); } 
+   eraseValue(js, "Concurrent Workers");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Concurrent Environments'] required by agent.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Concurrent Workers'] required by agent.\n"); 
 
  if (isDefined(js, "Episodes Per Generation"))
  {
@@ -1596,7 +1596,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Sample Ids"] = _testingSampleIds;
    js["Testing"]["Current Policy"] = _testingCurrentPolicy;
    js["Training"]["Average Depth"] = _trainingAverageDepth;
-   js["Concurrent Environments"] = _concurrentEnvironments;
+   js["Concurrent Workers"] = _concurrentWorkers;
    js["Episodes Per Generation"] = _episodesPerGeneration;
    js["Mini Batch"]["Size"] = _miniBatchSize;
    js["Mini Batch"]["Strategy"] = _miniBatchStrategy;

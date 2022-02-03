@@ -106,7 +106,7 @@ class Agent : public Solver
   /**
   * @brief Indicates the number of concurrent environments to use to collect experiences.
   */
-   size_t _concurrentEnvironments;
+   size_t _concurrentWorkers;
   /**
   * @brief Indicates how many episodes to complete in a generation (checkpoints are generated between generations).
   */

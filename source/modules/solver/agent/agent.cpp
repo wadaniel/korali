@@ -10,7 +10,7 @@ namespace solver
 {
 ;
 
-void Agent::initialize()
+void Agent::initializeAgent()
 {
   _variableCount = _k->_variables.size();
 
@@ -104,11 +104,11 @@ void Agent::initialize()
     _rewardOutboundPenalizationCount = 0;
 
     // Getting agent's initial policy
-    _trainingCurrentPolicy = getAgentPolicy();
+    _trainingCurrentPolicy = getPolicy();
   }
 
   // Setting current agent's training state
-  setAgentPolicy(_trainingCurrentPolicy);
+  setPolicy(_trainingCurrentPolicy);
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
@@ -118,11 +118,11 @@ void Agent::initialize()
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
   _sessionSerializationTime = 0.0;
-  _sessionAgentComputationTime = 0.0;
-  _sessionAgentCommunicationTime = 0.0;
-  _sessionAgentPolicyEvaluationTime = 0.0;
+  _sessionWorkerComputationTime = 0.0;
+  _sessionWorkerCommunicationTime = 0.0;
+  _sessionPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
-  _sessionAgentAttendingTime = 0.0;
+  _sessionWorkerAttendingTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -137,7 +137,7 @@ void Agent::initialize()
   {
     // Creating storage for _workers and their status
     _workers.resize(_concurrentEnvironments);
-    _isAgentRunning.resize(_concurrentEnvironments, false);
+    _isWorkerRunning.resize(_concurrentEnvironments, false);
   }
 
   if (_mode == "Testing")
@@ -170,18 +170,18 @@ void Agent::trainingGeneration()
   // Setting generation-specific timers
   _generationRunningTime = 0.0;
   _generationSerializationTime = 0.0;
-  _generationAgentComputationTime = 0.0;
-  _generationAgentCommunicationTime = 0.0;
-  _generationAgentPolicyEvaluationTime = 0.0;
+  _generationWorkerComputationTime = 0.0;
+  _generationWorkerCommunicationTime = 0.0;
+  _generationPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
-  _generationAgentAttendingTime = 0.0;
+  _generationWorkerAttendingTime = 0.0;
 
   // Running until all _workers have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
     for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
-      if (_isAgentRunning[workerId] == false)
+      if (_isWorkerRunning[workerId] == false)
       {
         _workers[workerId]["Sample Id"] = _currentSampleID++;
         _workers[workerId]["Module"] = "Problem";
@@ -191,7 +191,7 @@ void Agent::trainingGeneration()
         _workers[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
         KORALI_START(_workers[workerId]);
-        _isAgentRunning[workerId] = true;
+        _isWorkerRunning[workerId] = true;
       }
 
     // Listening to _workers for incoming experiences
@@ -199,8 +199,8 @@ void Agent::trainingGeneration()
 
     // Attending to running agents, checking if any experience has been received
     for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
-      if (_isAgentRunning[workerId] == true)
-        attendAgent(workerId);
+      if (_isWorkerRunning[workerId] == true)
+        attendWorker(workerId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
@@ -235,7 +235,7 @@ void Agent::trainingGeneration()
       }
 
       // Getting new policy hyperparameters (for agents to generate actions)
-      _trainingCurrentPolicy = getAgentPolicy();
+      _trainingCurrentPolicy = getPolicy();
     }
   }
 
@@ -325,7 +325,7 @@ void Agent::rescaleStates()
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
 }
 
-void Agent::attendAgent(size_t workerId)
+void Agent::attendWorker(size_t workerId)
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -352,34 +352,34 @@ void Agent::attendAgent(size_t workerId)
       // Storing bookkeeping information
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-        float cumulativeAgentReward = _workers[workerId]["Training Rewards"][i].get<float>();
-        _trainingRewardHistory.push_back(cumulativeAgentReward);
+        float cumulativeReward = _workers[workerId]["Training Rewards"][i].get<float>();
+        _trainingRewardHistory.push_back(cumulativeReward);
         _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Environment Id"].get<size_t>());
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
-        _trainingLastReward = cumulativeAgentReward;
-        if (cumulativeAgentReward > _trainingBestReward)
+        _trainingLastReward = cumulativeReward;
+        if (cumulativeReward > _trainingBestReward)
         {
-            _trainingBestReward = cumulativeAgentReward;
+            _trainingBestReward = cumulativeReward;
             _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
         }
       }
 
       // Obtaining profiling information
-      _sessionAgentComputationTime += _workers[workerId]["Computation Time"].get<double>();
-      _sessionAgentCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
-      _sessionAgentPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
-      _generationAgentComputationTime += _workers[workerId]["Computation Time"].get<double>();
-      _generationAgentCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
-      _generationAgentPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
+      _sessionWorkerComputationTime += _workers[workerId]["Computation Time"].get<double>();
+      _sessionWorkerCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
+      _sessionPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
+      _generationWorkerComputationTime += _workers[workerId]["Computation Time"].get<double>();
+      _generationWorkerCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
+      _generationPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
 
       // Set agent as finished
-      _isAgentRunning[workerId] = false;
+      _isWorkerRunning[workerId] = false;
     }
   }
 
   auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
-  _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  _sessionWorkerAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  _generationWorkerAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
 void Agent::processEpisode(knlohmann::json &episode)
@@ -845,9 +845,9 @@ void Agent::finalize()
   {
     agentsRemain = false;
     for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
-      if (_isAgentRunning[workerId] == true)
+      if (_isWorkerRunning[workerId] == true)
       {
-        attendAgent(workerId);
+        attendWorker(workerId);
         agentsRemain = true;
       }
 
@@ -857,7 +857,7 @@ void Agent::finalize()
 
 void Agent::serializeExperienceReplay()
 {
-  _k->_logger->logInfo("Detailed", "Serializing Agent's Training State...\n");
+  _k->_logger->logInfo("Detailed", "Serializing Training State...\n");
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Creating JSON storage variable
@@ -1023,7 +1023,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
-    printAgentInformation();
+    printInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
@@ -1033,15 +1033,15 @@ void Agent::printGenerationAfter()
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
 
-    _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
-    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                [%5.3fs] - [%3.3fs]\n", _generationAgentAttendingTime / 1.0e+9, _sessionAgentAttendingTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%5.3fs] - [%3.3fs]\n", _generationAgentComputationTime / 1.0e+9, _sessionAgentComputationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "Profiling Information:                    [Generation] - [Session]\n");
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:         [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Worker Attending Time:                 [%5.3fs] - [%3.3fs]\n", _generationWorkerAttendingTime / 1.0e+9, _sessionWorkerAttendingTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Worker Computation Time:           [%5.3fs] - [%3.3fs]\n", _generationWorkerComputationTime / 1.0e+9, _sessionWorkerComputationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Worker Communication/Wait Time:    [%5.3fs] - [%3.3fs]\n", _generationWorkerCommunicationTime / 1.0e+9, _sessionWorkerCommunicationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Policy Evaluation Time:            [%5.3fs] - [%3.3fs]\n", _generationPolicyEvaluationTime / 1.0e+9, _sessionPolicyEvaluationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Policy Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:         [%5.3fs]\n", _k->_resultSavingTime / 1.0e+9);
   }
 
   if (_mode == "Testing")

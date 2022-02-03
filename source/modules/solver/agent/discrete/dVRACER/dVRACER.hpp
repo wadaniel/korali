@@ -93,10 +93,10 @@ class dVRACER : public Discrete
 
   std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 
-  knlohmann::json getAgentPolicy() override;
-  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  knlohmann::json getPolicy() override;
+  void setPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;
-  void printAgentInformation() override;
+  void printInformation() override;
   void initializeAgent() override;
 };
 

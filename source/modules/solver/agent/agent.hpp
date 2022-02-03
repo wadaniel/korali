@@ -361,9 +361,9 @@ class Agent : public Solver
   std::vector<Sample> _workers;
 
   /**
-   * @brief Keeps track of the age
+   * @brief Keeps track of the workers
    */
-  std::vector<bool> _isAgentRunning;
+  std::vector<bool> _isWorkerRunning;
 
   /**
    * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
@@ -525,19 +525,19 @@ class Agent : public Solver
   double _sessionSerializationTime;
 
   /**
-   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   * @brief [Profiling] Stores the computation time per episode taken by Workers
    */
-  double _sessionAgentComputationTime;
+  double _sessionWorkerComputationTime;
 
   /**
-   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   * @brief [Profiling] Measures the average communication time per episode taken by Workers
    */
-  double _sessionAgentCommunicationTime;
+  double _sessionWorkerCommunicationTime;
 
   /**
-   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Workers
    */
-  double _sessionAgentPolicyEvaluationTime;
+  double _sessionPolicyEvaluationTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
@@ -547,7 +547,7 @@ class Agent : public Solver
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
-  double _sessionAgentAttendingTime;
+  double _sessionWorkerAttendingTime;
 
   /****************************************************************************************************
    * Generation-wise Profiling Timers
@@ -564,19 +564,19 @@ class Agent : public Solver
   double _generationSerializationTime;
 
   /**
-   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   * @brief [Profiling] Stores the computation time per episode taken by worker
    */
-  double _generationAgentComputationTime;
+  double _generationWorkerComputationTime;
 
   /**
-   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   * @brief [Profiling] Measures the average communication time per episode taken by Workers
    */
-  double _generationAgentCommunicationTime;
+  double _generationWorkerCommunicationTime;
 
   /**
-   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Workers
    */
-  double _generationAgentPolicyEvaluationTime;
+  double _generationPolicyEvaluationTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
@@ -586,10 +586,10 @@ class Agent : public Solver
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
-  double _generationAgentAttendingTime;
+  double _generationWorkerAttendingTime;
 
   /****************************************************************************************************
-   * Common Agent functions
+   * Common functions
    ***************************************************************************************************/
 
   /**
@@ -673,9 +673,9 @@ class Agent : public Solver
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
-   * @param agentId The Agent's ID
+   * @param agentId The worker's ID
    */
-  void attendAgent(const size_t agentId);
+  void attendWorker(const size_t workerId);
 
   /**
    * @brief Serializes the experience replay into a JSON compatible format
@@ -723,7 +723,7 @@ class Agent : public Solver
    ***************************************************************************************************/
 
   /**
-   * @brief Trains the Agent's policy, based on the new experiences
+   * @brief Trains the policy, based on the new experiences
    */
   virtual void trainPolicy() = 0;
 
@@ -731,13 +731,13 @@ class Agent : public Solver
    * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
    * @return The current policy hyperparameters
    */
-  virtual knlohmann::json getAgentPolicy() = 0;
+  virtual knlohmann::json getPolicy() = 0;
 
   /**
    * @brief Updates the agent's hyperparameters
    * @param hyperparameters The hyperparameters to update the agent.
    */
-  virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+  virtual void setPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
    * @brief Initializes the internal state of the policy
@@ -747,7 +747,7 @@ class Agent : public Solver
   /**
    * @brief Prints information about the training policy
    */
-  virtual void printAgentInformation() = 0;
+  virtual void printInformation() = 0;
 
   /**
    * @brief Gathers the next action either from the policy or randomly

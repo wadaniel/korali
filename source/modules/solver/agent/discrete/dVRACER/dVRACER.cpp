@@ -229,19 +229,19 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
   return policyVector;
 }
 
-knlohmann::json dVRACER::getAgentPolicy()
+knlohmann::json dVRACER::getPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
-void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+void dVRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void dVRACER::printAgentInformation()
+void dVRACER::printInformation()
 {
   _k->_logger->logInfo("Normal", " + [dVRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
 }

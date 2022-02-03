@@ -116,13 +116,13 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     size_t expId = miniBatch[b];
 
     // Get state, action and policy for this experience
-    const auto &expPolicy = _expPolicyVector[expId];
-    const auto &expAction = _actionVector[expId];
+    const auto &expPolicy = _expPolicyBuffer[expId];
+    const auto &expAction = _actionBuffer[expId];
 
     // Gathering metadata
-    const float V = _stateValueVector[expId];
-    const auto &curPolicy = _curPolicyVector[expId];
-    const float expVtbc = _retraceValueVector[expId];
+    const float V = _stateValueBuffer[expId];
+    const auto &curPolicy = _curPolicyBuffer[expId];
+    const float expVtbc = _retraceValueBuffer[expId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _policyParameterCount);
@@ -131,22 +131,22 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     gradientLoss[0] = expVtbc - V;
 
     // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (_isOnPolicyVector[expId])
+    if (_isOnPolicyBuffer[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = getScaledReward(_environmentIdVector[expId], _rewardVector[expId]);
+      float Qret = getScaledReward(_environmentIdBuffer[expId], _rewardBuffer[expId]);
 
       // If experience is non-terminal, add Vtbc
-      if (_terminationVector[expId] == e_nonTerminal)
+      if (_terminationBuffer[expId] == e_nonTerminal)
       {
-        float nextExpVtbc = _retraceValueVector[expId + 1];
+        float nextExpVtbc = _retraceValueBuffer[expId + 1];
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // If experience is truncated, add truncated state value
-      if (_terminationVector[expId] == e_truncated)
+      if (_terminationBuffer[expId] == e_truncated)
       {
-        float nextExpVtbc = _truncatedStateValueVector[expId];
+        float nextExpVtbc = _truncatedStateValueBuffer[expId];
         Qret += _discountFactor * nextExpVtbc;
       }
 

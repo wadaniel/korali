@@ -26,11 +26,6 @@ parser.add_argument(
     help='Learning rate for the selected optimizer',
     default=3e-3,
     required=False)
-parser.add_argument(
-    '--concurrentEnvironments',
-    help='Number of environments to run concurrently',
-    default=1,
-    required=False)
 args = parser.parse_args()
 
 print("Running Cartpole example with arguments:")
@@ -71,7 +66,6 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000

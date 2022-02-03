@@ -26,11 +26,6 @@ parser.add_argument(
     help='Learning rate for the selected optimizer',
     default=1e-3,
     required=False)
-parser.add_argument(
-    '--concurrentEnvironments',
-    help='Number of environments to run concurrently',
-    default=1,
-    required=False)
 args = parser.parse_args()
 
 print("Running Cartpole example with arguments:")
@@ -72,7 +67,6 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
-e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
 
 ### Defining Experience Replay configuration
 

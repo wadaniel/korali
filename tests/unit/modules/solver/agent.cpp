@@ -181,9 +181,9 @@ namespace
   a->_rewardOutboundPenalizationFactor = 0.5f;
   episode["Experiences"][0]["Reward"] = 1.0f;
   episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
-  a->_rewardVector.clear();
+  a->_rewardBuffer.clear();
   ASSERT_NO_THROW(a->processEpisode(episode));
-  ASSERT_EQ(a->_rewardVector[0], 0.5f);
+  ASSERT_EQ(a->_rewardBuffer[0], 0.5f);
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
@@ -221,7 +221,7 @@ namespace
 
   ASSERT_NO_THROW(a->processEpisode(episode));
   a->_timeSequenceLength = 2;
-  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1));
+  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationBuffer.size()-1));
 
   // Triggering bad path in serialization routine
   e._fileOutputPath = "/dev/null/\%*Incorrect Path*";

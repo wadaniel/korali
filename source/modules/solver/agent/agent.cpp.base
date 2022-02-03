@@ -353,6 +353,11 @@ void __className__::attendAgent(size_t agentId)
         _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Environment Id"].get<size_t>());
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
         _trainingLastReward = cumulativeAgentReward;
+        if (cumulativeAgentReward > _trainingBestReward)
+        {
+            _trainingBestReward = cumulativeAgentReward;
+            _trainingBestEpisodeId = _agents[agentId]["Sample Id"].get<size_t>();
+        }
       }
 
       // Obtaining profiling information

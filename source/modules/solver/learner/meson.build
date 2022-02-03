@@ -21,4 +21,3 @@ korali_source += module_source
 korali_config += module_config
 
 subdir('deepSupervisor')
-subdir('gaussianProcess')

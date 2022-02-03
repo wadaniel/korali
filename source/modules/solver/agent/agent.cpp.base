@@ -132,8 +132,8 @@ void __className__::initialize()
   if (_mode == "Training")
   {
     // Creating storage for _workers and their status
-    _workers.resize(_concurrentEnvironments);
-    _isWorkerRunning.resize(_concurrentEnvironments, false);
+    _workers.resize(_concurrentWorkers);
+    _isWorkerRunning.resize(_concurrentWorkers, false);
   }
 
   if (_mode == "Testing")
@@ -176,7 +176,7 @@ void __className__::trainingGeneration()
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == false)
       {
         _workers[workerId]["Sample Id"] = _currentSampleID++;
@@ -194,7 +194,7 @@ void __className__::trainingGeneration()
     KORALI_LISTEN(_workers);
 
     // Attending to running agents, checking if any experience has been received
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == true)
         attendWorker(workerId);
 
@@ -840,7 +840,7 @@ void __className__::finalize()
   do
   {
     agentsRemain = false;
-    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+    for (size_t workerId = 0; workerId < _concurrentWorkers; workerId++)
       if (_isWorkerRunning[workerId] == true)
       {
         attendWorker(workerId);

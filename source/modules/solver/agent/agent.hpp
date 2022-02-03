@@ -356,9 +356,9 @@ class Agent : public Solver
   
 
   /**
-   * @brief Array of agents collecting new experiences
+   * @brief Array of workers collecting new experiences
    */
-  std::vector<Sample> _agents;
+  std::vector<Sample> _workers;
 
   /**
    * @brief Keeps track of the age

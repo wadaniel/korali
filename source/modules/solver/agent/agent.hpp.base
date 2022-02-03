@@ -69,9 +69,9 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
-   * @brief Array of agents collecting new experiences
+   * @brief Array of workers collecting new experiences
    */
-  std::vector<Sample> _agents;
+  std::vector<Sample> _workers;
 
   /**
    * @brief Keeps track of the age

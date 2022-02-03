@@ -135,8 +135,8 @@ void Agent::initialize()
 
   if (_mode == "Training")
   {
-    // Creating storate for _agents and their status
-    _agents.resize(_concurrentEnvironments);
+    // Creating storage for _workers and their status
+    _workers.resize(_concurrentEnvironments);
     _isAgentRunning.resize(_concurrentEnvironments, false);
   }
 
@@ -176,31 +176,31 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
 
-  // Running until all _agents have finished
+  // Running until all _workers have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
-    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
-      if (_isAgentRunning[agentId] == false)
+    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+      if (_isAgentRunning[workerId] == false)
       {
-        _agents[agentId]["Sample Id"] = _currentSampleID++;
-        _agents[agentId]["Module"] = "Problem";
-        _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
-        _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
-        _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
+        _workers[workerId]["Sample Id"] = _currentSampleID++;
+        _workers[workerId]["Module"] = "Problem";
+        _workers[workerId]["Operation"] = "Run Training Episode";
+        _workers[workerId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
+        _workers[workerId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+        _workers[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
-        KORALI_START(_agents[agentId]);
-        _isAgentRunning[agentId] = true;
+        KORALI_START(_workers[workerId]);
+        _isAgentRunning[workerId] = true;
       }
 
-    // Listening to _agents for incoming experiences
-    KORALI_LISTEN(_agents);
+    // Listening to _workers for incoming experiences
+    KORALI_LISTEN(_workers);
 
     // Attending to running agents, checking if any experience has been received
-    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
-      if (_isAgentRunning[agentId] == true)
-        attendAgent(agentId);
+    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+      if (_isAgentRunning[workerId] == true)
+        attendAgent(workerId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
@@ -274,22 +274,22 @@ void Agent::testingGeneration()
   std::vector<Sample> testingAgents(_testingSampleIds.size());
 
   // Launching  agents
-  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+  for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
   {
-    testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
-    testingAgents[agentId]["Module"] = "Problem";
-    testingAgents[agentId]["Operation"] = "Run Testing Episode";
-    testingAgents[agentId]["Policy Hyperparameters"] = _testingCurrentPolicy;
-    testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
-    testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
+    testingAgents[workerId]["Sample Id"] = _testingSampleIds[workerId];
+    testingAgents[workerId]["Module"] = "Problem";
+    testingAgents[workerId]["Operation"] = "Run Testing Episode";
+    testingAgents[workerId]["Policy Hyperparameters"] = _testingCurrentPolicy;
+    testingAgents[workerId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+    testingAgents[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
-    KORALI_START(testingAgents[agentId]);
+    KORALI_START(testingAgents[workerId]);
   }
 
   KORALI_WAITALL(testingAgents);
 
-  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
-    _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
+  for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
+    _testingReward[workerId] = testingAgents[workerId]["Testing Reward"].get<float>();
 }
 
 void Agent::rescaleStates()
@@ -325,7 +325,7 @@ void Agent::rescaleStates()
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
 }
 
-void Agent::attendAgent(size_t agentId)
+void Agent::attendAgent(size_t workerId)
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -333,11 +333,11 @@ void Agent::attendAgent(size_t agentId)
   knlohmann::json message;
 
   // Retrieving the experience, if any has arrived for the current agent.
-  if (_agents[agentId].retrievePendingMessage(message))
+  if (_workers[workerId].retrievePendingMessage(message))
   {
     // If agent requested new policy, send the new hyperparameters
     if (message["Action"] == "Request New Policy")
-      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
+      KORALI_SEND_MSG_TO_SAMPLE(_workers[workerId], _trainingCurrentPolicy);
 
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
@@ -347,12 +347,12 @@ void Agent::attendAgent(size_t agentId)
         processEpisode(message["Episodes"][i]);
 
       // Waiting for the agent to come back with all the information
-      KORALI_WAIT(_agents[agentId]);
+      KORALI_WAIT(_workers[workerId]);
 
       // Storing bookkeeping information
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-        float cumulativeAgentReward = _agents[agentId]["Training Rewards"][i].get<float>();
+        float cumulativeAgentReward = _workers[workerId]["Training Rewards"][i].get<float>();
         _trainingRewardHistory.push_back(cumulativeAgentReward);
         _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Environment Id"].get<size_t>());
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
@@ -360,20 +360,20 @@ void Agent::attendAgent(size_t agentId)
         if (cumulativeAgentReward > _trainingBestReward)
         {
             _trainingBestReward = cumulativeAgentReward;
-            _trainingBestEpisodeId = _agents[agentId]["Sample Id"].get<size_t>();
+            _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
         }
       }
 
       // Obtaining profiling information
-      _sessionAgentComputationTime += _agents[agentId]["Computation Time"].get<double>();
-      _sessionAgentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
-      _sessionAgentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
-      _generationAgentComputationTime += _agents[agentId]["Computation Time"].get<double>();
-      _generationAgentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
-      _generationAgentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
+      _sessionAgentComputationTime += _workers[workerId]["Computation Time"].get<double>();
+      _sessionAgentCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
+      _sessionAgentPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
+      _generationAgentComputationTime += _workers[workerId]["Computation Time"].get<double>();
+      _generationAgentCommunicationTime += _workers[workerId]["Communication Time"].get<double>();
+      _generationAgentPolicyEvaluationTime += _workers[workerId]["Policy Evaluation Time"].get<double>();
 
       // Set agent as finished
-      _isAgentRunning[agentId] = false;
+      _isAgentRunning[workerId] = false;
     }
   }
 
@@ -844,14 +844,14 @@ void Agent::finalize()
   do
   {
     agentsRemain = false;
-    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
-      if (_isAgentRunning[agentId] == true)
+    for (size_t workerId = 0; workerId < _concurrentEnvironments; workerId++)
+      if (_isAgentRunning[workerId] == true)
       {
-        attendAgent(agentId);
+        attendAgent(workerId);
         agentsRemain = true;
       }
 
-    if (agentsRemain) KORALI_LISTEN(_agents);
+    if (agentsRemain) KORALI_LISTEN(_workers);
   } while (agentsRemain == true);
 }
 
@@ -1047,10 +1047,10 @@ void Agent::printGenerationAfter()
   if (_mode == "Testing")
   {
     _k->_logger->logInfo("Normal", "Testing Results:\n");
-    for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+    for (size_t testingId = 0; testingId < _testingSampleIds.size(); testingId++)
     {
-      _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
-      _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward            %f\n", _testingReward[agentId]);
+      _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[testingId]);
+      _k->_logger->logInfo("Normal", "   + (Average) Cumulative Reward            %f\n", _testingReward[testingId]);
     }
   }
 }

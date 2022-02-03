@@ -1387,8 +1387,8 @@ namespace
    e._solver = a;
 
    Sample s;
-   auto curPolicy = a->getAgentPolicy();
-   s["Policy Hyperparameters"] = a->getAgentPolicy();
+   auto curPolicy = a->getPolicy();
+   s["Policy Hyperparameters"] = a->getPolicy();
    s["Sample Id"] = 0;
    s["State Rescaling"]["Means"] = std::vector<float>({0.0});
    s["State Rescaling"]["Standard Deviations"] = std::vector<float>({1.0});

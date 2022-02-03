@@ -61,22 +61,24 @@ void runEnvironment(korali::Sample &s)
 
   // Sample task and save in vector
   #ifdef MULTITASK
-  #ifdef WATERTURBINE
-  std::uniform_int_distribution<> disT(0, 3);
-  #else
-  std::uniform_int_distribution<> disT(0, 2);
-  #endif
+  std::uniform_int_distribution<> disT(0, 1);
   int task = disT(_randomGenerator);
   std::string argumentString;
   switch(task) {
-    case 0 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTShalfDisk;
-             break;
-    case 1 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSnaca;
-             break;
-    case 2 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSstefanfish;
-             break;
-    case 3 : argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSwaterturbine;
-             break;
+    case 0 :
+    {
+      std::uniform_real_distribution<double> radiusDist(0.03,0.07);
+      auto radius = radiusDist(_randomGenerator);
+      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTShalfDisk + std::to_string(radius) + AGENT;
+      break;
+    }
+    case 1 :
+    {
+      std::uniform_real_distribution<double> frequencyDist(0.2,0.5);
+      auto frequency = frequencyDist(_randomGenerator);
+      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSnaca + std::to_string(frequency) + AGENT;
+      break;
+    }
   }
   s["Environment Id"] = task;
   // std::cout << "argumentString=" << argumentString << std::endl;

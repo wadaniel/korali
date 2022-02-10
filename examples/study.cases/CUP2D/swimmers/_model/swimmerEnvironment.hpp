@@ -8,7 +8,6 @@
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
-// #define ID
 #define MULTITASK
 // #define SWARM
 // #define SINGLE
@@ -18,5 +17,4 @@ extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining);
-bool isTerminal(StefanFish *agent, size_t nAgents);
+bool isTerminal(StefanFish *agent, int nAgents);

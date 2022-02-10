@@ -1,12 +1,15 @@
 #! /usr/bin/env bash
 
-if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME"
+if [ $# -lt 2 ] ; then
+	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME TASK"
 	exit 1
 fi
-if [ $# -gt 0 ] ; then
-	RUNNAME=$1
-fi
+
+RUNNAME=$1
+TASK=$2
+
+# number of agents
+NAGENTS=1
 
 # number of workers
 NWORKER=64
@@ -26,10 +29,7 @@ NNODES=$(( $NWORKER * $NRANKS ))
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-swimmer ${RUNPATH}
-cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
-
-source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
@@ -44,10 +44,10 @@ cat <<EOF >daint_sbatch
 # #SBATCH --partition=debug
 #SBATCH --nodes=$((NNODES+1))
 
-srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
+srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
 EOF
 
-echo "Starting ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
+echo "Starting task ${TASK} with ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
 echo "----------------------------"
 
 chmod 755 daint_sbatch

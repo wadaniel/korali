@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 if [ $# -lt 2 ] ; then
-	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME TASK"
+	echo "Usage: ./eval-vracer-swimmer.sh RUNNAME TASK"
 	exit 1
 fi
 

@@ -63,17 +63,18 @@ void runEnvironment(korali::Sample &s)
   // Argument string to inititialize Simulation
   std::string argumentString;
 
-  // Get get task/obstacle we want
-  #ifdef MULTITASK
-  // Sample task
-  std::uniform_int_distribution<> disT(0, 1);
-  auto task = disT(_randomGenerator);
-  // For multitask learning, Korali has to know the task
-  s["Environment Id"] = task;
-  #else
   // Get task from command line argument
   auto task = atoi(_argv[_argc-5]);
-  #endif
+
+  // Get get task/obstacle we want
+  if( task == -2 )
+  {
+    // Sample task
+    std::uniform_int_distribution<> disT(0, 1);
+    task = disT(_randomGenerator);
+    // For multitask learning, Korali has to know the task
+    s["Environment Id"] = task;
+  }
 
   /* Add Obstacle */
   switch(task) {
@@ -204,12 +205,15 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  #ifdef SINGLE
-  agents[0] = dynamic_cast<StefanFish *>(shapes[0].get());
-  #else
-  for( int i = 1; i<nAgents+1; i++ )
-    agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
-  #endif
+  if( task == -1 )
+  {
+    agents[0] = dynamic_cast<StefanFish *>(shapes[0].get());
+  }
+  else 
+  {
+    for( int i = 1; i<nAgents+1; i++ )
+      agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
+  }
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
@@ -384,15 +388,19 @@ bool isTerminal(StefanFish *agent, int nAgents)
 {
   double xMin, xMax, yMin, yMax;
   if( nAgents == 1 ){
-    xMin = 0.6;
-    xMax = 1.4;
+    // xMin = 0.6;
+    // xMax = 1.4;
+    xMin = 0.1;
+    xMax = 1.9;
 
     #ifdef SWARM // uses 4x2 domain, stricter contraints
     yMin = 0.8;
     yMax = 1.2;
     #else
-    yMin = 0.2;
-    yMax = 0.8;
+    // yMin = 0.2;
+    // yMax = 0.8;
+    yMin = 0.1;
+    yMax = 0.9;
     #endif
   }
   else if( nAgents == 3 ){

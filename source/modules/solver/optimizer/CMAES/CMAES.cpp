@@ -1173,14 +1173,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Current Best Variables");
  }
 
- if (isDefined(js, "Previous Best Value"))
- {
- try { _previousBestValue = js["Previous Best Value"].get<double>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Previous Best Value']\n%s", e.what()); } 
-   eraseValue(js, "Previous Best Value");
- }
-
  if (isDefined(js, "Previous Best Ever Value"))
  {
  try { _previousBestEverValue = js["Previous Best Ever Value"].get<double>();
@@ -1826,7 +1818,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Sample Population"] = _samplePopulation;
    js["Finished Sample Count"] = _finishedSampleCount;
    js["Current Best Variables"] = _currentBestVariables;
-   js["Previous Best Value"] = _previousBestValue;
    js["Previous Best Ever Value"] = _previousBestEverValue;
    js["Sorting Index"] = _sortingIndex;
    js["Covariance Matrix"] = _covarianceMatrix;

@@ -42,7 +42,7 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 # Configuring the TMCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 2000
-e["Solver"]["Target Coefficient Of Variation"] = 2.0
+e["Solver"]["Target Coefficient Of Variation"] = 0.2
 
 # General settings
 e["File Output"]["Path"] = "_results_example2" 

@@ -1,5 +1,5 @@
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.adabelief', e,
+test('supervised.learning.sineWave.fnn.adabelief', e,
       args: [ '--optimizer', 'AdaBelief', '--learningRate', '0.005', '--maxGenerations', '30' ],
       timeout : 3600,
       suite: 'regression',
@@ -9,7 +9,7 @@ test('learning.supervised.sineWave.fnn.adabelief', e,
     )
 
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.adagrad', e,
+test('supervised.learning.sineWave.fnn.adagrad', e,
       args: [ '--optimizer', 'Adagrad', '--learningRate', '0.05', '--maxGenerations', '30'],
       timeout : 3600,
       suite: 'regression',
@@ -19,7 +19,7 @@ test('learning.supervised.sineWave.fnn.adagrad', e,
     )
 
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.adam', e,
+test('supervised.learning.sineWave.fnn.adam', e,
       args: [ '--optimizer', 'Adam', '--learningRate', '0.005', '--maxGenerations', '30' ],
       timeout : 3600,
       suite: 'regression',
@@ -29,7 +29,7 @@ test('learning.supervised.sineWave.fnn.adam', e,
     )
 
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.madgrad', e,
+test('supervised.learning.sineWave.fnn.madgrad', e,
       args: [ '--optimizer', 'MADGRAD', '--learningRate', '0.005', '--maxGenerations', '30'],
       timeout : 3600,
       suite: 'regression',
@@ -39,7 +39,7 @@ test('learning.supervised.sineWave.fnn.madgrad', e,
     )
     
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.rmsprop', e,
+test('supervised.learning.sineWave.fnn.rmsprop', e,
       args: [ '--optimizer', 'RMSProp', '--learningRate', '0.002', '--maxGenerations', '30' ],
       timeout : 3600,
       suite: 'regression',
@@ -49,7 +49,7 @@ test('learning.supervised.sineWave.fnn.rmsprop', e,
     )
 
 e = find_program('run-ffn.py', required: true)
-test('learning.supervised.sineWave.fnn.adam', e,
+test('supervised.learning.sineWave.fnn.adam', e,
       args: [ '--optimizer', 'Adam', '--learningRate', '0.005', '--engine', 'Korali', '--maxGenerations', '30'],
       timeout : 3600,
       suite: 'regression',
@@ -59,7 +59,7 @@ test('learning.supervised.sineWave.fnn.adam', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.adabelief', e,
+test('supervised.learning.sineWave.rnn.adabelief', e,
       args: [ '--optimizer', 'AdaBelief', '--learningRate', '0.001', '--maxGenerations', '60' ],
       timeout : 3600,
       suite: 'regression',
@@ -69,7 +69,7 @@ test('learning.supervised.sineWave.rnn.adabelief', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.adagrad', e,
+test('supervised.learning.sineWave.rnn.adagrad', e,
       args: [ '--optimizer', 'Adagrad', '--learningRate', '0.01', '--maxGenerations', '60' ],
       timeout : 3600,
       suite: 'regression',
@@ -79,7 +79,7 @@ test('learning.supervised.sineWave.rnn.adagrad', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.adam', e,
+test('supervised.learning.sineWave.rnn.adam', e,
       args: [ '--optimizer', 'Adam', '--learningRate', '0.001', '--maxGenerations', '60' ],
       timeout : 3600,
       suite: 'regression',
@@ -89,7 +89,7 @@ test('learning.supervised.sineWave.rnn.adam', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.madgrad', e,
+test('supervised.learning.sineWave.rnn.madgrad', e,
       args: [ '--optimizer', 'MADGRAD', '--learningRate', '0.001', '--maxGenerations', '60'],
       timeout : 3600,
       suite: 'regression',
@@ -99,7 +99,7 @@ test('learning.supervised.sineWave.rnn.madgrad', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.rmsprop', e,
+test('supervised.learning.sineWave.rnn.rmsprop', e,
       args: [ '--optimizer', 'RMSProp', '--learningRate', '0.001', '--maxGenerations', '60'],
       timeout : 3600,
       suite: 'regression',
@@ -109,7 +109,7 @@ test('learning.supervised.sineWave.rnn.rmsprop', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('learning.supervised.sineWave.rnn.lstm', e,
+test('supervised.learning.sineWave.rnn.lstm', e,
       args: [ '--optimizer', 'Adam', '--learningRate', '0.001', '--rnnType', 'LSTM', '--maxGenerations', '60' ],
       timeout : 3600,
       suite: 'regression',

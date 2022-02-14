@@ -359,8 +359,8 @@ void Agent::attendWorker(size_t workerId)
         _trainingLastReward = cumulativeReward;
         if (cumulativeReward > _trainingBestReward)
         {
-            _trainingBestReward = cumulativeReward;
-            _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
+          _trainingBestReward = cumulativeReward;
+          _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
         }
       }
 
@@ -377,7 +377,7 @@ void Agent::attendWorker(size_t workerId)
     }
   }
 
-  auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
+  auto endTime = std::chrono::steady_clock::now();                                                                     // Profiling
   _sessionWorkerAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationWorkerAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }

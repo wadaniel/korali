@@ -46,7 +46,6 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
 
         # Load Returns
         returns = np.array(r["Solver"]["Training"]["Reward History"])
-        print(returns)
         if r["Problem"]["Agents Per Environment"] > 1:
             returns = np.mean(returns,axis=0)
         else:

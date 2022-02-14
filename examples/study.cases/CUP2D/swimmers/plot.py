@@ -63,7 +63,7 @@ def plotValueFunction( ax, data, config, xlim, ylim, N ):
 
     X, Y = np.meshgrid(xCoords, yCoords, indexing='ij')
 
-    im = ax.pcolormesh(X, Y, averageValue, cmap='viridis', vmax=3)
+    im = ax.pcolormesh(X, Y, averageValue, cmap='viridis')
     fig.colorbar(im, ax=ax)
 
     # Add circle

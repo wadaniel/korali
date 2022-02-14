@@ -1,6 +1,6 @@
 e = find_program('run-vracer.py', required: true)
-test('learning.reinforcement.cartpole.continuous.single', e,
-      args: [ '--concurrentEnvironments', '1'],
+test('reinforcement.learning.cartpole.continuous.single', e,
+      args: [ '--concurrentWorkers', '1'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -9,8 +9,8 @@ test('learning.reinforcement.cartpole.continuous.single', e,
     )
 
 e = find_program('run-vracer.py', required: true)
-test('learning.reinforcement.cartpole.continuous.multiple', e,
-      args: [ '--concurrentEnvironments', '2'],
+test('reinforcement.learning.cartpole.continuous.multiple', e,
+      args: [ '--concurrentWorkers', '2'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -19,8 +19,8 @@ test('learning.reinforcement.cartpole.continuous.multiple', e,
     )
     
 e = find_program('run-dvracer.py', required: true)
-test('learning.reinforcement.cartpole.discrete.single', e,
-      args: [ '--concurrentEnvironments', '1'],
+test('reinforcement.learning.cartpole.discrete.single', e,
+      args: [ '--concurrentWorkers', '1'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -29,8 +29,8 @@ test('learning.reinforcement.cartpole.discrete.single', e,
     )
 
 e = find_program('run-dvracer.py', required: true)
-test('learning.reinforcement.cartpole.discrete.multiple', e,
-      args: [ '--concurrentEnvironments', '2'],
+test('reinforcement.learning.cartpole.discrete.multiple', e,
+      args: [ '--concurrentWorkers', '2'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

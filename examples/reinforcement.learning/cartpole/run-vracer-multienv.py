@@ -27,7 +27,7 @@ parser.add_argument(
     default=3e-3,
     required=False)
 parser.add_argument(
-    '--concurrentEnvironments',
+    '--concurrentWorkers',
     help='Number of environments to run concurrently',
     default=1,
     required=False)

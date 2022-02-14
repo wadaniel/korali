@@ -180,10 +180,6 @@ class CMAES : public Optimizer
   */
    std::vector<double> _currentBestVariables;
   /**
-  * @brief [Internal Use] Best model evaluation from previous generation.
-  */
-   double _previousBestValue;
-  /**
   * @brief [Internal Use] Best ever model evaluation as of previous generation.
   */
    double _previousBestEverValue;

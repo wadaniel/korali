@@ -25,7 +25,7 @@ def model1( s, data ):
 
     s["logLikelihood"] = llk
 
-# model for example 1 (known beta)
+# model for example 2
 def model2( s, data ):
     alpha = s["Parameters"][0]
     beta  = s["Parameters"][1]

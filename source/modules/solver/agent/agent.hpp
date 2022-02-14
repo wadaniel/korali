@@ -654,7 +654,7 @@ class Agent : public Solver
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
-   * @param agentId The worker's ID
+   * @param workerId The worker's ID
    */
   void attendWorker(const size_t workerId);
 

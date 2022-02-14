@@ -493,17 +493,17 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Concurrent Environments");
+  agentJs.erase("Concurrent Workers");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = "Not a Number";
+  agentJs["Concurrent Workers"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = 1;
+  agentJs["Concurrent Workers"] = 1;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;

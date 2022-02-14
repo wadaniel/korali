@@ -116,10 +116,6 @@ class Agent : public Solver
   */
    size_t _miniBatchSize;
   /**
-  * @brief Determines how to select experiences from the replay memory for mini batch creation.
-  */
-   std::string _miniBatchStrategy;
-  /**
   * @brief Indicates the number of contiguous experiences to pass to the NN for learning. This is only useful when using recurrent NNs.
   */
    size_t _timeSequenceLength;

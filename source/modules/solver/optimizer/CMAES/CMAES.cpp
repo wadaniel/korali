@@ -948,11 +948,13 @@ void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sort
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
 
+  // clang-format off
   // sort indexes based on comparing values in vec
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2)
             {
               return vec[i1] > vec[i2];
             });
+  // clang-format on
 }
 
 void CMAES::printGenerationBefore() { return; }

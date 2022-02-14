@@ -1019,7 +1019,7 @@ void Agent::printGenerationAfter()
 
     _k->_logger->logInfo("Normal", " + Latest Reward:               %f\n", _trainingLastReward);
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
-    _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
+    _k->_logger->logInfo("Normal", " + Best Reward (Episode):       %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     printInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);

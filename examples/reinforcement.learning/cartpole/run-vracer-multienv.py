@@ -72,7 +72,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Concurrent Environments"] = int(args.concurrentEnvironments)
+e["Solver"]["Concurrent Workers"] = int(args.concurrentEnvironments)
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000

@@ -252,9 +252,41 @@ class Agent : public Solver
   */
    knlohmann::json _trainingBestPolicy;
   /**
+  * @brief [Internal Use] Keeps a history of all training episode rewards.
+  */
+   std::vector<float> _testingAverageRewardHistory;
+  /**
   * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
    std::vector<float> _testingReward;
+  /**
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingBestReward;
+  /**
+  * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingWorstReward;
+  /**
+  * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
+  */
+   size_t _testingBestEpisodeId;
+  /**
+  * @brief [Internal Use] Remembers the number of candidate policies tested so far.
+  */
+   size_t _testingCandidateCount;
+  /**
+  * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingAverageReward;
+  /**
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
+  */
+   float _testingBestAverageReward;
+  /**
+  * @brief [Internal Use] Stores the best testing policies configuration found so far.
+  */
+   knlohmann::json _testingBestPolicies;
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */

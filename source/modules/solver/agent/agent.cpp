@@ -77,12 +77,19 @@ void Agent::initialize()
     _currentSampleID = 0;
     _experienceCount = 0;
 
-    // Initializing training and episode statistics
+    // Initializing training statistics
     _trainingBestReward = -korali::Inf;
     _trainingBestEpisodeId = 0;
     _trainingAverageReward = 0.0f;
-
-    // Initializing REFER information
+    
+    // Initializing testing statistics
+	_testingAverageReward = -korali::Inf;
+    _testingBestReward = -korali::Inf;
+    _testingWorstReward = -korali::Inf;
+    _testingBestAverageReward = -korali::Inf;
+    _testingBestEpisodeId = 0;
+    
+	// Initializing REFER information
 
     // If cutoff scale is not defined, use a heuristic value
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
@@ -361,6 +368,25 @@ void Agent::attendWorker(size_t workerId)
         {
           _trainingBestReward = cumulativeReward;
           _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
+        }
+      }
+
+      // If the policy has exceeded the threshold during training, we gather its statistics
+      if (_workers[workerId]["Tested Policy"] == true)
+      {
+        _testingCandidateCount++;
+        _testingBestReward = _workers[workerId]["Best Testing Reward"].get<float>();
+        _testingWorstReward = _workers[workerId]["Worst Testing Reward"].get<float>();
+        _testingAverageReward = _workers[workerId]["Average Testing Reward"].get<float>();
+        _testingAverageRewardHistory.push_back(_testingAverageReward);
+
+        // If the average testing reward is better than the previous best, replace it
+        // and store hyperparameters as best so far.
+        if (_testingAverageReward > _testingBestAverageReward)
+        {
+          _testingBestAverageReward = _testingAverageReward;
+          _testingBestEpisodeId = _currentEpisode;
+          _testingBestPolicies["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
       }
 
@@ -1021,15 +1047,19 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward (Episode):       %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
+    if (_testingBestEpisodeId > 0)
+    {
+      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
+    }
+
     printInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
       for (size_t i = 0; i < _problem->_environmentCount; ++i)
         _k->_logger->logInfo("Normal", " + Reward Rescaling (Env %zu):        N(%.3e, %.3e)         \n", i, 0.0, _rewardRescalingSigma[i]);
-
-    if (_stateRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
 
     _k->_logger->logInfo("Detailed", "Profiling Information:                    [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:         [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
@@ -1159,12 +1189,75 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Training", "Best Policy");
  }
 
+ if (isDefined(js, "Testing", "Average Reward History"))
+ {
+ try { _testingAverageRewardHistory = js["Testing"]["Average Reward History"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Average Reward History']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Average Reward History");
+ }
+
  if (isDefined(js, "Testing", "Reward"))
  {
  try { _testingReward = js["Testing"]["Reward"].get<std::vector<float>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Reward']\n%s", e.what()); } 
    eraseValue(js, "Testing", "Reward");
+ }
+
+ if (isDefined(js, "Testing", "Best Reward"))
+ {
+ try { _testingBestReward = js["Testing"]["Best Reward"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Reward']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Best Reward");
+ }
+
+ if (isDefined(js, "Testing", "Worst Reward"))
+ {
+ try { _testingWorstReward = js["Testing"]["Worst Reward"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Worst Reward']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Worst Reward");
+ }
+
+ if (isDefined(js, "Testing", "Best Episode Id"))
+ {
+ try { _testingBestEpisodeId = js["Testing"]["Best Episode Id"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Episode Id']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Best Episode Id");
+ }
+
+ if (isDefined(js, "Testing", "Candidate Count"))
+ {
+ try { _testingCandidateCount = js["Testing"]["Candidate Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Candidate Count']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Candidate Count");
+ }
+
+ if (isDefined(js, "Testing", "Average Reward"))
+ {
+ try { _testingAverageReward = js["Testing"]["Average Reward"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Average Reward']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Average Reward");
+ }
+
+ if (isDefined(js, "Testing", "Best Average Reward"))
+ {
+ try { _testingBestAverageReward = js["Testing"]["Best Average Reward"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Best Average Reward']\n%s", e.what()); } 
+   eraseValue(js, "Testing", "Best Average Reward");
+ }
+
+ if (isDefined(js, "Testing", "Best Policies"))
+ {
+ _testingBestPolicies = js["Testing"]["Best Policies"].get<knlohmann::json>();
+
+   eraseValue(js, "Testing", "Best Policies");
  }
 
  if (isDefined(js, "Experience Replay", "Off Policy", "Count"))
@@ -1620,7 +1713,15 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Training"]["Best Episode Id"] = _trainingBestEpisodeId;
    js["Training"]["Current Policy"] = _trainingCurrentPolicy;
    js["Training"]["Best Policy"] = _trainingBestPolicy;
+   js["Testing"]["Average Reward History"] = _testingAverageRewardHistory;
    js["Testing"]["Reward"] = _testingReward;
+   js["Testing"]["Best Reward"] = _testingBestReward;
+   js["Testing"]["Worst Reward"] = _testingWorstReward;
+   js["Testing"]["Best Episode Id"] = _testingBestEpisodeId;
+   js["Testing"]["Candidate Count"] = _testingCandidateCount;
+   js["Testing"]["Average Reward"] = _testingAverageReward;
+   js["Testing"]["Best Average Reward"] = _testingBestAverageReward;
+   js["Testing"]["Best Policies"] = _testingBestPolicies;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;
@@ -1643,7 +1744,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Workers\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Workers\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

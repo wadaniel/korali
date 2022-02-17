@@ -73,12 +73,19 @@ void __className__::initialize()
     _currentSampleID = 0;
     _experienceCount = 0;
 
-    // Initializing training and episode statistics
+    // Initializing training statistics
     _trainingBestReward = -korali::Inf;
     _trainingBestEpisodeId = 0;
     _trainingAverageReward = 0.0f;
-
-    // Initializing REFER information
+    
+    // Initializing testing statistics
+	_testingAverageReward = -korali::Inf;
+    _testingBestReward = -korali::Inf;
+    _testingWorstReward = -korali::Inf;
+    _testingBestAverageReward = -korali::Inf;
+    _testingBestEpisodeId = 0;
+    
+	// Initializing REFER information
 
     // If cutoff scale is not defined, use a heuristic value
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
@@ -357,6 +364,25 @@ void __className__::attendWorker(size_t workerId)
         {
           _trainingBestReward = cumulativeReward;
           _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
+        }
+      }
+
+      // If the policy has exceeded the threshold during training, we gather its statistics
+      if (_workers[workerId]["Tested Policy"] == true)
+      {
+        _testingCandidateCount++;
+        _testingBestReward = _workers[workerId]["Best Testing Reward"].get<float>();
+        _testingWorstReward = _workers[workerId]["Worst Testing Reward"].get<float>();
+        _testingAverageReward = _workers[workerId]["Average Testing Reward"].get<float>();
+        _testingAverageRewardHistory.push_back(_testingAverageReward);
+
+        // If the average testing reward is better than the previous best, replace it
+        // and store hyperparameters as best so far.
+        if (_testingAverageReward > _testingBestAverageReward)
+        {
+          _testingBestAverageReward = _testingAverageReward;
+          _testingBestEpisodeId = _currentEpisode;
+          _testingBestPolicies["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
       }
 
@@ -1017,15 +1043,19 @@ void __className__::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward (Episode):       %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
+    if (_testingBestEpisodeId > 0)
+    {
+      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
+      _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
+    }
+
     printInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
       for (size_t i = 0; i < _problem->_environmentCount; ++i)
         _k->_logger->logInfo("Normal", " + Reward Rescaling (Env %zu):        N(%.3e, %.3e)         \n", i, 0.0, _rewardRescalingSigma[i]);
-
-    if (_stateRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
 
     _k->_logger->logInfo("Detailed", "Profiling Information:                    [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:         [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);

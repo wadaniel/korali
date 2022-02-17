@@ -189,6 +189,49 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
+ 
+  // Finalizing Environment
+  finalizeEnvironment();
+
+  // Setting tested policy flag to false, unless we do testing
+  agent["Tested Policy"] = false;
+
+  // Get current "true" episode count
+  size_t episodeCount = agent["Sample Id"];
+
+  // If the training reward of all the agents exceeds the threshold or meets the periodic conditions, then also run testing on it
+  bool runTest = (_testingFrequency > 0) && (episodeCount % _testingFrequency == 0);
+
+  if (runTest)
+  {
+    float averageTestingReward = 0.0;
+    float bestTestingReward = -Inf;
+    float worstTestingReward = +Inf;
+
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    {
+      runTestingEpisode(agent);
+
+      // Getting current testing reward
+      auto currentTestingReward = agent["Testing Reward"].get<float>();
+
+      // Adding current testing reward to the average and keeping statistics
+      averageTestingReward += currentTestingReward;
+      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+    }
+
+    // Normalizing average
+    averageTestingReward /= (float)_policyTestingEpisodes;
+
+    // Storing testing information
+    agent["Average Testing Reward"] = averageTestingReward;
+    agent["Best Testing Reward"] = bestTestingReward;
+    agent["Worst Testing Reward"] = worstTestingReward;
+
+    // Indicate that the agent has been tested
+    agent["Tested Policy"] = true;
+  }
 
   // Sending last experience last (after testing)
   // This is important to prevent the engine for block-waiting for the return of the sample
@@ -198,9 +241,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episodes;
   KORALI_SEND_MSG_TO_ENGINE(message);
-
-  // Finalizing Environment
-  finalizeEnvironment();
 
   // Adding profiling information to agent
   agent["Computation Time"] = _agentComputationTime;
@@ -464,6 +504,24 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Actions Between Policy Updates'] required by reinforcementLearning.\n"); 
 
+ if (isDefined(js, "Testing Frequency"))
+ {
+ try { _testingFrequency = js["Testing Frequency"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Testing Frequency']\n%s", e.what()); } 
+   eraseValue(js, "Testing Frequency");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing Frequency'] required by reinforcementLearning.\n"); 
+
+ if (isDefined(js, "Policy Testing Episodes"))
+ {
+ try { _policyTestingEpisodes = js["Policy Testing Episodes"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Policy Testing Episodes']\n%s", e.what()); } 
+   eraseValue(js, "Policy Testing Episodes");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Policy Testing Episodes'] required by reinforcementLearning.\n"); 
+
  if (isDefined(js, "Custom Settings"))
  {
  _customSettings = js["Custom Settings"].get<knlohmann::json>();
@@ -531,6 +589,8 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
    js["Environment Count"] = _environmentCount;
    js["Environment Function"] = _environmentFunction;
    js["Actions Between Policy Updates"] = _actionsBetweenPolicyUpdates;
+   js["Testing Frequency"] = _testingFrequency;
+   js["Policy Testing Episodes"] = _policyTestingEpisodes;
    js["Custom Settings"] = _customSettings;
    js["Action Vector Size"] = _actionVectorSize;
    js["State Vector Size"] = _stateVectorSize;
@@ -547,7 +607,7 @@ void ReinforcementLearning::getConfiguration(knlohmann::json& js)
 void ReinforcementLearning::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Agents Per Environment\": 1, \"Environment Count\": 1, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
+ std::string defaultString = "{\"Agents Per Environment\": 1, \"Environment Count\": 1, \"Testing Frequency\": 0, \"Policy Testing Episodes\": 10, \"Actions Between Policy Updates\": 0, \"Custom Settings\": {}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Problem::applyModuleDefaults(js);

@@ -24,8 +24,6 @@ samplers_tester = executable('samplers_tester',
 test('modules.solver.samplers', samplers_tester,
   protocol: 'gtest',
   suite: 'unit',
-  link_args: [ python3_libs ],
-  cpp_args: [ python3_cflags ]
 )
 
 executor_tester = executable('executor_tester',

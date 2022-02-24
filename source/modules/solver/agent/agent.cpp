@@ -368,6 +368,7 @@ void Agent::attendWorker(size_t workerId)
         {
           _trainingBestReward = cumulativeReward;
           _trainingBestEpisodeId = _workers[workerId]["Sample Id"].get<size_t>();
+          _trainingBestPolicy["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
       }
 

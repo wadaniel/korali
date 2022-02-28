@@ -15,6 +15,7 @@ parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
     default=50,
+    type=int,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -25,6 +26,7 @@ parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
     default=1e-3,
+    type=float,
     required=False)
 args = parser.parse_args()
 
@@ -65,7 +67,7 @@ e["Solver"]["Type"] = "Agent / Discrete / dVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Learning Rate"] = float(args.learningRate)
+e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 ### Defining Experience Replay configuration
@@ -104,7 +106,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
+e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
 
 ### Setting file output configuration
 

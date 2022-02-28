@@ -15,6 +15,7 @@ parser.add_argument(
     '--maxGenerations',
     help='Maximum Number of generations to run',
     default=50,
+    type=int,
     required=False)    
 parser.add_argument(
     '--optimizer',
@@ -24,13 +25,13 @@ parser.add_argument(
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=3e-3,
+    default=-3e-3,
+    type=float,
     required=False)
 args = parser.parse_args()
 
 print("Running Cartpole example with arguments:")
 print(args)
-
 ####### Defining Korali Problem
 
 import korali
@@ -71,7 +72,7 @@ e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = float(args.learningRate)
+e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
@@ -98,7 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
+e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
 
 ### Setting file output configuration
 

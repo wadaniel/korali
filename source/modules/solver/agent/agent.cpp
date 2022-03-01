@@ -387,7 +387,7 @@ void Agent::attendWorker(size_t workerId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = _currentEpisode;
-          _testingBestPolicies["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
+          _testingBestPolicy["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
       }
 
@@ -1254,11 +1254,11 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Testing", "Best Average Reward");
  }
 
- if (isDefined(js, "Testing", "Best Policies"))
+ if (isDefined(js, "Testing", "Best Policy"))
  {
- _testingBestPolicies = js["Testing"]["Best Policies"].get<knlohmann::json>();
+ _testingBestPolicy = js["Testing"]["Best Policy"].get<knlohmann::json>();
 
-   eraseValue(js, "Testing", "Best Policies");
+   eraseValue(js, "Testing", "Best Policy");
  }
 
  if (isDefined(js, "Experience Replay", "Off Policy", "Count"))
@@ -1722,7 +1722,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Candidate Count"] = _testingCandidateCount;
    js["Testing"]["Average Reward"] = _testingAverageReward;
    js["Testing"]["Best Average Reward"] = _testingBestAverageReward;
-   js["Testing"]["Best Policies"] = _testingBestPolicies;
+   js["Testing"]["Best Policy"] = _testingBestPolicy;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;
@@ -1745,7 +1745,7 @@ void Agent::getConfiguration(knlohmann::json& js)
 void Agent::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Workers\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policies\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Episodes Per Generation\": 1, \"Concurrent Workers\": 1, \"Discount Factor\": 0.995, \"Time Sequence Length\": 1, \"Importance Weight Truncation Level\": 1.0, \"State Rescaling\": {\"Enabled\": false}, \"Reward\": {\"Rescaling\": {\"Enabled\": false}, \"Outbound Penalization\": {\"Enabled\": false, \"Factor\": 0.5}}, \"Mini Batch\": {\"Size\": 256}, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Training\": {\"Average Depth\": 100, \"Current Policy\": {}, \"Best Policy\": {}}, \"Testing\": {\"Sample Ids\": [], \"Current Policy\": {}, \"Best Policy\": {}}, \"Termination Criteria\": {\"Max Episodes\": 0, \"Max Experiences\": 0, \"Max Policy Updates\": 0}, \"Experience Replay\": {\"Serialize\": true, \"Off Policy\": {\"Cutoff Scale\": 4.0, \"Target\": 0.1, \"REFER Beta\": 0.3, \"Annealing Rate\": 0.0}}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);

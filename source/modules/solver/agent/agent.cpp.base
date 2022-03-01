@@ -383,7 +383,7 @@ void __className__::attendWorker(size_t workerId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = _currentEpisode;
-          _testingBestPolicies["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
+          _testingBestPolicy["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
       }
 

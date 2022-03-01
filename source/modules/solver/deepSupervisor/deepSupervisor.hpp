@@ -127,34 +127,35 @@ class DeepSupervisor : public Solver
   
 
   /**
-   * @brief Korali Problem for optimizing NN weights and biases
+   * @brief Korali Problem for optimizing NN weights and biases.
    */
   problem::SupervisedLearning *_problem;
 
   /**
-   * @brief Korali Experiment for optimizing the NN's weights and biases
+   * @brief Korali Experiment for optimizing the NN's weights and biases.
    */
   korali::Experiment _optExperiment;
 
   /**
-   * @brief Gradient-based solver pointer to access directly (for performance)
+   * @brief Gradient-based solver pointer to access directly (for performance).
    */
   korali::fGradientBasedOptimizer *_optimizer;
 
   /**
-   * @brief A neural network to be trained based on inputs and solutions
+   * @brief A neural network to be trained based on inputs and solutions.
    */
   NeuralNetwork *_neuralNetwork;
 
   /**
    * @brief Evaluates a neural network on a  batch of sequential vectors.
    * @param input Batch of seuential input data.
+   * @return Evaluation of batch of sequential data.
    */
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
 
   /**
    * @brief Returns the current hyperparameter of the neural network.
-   * @return The hyperparameter
+   * @return The hyperparameter.
    */
   std::vector<float> getHyperparameters();
 

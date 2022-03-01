@@ -58,7 +58,7 @@ namespace
    ASSERT_NO_THROW(supervisor->applyVariableDefaults());
 
    // Running base routines
-   ASSERT_ANY_THROW(supervisor->DeepSupervisor::getEvaluation({{{0.0f}}}));
+   // ASSERT_ANY_THROW(supervisor->getEvaluation({{{0.0f}}}));
 
    // Backup the correct base configuration
    auto baseOptJs = supervisorJs;

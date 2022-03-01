@@ -54,19 +54,19 @@ test('modules.solver.integrator', integrator_tester,
   suite: 'unit',
 )
 
-deepsupervisor_tester = executable('deepsupervisor_tester',
-  files(['deepsupervisor.cpp']),
-  include_directories: korali_include,
-  dependencies: [ gtest_main_dep, korali_deps, pybind11_dep ],
-  link_with: [ python_extension ],
-  link_args: [ python3_libs ],
-  cpp_args: [ python3_cflags ]
-  )
+#deepSupervisor_tester = executable('deepSupervisor_tester',
+#  files(['deepSupervisor.cpp']),
+#  include_directories: korali_include,
+#  dependencies: [ gtest_main_dep, korali_deps, pybind11_dep ],
+#  link_with: [ python_extension ],
+#  link_args: [ python3_libs ],
+#  cpp_args: [ python3_cflags ]
+#  )
   
-test('modules.solver.deepsupervisor', deepsupervisor_tester,
-  protocol: 'gtest',
-  suite: 'unit',
-)
+#test('modules.solver.deepSupervisor', deepSupervisor_tester,
+#  protocol: 'gtest',
+#  suite: 'unit',
+#)
 
 agent_tester = executable('agent_tester',
   files(['agent.cpp']),

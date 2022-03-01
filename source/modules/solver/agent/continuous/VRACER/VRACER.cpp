@@ -61,7 +61,7 @@ void VRACER::initializeAgent()
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
-  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
+  _criticPolicyLearner = dynamic_cast<solver::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);

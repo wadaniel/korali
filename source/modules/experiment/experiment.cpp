@@ -6,7 +6,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/agent/agent.hpp"
-#include "modules/solver/learner/learner.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
 #include <chrono>
@@ -223,9 +223,9 @@ std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std:
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();
 
-  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
-  if (learner != NULL)
-    return learner->getEvaluation(inputBatch);
+  auto supervisor = dynamic_cast<solver::DeepSupervisor *>(_k->_solver);
+  if (supervisor != NULL)
+    return supervisor->getEvaluation(inputBatch);
   else
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }

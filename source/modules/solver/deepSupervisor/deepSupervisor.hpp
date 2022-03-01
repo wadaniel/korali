@@ -154,6 +154,7 @@ class DeepSupervisor : public Solver
 
   /**
    * @brief Returns the current hyperparameter of the neural network.
+   * @return The hyperparameter
    */
   std::vector<float> getHyperparameters();
 

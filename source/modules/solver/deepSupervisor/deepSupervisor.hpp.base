@@ -43,6 +43,7 @@ class __className__ : public __parentClassName__
 
   /**
    * @brief Returns the current hyperparameter of the neural network.
+   * @return The hyperparameter
    */
   std::vector<float> getHyperparameters();
 

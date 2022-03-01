@@ -30,7 +30,7 @@ parser.add_argument(
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=0.001,
+    default=0.005,
     required=False)
 parser.add_argument(
     '--trainingBatchSize',

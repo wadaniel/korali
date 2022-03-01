@@ -146,17 +146,21 @@ class DeepSupervisor : public Solver
    */
   NeuralNetwork *_neuralNetwork;
 
-  // Only needed for DDPG
-  //
-  //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
-  //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
-  //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
-  //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-  //
-  //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
-
+  /**
+   * @brief Evaluates a neural network on a  batch of sequential vectors.
+   * @param input Batch of seuential input data.
+   */
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
+
+  /**
+   * @brief Returns the current hyperparameter of the neural network.
+   */
   std::vector<float> getHyperparameters();
+
+  /**
+   * @brief Sets the hyperparameter of the neural network.
+   * @param hyperparameters The parameter of the neural network.
+   */
   void setHyperparameters(const std::vector<float> &hyperparameters);
 
   void initialize() override;

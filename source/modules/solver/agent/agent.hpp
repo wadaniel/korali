@@ -15,7 +15,7 @@
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
 #include <algorithm> // std::shuffle
 #include <random>

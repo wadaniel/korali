@@ -79,26 +79,6 @@ test('supervised.learning.sineWave.rnn.adagrad', e,
     )
 
 e = find_program('run-rnn.py', required: true)
-test('supervised.learning.sineWave.rnn.adam', e,
-      args: [ '--optimizer', 'Adam', '--learningRate', '0.001', '--maxGenerations', '250' ],
-      timeout : 3600,
-      suite: 'regression',
-      workdir: meson.current_source_dir(),
-      depends: python_extension,
-      env: nomalloc
-    )
-
-e = find_program('run-rnn.py', required: true)
-test('supervised.learning.sineWave.rnn.madgrad', e,
-      args: [ '--optimizer', 'MADGRAD', '--learningRate', '0.001', '--maxGenerations', '250'],
-      timeout : 3600,
-      suite: 'regression',
-      workdir: meson.current_source_dir(),
-      depends: python_extension,
-      env: nomalloc
-    )
-
-e = find_program('run-rnn.py', required: true)
 test('supervised.learning.sineWave.rnn.rmsprop', e,
       args: [ '--optimizer', 'RMSProp', '--learningRate', '0.001', '--maxGenerations', '250'],
       timeout : 3600,

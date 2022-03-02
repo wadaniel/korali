@@ -189,7 +189,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
- 
+
   // Finalizing Environment
   finalizeEnvironment();
 

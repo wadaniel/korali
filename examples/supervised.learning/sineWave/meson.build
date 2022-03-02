@@ -90,7 +90,7 @@ test('supervised.learning.sineWave.rnn.rmsprop', e,
 
 e = find_program('run-rnn.py', required: true)
 test('supervised.learning.sineWave.rnn.lstm', e,
-      args: [ '--optimizer', 'Adam', '--learningRate', '0.001', '--rnnType', 'LSTM', '--maxGenerations', '250' ],
+      args: [ '--optimizer', 'Adam', '--learningRate', '0.005', '--rnnType', 'LSTM', '--maxGenerations', '100' ],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

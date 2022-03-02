@@ -1,14 +1,12 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
 #include <omp.h>
 
 namespace korali
 {
 namespace solver
-{
-namespace learner
 {
 ;
 
@@ -192,18 +190,6 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   return _neuralNetwork->getOutputValues(N);
 }
 
-// Only needed for DDPG
-// std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-//{
-//  const size_t N = input.size();
-//
-//  // Running the input values through the neural network
-//  _neuralNetwork->backward(outputGradients);
-//
-//  // Returning the input data gradients
-//  return _neuralNetwork->getInputGradients(N);
-//}
-
 void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
@@ -371,8 +357,8 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
  } 
- Learner::setConfiguration(js);
- _type = "learner/deepSupervisor";
+ Solver::setConfiguration(js);
+ _type = "deepSupervisor";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
  if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: deepSupervisor: \n%s\n", js.dump(2).c_str());
 } 
@@ -399,7 +385,7 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Normalization Variances"] = _normalizationVariances;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
- Learner::getConfiguration(js);
+ Solver::getConfiguration(js);
 } 
 
 void DeepSupervisor::applyModuleDefaults(knlohmann::json& js) 
@@ -408,7 +394,7 @@ void DeepSupervisor::applyModuleDefaults(knlohmann::json& js)
  std::string defaultString = "{\"Steps Per Generation\": 1, \"L2 Regularization\": {\"Enabled\": false, \"Importance\": 0.0001}, \"Neural Network\": {\"Output Activation\": \"Identity\", \"Output Layer\": {}}, \"Termination Criteria\": {\"Target Loss\": -1.0}, \"Hyperparameters\": [], \"Output Weights Scaling\": 1.0}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
- Learner::applyModuleDefaults(js);
+ Solver::applyModuleDefaults(js);
 } 
 
 void DeepSupervisor::applyVariableDefaults() 
@@ -419,7 +405,7 @@ void DeepSupervisor::applyVariableDefaults()
  if (isDefined(_k->_js.getJson(), "Variables"))
   for (size_t i = 0; i < _k->_js["Variables"].size(); i++) 
    mergeJson(_k->_js["Variables"][i], defaultJs); 
- Learner::applyVariableDefaults();
+ Solver::applyVariableDefaults();
 } 
 
 bool DeepSupervisor::checkTermination()
@@ -432,13 +418,12 @@ bool DeepSupervisor::checkTermination()
   hasFinished = true;
  }
 
- hasFinished = hasFinished || Learner::checkTermination();
+ hasFinished = hasFinished || Solver::checkTermination();
  return hasFinished;
 }
 
 ;
 
-} //learner
 } //solver
 } //korali
 ;

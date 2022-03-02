@@ -34,7 +34,7 @@ e["Problem"]["Solution"]["Size"] = 1
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Learner/DeepSupervisor"
+e["Solver"]["Type"] = "DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 200
 e["Solver"]["Learning Rate"] = 0.005

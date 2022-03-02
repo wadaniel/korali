@@ -239,7 +239,7 @@ namespace
   problemJs["Solution"]["Data"] = std::vector<std::vector<float>>({{0.0}});
   problemJs["Solution"]["Size"] = 1;
 
-  e["Solver"]["Type"] = "Learner/DeepSupervisor";
+  e["Solver"]["Type"] = "DeepSupervisor";
 
   ASSERT_NO_THROW(pObj = dynamic_cast<SupervisedLearning *>(Module::getModule(problemJs, &e)));
   e._problem = pObj;

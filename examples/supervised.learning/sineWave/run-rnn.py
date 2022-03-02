@@ -30,7 +30,7 @@ parser.add_argument(
 parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
-    default=0.001,
+    default=0.005,
     required=False)
 parser.add_argument(
     '--trainingBatchSize',
@@ -103,7 +103,7 @@ e["Problem"]["Solution"]["Size"] = 1
  
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Learner/DeepSupervisor"
+e["Solver"]["Type"] = "DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 20
 e["Solver"]["Learning Rate"] = float(args.learningRate)
@@ -113,9 +113,15 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/" + args.rnnType
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Depth"] = 1
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/" + args.rnnType
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 ### Configuring output 
 

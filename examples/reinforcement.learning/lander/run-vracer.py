@@ -53,8 +53,15 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 e["Solver"]["Time Sequence Length"] = 4
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16 
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
+
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 16 
+
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 16
+
 
 ### Defining Termination Criteria
 
@@ -63,7 +70,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
  
 ### Running Training Experiment
 

@@ -57,7 +57,7 @@ e["Problem"]["Solution"]["Size"] = len(trainingImages[0])
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
-e["Solver"]["Type"] = "Learner/DeepSupervisor"
+e["Solver"]["Type"] = "DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 1
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"

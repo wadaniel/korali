@@ -19,7 +19,6 @@ parser.add_argument(
     default=1e6,
     required=False)
 
-
 print("Running Mountaincart example with arguments:")
 args = parser.parse_args()
 print(args)

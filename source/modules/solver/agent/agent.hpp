@@ -15,7 +15,7 @@
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
@@ -284,9 +284,9 @@ class Agent : public Solver
   */
    float _testingBestAverageReward;
   /**
-  * @brief [Internal Use] Stores the best testing policies configuration found so far.
+  * @brief [Internal Use] Stores the best testing policy configuration found so far.
   */
-   knlohmann::json _testingBestPolicies;
+   knlohmann::json _testingBestPolicy;
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */

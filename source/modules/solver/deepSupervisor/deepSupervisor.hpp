@@ -1,12 +1,12 @@
-/** \namespace learner
-* @brief Namespace declaration for modules of type: learner.
+/** \namespace solver
+* @brief Namespace declaration for modules of type: solver.
 */
 
 /** \file
 * @brief Header file for module: DeepSupervisor.
 */
 
-/** \dir solver/learner/deepSupervisor
+/** \dir solver/deepSupervisor
 * @brief Contains code, documentation, and scripts for module: DeepSupervisor.
 */
 
@@ -15,26 +15,23 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
-#include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/solver/learner/learner.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdaBelief.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdagrad.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdam.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fMadGrad.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fRMSProp.hpp"
 
 namespace korali
 {
 namespace solver
-{
-namespace learner
 {
 ;
 
 /**
 * @brief Class declaration for module: DeepSupervisor.
 */
-class DeepSupervisor : public Learner
+class DeepSupervisor : public Solver
 {
   public: 
   /**
@@ -130,44 +127,49 @@ class DeepSupervisor : public Learner
   
 
   /**
-   * @brief Korali Problem for optimizing NN weights and biases
+   * @brief Korali Problem for optimizing NN weights and biases.
    */
   problem::SupervisedLearning *_problem;
 
   /**
-   * @brief Korali Experiment for optimizing the NN's weights and biases
+   * @brief Korali Experiment for optimizing the NN's weights and biases.
    */
   korali::Experiment _optExperiment;
 
   /**
-   * @brief Gradient-based solver pointer to access directly (for performance)
+   * @brief Gradient-based solver pointer to access directly (for performance).
    */
   korali::fGradientBasedOptimizer *_optimizer;
 
   /**
-   * @brief A neural network to be trained based on inputs and solutions
+   * @brief A neural network to be trained based on inputs and solutions.
    */
   NeuralNetwork *_neuralNetwork;
 
-  // Only needed for DDPG
-  //
-  //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
-  //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
-  //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
-  //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-  //
-  //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
+  /**
+   * @brief Evaluates a neural network on a  batch of sequential vectors.
+   * @param input Batch of seuential input data.
+   * @return Evaluation of batch of sequential data.
+   */
+  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
 
-  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
-  std::vector<float> getHyperparameters() override;
-  void setHyperparameters(const std::vector<float> &hyperparameters) override;
+  /**
+   * @brief Returns the current hyperparameter of the neural network.
+   * @return The hyperparameter.
+   */
+  std::vector<float> getHyperparameters();
+
+  /**
+   * @brief Sets the hyperparameter of the neural network.
+   * @param hyperparameters The parameter of the neural network.
+   */
+  void setHyperparameters(const std::vector<float> &hyperparameters);
 
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;
 };
 
-} //learner
 } //solver
 } //korali
 ;

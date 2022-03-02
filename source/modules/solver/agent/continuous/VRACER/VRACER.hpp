@@ -67,7 +67,7 @@ class VRACER : public Continuous
   /**
    * @brief Pointer to training the actor network
    */
-  learner::DeepSupervisor *_criticPolicyLearner;
+  DeepSupervisor *_criticPolicyLearner;
 
   /**
    * @brief Korali experiment for obtaining the agent's action

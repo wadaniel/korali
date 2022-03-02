@@ -67,7 +67,7 @@ workflows:
           name: ubuntu_openmpi_gcc
           image: ubuntu_openmpi_onednn
           buildtype: release
-          runCoverage: 'true'
+          runCoverage: 'fale'
           useMPI: 'true'
           useMPI4Py: 'true'
       - build:

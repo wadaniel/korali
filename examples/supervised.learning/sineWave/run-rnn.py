@@ -114,14 +114,14 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/" + args.rnnType
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 16
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 16
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 ### Configuring output 
 

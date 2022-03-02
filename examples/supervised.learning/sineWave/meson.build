@@ -60,17 +60,7 @@ test('supervised.learning.sineWave.fnn.adam', e,
 
 e = find_program('run-rnn.py', required: true)
 test('supervised.learning.sineWave.rnn.adabelief', e,
-      args: [ '--optimizer', 'AdaBelief', '--learningRate', '0.001', '--maxGenerations', '250' ],
-      timeout : 3600,
-      suite: 'regression',
-      workdir: meson.current_source_dir(),
-      depends: python_extension,
-      env: nomalloc
-    )
-
-e = find_program('run-rnn.py', required: true)
-test('supervised.learning.sineWave.rnn.adagrad', e,
-      args: [ '--optimizer', 'Adagrad', '--learningRate', '0.01', '--maxGenerations', '250' ],
+      args: [ '--optimizer', 'AdaBelief', '--learningRate', '0.001', '--maxGenerations', '200' ],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),
@@ -87,14 +77,3 @@ test('supervised.learning.sineWave.rnn.rmsprop', e,
       depends: python_extension,
       env: nomalloc
     )
-
-e = find_program('run-rnn.py', required: true)
-test('supervised.learning.sineWave.rnn.lstm', e,
-      args: [ '--optimizer', 'Adam', '--learningRate', '0.005', '--rnnType', 'LSTM', '--maxGenerations', '100' ],
-      timeout : 3600,
-      suite: 'regression',
-      workdir: meson.current_source_dir(),
-      depends: python_extension,
-      env: nomalloc
-    )
-     

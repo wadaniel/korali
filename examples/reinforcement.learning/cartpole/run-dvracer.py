@@ -92,14 +92,17 @@ e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
 ### Configuring the neural network and its hidden layers
 
-e["Solver"]['Time Sequence Length'] = 4                                         
-
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/LSTM"
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1                  
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

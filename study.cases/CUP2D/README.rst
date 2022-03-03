@@ -25,7 +25,7 @@ On Panda/Falcon:
 
 .. code-block:: bash
 
-  	module load gnu mpich python hdf5
+  	module load gsl gnu mpich python hdf5
   	export GSL_ROOT=/usr
 
 Setup

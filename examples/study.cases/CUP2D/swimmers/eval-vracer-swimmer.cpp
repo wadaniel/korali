@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
   e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
 
-  // random seeds for environment
-  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
+  // Use random seed to communicate the task that we are to evaluate
+  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = atoi(argv[argc-7]);
 
   k.run(e);
 }

@@ -31,7 +31,10 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  if( s["Mode"] == "Training" )
+    sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  else
+    sprintf(resDir, "%s/sample%03lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( rank == 0 )
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
@@ -67,13 +70,21 @@ void runEnvironment(korali::Sample &s)
   auto task = atoi(_argv[_argc-5]);
 
   // Get get task/obstacle we want
-  if( task == -2 )
+  if(task == -2 )
   {
-    // Sample task
-    std::uniform_int_distribution<> disT(0, 1);
-    task = disT(_randomGenerator);
-    // For multitask learning, Korali has to know the task
-    s["Environment Id"] = task;
+    if( s["Mode"] == "Training" )
+    {
+      // Sample task
+      std::uniform_int_distribution<> disT(0, 1);
+      task = disT(_randomGenerator);
+      // For multitask learning, Korali has to know the task
+      s["Environment Id"] = task;
+    }
+    else
+    {
+      task = std::floor( sampleId / 10 );
+      s["Environment Id"] = task;
+    }
   }
 
   /* Add Obstacle */
@@ -83,14 +94,21 @@ void runEnvironment(korali::Sample &s)
       argumentString = "CUP-RL " + OPTIONS;
       break;
     }
-    case 0 :
+    case 0 : // DCYLINDER
     {
       // Only rank 0 samples the radius
       double radius;
-      if( rank == 0 )
+      if( s["Mode"] == "Training" )
       {
-        std::uniform_real_distribution<double> radiusDist(0.03,0.07);
-        radius = radiusDist(_randomGenerator);
+        if( rank == 0 )
+        {
+          std::uniform_real_distribution<double> radiusDist(0.03,0.07);
+          radius = radiusDist(_randomGenerator);
+        }
+      }
+      else
+      {
+        radius = 0.03 + (sampleId%10)*(0.07-0.03)/9.0;
       }
 
       // Broadcast radius to the other ranks
@@ -100,14 +118,21 @@ void runEnvironment(korali::Sample &s)
       argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTShalfDisk + std::to_string(radius);
       break;
     }
-    case 1 :
+    case 1 : // HYDROFOIL
     {
       // Only rank 0 samples the frequency
       double frequency;
-      if( rank == 0 )
+      if( s["Mode"] == "Training" )
       {
-        std::uniform_real_distribution<double> frequencyDist(0.2,0.5);
-        frequency = frequencyDist(_randomGenerator);
+        if( rank == 0 )
+        {
+          std::uniform_real_distribution<double> frequencyDist(0.2,0.5);
+          frequency = frequencyDist(_randomGenerator);
+        }
+      }
+      else
+      {
+        frequency = 0.2 + (sampleId%10)*(0.5-0.2)/9.0;
       }
 
       // Broadcast frequency to the other ranks
@@ -117,14 +142,21 @@ void runEnvironment(korali::Sample &s)
       argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSnaca + std::to_string(frequency);
       break;
     }
-    case 2 :
+    case 2 : // STEFANFISH
     {
       // Only rank 0 samples the length
       double length;
-      if( rank == 0 )
+      if( s["Mode"] == "Training" )
       {
-        std::uniform_real_distribution<double> lengthDist(0.15,0.25);
-        length = lengthDist(_randomGenerator);
+        if( rank == 0 )
+        {
+          std::uniform_real_distribution<double> lengthDist(0.15,0.25);
+          length = lengthDist(_randomGenerator);
+        }
+      }
+      else
+      {
+        length = 0.15 + (sampleId%10)*(0.25-0.15)/9.0;
       }
       
       // Broadcast length to the other ranks

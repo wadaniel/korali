@@ -15,7 +15,7 @@ NAGENTS=1
 NWORKER=1
 
 # number of nodes per worker
-NRANKS=16
+NRANKS=2
 
 # number of cores per worker
 NUMCORES=12
@@ -28,9 +28,7 @@ RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 cp eval-vracer-swimmer ${RUNPATH}
 cd ${RUNPATH}
 
-source settings.sh
-
-cat <<EOF >daint_sbatch
+cat <<EOF >daint_sbatch_$EVAL
 #!/bin/bash -l
 #SBATCH --account=s929
 #SBATCH --constraint=gpu
@@ -43,11 +41,11 @@ cat <<EOF >daint_sbatch
 # #SBATCH --partition=debug
 #SBATCH --nodes=$((NNODES+1))
 
-srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./eval-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./eval-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
+srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./eval-vracer-swimmer -eval $EVAL -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./eval-vracer-swimmer -eval $EVAL -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
 EOF
 
 echo "Starting task ${TASK} with ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
 echo "----------------------------"
 
-chmod 755 daint_sbatch
-sbatch daint_sbatch
+chmod 755 daint_sbatch_$EVAL
+sbatch daint_sbatch_$EVAL

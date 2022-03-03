@@ -346,6 +346,36 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Episode Id"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Candidate Count"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Worst Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Average Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Average Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["Experience Replay"]["Off Policy"]["Count"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 

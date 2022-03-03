@@ -2194,6 +2194,17 @@ namespace
   experimentJs = baseExpJs;
   e["Variables"][0]["Upper Bound"] = 1.0;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing RL Testing episodes
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Testing Frequency"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Testing Frequency");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
  }
 
  TEST(Problem, ReinforcementLearningContinuous)

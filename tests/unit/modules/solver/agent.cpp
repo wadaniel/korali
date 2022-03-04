@@ -368,6 +368,11 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Testing"]["Average Reward"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Average Reward History"] = "Not a Vector";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;

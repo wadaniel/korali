@@ -1,0 +1,62 @@
+#pragma once
+
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdaBelief.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdagrad.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fAdam.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fMadGrad.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fRMSProp.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  /**
+   * @brief Korali Problem for optimizing NN weights and biases.
+   */
+  problem::SupervisedLearning *_problem;
+
+  /**
+   * @brief Korali Experiment for optimizing the NN's weights and biases.
+   */
+  korali::Experiment _optExperiment;
+
+  /**
+   * @brief Gradient-based solver pointer to access directly (for performance).
+   */
+  korali::fGradientBasedOptimizer *_optimizer;
+
+  /**
+   * @brief A neural network to be trained based on inputs and solutions.
+   */
+  NeuralNetwork *_neuralNetwork;
+
+  /**
+   * @brief Evaluates a neural network on a  batch of sequential vectors.
+   * @param input Batch of seuential input data.
+   * @return Evaluation of batch of sequential data.
+   */
+  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
+
+  /**
+   * @brief Returns the current hyperparameter of the neural network.
+   * @return The hyperparameter.
+   */
+  std::vector<float> getHyperparameters();
+
+  /**
+   * @brief Sets the hyperparameter of the neural network.
+   * @param hyperparameters The parameter of the neural network.
+   */
+  void setHyperparameters(const std::vector<float> &hyperparameters);
+
+  void initialize() override;
+  void runGeneration() override;
+  void printGenerationAfter() override;
+};
+
+__endNamespace__;

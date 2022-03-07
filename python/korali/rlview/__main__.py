@@ -113,7 +113,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
 
   # Plotting common plot
   ax.plot(cumulativeObsArr, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1, label=dirs[resId]) 
+  ax.plot(cumulativeObsArr, meanHistory, '-', color=cmap(colCurrIndex), linewidth=3.0, zorder=1, label=dirs[resId]) 
 
   # Plotting confidence intervals
   if showCI > 0.:
@@ -257,7 +257,8 @@ if __name__ == '__main__':
  ### Creating plots
 
  plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
- plt.legend()
+ if (len(args.dir)>1):
+     plt.legend()
  plt.draw()
  
  ### Printing live results if update frequency > 0

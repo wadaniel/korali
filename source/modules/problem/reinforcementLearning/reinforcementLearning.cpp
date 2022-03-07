@@ -108,7 +108,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Storage to keep track of cumulative reward
   std::vector<float> trainingRewards(_agentsPerEnvironment, 0.0);
-  
+
   // Initializing error flag
   agent["Error"] = 0;
 
@@ -192,7 +192,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
- 
 
   // Finalizing Environment
   finalizeEnvironment();
@@ -243,7 +242,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   knlohmann::json message;
   message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
-  message["Episodes"] = episodes; 
+  message["Episodes"] = episodes;
   message["Error"] = agent["Error"];
 
   KORALI_SEND_MSG_TO_ENGINE(message);
@@ -406,9 +405,10 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
     for (size_t j = 0; j < _stateVectorSize; j++)
     {
-      if (std::isfinite(agent["State"][i][j].get<float>()) == false) {
-          _k->_logger->logWarning("Normal", "Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
-          agent["Error"] = 1;
+      if (std::isfinite(agent["State"][i][j].get<float>()) == false)
+      {
+        _k->_logger->logWarning("Normal", "Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
+        agent["Error"] = 1;
       }
     }
   }
@@ -441,9 +441,10 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
-    if (std::isfinite(agent["Reward"][i].get<float>()) == false) {
-        _k->_logger->logWarning("Normal", "Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
-        agent["Error"] = 1;
+    if (std::isfinite(agent["Reward"][i].get<float>()) == false)
+    {
+      _k->_logger->logWarning("Normal", "Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
+      agent["Error"] = 1;
     }
   }
 }

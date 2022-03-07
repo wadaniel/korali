@@ -350,6 +350,7 @@ void Agent::attendWorker(size_t workerId)
     if (message["Action"] == "Send Episodes")
     {
       // Process every episode received and its experiences (add them to replay memory)
+      if (message["Error"].get<size_t>() == 0)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
         processEpisode(message["Episodes"][i]);
 
@@ -417,7 +418,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
   // Getting this episode's Id from the global counter
   size_t episodeId = _currentEpisode;
-
+ 
   // Getting experience count from the episode
   size_t curExperienceCount = episode["Experiences"].size();
 

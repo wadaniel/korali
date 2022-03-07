@@ -346,8 +346,9 @@ void __className__::attendWorker(size_t workerId)
     if (message["Action"] == "Send Episodes")
     {
       // Process every episode received and its experiences (add them to replay memory)
-      for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
-        processEpisode(message["Episodes"][i]);
+      if (message["Error"].get<size_t>() == 0)
+        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+          processEpisode(message["Episodes"][i]);
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_workers[workerId]);

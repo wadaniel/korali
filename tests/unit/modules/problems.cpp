@@ -219,6 +219,7 @@ namespace
   Variable v;
   v._distributionIndex = 0;
   e._variables.push_back(&v);
+  e["Solver"]["Type"] = "DeepSupervisor";
   e["Variables"][0]["Name"] = "Var 1";
   e["Variables"][0]["Initial Mean"] = 0.0;
   e["Variables"][0]["Initial Standard Deviation"] = 0.25;
@@ -239,9 +240,8 @@ namespace
   problemJs["Solution"]["Data"] = std::vector<std::vector<float>>({{0.0}});
   problemJs["Solution"]["Size"] = 1;
 
-  e["Solver"]["Type"] = "DeepSupervisor";
-
   ASSERT_NO_THROW(pObj = dynamic_cast<SupervisedLearning *>(Module::getModule(problemJs, &e)));
+ 
   e._problem = pObj;
 
   // Defaults should be applied without a problem
@@ -254,6 +254,16 @@ namespace
   auto baseProbJs = problemJs;
   auto baseExpJs = experimentJs;
 
+  e["Solver"]["Type"] = "Agent";
+  
+  // Testing wrong solver
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+ 
+  e["Solver"]["Type"] = "DeepSupervisor";
+  
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  
   // Testing correct configuration
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
@@ -377,7 +387,7 @@ namespace
   problemJs["Solution"]["Size"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
-
+ 
  TEST(Problem, Sampling)
  {
   // Creating base experiment
@@ -2194,6 +2204,28 @@ namespace
   experimentJs = baseExpJs;
   e["Variables"][0]["Upper Bound"] = 1.0;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing RL Testing episodes
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Testing Frequency"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Testing Frequency");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Policy Testing Episodes"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Policy Testing Episodes");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
  }
 
  TEST(Problem, ReinforcementLearningContinuous)

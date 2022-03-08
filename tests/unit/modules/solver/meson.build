@@ -23,7 +23,7 @@ samplers_tester = executable('samplers_tester',
   
 test('modules.solver.samplers', samplers_tester,
   protocol: 'gtest',
-  suite: 'unit',
+  suite: 'unit'
 )
 
 executor_tester = executable('executor_tester',

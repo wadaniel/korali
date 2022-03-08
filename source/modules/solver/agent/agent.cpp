@@ -154,6 +154,12 @@ void Agent::initialize()
 
     // Setting testing policy to best testing hyperparameters if not custom-set by the user
     if (_testingCurrentPolicy.empty()) _testingCurrentPolicy = _testingBestPolicy["Policy Hyperparameters"];
+    {
+      if (_testingBestPolicy["Policy Hyperparameters"].empty() == false)
+        _testingCurrentPolicy = _testingBestPolicy["Policy Hyperparameters"];
+      else
+        _testingCurrentPolicy = _trainingCurrentPolicy;
+    }
 
     // Checking if there's testing samples defined
     if (_testingSampleIds.size() == 0)

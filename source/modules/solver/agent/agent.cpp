@@ -355,15 +355,18 @@ void Agent::attendWorker(size_t workerId)
     // Process episode(s) incoming from the agent(s)
     if (message["Action"] == "Send Episodes")
     {
+      const bool error = (message["Error"].get<size_t>() == 1);
+
+      if(error == 0)
       // Process every episode received and its experiences (add them to replay memory)
-      if (message["Error"].get<size_t>() == 0)
-        for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
+      for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
           processEpisode(message["Episodes"][i]);
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_workers[workerId]);
 
       // Storing bookkeeping information
+      if(error == 0)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
         float cumulativeReward = _workers[workerId]["Training Rewards"][i].get<float>();
@@ -380,6 +383,7 @@ void Agent::attendWorker(size_t workerId)
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
+      if(error == 0)
       if (_workers[workerId]["Tested Policy"] == true)
       {
         _testingCandidateCount++;

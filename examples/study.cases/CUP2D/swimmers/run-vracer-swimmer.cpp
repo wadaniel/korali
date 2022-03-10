@@ -12,13 +12,14 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // Storing command-line arguments
-  _argc = argc;
-  _argv = argv;
-
-  // retreiving number of agents and ranks
+  // retreiving number of task, agents, and ranks
+  int task    = atoi(argv[argc-5]);
   int nAgents = atoi(argv[argc-3]);
   int nRanks  = atoi(argv[argc-1]);
+
+  // Storing parameters
+  _argc = argc;
+  _argv = argv;
 
   // Getting number of workers
   int N = 1;
@@ -39,14 +40,17 @@ int main(int argc, char *argv[])
   if (found == true){
     // printf("[Korali] Continuing execution from previous run...\n");
     // Hack to enable execution after Testing.
-    e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"].get<int>() + std::numeric_limits<int>::max();
+    e["Solver"]["Termination Criteria"]["Max Generations"] = std::numeric_limits<int>::max();
   }
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
-  #ifdef MULTITASK
-  e["Problem"]["Environment Count"] = 2;
+  // e["Problem"]["Policies Per Environment"] = nAgents;
+
+  #if 0
+  if( task == -1 )
+    e["Problem"]["Environment Count"] = 2;
   #endif
 
   // Setting results path and dumping frequency in CUP

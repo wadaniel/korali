@@ -64,13 +64,13 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Argument string to inititialize Simulation
-  std::string argumentString;
+  std::string argumentString = "CUP-RL " + OPTIONS;
 
   // Get task from command line argument
   auto task = atoi(_argv[_argc-5]);
 
   // Get get task/obstacle we want
-  if(task == -2 )
+  if(task == -1 )
   {
     if( s["Mode"] == "Training" )
     {
@@ -82,18 +82,13 @@ void runEnvironment(korali::Sample &s)
     }
     else
     {
-      task = std::floor( sampleId / 10 );
+      task = sampleId / 10;
       s["Environment Id"] = task;
     }
   }
 
   /* Add Obstacle */
   switch(task) {
-    case -1 : // SINGLE SWIMMER
-    {
-      argumentString = "CUP-RL " + OPTIONS;
-      break;
-    }
     case 0 : // DCYLINDER
     {
       // Only rank 0 samples the radius
@@ -115,7 +110,7 @@ void runEnvironment(korali::Sample &s)
       MPI_Bcast(&radius, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTShalfDisk + std::to_string(radius);
+      argumentString =  argumentString + " -shapes " + OBJECTShalfDisk + std::to_string(radius);
       break;
     }
     case 1 : // HYDROFOIL
@@ -126,49 +121,50 @@ void runEnvironment(korali::Sample &s)
       {
         if( rank == 0 )
         {
-          std::uniform_real_distribution<double> frequencyDist(0.2,0.5);
+          std::uniform_real_distribution<double> frequencyDist(0.28,1.37);
           frequency = frequencyDist(_randomGenerator);
         }
       }
       else
       {
-        frequency = 0.2 + (sampleId%10)*(0.5-0.2)/9.0;
+        frequency = 0.28 + (sampleId%10)*(1.37-0.28)/9.0;
       }
 
       // Broadcast frequency to the other ranks
       MPI_Bcast(&frequency, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSnaca + std::to_string(frequency);
+      argumentString = argumentString + " -shapes " + OBJECTSnaca + std::to_string(frequency);
       break;
     }
     case 2 : // STEFANFISH
-    {
-      // Only rank 0 samples the length
-      double length;
-      if( s["Mode"] == "Training" )
-      {
-        if( rank == 0 )
-        {
-          std::uniform_real_distribution<double> lengthDist(0.15,0.25);
-          length = lengthDist(_randomGenerator);
-        }
-      }
-      else
-      {
-        length = 0.15 + (sampleId%10)*(0.25-0.15)/9.0;
-      }
-      
-      // Broadcast length to the other ranks
-      MPI_Bcast(&length, 1, MPI_DOUBLE, 0, comm);
-
-      // Set argument string
-      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSstefanfish + std::to_string(length);
-      break;
-    }
     case 3 :
     {
-      argumentString = "CUP-RL " + OPTIONS + " -shapes " + OBJECTSwaterturbine;
+      // Only rank 0 samples the length
+      double length = 0.2;
+      // if( s["Mode"] == "Training" )
+      // {
+      //   if( rank == 0 )
+      //   {
+      //     std::uniform_real_distribution<double> lengthDist(0.15,0.25);
+      //     length = lengthDist(_randomGenerator);
+      //   }
+      // }
+      // else
+      // {
+      //   length = 0.15 + (sampleId%10)*(0.25-0.15)/9.0;
+      // }
+      
+      // // Broadcast length to the other ranks
+      // MPI_Bcast(&length, 1, MPI_DOUBLE, 0, comm);
+
+      // Set argument string
+      argumentString = argumentString + " -shapes " + OBJECTSstefanfish + std::to_string(length);
+      break;
+    }
+    case 4 :
+    {
+      argumentString = argumentString + " -shapes " + OBJECTSwaterturbine;
       break;
     }
   }
@@ -345,7 +341,10 @@ void runEnvironment(korali::Sample &s)
 
         // assign state/reward to container
         states[i]  = state;
-        rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
+        if( task == 2 )
+          rewards[i] = done ? -10.0 : -std::abs(agents[i]->center[1]-initialPosition[1]);
+        else
+          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
       s["State"]  = states;
       s["Reward"] = rewards;
@@ -425,21 +424,23 @@ bool isTerminal(StefanFish *agent, int nAgents)
     xMin = 0.1;
     xMax = 1.9;
 
-    #ifdef SWARM // uses 4x2 domain, stricter contraints
-    yMin = 0.8;
-    yMax = 1.2;
-    #else
     // yMin = 0.2;
     // yMax = 0.8;
     yMin = 0.1;
     yMax = 0.9;
-    #endif
   }
   else if( nAgents == 3 ){
-    xMin = 0.4;
-    xMax = 1.4;
-    yMin = 0.7;
-    yMax = 1.3;
+    // FOR SCHOOL OF FISH
+    // xMin = 0.4;
+    // xMax = 1.4;
+    // yMin = 0.7;
+    // yMax = 1.3;
+
+    // FOR COLUMN OF FISH
+    xMin = 0.1;
+    xMax = 1.9;
+    yMin = 0.1;
+    yMax = 0.9;
   }
   else if( nAgents == 8 ){
     xMin = 0.4;
@@ -462,7 +463,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMax = 1.6;
   }
   else{
-    fprintf(stderr, "Number of Agents unknown, can not finish isTerminal...\n");
+    fprintf(stderr, "Number of Agents unknown, isTerminal not implemented...\n");
     exit(-1);
   }
 

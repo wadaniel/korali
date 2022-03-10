@@ -4,10 +4,13 @@
 #include "korali.hpp"
 #include <algorithm>
 #include <random>
+#include <filesystem>
 #include "obstacles/StefanFish.h"
 #include "Simulation.h"
 #include "utils/BufferedLogger.h"
 #include <Cubism/ArgumentParser.h>
+
+#define NACTIONS 1
 
 using namespace cubismup3d;
 
@@ -16,5 +19,6 @@ extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining, int rank);
+void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining, int rank, MPI_Comm comm);
 bool isTerminal(StefanFish *agent);
+double getReward(StefanFish *agent);

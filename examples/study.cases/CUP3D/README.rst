@@ -1,32 +1,23 @@
-Study Case: Swarm of Swimmers
-=============================
+Study Case: Single Swimmer
+==========================
+This is a first test case with a single 3D fish. The fish is described by the StefanFish class (see _deps/CUP-3D/Obstacles/Stefanfish{.cpp,.h}).
 
-Environment for artificial swimmers, described by the StefanFish class (see _deps/CUP-3D/Obstacles/Stefanfish{.cpp,.h}).
+The **reward** is the negative distance of the fish from a given point: -sqrt ( (x-xt)^2 + (y-yt)^2 ). No z coordinates are used at the moment.
 
-The **state** is given the relative position :math:`\Delta x, \Delta y` to the obstacle, the orientation :math:`\theta`, the phase :math:`\phi`, the speed :math:`u,v` and angular velocity :math:`\omega`, the time of the last action :math:`t_{act}` and previous two baseline curvatures :math:`C_{-1},C_{-2}`.
+The **state** is a 13-dimensional vector for this case: State = (dx,dy,dz,q0,q1,q2,q3,u,v,w,omega0,omega1,omega2). It contains the fish displacement, orientation (quaternions), translational velocity and angular velocity.
 
 The **action** is given by modifying the baseline curvature :math:`C_0` and the swimming period :math:`T`.
 
-The **reward** is given by the (Froude) swimming efficiency :math:`\eta`.
+The CUP3D commit that corresponds to this state is: d1636b2a0a18d9da66ae6690cf71d104674663e4
 
 Settings
 --------
-
-The setup is described in the setting.sh file.
+The setup is described in the setting.sh file. The resolution is coarse and is only used for testing.
 
 Running the code
 ----------------
-
-The application is launched locally (or on an interactive node on Piz Daint) using 
-
-.. code-block:: bash
-
-	./run-vracer-swimmer.sh
-
-If you are ready for production you can submitt a job to the batch-system using
+You can submitt a job to the batch-system using
 
 .. code-block:: bash
 
-	./sbatch-run-vracer-swimmer.sh
-
-Here you can change the number of environments for the solver with NWORKER and the number of ranks per worker via NRANKS. 
+	./sbatch-run-vracer-swimmer.sh RUNNAME

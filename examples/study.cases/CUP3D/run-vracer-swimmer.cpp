@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
   _argv = argv;
 
   // retreiving number of agents and ranks
-  int nAgents = atoi(argv[argc-3]);
-  int nRanks  = atoi(argv[argc-1]);
+  const int nAgents = atoi(argv[argc-3]);
+  const int nRanks  = atoi(argv[argc-1]);
 
   // Getting number of workers
   int N = 1;
@@ -47,15 +47,11 @@ int main(int argc, char *argv[])
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path and dumping frequency in CUP
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
-  #ifndef STEFANS_SENSORS_STATE
-  size_t numStates = 10;
-  #else
-  size_t numStates = 16;
-  #endif
+  const size_t numStates = 13;
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {
@@ -65,29 +61,30 @@ int main(int argc, char *argv[])
 
   e["Variables"][curVariable]["Name"] = "Curvature";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -1.0;
-  e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
+  e["Variables"][curVariable]["Lower Bound"] = -0.3;
+  e["Variables"][curVariable]["Upper Bound"] = +0.3;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
 
-  curVariable++;
-  e["Variables"][curVariable]["Name"] = "Swimming Period";
-  e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -0.25;
-  e["Variables"][curVariable]["Upper Bound"] = +0.25;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
+  //curVariable++;
+  //e["Variables"][curVariable]["Name"] = "Swimming Period";
+  //e["Variables"][curVariable]["Type"] = "Action";
+  //e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  //e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  //e["Variables"][curVariable]["Initial Exploration Noise"] = 0.10;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Concurrent Environments"] = N;
-  e["Solver"]["Experiences Between Policy Updates"] = nAgents;
+  e["Solver"]["Experiences Between Policy Updates"] = 0.1; //nAgents
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
-  e["Solver"]["Mini Batch"]["Size"] =  128;
+  e["Solver"]["Mini Batch"]["Size"] =  32; //128
 
   /// Defining the configuration of replay memory
-  e["Solver"]["Experience Replay"]["Start Size"] = 1024;
+  //e["Solver"]["Experience Replay"]["Start Size"] = 1024;
+  e["Solver"]["Experience Replay"]["Start Size"] = 256;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
   e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
@@ -107,16 +104,16 @@ int main(int argc, char *argv[])
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  //e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  //e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  //e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  //e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
   e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;

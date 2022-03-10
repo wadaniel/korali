@@ -1,73 +1,12 @@
 #!/bin/bash
-DLM=${DLM:-0}
-LAMBDA=${LAMBDA:-1e6}
-BPDX=${BPDX:-4}
-BPDY=${BPDY:-2}
-BPDZ=${BPDZ:-2}
-LEVELS=${LEVELS:-8}
-CFL=${CFL:-0.7}
-PT=${PT:-1e-6}
-PTR=${PTR:-1e-4}
-BC=${BC:-dirichlet}
 
-# L=0.2 stefanfish Re=1'000 <-> NU=0.00004
 NU=${NU:-0.00001} #Re=4000
 
-# bottom fish
-FACTORY=" StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=0.80 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
+FACTORY=" StefanFish L=0.2 T=1 xpos=1.00 ypos=1.00 zpos=1.00 bFixFrameOfRef=0 heightProfile=danio widthProfile=stefan bFixToPlanar=1
 "
-
-# plane 1 with 4 fish
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=1.00 zpos=0.90 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=0.90 zpos=0.90 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.10 zpos=0.90 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.50 ypos=1.00 zpos=0.90 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-
-# plane 2 with 9 fish
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.60 ypos=1.00 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=0.90 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=1.10 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=0.80 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.20 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.50 ypos=0.90 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.50 ypos=1.10 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.80 ypos=1.00 zpos=1.00 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-
-# plane 3 with 4 fish
-FACTORY+="StefanFish L=0.2 T=1 xpos=0.90 ypos=1.00 zpos=1.10 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=0.90 zpos=1.10 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.10 zpos=1.10 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.50 ypos=1.00 zpos=1.10 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-
-# top fish
-FACTORY+="StefanFish L=0.2 T=1 xpos=1.20 ypos=1.00 zpos=1.20 bFixFrameOfRef=1 heightProfile=danio widthProfile=stefan
-"
-
 OPTIONS=
-OPTIONS+=" -bpdx ${BPDX} -bpdy ${BPDY} -bpdz ${BPDZ}"
-OPTIONS+=" -dump2D 0 -dump3D 1 -tdump 0.1 -tend 50"
-OPTIONS+=" -BC_x ${BC} -BC_y ${BC} -BC_z ${BC}"
-OPTIONS+=" -CFL ${CFL} -dt ${DT} -lambda ${LAMBDA} -use-dlm ${DLM} -nu ${NU}"
-OPTIONS+=" -ImplicitPenalization 1"
-OPTIONS+=" -levelMax ${LEVELS} -levelStart 4 -Rtol 4.00 -Ctol 1.00"
-OPTIONS+=" -extentx 4.0 "
-OPTIONS+=" -TimeOrder 2 "
-OPTIONS+=" -poissonTol ${PT} -poissonTolRel ${PTR} "
+OPTIONS+=" -bpdx 2 -bpdy 2 -bpdz 2 -extentx 2.0 -levelMax 6 -levelStart 3 "
+OPTIONS+=" -Rtol 10000.00 -Ctol 100.00"
+OPTIONS+=" -tdump 0.1 -tend 0 "
+OPTIONS+=" -CFL 0.5 -lambda 1e6 -nu ${NU}"
+OPTIONS+=" -poissonTol 1e-6 -poissonTolRel 1e-4 "

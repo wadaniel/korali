@@ -1,5 +1,4 @@
 run*
-eval*
 _trainingResults
 _testingResults
 _results*
@@ -10,3 +9,4 @@ core.*
 *.dat
 _deps
 *.a
+eval-vracer-swimmer

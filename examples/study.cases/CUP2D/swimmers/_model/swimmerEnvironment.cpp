@@ -27,7 +27,7 @@ void runEnvironment(korali::Sample &s)
   MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
 
   // Setting seed
-  size_t sampleId = s["Sample Id"];
+  const size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
   // Creating results directory
@@ -171,7 +171,7 @@ void runEnvironment(korali::Sample &s)
   }
 
   // retreiving number of agents
-  int nAgents = atoi(_argv[_argc-3]);
+  const int nAgents = atoi(_argv[_argc-3]);
 
   /* Add Agent(s) */
 
@@ -273,7 +273,7 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time of next action     
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200;
+  const size_t maxSteps = 200;
 
   // Careful, hardcoded the number of action(s)!
   std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
@@ -408,10 +408,7 @@ void runEnvironment(korali::Sample &s)
   }
 
   // Setting termination status
-  if (done == true)
-    s["Termination"] = "Terminal";
-  else
-    s["Termination"] = "Truncated";
+  s["Termination"] = done ? "Terminal" : "Truncated";
 
   // Flush CUP logger
   logger.flush();

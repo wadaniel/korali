@@ -3,7 +3,8 @@
 
 #include "swimmerEnvironment.hpp"
 #include "configs.hpp"
-
+#include <iostream>
+#include <fstream>
 #include <filesystem>
 
 int _argc;
@@ -305,6 +306,17 @@ void runEnvironment(korali::Sample &s)
       MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
       if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
+    }
+
+    if (rank == 0) //Write a file with the actions for every agent
+    {
+      for( int i = 0; i<nAgents; i++ )
+      {
+          ofstream myfile;
+          myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
+          myfile << t << " " << actions[i][0] << " " << actions[i][1] << std::endl;
+          myfile.close();
+      }
     }
 
     // Run the simulation until next action is required

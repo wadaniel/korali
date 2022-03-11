@@ -6,7 +6,6 @@
 int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
-std::array<double,3> oldPos;
 
 void runEnvironment(korali::Sample &s)
 {
@@ -214,9 +213,6 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   agent->quaternion  [1] = 0.0;
   agent->quaternion  [2] = 0.0;
   agent->quaternion  [3] = 0.0;
-  oldPos[0] = initialPosition[0];
-  oldPos[1] = initialPosition[1];
-  oldPos[2] = initialPosition[2];
 }
 
 bool isTerminal(StefanFish *agent)
@@ -255,5 +251,6 @@ double getReward(StefanFish *agent)
   const double Yt = 0.5;
   const double Zt = agent->absPos[2];
   const double d  = std::pow((X -Xt)*(X -Xt) + (Y -Yt)*(Y -Yt) + (Z -Zt)*(Z -Zt),0.5);
+  if (d < 1e-2) return 50.0;
   return -d;
 }

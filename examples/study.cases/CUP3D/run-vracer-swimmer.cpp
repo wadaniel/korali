@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting results path and dumping frequency in CUP
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the state variables
@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
 
   e["Variables"][curVariable]["Name"] = "Curvature";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -0.3;
-  e["Variables"][curVariable]["Upper Bound"] = +0.3;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+  e["Variables"][curVariable]["Lower Bound"] = -0.5;
+  e["Variables"][curVariable]["Upper Bound"] = +0.5;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.25;
 
   //curVariable++;
   //e["Variables"][curVariable]["Name"] = "Swimming Period";

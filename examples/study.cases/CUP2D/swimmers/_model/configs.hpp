@@ -23,12 +23,6 @@ std::string OBJECTSwaterturbine = "waterturbine semiAxisX=0.05 semiAxisY=0.017 x
 std::string AGENT_periodic = " \n\
 stefanfish L=0.2 T=1 bFixed=1 ";
 std::string OPTIONS_periodic = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 1 -CFL 0.5 -poissonTol 5e-6 -poissonTolRel 0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
-std::vector<std::vector<double>> initialPositions_periodic{{
-	{0.25, 0.25},
-	{0.25, 0.75},
-	{0.50, 0.50},
-	{0.75, 0.25},
-	{0.75, 0.75}}};
 
 /* AGENTS */
 
@@ -47,6 +41,13 @@ std::vector<std::vector<double>> initialPositions{{
 	{1.50, 0.50}
 }};
 
+//For Task 5
+//std::vector<std::vector<double>> initialPositions{{
+//	{0.25, 0.25},
+//	{0.25, 0.75},
+//	{0.50, 0.50},
+//	{0.75, 0.25},
+//	{0.75, 0.75}}};
 
 // DIAMOND-SHAPED SCHOOLS
 

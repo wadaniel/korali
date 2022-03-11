@@ -65,7 +65,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + OPTIONS;
+  std::string argumentString = "CUP-RL " + (task !=5 ? OPTIONS:OPTIONS_periodic);
 
   // Get task from command line argument
   auto task = atoi(_argv[_argc-5]);
@@ -168,6 +168,9 @@ void runEnvironment(korali::Sample &s)
       argumentString = argumentString + " -shapes " + OBJECTSwaterturbine;
       break;
     }
+    case 5 :
+    {
+    }
   }
 
   // retreiving number of agents
@@ -209,7 +212,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Append agent to argument string
-    argumentString = argumentString + AGENT + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+    argumentString = argumentString + (task==5 ? AGENT_periodic:AGENT) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -238,11 +241,17 @@ void runEnvironment(korali::Sample &s)
   {
     agents[0] = dynamic_cast<StefanFish *>(shapes[0].get());
   }
-  else 
+  else if (task != 5)
   {
     for( int i = 1; i<nAgents+1; i++ )
       agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
   }
+  else //all five fish are agents in task 5
+  {
+    for( int i = 0; i<nAgents; i++ )
+        agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
+  }
+
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();

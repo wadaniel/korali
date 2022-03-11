@@ -64,11 +64,11 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-  // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS );
-
   // Get task from command line argument
   auto task = atoi(_argv[_argc-5]);
+
+  // Argument string to inititialize Simulation
+  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS );
 
   // Get get task/obstacle we want
   if(task == -1 )
@@ -447,10 +447,17 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
+    // small domain
     xMin = 0.4;
     xMax = 1.4;
-    yMin = 0.7;
-    yMax = 1.3;
+    yMin = 0.2;
+    yMax = 0.8;
+
+    // large domain
+    // xMin = 0.4;
+    // xMax = 1.4;
+    // yMin = 0.7;
+    // yMax = 1.3;
 
     // FOR COLUMN OF FISH
     // xMin = 0.1;

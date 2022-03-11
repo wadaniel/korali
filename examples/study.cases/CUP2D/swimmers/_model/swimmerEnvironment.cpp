@@ -65,7 +65,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + (task !=5 ? OPTIONS:OPTIONS_periodic);
+  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS );
 
   // Get task from command line argument
   auto task = atoi(_argv[_argc-5]);
@@ -170,6 +170,7 @@ void runEnvironment(korali::Sample &s)
     }
     case 5 :
     {
+      break;
     }
   }
 
@@ -212,7 +213,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Append agent to argument string
-    argumentString = argumentString + (task==5 ? AGENT_periodic:AGENT) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+    argumentString = argumentString + ( task==5 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -237,21 +238,18 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  if( task == -1 )
+  if( task == 5 )
   {
-    agents[0] = dynamic_cast<StefanFish *>(shapes[0].get());
-  }
-  else if (task != 5)
-  {
-    for( int i = 1; i<nAgents+1; i++ )
-      agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
-  }
-  else //all five fish are agents in task 5
-  {
+    //all five fish are agents in task 5
     for( int i = 0; i<nAgents; i++ )
         agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
   }
-
+  else
+  {
+    // the first shape is the obstacle
+    for( int i = 1; i<nAgents+1; i++ )
+      agents[i-1] = dynamic_cast<StefanFish *>(shapes[i].get());
+  }
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
@@ -449,16 +447,16 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
-    // xMin = 0.4;
-    // xMax = 1.4;
-    // yMin = 0.7;
-    // yMax = 1.3;
+    xMin = 0.4;
+    xMax = 1.4;
+    yMin = 0.7;
+    yMax = 1.3;
 
     // FOR COLUMN OF FISH
-    xMin = 0.1;
-    xMax = 1.9;
-    yMin = 0.1;
-    yMax = 0.9;
+    // xMin = 0.1;
+    // xMax = 1.9;
+    // yMin = 0.1;
+    // yMax = 0.9;
   }
   else if( nAgents == 5 ){
     //periodic [0,1]x[0,1] domain with 5 fish

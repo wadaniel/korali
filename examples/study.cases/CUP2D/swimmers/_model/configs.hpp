@@ -35,11 +35,11 @@ std::string AGENTPOSY  = " ypos=";
 std::string AGENTANGLE = " angle=";
 
 // COLUMN OF FISH
-std::vector<std::vector<double>> initialPositions{{
-	{0.90, 0.50},
-	{1.20, 0.50},
-	{1.50, 0.50}
-}};
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.90, 0.50},
+// 	{1.20, 0.50},
+// 	{1.50, 0.50}
+// }};
 
 //For Task 5
 //std::vector<std::vector<double>> initialPositions{{
@@ -52,6 +52,14 @@ std::vector<std::vector<double>> initialPositions{{
 // DIAMOND-SHAPED SCHOOLS
 
 // 4 SWIMMERS
+// small domain
+std::vector<std::vector<double>> initialPositions{{
+	{0.90, 0.40},
+	{0.90, 0.60},
+	{1.20, 0.5}
+}};
+
+// large domain
 // std::vector<std::vector<double>> initialPositions{{
 // 	{0.90, 0.90},
 // 	{0.90, 1.10},

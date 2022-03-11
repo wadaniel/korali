@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   int nAgents = atoi(argv[argc-3]);
   int nRanks  = atoi(argv[argc-1]);
 
-  // Storing parameters
+  // Storing parameters for environment
   _argc = argc;
   _argv = argv;
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
-  // e["Problem"]["Policies Per Environment"] = nAgents;
+  e["Problem"]["Policies Per Environment"] = nAgents;
 
   #if 0
   if( task == -1 )
@@ -59,10 +59,12 @@ int main(int argc, char *argv[])
   // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the state variables
-  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
-  #else
-  size_t numStates = 16;
+  #if defined(STEFANS_SENSORS_STATE)
+  numStates = 16;
+  #endif
+  #if  defined(STEFANS_NEIGHBOUR_STATE)
+  numStates = 22;
   #endif
 
   #ifdef ID

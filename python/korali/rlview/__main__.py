@@ -115,10 +115,10 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
             ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, linewidth=2.0, alpha=0.2, zorder=0)
     if len(results) == 1:
         if showCI > 0.0: # Plot median together with CI
-            ax.plot(episodes, medianReturns[0], '-', linewidth=2.0, zorder=1)
+            ax.plot(episodes, medianReturns[0], '-', linewidth=2.0, zorder=1, label=dir)
             ax.fill_between(episodes, lowerCiReturns[0], upperCiReturns[0][:maxEpisodes], alpha=0.5)
         else: # .. or mean with standard deviation
-            ax.plot(episodes, meanReturns[0], '-', linewidth=2.0, zorder=1)
+            ax.plot(episodes, meanReturns[0], '-', linewidth=2.0, zorder=1, label=dir)
             ax.fill_between(episodes, meanReturns[0]-stdReturns[0], meanReturns[0]+stdReturns[0], alpha=0.2)
     else:
         if showCI > 0.0: # Plot median over runs
@@ -239,6 +239,11 @@ if __name__ == '__main__':
         action='store_true',
         required=False)
     parser.add_argument(
+        '--showLegend',
+        help='Option to show the legend.',
+        action='store_true',
+        required=False)
+    parser.add_argument(
         '--output',
         help='Indicates the output file path. If not specified, it prints to screen.',
         required=False)
@@ -269,7 +274,8 @@ if __name__ == '__main__':
     else:
         ax.set_xlabel('# Episodes')
     ax.set_title('Korali RL History Viewer')
-    ax.legend()
+    if args.showLegend:
+        ax.legend()
 
     if args.maxEpisodes < math.inf:
         ax.set_xlim([0, args.maxEpisodes-1])

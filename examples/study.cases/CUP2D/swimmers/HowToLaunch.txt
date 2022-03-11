@@ -1,5 +1,0 @@
-TODO list before launching a new case:
-1. Go to _model/config.hpp and uncomment the correct initialPositions vector
-2. Go to sbatch-run-vracer-swimmer.sh and set the correct number of AGENTS 
-3. Launch case as ./sbatch-run-vracer-swimmer.sh RUNNAME TASK
-   where TASK is an integet matching the case you want to run

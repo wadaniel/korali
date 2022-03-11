@@ -141,7 +141,8 @@ void runEnvironment(korali::Sample &s)
       for(int i = 0; i<nAgents; i++ )
       {
         states[i]  = agents[i]->state();
-        rewards[i] = done ? -50 : getReward(agents[i]);//agents[i]->EffPDefBnd;
+        rewards[i] = getReward(agents[i]);
+        if (done) rewards[i] -= 50.0;
       }
       if (nAgents > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
       else             { s["State"] = states[0]; s["Reward"] = rewards[0];}

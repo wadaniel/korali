@@ -451,6 +451,13 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMin = 0.1;
     yMax = 0.9;
   }
+  else if( nAgents == 5 ){
+    //periodic [0,1]x[0,1] domain with 5 fish
+    xMin = 0.1;
+    xMax = 0.9;
+    yMin = 0.1;
+    yMax = 0.9;
+  }
   else if( nAgents == 8 ){
     xMin = 0.4;
     xMax = 2.0;

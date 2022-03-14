@@ -29,8 +29,6 @@ RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 cp eval-vracer-swimmer ${RUNPATH}
 cd ${RUNPATH}
 
-source settings.sh
-
 set -ux
 
 # $mpiflags ./eval-vracer-swimmer ${OPTIONS} -shapes "${OBJECTS}" -nAgents $NAGENTS

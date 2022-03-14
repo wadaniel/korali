@@ -1,9 +1,10 @@
+// Select which environment to use
 #include "_model/swimmerEnvironment.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
 {
-  // Initialize MPI
+  // Gathering actual arguments from MPI
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   if (provided != MPI_THREAD_FUNNELED)
@@ -12,14 +13,14 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // retreiving number of task, agents, and ranks
-  int task    = atoi(argv[argc-5]);
-  int nAgents = atoi(argv[argc-3]);
-  int nRanks  = atoi(argv[argc-1]);
-
-  // Storing parameters for environment
+  // Storing parameters
   _argc = argc;
   _argv = argv;
+
+  // retreiving number of agents, ranks, and path to previous results
+  int nAgents = atoi(argv[argc-3]);
+  int nRanks  = atoi(argv[argc-1]);
+  std::string resultsPath = argv[argc-7];
 
   // Getting number of workers
   int N = 1;
@@ -31,40 +32,27 @@ int main(int argc, char *argv[])
   std::string trainingResultsPath = "_trainingResults/";
   std::string testingResultsPath = "_testingResults/";
 
-  // Creating Experiment
+  // Create new Korali experiment
   auto e = korali::Experiment();
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-
-  // Check if existing results are there and continuing them
-  auto found = e.loadState(trainingResultsPath + std::string("/latest"));
-  if (found == true){
-    // printf("[Korali] Continuing execution from previous run...\n");
-    // Hack to enable execution after Testing.
-    e["Solver"]["Termination Criteria"]["Max Generations"] = std::numeric_limits<int>::max();
-  }
-
-  // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
   // e["Problem"]["Policies Per Environment"] = nAgents;
+  // Configure Korali
+  e["Solver"]["Mode"] = "Testing";
 
-  #if 0
-  if( task == -1 )
-    e["Problem"]["Environment Count"] = 2;
-  #endif
+  // Dump setting for environment
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
 
-  // Setting results path and dumping frequency in CUP
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
-  e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
-  // e["Problem"]["Actions Between Policy Updates"] = 1;
+  // Random seeds to evaluate task
+  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = 1+i;
 
   // Setting up the state variables
+  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
-  #if defined(STEFANS_SENSORS_STATE)
-  numStates = 16;
-  #endif
-  #if  defined(STEFANS_NEIGHBOUR_STATE)
-  numStates = 22;
+  #else
+  size_t numStates = 16;
   #endif
 
   #ifdef ID
@@ -143,7 +131,24 @@ int main(int argc, char *argv[])
   e["File Output"]["Use Multiple Files"] = false;
   e["File Output"]["Path"] = trainingResultsPath;
 
-  ////// Running Experiment
+  // Korali experiments for previous results
+  auto eOld = korali::Experiment();
+
+  // Loading existing results and transplant best training policy
+  auto found = eOld.loadState(resultsPath + std::string("/latest"));
+  
+  if( found )
+  {
+    printf("[Korali] Continuing execution with policy learned in previous run...\n");
+    // Hack to enable execution after Testing.
+    e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
+  }
+  else
+  {
+    printf("[Korali] Did not find the policy learned in previous run, training from scratch...\n");
+  }
+
+  // Creating Korali engine
   auto k = korali::Engine();
 
   // Configuring profiler output

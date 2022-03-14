@@ -27,10 +27,7 @@ fi
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-swimmer ${RUNPATH}
-cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
-
-source settings.sh
 
 set -ux
 

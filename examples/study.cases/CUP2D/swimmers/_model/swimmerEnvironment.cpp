@@ -231,14 +231,14 @@ void runEnvironment(korali::Sample &s)
     argv.push_back((char*)arg.data());
   argv.push_back(nullptr);
 
-  // Creating simulation environment
+  // Creating and initializing simulation environment
   Simulation *_environment = new Simulation(argv.size() - 1, argv.data(), comm);
   _environment->init();
 
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  if( task == 5 )
+  if( (task == 5) or (task == -2) )
   {
     //all five fish are agents in task 5
     for( int i = 0; i<nAgents; i++ )

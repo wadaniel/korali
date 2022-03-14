@@ -1,12 +1,12 @@
 #! /usr/bin/env bash
 
-if [ $# -lt 1 ] ; then
-	echo "Usage: ./eval-vracer-swimmer.sh RUNNAME"
+if [ $# -lt 2 ] ; then
+	echo "Usage: ./eval-vracer-swimmer.sh RUNNAME TASK"
 	exit 1
 fi
 
 RUNNAME=$1
-TASK=-2
+TASK=$2
 
 # path to previous run
 RESULTSPATH=/scratch/snx3000/pweber/korali/2D/_trainingResults

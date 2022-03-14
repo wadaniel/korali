@@ -38,8 +38,6 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
   // e["Problem"]["Policies Per Environment"] = nAgents;
-  // Configure Korali
-  e["Solver"]["Mode"] = "Testing";
 
   // Dump setting for environment
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
@@ -81,7 +79,7 @@ int main(int argc, char *argv[])
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
-  e["Solver"]["Mode"] = "Training";
+  e["Solver"]["Mode"] = "Testing";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;

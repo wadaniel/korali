@@ -152,6 +152,7 @@ std::vector<std::vector<double>> initialPositions{{
 // 	{3.00, 1.00},
 // }};
 
+#if 0
 // 100 randomly placed fish
 std::vector<std::vector<double>> initialPositions{{
 	{2.382004, 3.623185},
@@ -255,3 +256,4 @@ std::vector<std::vector<double>> initialPositions{{
 	{2.624361, 4.648163},
 	{4.627735, 3.952156}
 }};
+#endif

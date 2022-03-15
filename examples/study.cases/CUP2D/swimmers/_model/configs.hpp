@@ -49,6 +49,7 @@ std::string AGENTANGLE = " angle=";
 // 	{1.50, 0.50}
 // }};
 
+//For Task 5
 // PERIODIC FISH
 // dx=0.25, dy=0.5
 //std::vector<std::vector<double>> initialPositions{{
@@ -67,6 +68,12 @@ std::string AGENTANGLE = " angle=";
 //	{0.75, 0.10},
 //	{0.75, 0.30}
 // }};
+std::vector<std::vector<double>> initialPositions{{
+	{0.25, 0.25},
+	{0.25, 0.75},
+	{0.50, 0.50},
+	{0.75, 0.25},
+	{0.75, 0.75}}};
 
 // DIAMOND-SHAPED SCHOOLS
 

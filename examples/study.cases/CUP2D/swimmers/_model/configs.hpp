@@ -27,7 +27,7 @@ stefanfish L=0.2 T=1 bFixed=1 ";
 // std::string OPTIONS_periodic = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 1 -CFL 0.5 -poissonTol 5e-6 -poissonTolRel 0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // Ballo of 100 fish
-std::string OPTIONS_periodic = " -bpdx 16 -bpdy 16 -levelMax 7 -levelStart 4 -Rtol 5.0 -Ctol 0.01 -extent 8 -CFL 0.5 -poissonTol 1e-6 -poissonTolRel 0.0 -bAdaptChiGradient 0 -tdump 0.1 -nu 0.00004 -tend 0 ";
+std::string OPTIONS_periodic = " -bpdx 16 -bpdy 16 -levelMax 7 -levelStart 4 -Rtol 5.0 -Ctol 0.01 -extent 8 -CFL 0.5 -poissonTol 1e-6 -poissonTolRel 0.0 bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0.1 -nu 0.00004 -tend 0 ";
 
 // dx=0.3, dy=0.2 (same as other diamond school)
 // std::string OPTIONS_periodic = " -bpdx 9 -bpdy 4 -levelMax 6 -levelStart 3 -Rtol 5.0 -Ctol 0.01 -extent 0.6 -CFL 0.5 -poissonTol 1e-6 -poissonTolRel 0.0 -bAdaptChiGradient 0 -tdump 0.1 -nu 0.00004 -tend 0 ";
@@ -68,12 +68,6 @@ std::string AGENTANGLE = " angle=";
 //	{0.75, 0.10},
 //	{0.75, 0.30}
 // }};
-std::vector<std::vector<double>> initialPositions{{
-	{0.25, 0.25},
-	{0.25, 0.75},
-	{0.50, 0.50},
-	{0.75, 0.25},
-	{0.75, 0.75}}};
 
 // DIAMOND-SHAPED SCHOOLS
 
@@ -91,7 +85,6 @@ std::vector<std::vector<double>> initialPositions{{
 // 	{0.90, 1.10},
 //  {1.20, 1.00}
 // }};
-
 
 // 9 SWIMMERS
 // std::vector<std::vector<double>> initialPositions{{
@@ -152,7 +145,7 @@ std::vector<std::vector<double>> initialPositions{{
 // 	{3.00, 1.00},
 // }};
 
-#if 0
+#if 1
 // 100 randomly placed fish
 std::vector<std::vector<double>> initialPositions{{
 	{2.382004, 3.623185},

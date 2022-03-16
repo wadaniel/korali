@@ -142,7 +142,7 @@ void runEnvironment(korali::Sample &s)
       {
         states[i]  = agents[i]->state();
         rewards[i] = getReward(agents[i]);
-        if (done) rewards[i] -= 50.0;
+        if (done) rewards[i] -= 10.0;
       }
       if (nAgents > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
       else             { s["State"] = states[0]; s["Reward"] = rewards[0];}
@@ -252,6 +252,6 @@ double getReward(StefanFish *agent)
   const double Yt = 0.5;
   const double Zt = agent->absPos[2];
   const double d  = std::pow((X -Xt)*(X -Xt) + (Y -Yt)*(Y -Yt) + (Z -Zt)*(Z -Zt),0.5);
-  if (d < 1e-2) return 50.0;
+  if (d < 1e-2) return 1000.0;
   return -d;
 }

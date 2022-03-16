@@ -12,11 +12,11 @@ TASK=$2
 NAGENTS=1
 
 # number of workers
-NWORKER=64
+NWORKER=63
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=2
+NRANKS=1
 # NRANKS=9
 
 # number of cores per worker

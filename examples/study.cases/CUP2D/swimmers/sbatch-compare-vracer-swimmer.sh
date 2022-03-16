@@ -12,7 +12,7 @@ TASK=$2
 RESULTSPATH=/scratch/snx3000/pweber/korali/2D/_trainingResults
 
 # number of agents
-NAGENTS=1
+NAGENTS=100
 
 # number of nodes per worker
 NRANKS=16

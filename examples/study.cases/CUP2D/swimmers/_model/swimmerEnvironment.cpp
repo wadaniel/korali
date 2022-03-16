@@ -448,10 +448,10 @@ bool isTerminal(StefanFish *agent, int nAgents)
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
     // small domain
-    xMin = 0.4;
-    xMax = 1.4;
-    yMin = 0.2;
-    yMax = 0.8;
+    // xMin = 0.4;
+    // xMax = 1.4;
+    // yMin = 0.2;
+    // yMax = 0.8;
 
     // large domain
     // xMin = 0.4;
@@ -460,10 +460,10 @@ bool isTerminal(StefanFish *agent, int nAgents)
     // yMax = 1.3;
 
     // FOR COLUMN OF FISH
-    // xMin = 0.1;
-    // xMax = 1.9;
-    // yMin = 0.1;
-    // yMax = 0.9;
+    xMin = 0.1;
+    xMax = 1.9;
+    yMin = 0.1;
+    yMax = 0.9;
   }
   else if( nAgents == 5 ){
     //periodic [0,1]x[0,1] domain with 5 fish

@@ -9,7 +9,7 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=3
+NAGENTS=1
 
 # number of workers
 NWORKER=64

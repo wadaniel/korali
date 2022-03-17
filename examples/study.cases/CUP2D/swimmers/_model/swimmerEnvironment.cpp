@@ -68,7 +68,7 @@ void runEnvironment(korali::Sample &s)
   auto task = atoi(_argv[_argc-5]);
 
   // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS ) + " -shapes ";
+  std::string argumentString = "CUP-RL " + OPTIONS + " -shapes ";
 
   // Get get task/obstacle we want
   if(task == -1 )
@@ -111,7 +111,7 @@ void runEnvironment(korali::Sample &s)
       MPI_Bcast(&radius, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      argumentString =  argumentString + OBJECTShalfDisk + std::to_string(radius);
+      argumentString =  argumentString + OBJECTS + std::to_string(radius);
       break;
     }
     case 1 : // HYDROFOIL
@@ -135,7 +135,7 @@ void runEnvironment(korali::Sample &s)
       MPI_Bcast(&frequency, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      argumentString = argumentString + OBJECTSnaca + std::to_string(frequency);
+      argumentString = argumentString + OBJECTS + std::to_string(frequency);
       break;
     }
     case 2 : // STEFANFISH
@@ -160,12 +160,12 @@ void runEnvironment(korali::Sample &s)
       // MPI_Bcast(&length, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      argumentString = argumentString + OBJECTSstefanfish + std::to_string(length);
+      argumentString = argumentString + OBJECTS + std::to_string(length);
       break;
     }
     case 4 :
     {
-      argumentString = argumentString + OBJECTSwaterturbine;
+      argumentString = argumentString + OBJECTS;
       break;
     }
     case 5 :
@@ -213,7 +213,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Append agent to argument string
-    argumentString = argumentString + ( task==5 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+    argumentString = argumentString + AGENT + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
   }
 
   // printf("%s\n",argumentString.c_str());

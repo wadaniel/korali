@@ -37,6 +37,7 @@ stefanfish L=0.2 T=1";
 
 
 #if 1 //TASK 5 (periodic domain, fish)
+std::string OBJECTS ="";
 std::string OPTIONS = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 1 -CFL 0.5 -poissonTol 5e-6 -poissonTolRel 0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 std::string AGENT = " \n\
 stefanfish L=0.2 T=1 bFixed=1 ";

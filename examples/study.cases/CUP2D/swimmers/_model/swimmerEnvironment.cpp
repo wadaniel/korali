@@ -45,7 +45,7 @@ void runEnvironment(korali::Sample &s)
   };
 
   // Redirecting all output to the log file
-  FILE * logFile;
+  FILE * logFile = nullptr;
   if( rank == 0 ) {
     char logFilePath[128];
     sprintf(logFilePath, "%s/log.txt", resDir);

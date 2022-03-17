@@ -41,18 +41,18 @@ std::string OPTIONS_periodic = "-bpdx 6 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 
 // }};
 
 // dx=0.3, dy=0.2 (fundamental building block diamond school)
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.15, 0.10},
-// 	{0.45, 0.30}
-// }};
-
-// dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
 std::vector<std::vector<double>> initialPositions{{
 	{0.15, 0.10},
-	{0.45, 0.30},
-	{0.75, 0.10},
-	{1.05, 0.30}
+	{0.45, 0.30}
 }};
+
+// dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.15, 0.10},
+// 	{0.45, 0.30},
+// 	{0.75, 0.10},
+// 	{1.05, 0.30}
+// }};
 
 // SCHOOLS
 

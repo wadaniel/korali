@@ -66,7 +66,7 @@ void runEnvironment(korali::Sample &s)
 
   // Get task and number of agents from command line argument
   const int nAgents = atoi(_argv[_argc-3]);
-  const int task    = atoi(_argv[_argc-5]);
+  auto task    = atoi(_argv[_argc-5]);
 
   // Process given task variable
   if(task == -1 )
@@ -210,7 +210,7 @@ void runEnvironment(korali::Sample &s)
     if ( s["Mode"] == "Training" ) 
     {
       // only rank 0 samples initial data
-      if( rank == 0 )
+      if( (rank == 0) and (task != 5) )
       {
         std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
         std::uniform_real_distribution<double> disX(-0.05, 0.05);
@@ -458,7 +458,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 2 ){
     xMin = 0.1;
-    xMax = 0.5;
+    xMax = 0.45;
     yMin = 0.05;
     yMax = 0.35;
   }

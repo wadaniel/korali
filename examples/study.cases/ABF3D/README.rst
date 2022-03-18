@@ -3,7 +3,7 @@ Study Case: Reinforcement Learning on Artificial Bacterial Flagella (ABF) in 3D
 
 In this study case, we drive a magnetic field to guide ABF towards a common goal in a 3D space.
 
-For more information, read the following paper: `L. Amoudruz, P. Koumoutsakos, Independent Control of Microswimmers with a Uniform Magnetic Field <https://arxiv.org/abs/2101.10628>`_
+For more information, read the following paper: `L. Amoudruz, P. Koumoutsakos, Independent Control of Microswimmers with a Uniform Magnetic Field <https://www.cse-lab.ethz.ch/wp-content/papercite-data/pdf/amoudruz2021a.pdf>`_
 
 Setup
 ---------------------------

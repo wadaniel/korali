@@ -76,7 +76,7 @@ void runEnvironment(korali::Sample &s)
      agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
      setInitialConditions(agents[i], i, s["Mode"] == "Training", rank, comm);
   }
-  _environment->refineGrid();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
+  _environment->initialGridRefinement();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
 
   // Initial state
   if( rank == 0 )

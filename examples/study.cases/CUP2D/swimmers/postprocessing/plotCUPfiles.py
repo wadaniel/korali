@@ -5,7 +5,7 @@ from scipy.signal import savgol_filter
 from scipy.ndimage.filters import uniform_filter1d
 
 def plotQuick():
-	root = "/scratch/snx3000/pweber/korali/testhalfDisk/_trainingResults/sample00003460/"
+	root = "/scratch/snx3000/pweber/korali/hydrofoil_largeDomain.eval/_testingResults/sample000/"
 
 	velData = np.loadtxt(root+"velocity_1.dat", skiprows=1)
 	plt.plot(velData[:,0], velData[:,2], label='x-coordinate')
@@ -58,9 +58,9 @@ def plotEfficiency():
 	plt.legend()
 	plt.show()
 
-def plotCoM():
-	# path = "/scratch/snx3000/pweber/korali/swarm9-testing/_testingResults/sample000/"
-	path = "./"
+def animateCoM():
+	path = "/scratch/snx3000/pweber/korali/hydrofoil_largeDomain.eval/_testingResults/sample000/"
+	numFish = 1
 	
 	# Load data, set up figure, axis, and plot element we want to animate
 	fig = plt.figure()
@@ -69,7 +69,7 @@ def plotCoM():
 	ax.set_axis_off()
 	lines = []
 	data = []
-	for i in range(0,9):
+	for i in range(numFish):
 		data.append( np.loadtxt(path+"velocity_{}.dat".format(i), skiprows=1) )
 		lines.append(ax.plot([], [], lw=2, color="C{}".format(i))[0])
 
@@ -82,7 +82,7 @@ def plotCoM():
 	# animation function.  This is called sequentially
 	def animate(i):
 	  plt.title("Center of Mass, t={}".format(data[0][i,0]))
-	  for j in range(0,9):
+	  for j in range(numFish):
 	  	lines[j].set_data(data[j][:i,2], data[j][:i,3])
 	  return lines
 
@@ -91,8 +91,9 @@ def plotCoM():
 	                               frames=len(data[0][:,0]), interval=1, blit=True)
 
 	# save the animation as an mp4
-	anim.save('CoM_animation_fish.mp4', fps=200, extra_args=['-vcodec', 'libx264'])
+	anim.save('CoM_animation_fish.mp4', fps=10)
 
 if __name__ == '__main__':
-	# plotCoM()
-	plotEfficiency()
+	# plotQuick()
+	animateCoM()
+	# plotEfficiency()

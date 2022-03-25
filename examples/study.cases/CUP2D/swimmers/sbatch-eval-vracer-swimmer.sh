@@ -11,8 +11,8 @@ TASK=$2
 # number of agents
 NAGENTS=1
 
-# number of workers
-NWORKER=1
+# number of evaluation runs
+NWORKER=10
 
 # number of nodes per worker
 NRANKS=2
@@ -44,8 +44,8 @@ cat <<EOF >daint_sbatch_$EVAL
 srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./eval-vracer-swimmer -eval $EVAL -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./eval-vracer-swimmer -eval $EVAL -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
 EOF
 
-echo "Starting task ${TASK} with ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
 echo "----------------------------"
+echo "Starting task ${TASK} with ${NWORKER} simulations each using ${NRANKS} ranks with ${NUMCORES} cores"
 
 chmod 755 daint_sbatch_$EVAL
 sbatch daint_sbatch_$EVAL

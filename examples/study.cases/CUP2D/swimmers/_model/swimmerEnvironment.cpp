@@ -81,7 +81,8 @@ void runEnvironment(korali::Sample &s)
     }
     else
     {
-      task = sampleId / 10;
+      // task = sampleId / 10;
+      task = 0;
       s["Environment Id"] = task;
     }
   }
@@ -207,7 +208,7 @@ void runEnvironment(korali::Sample &s)
     initialData[2] = initialPosition[1];
 
     // During training, add noise to inital configuration of agent
-    if ( s["Mode"] == "Training" ) 
+    // if ( s["Mode"] == "Training" ) 
     {
       // only rank 0 samples initial data
       if( (rank == 0) and (task != 5) )
@@ -457,10 +458,14 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMax = 0.9;
   }
   else if( nAgents == 2 ){
-    xMin = 0.1;
-    xMax = 0.45;
-    yMin = 0.05;
-    yMax = 0.35;
+    // xMin = 0.1;
+    // xMax = 0.47;
+    // yMin = 0.05;
+    // yMax = 0.35;
+    xMin = 0.10;
+    xMax = 0.70;
+    yMin = 0.10;
+    yMax = 0.50;
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
@@ -484,7 +489,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 4 ){
     xMin = 0.1;
-    xMax = 1.1;
+    xMax = 1.07;
     yMin = 0.05;
     yMax = 0.35;
   }

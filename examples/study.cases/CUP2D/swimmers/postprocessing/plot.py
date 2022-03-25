@@ -4,30 +4,54 @@ import os
 import json
 import argparse
 import matplotlib.pyplot as plt
+import matplotlib.colors as mc
 import numpy as np
 import korali
 
+import colorsys
+import seaborn as sns
+sns.set_theme()
+sns.set_style("whitegrid")
+
+def lighten_color(color, amount=0.5):
+    """
+    Lightens the given color by multiplying (1-luminosity) by the given amount.
+    Input can be matplotlib color string, hex string, or RGB tuple.
+
+    Examples:
+    >> lighten_color('g', 0.3)
+    >> lighten_color('#F034A3', 0.6)
+    >> lighten_color((.3,.55,.1), 0.5)
+    """
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], min(1, amount * c[1]), c[2])
+
 def plotTestReturn():
     radiusHalfdisk = 0.03 + np.arange(0,10)*(0.07-0.03)/9.0
-    returnsHalfDisk = [ 70.577492, 54.693520, 66.445412, 15.838926, 75.213997, 16.232800, 40.422157, 17.817087, 23.344193, 30.265739 ]
+    returnsHalfDisk = [ 72.798637, 72.851578, 5.108251, 73.416664, 23.938255, 44.422493, 17.615463, 23.275238, 32.941513, 35.986431 ]
 
-    frequencyHydrofoil = 0.2 + np.arange(0,10)*(0.5-0.2)/9.0
-    returnsHydrofoil = [ 11.443546, 12.087606, 12.682199, 13.393639, 14.459974, 18.001678, 21.064381, 23.859093, 25.194038, 27.570847 ]
+    frequencyHydrofoil = 0.28 + np.arange(0,10)*(1.37-0.28)/9.0
+    returnsHydrofoil = [ 9.051655, 17.828634, 29.568481, 35.037235, 37.395412, 56.497555, 57.955063, 60.941113, 28.157440, 59.248760]
 
-    fig, axs = plt.subplots(1, 2, figsize=(12,6))
-    axs[0].plot(radiusHalfdisk, returnsHalfDisk, "o")
+    returnsMultitask = [ 64.053543, 19.582788, 14.252510, 35.729969, 18.307343, 12.545713, 2.944443, 33.697620, -3.957454, -3.940804, 8.529585, 12.933937, 21.740345, 28.874886, 29.421017, 30.643917, 42.490818, 34.607090, 62.526329, 58.991596]
+
+    fig, axs = plt.subplots(1, 2, figsize=(6,3), dpi=100, sharey=True)
+    axs[0].plot(radiusHalfdisk, returnsHalfDisk, color="C0")
+    axs[0].plot(radiusHalfdisk, returnsMultitask[:10], color="C2")
     axs[0].set_xlabel('radius')
     axs[0].set_ylabel('testing return')
     axs[0].grid(True, which='minor')
 
-    axs[1].plot(frequencyHydrofoil, returnsHydrofoil, "o")
+    axs[1].plot(frequencyHydrofoil, returnsHydrofoil, color="C1")
+    axs[1].plot(frequencyHydrofoil, returnsMultitask[10:], color="C2")
     axs[1].set_xlabel('frequency')
-    axs[1].set_ylabel('testing return')
     axs[1].grid(True, which='minor')
 
     plt.show()
-
-# plotTestReturn()
 
 def parseRM( dir ):
 
@@ -49,6 +73,21 @@ def parseRM( dir ):
         data = json.load(f)
 
     return data, config
+
+def parseActions( dir, numTests ):
+
+    # Load from Folder containing Results
+    data = []
+    for s in range(numTests):
+        actionFile = str(dir) + "/../_testingResults/sample{:03d}/actions0.txt".format(s)
+        if (not os.path.isfile(actionFile)):
+            print("[Korali] Error: Did not find any results in {0}...".format(actionFile))
+            exit(-1)
+
+        with open(actionFile) as f:
+            data.append(np.loadtxt(actionFile))
+
+    return data
 
 def environment( data, config, xlim, ylim, N, s ):
     aspect = ylim / xlim
@@ -294,26 +333,58 @@ if __name__ == '__main__':
         '--xlim',
         help='maximal extent in x-direction.',
         type = float,
-        required=True)
+        default = 2,
+        required=False)
     parser.add_argument(
         '--ylim',
         help='maximal extent in y-direction.',
         type = float,
-        required=True)
+        default = 1,
+        required=False)
     parser.add_argument(
         '--N',
         help='Number of points in x-direction.',
         type = int,
-        required=True)
+        default = 100,
+        required=False)
     parser.add_argument(
         '--type',
         help='type of plot to create.',
         type = str,
-        required=True)
+        default = "",
+        required=False)
+    parser.add_argument(
+        '--plotTestingReturns',
+        help='Option to show testing returns.',
+        action='store_true',
+        required=False)
+    parser.add_argument(
+        '--numTests',
+        help='Number of test runs performed.',
+        type = int,
+        default=0,
+        required=False)
 
     args = parser.parse_args()
 
-    data, config = parseRM(args.dir)
+    if args.plotTestingReturns:
+        plotTestReturn()
+        exit(0)
+
+    if args.numTests > 0:
+        data = parseActions( args.dir, args.numTests )
+
+        fig, ax = plt.subplots(1, 1, figsize=(12,6))
+
+        for i, d in enumerate(data):
+            ax.plot(d[:,0], d[:,1], color=lighten_color("C0",0.1+0.1*i), linewidth=2)
+            ax.set_ylim([-1, 1])
+            ax.set_xlabel('time t')
+            ax.set_ylabel('action')
+
+
+    if args.type != "":
+        data, config = parseRM(args.dir)
 
     if args.type == "value":
         ### Creating figure

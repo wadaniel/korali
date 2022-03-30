@@ -30,24 +30,91 @@ def lighten_color(color, amount=0.5):
     c = colorsys.rgb_to_hls(*mc.to_rgb(c))
     return colorsys.hls_to_rgb(c[0], min(1, amount * c[1]), c[2])
 
+import glob
+
+def loadTestingReturns( prefix, path ):
+    # Go to target directory and get list with wished files
+    os.chdir(path)
+    files = sorted(glob.glob("{}*".format(prefix)))
+
+    # Iterate over found files and extract testing returns
+    returns = []
+    for file in files:
+        current = []
+        with open(file, 'r') as read_obj:
+            for line in read_obj:
+                if "[Korali]    + (Average) Cumulative Reward:" in line:
+                    current.append(float(line[-10:]))
+        returns.append(current)
+
+    print("returns:", returns)
+    # return matrix
+    return returns
+
 def plotTestReturn():
     radiusHalfdisk = 0.03 + np.arange(0,10)*(0.07-0.03)/9.0
-    returnsHalfDisk = [ 72.798637, 72.851578, 5.108251, 73.416664, 23.938255, 44.422493, 17.615463, 23.275238, 32.941513, 35.986431 ]
+    returnsHalfDisk = loadTestingReturns( "halfDisk_largeDomain.eval_out_", "/project/s929/pweber/karmanPaper/runs/halfDisk_largeDomain.eval")
+    # returnsHalfDisk = [ [71.877472, 35.746422, 72.399307, 70.539886, 67.355606, 71.559250, 66.029266, 20.292776, 72.102036, 74.534355], 
+    #                     [47.281033, 29.244068, 42.671959, 36.717030, 76.072678, 72.767601, 52.312687, 68.508308, 14.979681, 70.792526], 
+    #                     [70.061028, 14.720476, 27.964424, 77.676506, 31.307430, 40.412399, 70.584953, 72.067741, 29.980824, 14.374123], 
+    #                     [69.693024,  7.931906, 36.665131, 47.728031, 70.362495, 23.927502, 76.204643, 77.182266, 43.064526, 31.136116], 
+    #                     [58.347542, 34.805363, 76.137146, 47.171993, 72.005035, 53.830025, 72.698814, 40.248714, 22.150364, 49.365700], 
+    #                     [76.023628, 24.614338, 25.675465, 74.114304, 22.584686, 76.594612, 76.488304, 27.150826, 71.926483, 26.284504], 
+    #                     [40.906456, 32.818642, 12.491627, 13.860413, 40.230045, 77.034988, 31.331985, 14.530348, 31.037430, 30.154568], 
+    #                     [71.273689, 33.176735, 46.527603, 11.925661, 20.736364, 21.980368,  7.083330, 13.439631,  8.955492, 36.891823], 
+    #                     [71.538788,  7.513134, 25.847656, 15.441429, 51.058018, 21.440580, 71.967415,  6.614027, 10.408041, 18.553194], 
+    #                     [28.699856, 26.573059, 14.584204, 38.553646, 25.892330, 19.607376, 37.387802, 13.230320,  9.246807, 73.480888]
+    #                   ]
 
     frequencyHydrofoil = 0.28 + np.arange(0,10)*(1.37-0.28)/9.0
-    returnsHydrofoil = [ 9.051655, 17.828634, 29.568481, 35.037235, 37.395412, 56.497555, 57.955063, 60.941113, 28.157440, 59.248760]
+    returnsHydrofoil = loadTestingReturns( "hydrofoil_largeDomain.eval_out_", "/project/s929/pweber/karmanPaper/runs/hydrofoil_largeDomain.eval")
+    # returnsHydrofoil = [ [ 7.524055,  8.761213,  7.830694,  9.644695,  9.341175,  9.586660,  8.080988,  9.722359,  8.511307,  9.050045], 
+    #                      [16.472881, 17.260635, 17.213276, 17.836643, 17.454916, 17.335394, 18.742882, 17.821896, 16.891821, 18.241610], 
+    #                      [27.796574, 28.365913, 30.191246, 31.387844, 31.079899, 30.861362, 29.572357, 30.686298, 30.204124, 30.853065], 
+    #                      [31.885803, 30.937855, 34.244350, 33.140045, 37.171410, 33.289799, 36.103275, 34.446991, 29.897125, 31.002312], 
+    #                      [34.539356, 36.893112, 35.360149, 38.029636, 34.759682, 39.640270, 40.136360, 32.067318, 38.879211, 36.932201], 
+    #                      [41.775311, 44.016697, 43.247524, 43.832706, 43.082180, 44.469143, 43.745361, 42.071392, 45.290058, 43.442963], 
+    #                      [46.519913, 56.936756, 60.087769, 58.383892, 58.635048, 56.661800, 58.144440, 59.124634, 43.803516, 41.188057], 
+    #                      [59.414246, 59.849018, 22.273815, 58.199020, 26.052868, 59.797054, 59.453354, 33.913383, 60.048744, 59.533871], 
+    #                      [39.231834, 63.176430, 27.476566, 63.709484, -3.826483, 48.245983, 48.591808, 27.453629, 63.832481, 27.544292], 
+    #                      [60.062302, 59.399956, 60.432770, 59.051277, 59.129372, 60.556324, 59.666649, 59.538666, 62.303299, 60.172390]
+    #                     ]
 
-    returnsMultitask = [ 64.053543, 19.582788, 14.252510, 35.729969, 18.307343, 12.545713, 2.944443, 33.697620, -3.957454, -3.940804, 8.529585, 12.933937, 21.740345, 28.874886, 29.421017, 30.643917, 42.490818, 34.607090, 62.526329, 58.991596]
+    ## CAREFUL, HYDROFOIL FIRST!!
+    # returnsMultitask = loadTestingReturns( "multitask", "/project/s929/pweber/karmanPaper/runs/multitask_largeDomain.eval")
+    # returnsMultitask = [ [ 7.840683,  9.300875,  8.329866,  8.723188,  8.442017,  8.982254,  8.347025,  9.448149,  9.649590,  7.742252], 
+    #                      [13.404787, 13.842098, 12.187981, 14.141544, 14.565126, 12.941868, 14.339552, 13.613255, 13.093306, 12.441664], 
+    #                      [22.794262, 22.200760, 22.682598, 24.128239, 22.595558, 22.919006, 22.207226, 19.990974, 22.377518, 22.045048], 
+    #                      [26.538879, 26.902885, 29.596600, 24.886024, 27.646160, 29.824348, 28.094971, 28.786110, 32.526493, 30.041107], 
+    #                      [29.359322, 22.244526, 26.519573, 30.150570, 29.827305, 26.044811, 28.683334, 28.913582, 28.936703, 33.751942], 
+    #                      [30.698437, 36.423939, 34.631737, 37.971977, 36.101154, 34.100414, 37.018822, 28.709339, 32.935959, 34.453701], 
+    #                      [42.687531, 35.514561, 33.741890, 34.020992, 32.782013, 33.931095, 26.653896, 38.582424, 38.942169, 35.485458], 
+    #                      [21.096457, 24.599312, 37.933212, 35.788063, 20.835583, 33.700233, 38.993019, 17.687687, 32.360115, 41.854683], 
+    #                      [62.633438, 33.595375, 34.152256, 17.020424, 20.862793, 44.161411, 62.181736, 62.558620, 40.624359, 59.515076], 
+    #                      [57.755352, 59.597820, 60.669189, 59.048481, 59.731812, 59.183178, 59.054337, 38.987343, 60.587223, 58.705013]
+                        #   , 
+                        #  ###########
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   [], 
+                        #   []
+                        # ]
 
     fig, axs = plt.subplots(1, 2, figsize=(6,3), dpi=100, sharey=True)
-    axs[0].plot(radiusHalfdisk, returnsHalfDisk, color="C0")
-    axs[0].plot(radiusHalfdisk, returnsMultitask[:10], color="C2")
+    axs[0].plot(radiusHalfdisk, np.mean(returnsHalfDisk, axis=1), color="C0")
+    # axs[0].plot(radiusHalfdisk, returnsMultitask[:10], color="C2")
     axs[0].set_xlabel('radius')
     axs[0].set_ylabel('testing return')
     axs[0].grid(True, which='minor')
 
-    axs[1].plot(frequencyHydrofoil, returnsHydrofoil, color="C1")
-    axs[1].plot(frequencyHydrofoil, returnsMultitask[10:], color="C2")
+    axs[1].plot(frequencyHydrofoil, np.mean(returnsHydrofoil, axis=1), color="C1")
+    # axs[1].plot(frequencyHydrofoil, np.mean(returnsMultitask, axis=1)[:10], color="C2")
     axs[1].set_xlabel('frequency')
     axs[1].grid(True, which='minor')
 
@@ -184,7 +251,8 @@ def plotValueFunctionRM( ax, data, config, xlim, ylim, N ):
     aspect = ylim / xlim
     xCoords = np.linspace(0,xlim,N)
     yCoords = np.linspace(0,ylim,int(aspect*N)+1)
-    averageValue = np.zeros((N,int(aspect*N)+1))
+    averageValue = np.empty((N,int(aspect*N)+1))
+    averageValue.fill(np.nan)
 
     # Fill state and state-value vector with data from replay memory
     states = []
@@ -216,6 +284,8 @@ def plotValueFunctionRM( ax, data, config, xlim, ylim, N ):
     X, Y = np.meshgrid(xCoords, yCoords, indexing='ij')
 
     im = ax.pcolormesh(X, Y, averageValue, cmap='viridis')
+    ax.set_xlim([0, xlim])
+    ax.set_ylim([0, ylim])
     fig.colorbar(im, ax=ax)
 
     # Add circle
@@ -229,6 +299,7 @@ def plotPolicyRM( ax, data, config, xlim, ylim, N ):
     xCoords = np.linspace(0,xlim,N)
     yCoords = np.linspace(0,ylim,int(aspect*N)+1)
     averagedPolicyParameter = np.zeros((N,int(aspect*N)+1))
+    averagedPolicyParameter.fill(np.nan)
 
     # Fill state and state-value vector with data from replay memory
     states = []
@@ -263,8 +334,8 @@ def plotPolicyRM( ax, data, config, xlim, ylim, N ):
 
             X, Y = np.meshgrid(xCoords, yCoords, indexing='ij')
 
-            axs[l][k].set_xlim([0, args.xlim])
-            axs[l][k].set_ylim([0, args.ylim])
+            axs[l][k].set_xlim([0, xlim])
+            axs[l][k].set_ylim([0, ylim])
             axs[l][k].set_xlabel('x')
             axs[l][k].set_ylabel('y')
             axs[l][k].grid(True, which='minor')
@@ -324,7 +395,8 @@ if __name__ == '__main__':
         '--dir',
         help='Path to result files, separated by space',
         type = str,
-        required=True)
+        default = "",
+        required=False)
     parser.add_argument(
         '--output',
         help='Indicates the output file path. If not specified, it prints to screen.',
@@ -369,7 +441,6 @@ if __name__ == '__main__':
 
     if args.plotTestingReturns:
         plotTestReturn()
-        exit(0)
 
     if args.numTests > 0:
         data = parseActions( args.dir, args.numTests )
@@ -388,7 +459,7 @@ if __name__ == '__main__':
 
     if args.type == "value":
         ### Creating figure
-        fig, ax = plt.subplots(1, 1, figsize=(12,6))
+        fig, ax = plt.subplots(1, 1, figsize=(6,3))
 
         ax.set_xlim([0, args.xlim])
         ax.set_ylim([0, args.ylim])

@@ -35,7 +35,7 @@ void runEnvironment(korali::Sample &s)
   if( s["Mode"] == "Training" )
     sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
   else
-    sprintf(resDir, "%s/sample%03lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+    sprintf(resDir, "%s/sample%04lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( rank == 0 )
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
@@ -82,7 +82,7 @@ void runEnvironment(korali::Sample &s)
     else
     {
       // task = sampleId / 10;
-      task = 0;
+      task = 1;
       s["Environment Id"] = task;
     }
   }

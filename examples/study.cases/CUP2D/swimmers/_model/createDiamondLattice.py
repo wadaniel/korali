@@ -53,4 +53,70 @@ def printInitialPosition():
 	print("This are initial condition for {} fish".format(N))
 	# plt.show()
 
+# For Diamond like school we have M^2 fish, i.e. 
+def createDiamond( N, dx, dy ):
+	L = 0.2
+	x0 = 0.6
+	xvel = 0.07
 
+	# define size of domain
+	Lx = 4
+	Ly = 2
+
+	# center of domain
+	centerY = Ly / 2
+
+	# compute number of fish in center of number of planes
+	numCenter = int(np.sqrt(N))
+	numPlanes = 2*numCenter - 1
+
+	# create file and write options
+	f = open("settingsSwarm_N{}_dx{}_dy{}.sh".format(N, dx, dy), "w")
+
+	f.write("#!/bin/bash\n\
+OPTIONS= -bpdx 4 -bpdy 2 -levelMax 8 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 1 -verbose 0\n")
+
+	# write front fish
+	f.write("OBJECTS=\"stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 \n".format(L, x0, centerY, xvel))
+
+	numFishY = 2
+	bReduce = False
+	for i in range(1,numPlanes):
+		x  = x0 + i*dx
+
+		if numFishY == numCenter:
+			bReduce = True
+
+		# compute y0 depending on which plane
+		if i%2 != 0:
+			y0 = centerY-(1+(numFishY//2-1)*2)*dy
+		else:
+
+			y0 = centerY-(numFishY-1)*dy
+
+		# place fish in plane
+		for j in range(numFishY):
+			y = y0 + j*2*dy
+			f.write('         stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 \n'.format(L, x, y, xvel))
+
+		# Adjust the number of fish in the plane
+		if not bReduce:
+			numFishY = numFishY + 1
+		else:
+			numFishY = numFishY - 1
+
+	# close OBJECT variable and finish up file
+	f.write('\"\n')
+	f.write('source launchCommon.sh')
+
+if __name__ == '__main__':
+	Ns = [4, 9, 16, 25]
+	# Ns = [9] 
+	deltaX = [ 0.2, 0.3, 0.4, 0.5, 0.6 ]
+	# deltaX = [ 0.3 ]
+	deltaY = [ 0.05, 0.1, 0.15, 0.2 ]
+	# deltaY = [ 0.1 ]
+	for N in Ns:
+		for dx in deltaX:
+			for dy in deltaY:
+				createDiamond( N, dx, dy )

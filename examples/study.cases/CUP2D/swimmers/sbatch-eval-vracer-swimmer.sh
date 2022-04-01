@@ -12,7 +12,7 @@ TASK=$2
 NAGENTS=1
 
 # number of evaluation runs
-NWORKER=10
+NWORKER=100
 
 # number of nodes per worker
 NRANKS=2

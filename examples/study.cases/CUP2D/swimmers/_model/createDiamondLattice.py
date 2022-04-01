@@ -74,7 +74,7 @@ def createDiamond( N, dx, dy ):
 	f = open("settingsSwarm_N{}_dx{}_dy{}.sh".format(N, dx, dy), "w")
 
 	f.write("#!/bin/bash\n\
-OPTIONS= -bpdx 4 -bpdy 2 -levelMax 8 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 1 -verbose 0\n")
+OPTIONS= -bpdx 4 -bpdy 2 -levelMax 8 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 4 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 1 -verbose 0\n")
 
 	# write front fish
 	f.write("OBJECTS=\"stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 \n".format(L, x0, centerY, xvel))

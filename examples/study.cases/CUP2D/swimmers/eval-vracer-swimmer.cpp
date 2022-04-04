@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   // Dump setting for environment
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0;
   e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
 
   // Use random seed to communicate the task that we are to evaluate

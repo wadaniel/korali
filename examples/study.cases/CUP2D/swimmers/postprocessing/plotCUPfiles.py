@@ -9,8 +9,8 @@ import seaborn as sns
 sns.set_theme()
 sns.set_style("whitegrid")
 
-def plotTrajectory( root ):
-    data = np.loadtxt(root+"/velocity_1.dat", skiprows=1)
+def plotTrajectory( root, numObstacle, output ):
+    data = np.loadtxt(root+"/velocity_{}.dat".format(numObstacle), skiprows=1)
 
     fig, ax = plt.subplots(1, 2,sharex=True,figsize=(6,3), dpi=100)
 
@@ -29,12 +29,15 @@ def plotTrajectory( root ):
     index = data[:,0] > 10
     print("Average velocity:", np.mean(data[index,7]))
 
-    ax[1].legend(bbox_to_anchor=(-0.5,-0.2, 2, 1), loc="lower left", frameon=False, ncols=2)
+    ax[1].legend(bbox_to_anchor=(-0.5,-0.2, 2, 1), loc="lower left", frameon=False, ncol=2)
     plt.tight_layout()
-    plt.show()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
 
-def plotForces( root ):
-    data = np.loadtxt(root+"/forceValues_1.dat", skiprows=1)
+def plotForces( root, numObstacle, output ):
+    data = np.loadtxt(root+"/forceValues_{}.dat".format(numObstacle), skiprows=1)
 
     fig, ax = plt.subplots(1, 2,sharex=True,figsize=(6,3), dpi=100)
 
@@ -51,10 +54,13 @@ def plotForces( root ):
 
     # plt.legend()
     plt.tight_layout()
-    plt.show()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
 
-def plotEnergy( root ):
-    data = np.loadtxt(root+"/powerValues_1.dat", skiprows=1)
+def plotEnergy( root, numObstacle, output ):
+    data = np.loadtxt(root+"/powerValues_{}.dat".format(numObstacle), skiprows=1)
 
     fig, ax = plt.subplots(1, 3, sharex=True,figsize=(12,3), dpi=100)
 
@@ -75,11 +81,14 @@ def plotEnergy( root ):
 
 
     fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
-    ax.plot(data[:,0], data[:,-2], label='efficiency', color="C3") #or -1
+    ax.plot(data[:,0], data[:,-1], label='efficiency', color="C3") #or -1
     ax.set_xlabel("time $t$")
     ax.set_ylabel("efficiency $\eta$")
     plt.tight_layout()
-    plt.show()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
 
 
 def plotEfficiency():
@@ -167,11 +176,23 @@ if __name__ == '__main__':
         type = str,
         default = "",
         required=False)
+    parser.add_argument(
+        '--output',
+        help='Name of saved figure.',
+        type = str,
+        default = "",
+        required=False)
+    parser.add_argument(
+        '--numObstacle',
+        help='Number of obstacle to plot.',
+        type = int,
+        default = 1,
+        required=False)
     args = parser.parse_args()
 
 
-    plotTrajectory(args.dir)
-    plotForces(args.dir)
-    plotEnergy(args.dir)
+    # plotTrajectory(args.dir, args.numObstacle, args.output)
+    # plotForces(args.dir, args.numObstacle, args.output)
+    plotEnergy(args.dir, args.numObstacle, args.output)
     # animateCoM()
     # plotEfficiency()

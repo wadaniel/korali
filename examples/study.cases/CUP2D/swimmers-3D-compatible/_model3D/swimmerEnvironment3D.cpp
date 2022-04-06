@@ -262,8 +262,10 @@ double getReward(cubismup3d::StefanFish *agent)
   //std::cout << "Current position = (" << X << "," << Y << ")" << std::endl;
   //std::cout << "Distance from target = " << d << std::endl;
   if (d < 1e-2) return 20.0;
+  if (d < 0.2 ) return 0.2 - d;
   return -d;
 }
+
 Simulation * initializeEnvironment(korali::Sample &s, const int task)
 {
   MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();

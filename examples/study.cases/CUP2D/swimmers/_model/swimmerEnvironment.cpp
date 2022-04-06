@@ -82,7 +82,7 @@ void runEnvironment(korali::Sample &s)
     else
     {
       // task = sampleId / 10;
-      task = 1;
+      task = 0;
       s["Environment Id"] = task;
     }
   }
@@ -142,8 +142,8 @@ void runEnvironment(korali::Sample &s)
       argumentString = argumentString + OBJECT + std::to_string(frequency);
       break;
     }
-    case 2 : // STEFANFISH
-    case 3 :
+    case 2 : // Y-DISPLACEMENT
+    case 3 : // EFFICIENCY
     {
       // Only rank 0 samples the length
       double length = 0.2;
@@ -208,7 +208,7 @@ void runEnvironment(korali::Sample &s)
     initialData[2] = initialPosition[1];
 
     // During training, add noise to inital configuration of agent
-    // if ( s["Mode"] == "Training" ) 
+    if ( s["Mode"] == "Training" ) 
     {
       // only rank 0 samples initial data
       if( (rank == 0) and (task != 5) )
@@ -250,7 +250,7 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  if( (task == 5) or (task == -2) )
+  if( task == 5 )
   {
     //all five fish are agents in task 5
     for( int i = 0; i<nAgents; i++ )

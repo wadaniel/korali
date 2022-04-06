@@ -9,8 +9,28 @@ import seaborn as sns
 sns.set_theme()
 sns.set_style("whitegrid")
 
-def plotTrajectory( root, numObstacle, output ):
-    data = np.loadtxt(root+"/velocity_{}.dat".format(numObstacle), skiprows=1)
+import matplotlib.colors as mc
+import colorsys
+
+def lighten_color(color, amount=0.5):
+    """
+    Lightens the given color by multiplying (1-luminosity) by the given amount.
+    Input can be matplotlib color string, hex string, or RGB tuple.
+
+    Examples:
+    >> lighten_color('g', 0.3)
+    >> lighten_color('#F034A3', 0.6)
+    >> lighten_color((.3,.55,.1), 0.5)
+    """
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], min(1, amount * c[1]), c[2])
+
+def plotTrajectory( root, obstacleId, output ):
+    data = np.loadtxt(root+"/velocity_{}.dat".format(obstacleId), skiprows=1)
 
     fig, ax = plt.subplots(1, 2,sharex=True,figsize=(6,3), dpi=100)
 
@@ -36,8 +56,8 @@ def plotTrajectory( root, numObstacle, output ):
     else:
         plt.show()
 
-def plotForces( root, numObstacle, output ):
-    data = np.loadtxt(root+"/forceValues_{}.dat".format(numObstacle), skiprows=1)
+def plotForces( root, obstacleId, output ):
+    data = np.loadtxt(root+"/forceValues_{}.dat".format(obstacleId), skiprows=1)
 
     fig, ax = plt.subplots(1, 2,sharex=True,figsize=(6,3), dpi=100)
 
@@ -59,8 +79,8 @@ def plotForces( root, numObstacle, output ):
     else:
         plt.show()
 
-def plotEnergy( root, numObstacle, output ):
-    data = np.loadtxt(root+"/powerValues_{}.dat".format(numObstacle), skiprows=1)
+def plotEnergy( root, obstacleId, output ):
+    data = np.loadtxt(root+"/powerValues_{}.dat".format(obstacleId), skiprows=1)
 
     fig, ax = plt.subplots(1, 3, sharex=True,figsize=(12,3), dpi=100)
 
@@ -84,6 +104,66 @@ def plotEnergy( root, numObstacle, output ):
     ax.plot(data[:,0], data[:,-1], label='efficiency', color="C3") #or -1
     ax.set_xlabel("time $t$")
     ax.set_ylabel("efficiency $\eta$")
+    plt.tight_layout()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
+
+def compareDisplacement():
+    y0 = 0.5
+    output = "displacement.png"
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+
+    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+
+    for j, root in enumerate(dirs):
+        for obstacleId in range(1,4):
+            data = np.loadtxt(root+"/velocity_{}.dat".format(obstacleId), skiprows=1)
+            ax.plot(data[:,0], data[:,3]-y0, color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
+    ax.set_xlabel("time $t$")
+    ax.set_ylabel("lateral displacement $\Delta y$")
+    plt.tight_layout()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
+
+def compareForces():
+    output = "forces.png"
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+
+    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+
+    # 1/2 * speed of obstacle^2 * fish length
+    nonDimFactor = 0.15**2/2*0.2
+
+    for j, root in enumerate(dirs):
+        for obstacleId in range(1,4):
+            data = np.loadtxt(root+"/forceValues_{}.dat".format(obstacleId), skiprows=1)
+            ax.plot(data[:,0], -data[:,11]/nonDimFactor, color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
+    ax.set_xlabel("time $t$")
+    ax.set_ylabel("lateral displacement $\Delta y$")
+    plt.tight_layout()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
+
+def compareEfficiency():
+    output = "efficiency.png"
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+
+    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+
+    for j, root in enumerate(dirs):
+        for obstacleId in range(1,4):
+            data = np.loadtxt(root+"/powerValues_{}.dat".format(obstacleId), skiprows=1)
+            # smoothned = savgol_filter(data[:,-1], 51, 3)
+            averaged = uniform_filter1d(data[:,-1], size=20000)
+            ax.plot(data[:,0], averaged, label='efficiency', color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
+    ax.set_xlabel("time $t$")
+    ax.set_ylabel("averaged efficiency $\eta$")
     plt.tight_layout()
     if output != "":
         plt.savefig(output)
@@ -183,7 +263,7 @@ if __name__ == '__main__':
         default = "",
         required=False)
     parser.add_argument(
-        '--numObstacle',
+        '--obstacleId',
         help='Number of obstacle to plot.',
         type = int,
         default = 1,
@@ -191,8 +271,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    # plotTrajectory(args.dir, args.numObstacle, args.output)
-    # plotForces(args.dir, args.numObstacle, args.output)
-    plotEnergy(args.dir, args.numObstacle, args.output)
+    plotTrajectory(args.dir, args.obstacleId, args.output)
+    plotForces(args.dir, args.obstacleId, args.output)
+    plotEnergy(args.dir, args.obstacleId, args.output)
+    # compareDisplacement()
+    # compareForces()
+    # compareEfficiency()
     # animateCoM()
     # plotEfficiency()

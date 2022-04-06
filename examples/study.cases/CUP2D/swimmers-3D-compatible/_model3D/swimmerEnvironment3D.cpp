@@ -3,6 +3,7 @@
 
 #include "swimmerEnvironment3D.hpp"
 
+
 int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
@@ -49,30 +50,25 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Get task and number of agents from command line argument
-  const int task    = atoi(_argv[_argc-5]);
+  const int task = atoi(_argv[_argc-5]);
+  int nAgents    = 0;
 
-  if (task != 0)
+  if (task == 0)
+  {
+    nAgents = 1;
+  }
+  else
   {
       std::cerr << "Task given: " << task << " is not supported." << std::endl;
       MPI_Abort(comm,1);
   }
 
-  // Create simulation environment and set dump frequency
-  ArgumentParser parser(_argc, _argv);
-  Simulation *_environment = new Simulation(comm, parser);
-  _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-
-  // Obtain agents and set initial conditions
+  Simulation *_environment = initializeEnvironment(s,task);
+  // Obtain agents
   std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
-  const int nAgents = shapes.size();
   std::vector<cubismup3d::StefanFish *> agents(nAgents);
   for(int i = 0; i<nAgents; i++ )
-  {
-     agents[i] = dynamic_cast<cubismup3d::StefanFish *>(shapes[i].get());
-     setInitialConditions(agents[i], i, s["Mode"] == "Training", rank, comm);
-  }
-  _environment->initialGridRefinement();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
-
+    agents[i] = dynamic_cast<cubismup3d::StefanFish *>(shapes[i].get());
 
   // Setting initial state [Careful, state function needs to be called by all ranks!]
   {
@@ -112,13 +108,13 @@ void runEnvironment(korali::Sample &s)
     {
       for( int i = 0; i<nAgents; i++ )
       {
-          ofstream myfile;
-          myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
-          myfile << t << " ";
-	  for (int j = 0; j < NACTIONS ; j++)
-		  myfile << actions[i][j] << " ";
-	  myfile << std::endl;
-          myfile.close();
+        ofstream myfile;
+        myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
+        myfile << t << " ";
+	      for (int j = 0; j < NACTIONS ; j++)
+		      myfile << actions[i][j] << " ";
+	      myfile << std::endl;
+        myfile.close();
       }
     }
     // Run the simulation until next action is required
@@ -175,7 +171,6 @@ void runEnvironment(korali::Sample &s)
       }
     }
     fflush(stdout);
-    //}
     curStep++;// Advance to next step
   }
 
@@ -268,4 +263,37 @@ double getReward(cubismup3d::StefanFish *agent)
   std::cout << "Distance from target = " << d << std::endl;
   if (d < 1e-2) return 20.0;
   return -d;
+}
+Simulation * initializeEnvironment(korali::Sample &s, const int task)
+{
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  int nAgents    = 0;
+
+  if (task == 0)
+  {
+    nAgents = 1;
+  }
+  else
+  {
+      std::cerr << "Task given: " << task << " is not supported." << std::endl;
+      MPI_Abort(comm,1);
+  }
+
+  // Create simulation environment and set dump frequency
+  ArgumentParser parser(_argc, _argv);
+  Simulation *_environment = new Simulation(comm, parser);
+  _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+
+  // Obtain agents and set initial conditions
+  std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
+  std::vector<cubismup3d::StefanFish *> agents(nAgents);
+  for(int i = 0; i<nAgents; i++ )
+  {
+     agents[i] = dynamic_cast<cubismup3d::StefanFish *>(shapes[i].get());
+     setInitialConditions(agents[i], i, s["Mode"] == "Training", rank, comm);
+  }
+  _environment->initialGridRefinement();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
+  return _environment;
 }

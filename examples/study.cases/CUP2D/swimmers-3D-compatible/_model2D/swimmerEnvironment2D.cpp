@@ -50,75 +50,25 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Get task and number of agents from command line argument
-  const int nAgents = atoi(_argv[_argc-3]);
-  const int task    = atoi(_argv[_argc-5]);
+  const int task = atoi(_argv[_argc-5]);
+  int nAgents    = 0;
 
-  if (task != 0)
+  if (task == 0)
+  {
+    nAgents = 1;
+  }
+  else
   {
       std::cerr << "Task given: " << task << " is not supported." << std::endl;
       MPI_Abort(comm,1);
   }
 
-  // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + OPTIONS + " -shapes ";
-
-
-  /* Add Agent(s) */
-  std::string AGENT = " \n\
-  stefanfish L=0.2 T=1";
-
-  // Set initial position for all agents
-  for( int a = 0; a < nAgents; a++ )
-  {
-    std::vector<double> initialPosition = initialPositions[a];
-
-    double initialData[3];
-    initialData[0] = 0.0; //angle set to zero
-    initialData[1] = initialPosition[0];
-    initialData[2] = initialPosition[1];
-
-    if ( s["Mode"] == "Training" ) // During training, add noise to inital configuration of agent
-    {
-      if (rank == 0) // only rank 0 samples initial data and broadcasts it
-      {
-        //std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
-        std::uniform_real_distribution<double> disX(-0.1, 0.1);
-        std::uniform_real_distribution<double> disY(-0.1, 0.1);
-        //initialData[0] = initialData[0] + disA(_randomGenerator);
-        initialData[1] = initialData[1] + disX(_randomGenerator);
-        initialData[2] = initialData[2] + disY(_randomGenerator);
-      }
-      MPI_Bcast(initialData, 3, MPI_DOUBLE, 0, comm);
-    }
-
-    // Append agent to argument string
-    argumentString = argumentString + AGENT + " angle=" + std::to_string(initialData[0]) + " xpos=" + std::to_string(initialData[1]) + " ypos=" + std::to_string(initialData[2]);
-  }
-
-  std::stringstream ss(argumentString);
-  std::string item;
-  std::vector<std::string> arguments;
-  while ( std::getline(ss, item, ' ') )
-    arguments.push_back(item);
-
-  // Create argc / argv to pass to CUP
-  std::vector<char*> argv;
-  for (const auto& arg : arguments)
-    argv.push_back((char*)arg.data());
-  argv.push_back(nullptr);
-
-  // Creating and initializing simulation environment
-  Simulation *_environment = new Simulation(argv.size() - 1, argv.data(), comm);
-  _environment->init();
-
-  // Obtaining agents
+  Simulation *_environment = initializeEnvironment(s,task);
+  // Obtain agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
   for( int i = 0; i<nAgents; i++ )
       agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
-
-  // Establishing environment's dump frequency
-  _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Setting initial state [Careful, state function needs to be called by all ranks!]
   {
@@ -158,13 +108,13 @@ void runEnvironment(korali::Sample &s)
     {
       for( int i = 0; i<nAgents; i++ )
       {
-          ofstream myfile;
-          myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
-          myfile << t << " ";
-	  for (int j = 0; j < NACTIONS ; j++)
-		  myfile << actions[i][j] << " ";
-	  myfile << std::endl;
-          myfile.close();
+        ofstream myfile;
+        myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
+        myfile << t << " ";
+	      for (int j = 0; j < NACTIONS ; j++)
+		      myfile << actions[i][j] << " ";
+	      myfile << std::endl;
+        myfile.close();
       }
     }
     // Run the simulation until next action is required
@@ -201,7 +151,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Printing Information:
-    if( rank == 0 )
+    if ( rank == 0 )
     {
       printf("[Korali] -------------------------------------------------------\n");
       printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
@@ -267,4 +217,77 @@ double getReward(StefanFish *agent)
   if (d < 0.01) return 20.0;
   if (d < 0.2 ) return 0.2 - d;
   return -d;
+}
+
+Simulation * initializeEnvironment(korali::Sample &s, const int task)
+{
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  int nAgents = 0;
+  if (task == 0)
+  {
+    nAgents = 1;
+  }
+  else
+  {
+      std::cerr << "Task given: " << task << " is not supported." << std::endl;
+      MPI_Abort(comm,1);
+  }
+
+  // Argument string to inititialize Simulation
+  std::string argumentString = "CUP-RL " + OPTIONS + " -shapes ";
+
+
+  /* Add Agent(s) */
+  std::string AGENT = " \n\
+  stefanfish L=0.2 T=1";
+
+  // Set initial position for all agents
+  for( int a = 0; a < nAgents; a++ )
+  {
+    std::vector<double> initialPosition = initialPositions[a];
+
+    double initialData[3];
+    initialData[0] = 0.0; //angle set to zero
+    initialData[1] = initialPosition[0];
+    initialData[2] = initialPosition[1];
+
+    if ( s["Mode"] == "Training" ) // During training, add noise to inital configuration of agent
+    {
+      if (rank == 0) // only rank 0 samples initial data and broadcasts it
+      {
+        //std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
+        std::uniform_real_distribution<double> disX(-0.1, 0.1);
+        std::uniform_real_distribution<double> disY(-0.1, 0.1);
+        //initialData[0] = initialData[0] + disA(_randomGenerator);
+        initialData[1] = initialData[1] + disX(_randomGenerator);
+        initialData[2] = initialData[2] + disY(_randomGenerator);
+      }
+      MPI_Bcast(initialData, 3, MPI_DOUBLE, 0, comm);
+    }
+
+    // Append agent to argument string
+    argumentString = argumentString + AGENT + " angle=" + std::to_string(initialData[0]) + " xpos=" + std::to_string(initialData[1]) + " ypos=" + std::to_string(initialData[2]);
+  }
+
+  std::stringstream ss(argumentString);
+  std::string item;
+  std::vector<std::string> arguments;
+  while ( std::getline(ss, item, ' ') )
+    arguments.push_back(item);
+
+  // Create argc / argv to pass to CUP
+  std::vector<char*> argv;
+  for (const auto& arg : arguments)
+    argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  // Creating and initializing simulation environment
+  Simulation *_environment = new Simulation(argv.size() - 1, argv.data(), comm);
+  _environment->init();
+
+  // Establishing environment's dump frequency
+  _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+  return _environment;
 }

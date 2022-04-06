@@ -11,7 +11,7 @@ DIMENSION=$3
 EXECUTABLE=eval-vracer-swimmer-"${DIMENSION}"D
 
 EXTRA=
-if [ $DIMENSION == $3 ]
+if [ $DIMENSION == 3 ]
 then
 source _model3D/settings3D.sh
 echo ${FACTORY}

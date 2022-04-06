@@ -26,11 +26,11 @@ std::string OPTIONS_periodic = "-bpdx 4 -bpdy 3 -levelMax 7 -levelStart 4 -Rtol 
 /*********************/
 
 // COLUMN OF FISH
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.50},
-// 	{1.20, 0.50},
-// 	{1.50, 0.50}
-// }};
+std::vector<std::vector<double>> initialPositions{{
+	{0.90, 0.50},
+	{1.20, 0.50},
+	{1.50, 0.50}
+}};
 
 // PERIODIC FISH
 
@@ -44,11 +44,11 @@ std::string OPTIONS_periodic = "-bpdx 4 -bpdy 3 -levelMax 7 -levelStart 4 -Rtol 
 // }};
 
 // dx=0.3, dy=0.2 (fundamental building block diamond school)
-double margin = 0.1;
-std::vector<std::vector<double>> initialPositions{{
-	{margin + 0.15, margin + 0.10},
-	{margin + 0.45, margin + 0.30}
-}};
+// double margin = 0.1;
+// std::vector<std::vector<double>> initialPositions{{
+// 	{margin + 0.15, margin + 0.10},
+// 	{margin + 0.45, margin + 0.30}
+// }};
 
 // dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
 // std::vector<std::vector<double>> initialPositions{{

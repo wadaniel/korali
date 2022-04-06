@@ -9,13 +9,13 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=1
+NAGENTS=3
 
 # number of evaluation runs
-NWORKER=10
+NWORKER=1
 
 # number of nodes per worker
-NRANKS=2
+NRANKS=8
 
 # number of cores per worker
 NUMCORES=12

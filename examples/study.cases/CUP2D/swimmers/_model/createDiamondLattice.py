@@ -77,7 +77,7 @@ def createDiamond( N, dx, dy ):
 OPTIONS=\"-bpdx 8 -bpdy 4 -levelMax 8 -levelStart 4 -Rtol 0.1 -Ctol 0.01 -extent 4 -CFL 0.2 -poissonTol 1e-11 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 100 -muteAll 1 -verbose 0\"\n")
 
 	# write front fish
-	f.write("OBJECTS=\"stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 \n".format(L, x0, centerY, xvel))
+	f.write("OBJECTS=\"stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 bFixed=1 \n".format(L, x0, centerY, xvel))
 
 	numFishY = 2
 	bReduce = False
@@ -97,7 +97,7 @@ OPTIONS=\"-bpdx 8 -bpdy 4 -levelMax 8 -levelStart 4 -Rtol 0.1 -Ctol 0.01 -extent
 		# place fish in plane
 		for j in range(numFishY):
 			y = y0 + j*2*dy
-			f.write('         stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 \n'.format(L, x, y, xvel))
+			f.write('         stefanfish L={:.2f} T=1.0 xpos={:.2f} ypos={:.2f} xvel={:.2f} bForced=1 bFixed=1 \n'.format(L, x, y, xvel))
 
 		# Adjust the number of fish in the plane
 		if not bReduce:

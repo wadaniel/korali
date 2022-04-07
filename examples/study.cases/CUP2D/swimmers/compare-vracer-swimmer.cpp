@@ -138,7 +138,6 @@ int main(int argc, char *argv[])
   if( found )
   {
     printf("[Korali] Continuing execution with policy learned in previous run...\n");
-    // Hack to enable execution after Testing.
     e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
   }
   else

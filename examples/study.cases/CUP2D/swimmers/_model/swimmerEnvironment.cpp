@@ -35,7 +35,7 @@ void runEnvironment(korali::Sample &s)
   if( s["Mode"] == "Training" )
     sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
   else
-    sprintf(resDir, "%s/sample%03lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+    sprintf(resDir, "%s/sample%04lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   if( rank == 0 )
   if( not std::filesystem::exists(resDir) )
   if( not std::filesystem::create_directories(resDir) )
@@ -81,7 +81,8 @@ void runEnvironment(korali::Sample &s)
     }
     else
     {
-      task = sampleId / 10;
+      // task = sampleId / 10;
+      task = 0;
       s["Environment Id"] = task;
     }
   }
@@ -141,8 +142,8 @@ void runEnvironment(korali::Sample &s)
       argumentString = argumentString + OBJECT + std::to_string(frequency);
       break;
     }
-    case 2 : // STEFANFISH
-    case 3 :
+    case 2 : // Y-DISPLACEMENT
+    case 3 : // EFFICIENCY
     {
       // Only rank 0 samples the length
       double length = 0.2;
@@ -249,7 +250,7 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  if( (task == 5) or (task == -2) )
+  if( task == 5 )
   {
     //all five fish are agents in task 5
     for( int i = 0; i<nAgents; i++ )
@@ -457,10 +458,14 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMax = 0.9;
   }
   else if( nAgents == 2 ){
-    xMin = 0.1;
-    xMax = 0.45;
-    yMin = 0.05;
-    yMax = 0.35;
+    // xMin = 0.1;
+    // xMax = 0.47;
+    // yMin = 0.05;
+    // yMax = 0.35;
+    xMin = 0.10;
+    xMax = 0.70;
+    yMin = 0.10;
+    yMax = 0.50;
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
@@ -484,7 +489,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 4 ){
     xMin = 0.1;
-    xMax = 1.1;
+    xMax = 1.07;
     yMin = 0.05;
     yMax = 0.35;
   }

@@ -7,6 +7,9 @@
 
 std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
+// Testing options
+// std::string OPTIONS = "-bpdx 8 -bpdy 4 -levelMax 7 -levelStart 4 -Rtol 0.1 -Ctol 0.01 -extent 2 -CFL 0.2 -poissonTol 1e-11 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+
 // dx=0.25, dy=0.5
 // std::string OPTIONS_periodic = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 1 -CFL 0.5 -poissonTol 5e-6 -poissonTolRel 0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
@@ -14,20 +17,20 @@ std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1
 // std::string OPTIONS_periodic = " -bpdx 16 -bpdy 16 -levelMax 7 -levelStart 4 -Rtol 5.0 -Ctol 0.01 -extent 8 -CFL 0.5 -poissonTol 1e-6 -poissonTolRel 0.0 bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0.1 -nu 0.00004 -tend 0 ";
 
 // dx=0.3, dy=0.2 (same as other diamond school)
-// std::string OPTIONS_periodic = "-bpdx 3 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 0.6 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+std::string OPTIONS_periodic = "-bpdx 4 -bpdy 3 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 0.8 -BC_x periodic -BC_y periodic -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
-std::string OPTIONS_periodic = "-bpdx 6 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 1.2 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+// std::string OPTIONS_periodic = "-bpdx 6 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 1.2 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 /*********************/
 /* INITIAL POSITIONS */
 /*********************/
 
 // COLUMN OF FISH
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.50},
-// 	{1.20, 0.50},
-// 	{1.50, 0.50}
-// }};
+std::vector<std::vector<double>> initialPositions{{
+	{0.90, 0.50},
+	{1.20, 0.50},
+	{1.50, 0.50}
+}};
 
 // PERIODIC FISH
 
@@ -41,10 +44,11 @@ std::string OPTIONS_periodic = "-bpdx 6 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 
 // }};
 
 // dx=0.3, dy=0.2 (fundamental building block diamond school)
-std::vector<std::vector<double>> initialPositions{{
-	{0.15, 0.10},
-	{0.45, 0.30}
-}};
+// double margin = 0.1;
+// std::vector<std::vector<double>> initialPositions{{
+// 	{margin + 0.15, margin + 0.10},
+// 	{margin + 0.45, margin + 0.30}
+// }};
 
 // dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
 // std::vector<std::vector<double>> initialPositions{{

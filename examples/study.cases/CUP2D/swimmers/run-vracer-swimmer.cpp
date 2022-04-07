@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Swimming Period";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -0.25;
-  e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  e["Variables"][curVariable]["Lower Bound"] = -0.50;
+  e["Variables"][curVariable]["Upper Bound"] = +0.50;
   e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   /// Defining Agent Configuration

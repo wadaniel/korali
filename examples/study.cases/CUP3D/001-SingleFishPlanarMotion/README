@@ -1,0 +1,48 @@
+Single fish in 2D or 3D that moves on a plane and tries to reach a point (X,Y) in space.
+
+The state, actions and rewards are the same for both 2D and 3D.
+
+State:
+      1. Fish position x
+      2. Fish position y
+      3. Fish position z ( = 1.0)
+      4. Fish axis of rotation x component (= 0.0)
+      5. Fish axis of rotation y component (= 0.0)
+      6. Fish axis of rotation z component (= 1.0)
+      7. Fish angle of rotation around given axis
+ 
+Actions:
+      1. Midline curvature
+      2. Tail-beat period
+      3. Pitching motion (does nothing here)
+
+Reward = - d (if d > 0.2)
+Reward = 0.2 - d (if 0.01 < d < 0.2)
+Reward = 20.0 (if d < 0.01)
+         where d: distance from target point
+
+The simulation terminates if d < 0.01 or if the fish exits the domain.
+
+
+
+When running, the following options are available:
+
+1. Run a 2D case: ./sbatch-run-vracer-swimmer.sh RUNNAME 0 2
+   where 0 is the task being run and 2 corresponds to 2D
+   Once training is finished, it can be tested with: ./sbatch-eval-vracer-swimmer.sh RUNNAME 0 2
+
+2. Run a 3D case: ./sbatch-run-vracer-swimmer.sh RUNNAME 0 3
+   where 0 is the task being run and 3 corresponds to 3D
+   Once training is finished, it can be tested with: ./sbatch-eval-vracer-swimmer.sh RUNNAME 0 3
+
+3. Use 2D training results to initialize 3D training and save compute time. In order to do this,
+   first run option 1, which will produce a complete 2D case. Then, run option 2 with the same
+   RUNNAME. This will resume training, but this time with the 3D enviroment instead of the 2D.
+
+There are two different ways to run option 3:
+I) Resume training. This means that training continues but the 'black box' enviroment changes 
+   from 2D to 3D. This works, if during testing we use the optimal training policy found
+   (and not the optimal testing policy)
+II)Start training from the beginning (currently commented out in run-vracer-swimmer.cpp), but 
+  use the 2D-policy hyperparameters that were found from the 2D training to initialize the
+  3D-policy.

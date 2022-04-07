@@ -121,8 +121,8 @@ void __className__::initialize()
   setAgentPolicy(_trainingCurrentPolicies["Policy Hyperparameters"]);
 
   // If this continues a previous training run, deserialize previous input experience replay. Only for the root (engine) rank
-  if (_k->_currentGeneration > 0)
-    if (_mode == "Training" || _trainingBestPolicies.empty())
+  if ( _k->_currentGeneration > 0 )
+    if (_mode == "Training")
       if (_k->_engine->_conduit != NULL)
         deserializeExperienceReplay();
 
@@ -149,6 +149,9 @@ void __className__::initialize()
     // Creating storate for _agents and their status
     _agents.resize(_concurrentEnvironments);
     _isAgentRunning.resize(_concurrentEnvironments, false);
+
+    // In case the agent was tested before, remove _testingCurrentPolicies
+    _testingCurrentPolicies.clear();
   }
 
   if (_mode == "Testing")
@@ -162,11 +165,12 @@ void __className__::initialize()
       // Checking if testing policies have been generated
       if (_testingBestPolicies.empty())
       {
-        _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
+        _k->_logger->logInfo("Minimal", "Using current training policy for testing.\n");
         _testingCurrentPolicies = _trainingCurrentPolicies;
       }
       else
       {
+        _k->_logger->logInfo("Minimal", "Using best testing policy for test-run.\n");
         _testingCurrentPolicies = _testingBestPolicies;
       }
     }
@@ -406,10 +410,6 @@ void __className__::attendAgent(size_t agentId)
         {
           _trainingBestReward[d] = _trainingLastReward[d];
           _trainingBestEpisodeId[d] = episodeId;
-          if (_problem->_policiesPerEnvironment == 1)
-            _testingBestPolicies["Policy Hyperparameters"][0] = _agents[agentId]["Policy Hyperparameters"][0];
-          else
-            _testingBestPolicies["Policy Hyperparameters"][d] = _agents[agentId]["Policy Hyperparameters"][d];
         }
         _trainingRewardHistory[d].push_back(_trainingLastReward[d]);
       }

@@ -22,4 +22,5 @@ void runEnvironment(korali::Sample &s);
 void setInitialConditions(cubismup3d::StefanFish *agent, size_t agentId, const bool isTraining, int rank, MPI_Comm comm);
 bool isTerminal(cubismup3d::StefanFish *agent);
 double getReward(cubismup3d::StefanFish *agent);
+std::vector<double> getState(cubismup3d::StefanFish *agent);
 Simulation * initializeEnvironment(korali::Sample &s, const int task);

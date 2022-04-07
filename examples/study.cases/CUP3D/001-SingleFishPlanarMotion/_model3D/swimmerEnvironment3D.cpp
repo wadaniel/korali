@@ -73,7 +73,7 @@ void runEnvironment(korali::Sample &s)
   // Setting initial state [Careful, state function needs to be called by all ranks!]
   {
     std::vector<std::vector<double>> states(nAgents);
-    for(int i = 0; i<nAgents; i++ ) states[i]  = agents[i]->state();
+    for(int i = 0; i<nAgents; i++ ) states[i]  = getState(agents[i]);
     if (nAgents > 1) s["State"] = states;
     else             s["State"] = states[0];
   }
@@ -143,7 +143,7 @@ void runEnvironment(korali::Sample &s)
       std::vector<double> rewards(nAgents);
       for(int i = 0; i<nAgents; i++ )
       {
-        states[i]  = agents[i]->state();
+        states[i]  = getState(agents[i]);
         rewards[i] = getReward(agents[i]);
       }
       if (nAgents > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
@@ -264,6 +264,19 @@ double getReward(cubismup3d::StefanFish *agent)
   if (d < 1e-2) return 20.0;
   if (d < 0.2 ) return 0.2 - d;
   return -d;
+}
+
+std::vector<double> getState(cubismup3d::StefanFish *agent)
+{
+  std::vector<double> S(7);
+  S[0] = agent->absPos[0];
+  S[1] = agent->absPos[1];
+  S[2] = 0.0; //Z = 0
+  S[3] = 0.0; //axis x-component = 0
+  S[4] = 0.0; //axis y-component = 0
+  S[5] = 1.0; //axis z-component = 1
+  S[6] = 2 * std::atan2(agent->quaternion[3], agent->quaternion[0]);
+  return S;
 }
 
 Simulation * initializeEnvironment(korali::Sample &s, const int task)

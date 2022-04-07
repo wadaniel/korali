@@ -22,4 +22,5 @@ void runEnvironment(korali::Sample &s);
 
 bool isTerminal(StefanFish *agent);
 double getReward(StefanFish *agent);
+std::vector<double> getState(StefanFish *agent);
 Simulation * initializeEnvironment(korali::Sample &s, const int task);

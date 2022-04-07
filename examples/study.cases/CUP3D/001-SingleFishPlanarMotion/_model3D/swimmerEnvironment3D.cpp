@@ -1,7 +1,8 @@
 //  Korali environment for CubismUP-3D
 //  Copyright (c) 2022 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "swimmerEnvironment.hpp"
+#include "swimmerEnvironment3D.hpp"
+
 
 int _argc;
 char **_argv;
@@ -14,8 +15,6 @@ void runEnvironment(korali::Sample &s)
   int rank, size;
   MPI_Comm_rank(comm,&rank);
   MPI_Comm_size(comm,&size);
-
-  // Get rank in world
   int rankGlobal;
   MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
 
@@ -26,7 +25,7 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory and redirecting all output to log file
   char resDir[64];
   FILE * logFile = nullptr;
-  sprintf(resDir, "%s/sample%03d", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
   if( rank == 0 )
   {
     if( not std::filesystem::exists(resDir) )
@@ -50,51 +49,42 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-  if( rank==0 )
+  // Get task and number of agents from command line argument
+  const int task = atoi(_argv[_argc-5]);
+  int nAgents    = 0;
+
+  if (task == 0)
   {
-    std::cout << "=======================================================================\n";
-    std::cout << "Cubism UP 3D (velocity-pressure 3D incompressible Navier-Stokes solver)\n";
-    std::cout << "=======================================================================\n";
-    #ifdef NDEBUG
-    std::cout << "Running in RELEASE mode!\n";
-    #else
-    std::cout << "Running in DEBUG mode!\n";
-    #endif
+    nAgents = 1;
+  }
+  else
+  {
+      std::cerr << "Task given: " << task << " is not supported." << std::endl;
+      MPI_Abort(comm,1);
   }
 
-  // Create simulation environment and set dump frequency
-  ArgumentParser parser(_argc, _argv);
-  Simulation *_environment = new Simulation(comm, parser);
-  _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-
-  // Obtain agents and set initial conditions
+  Simulation *_environment = initializeEnvironment(s,task);
+  // Obtain agents
   std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
-  const int nAgents = shapes.size();
-  std::vector<StefanFish *> agents(nAgents);
+  std::vector<cubismup3d::StefanFish *> agents(nAgents);
   for(int i = 0; i<nAgents; i++ )
-  {
-     agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
-     setInitialConditions(agents[i], i, s["Mode"] == "Training", rank, comm);
-  }
-  _environment->initialGridRefinement();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
+    agents[i] = dynamic_cast<cubismup3d::StefanFish *>(shapes[i].get());
 
-  // Initial state
-  if( rank == 0 )
+  // Setting initial state [Careful, state function needs to be called by all ranks!]
   {
     std::vector<std::vector<double>> states(nAgents);
-    for(int i = 0; i<nAgents; i++ ) states[i]  = agents[i]->state();
+    for(int i = 0; i<nAgents; i++ ) states[i]  = getState(agents[i]);
     if (nAgents > 1) s["State"] = states;
     else             s["State"] = states[0];
   }
 
   // Variables for time and step conditions
-  double t = 0;               // Current time
-  size_t curStep = 0;         // Current Step
-  double dtAct;               // Time until next action
-  double tNextAct = 0;        // Time of next action     
+  double t        = 0; // Current time
+  size_t curStep  = 0; // Current Step
+  double dtAct;        // Time until next action
+  double tNextAct = 0; // Time of next action     
   const size_t maxSteps = 50; // Max steps before truncation
 
-  // File to write actions (TODO)
 
   std::vector<std::vector<double>> actions(nAgents, std::vector<double>(NACTIONS));
 
@@ -114,39 +104,55 @@ void runEnvironment(korali::Sample &s)
       agents[i]->act(t, actions[i]);
     }
 
+    if (rank == 0) //Write a file with the actions for every agent
+    {
+      for( int i = 0; i<nAgents; i++ )
+      {
+        ofstream myfile;
+        myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
+        myfile << t << " ";
+	      for (int j = 0; j < NACTIONS ; j++)
+		      myfile << actions[i][j] << " ";
+	      myfile << std::endl;
+        myfile.close();
+      }
+    }
     // Run the simulation until next action is required
     dtAct = 0.;
     for(int i = 0; i<nAgents; i++ )
     if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
       dtAct = agents[i]->getLearnTPeriod() * 0.5;
-    tNextAct += dtAct;       
+    tNextAct += dtAct;
     while ( t < tNextAct && done == false )
     {
       const double dt = std::min(_environment->calcMaxTimestep(), dtAct);
       t += dt;
-
       _environment->timestep(dt); // Advance simulation
 
-      //Terminate if there is a collision or if a fish leaves the domain
-      done = _environment->sim.bCollision;
+      done = _environment->sim.bCollision; // if collision -> terminate
+
+      // Check termination because leaving margins
       for(int i = 0; i<nAgents; i++ )
-        done = ( done || isTerminal( agents[i] ) );
+        done = ( done || isTerminal(agents[i]) );
     }
 
-    // Get & store state,action and print information
-    if( rank == 0 ) 
+    // Get and store state and reward 
+    // [Careful, state function needs to be called by all ranks!] 
     {
       std::vector<std::vector<double>> states(nAgents);
       std::vector<double> rewards(nAgents);
       for(int i = 0; i<nAgents; i++ )
       {
-        states[i]  = agents[i]->state();
+        states[i]  = getState(agents[i]);
         rewards[i] = getReward(agents[i]);
-        if (done) rewards[i] -= 5.0;
       }
       if (nAgents > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
       else             { s["State"] = states[0]; s["Reward"] = rewards[0];}
+    }
 
+    // Printing Information:
+    if ( rank == 0 )
+    {
       printf("[Korali] -------------------------------------------------------\n");
       printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
       for(int i = 0; i<nAgents; i++ )
@@ -163,25 +169,25 @@ void runEnvironment(korali::Sample &s)
           printf("[Korali] Terminal?: %d\n", done);
           printf("[Korali] -------------------------------------------------------\n");
       }
-      fflush(stdout);
     }
+    fflush(stdout);
     curStep++;// Advance to next step
   }
+
+  // Setting termination status
+  s["Termination"] = done ? "Terminal" : "Truncated";
 
   logger.flush();// Flush CUP logger
 
   delete _environment;// delete simulation class
 
-  if( rank == 0 )// Setting finalization status
-  {
-    fclose(logFile);// Close log file
-    s["Termination"] = done ? "Terminal" : "Truncated";
-  }
+  if( rank == 0 ) // Closing log file
+    fclose(logFile);
 
   std::filesystem::current_path(curPath); // Switching back to experiment directory
 }
 
-void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraining, int rank, MPI_Comm comm)
+void setInitialConditions(cubismup3d::StefanFish *agent, size_t agentId, const bool isTraining, int rank, MPI_Comm comm)
 {
   //double initialAngle = 0.0;
   std::array<double,3> initialPosition = {agent->origC[0],agent->origC[1],agent->origC[2]};
@@ -190,8 +196,8 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
     if (isTraining)// with noise
     {
       //std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
-      std::uniform_real_distribution<double> disX(-0.05, 0.05);
-      std::uniform_real_distribution<double> disY(-0.05, 0.05);
+      std::uniform_real_distribution<double> disX(-0.1, 0.1);
+      std::uniform_real_distribution<double> disY(-0.1, 0.1);
       //std::uniform_real_distribution<double> disZ(-0.05, 0.05);
       //initialAngle = disA(_randomGenerator);
       initialPosition[0] = initialPosition[0] + disX(_randomGenerator);
@@ -219,10 +225,10 @@ void setInitialConditions(StefanFish *agent, size_t agentId, const bool isTraini
   agent->quaternion  [3] = 0.0;
 }
 
-bool isTerminal(StefanFish *agent)
+bool isTerminal(cubismup3d::StefanFish *agent)
 {
-  const double xMin = 0.5;
-  const double xMax = 1.5;
+  const double xMin = 0.1;
+  const double xMax = 1.9;
   const double yMin = 0.1;
   const double yMax = 1.9;
   const double zMin = 0.1;
@@ -236,7 +242,7 @@ bool isTerminal(StefanFish *agent)
   if (Y > yMax) return true;
   if (Z < zMin) return true;
   if (Z > zMax) return true;
-  const double Xt = 0.8;
+  const double Xt = 0.5;
   const double Yt = 0.5;
   const double Zt = agent->absPos[2];
   const double d  = std::pow((X -Xt)*(X -Xt) + (Y -Yt)*(Y -Yt) + (Z -Zt)*(Z -Zt),0.5);
@@ -244,17 +250,65 @@ bool isTerminal(StefanFish *agent)
   return false;
 }
 
-double getReward(StefanFish *agent)
+double getReward(cubismup3d::StefanFish *agent)
 {
   const double X = agent->absPos[0];
   const double Y = agent->absPos[1];
   const double Z = agent->absPos[2];
-  const double Xt = 0.8;
+  const double Xt = 0.5;
   const double Yt = 0.5;
   const double Zt = agent->absPos[2];
   const double d  = std::pow((X -Xt)*(X -Xt) + (Y -Yt)*(Y -Yt) + (Z -Zt)*(Z -Zt),0.5);
-  std::cout << "Current position = (" << X << "," << Y << ")" << std::endl;
-  std::cout << "Distance from target = " << d << std::endl;
-  if (d < 1e-2) return 10.0;
+  //std::cout << "Current position = (" << X << "," << Y << ")" << std::endl;
+  //std::cout << "Distance from target = " << d << std::endl;
+  if (d < 1e-2) return 20.0;
+  if (d < 0.2 ) return 0.2 - d;
   return -d;
+}
+
+std::vector<double> getState(cubismup3d::StefanFish *agent)
+{
+  std::vector<double> S(7);
+  S[0] = agent->absPos[0];
+  S[1] = agent->absPos[1];
+  S[2] = 0.0; //Z = 0
+  S[3] = 0.0; //axis x-component = 0
+  S[4] = 0.0; //axis y-component = 0
+  S[5] = 1.0; //axis z-component = 1
+  S[6] = 2 * std::atan2(agent->quaternion[3], agent->quaternion[0]);
+  return S;
+}
+
+Simulation * initializeEnvironment(korali::Sample &s, const int task)
+{
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  int nAgents    = 0;
+
+  if (task == 0)
+  {
+    nAgents = 1;
+  }
+  else
+  {
+      std::cerr << "Task given: " << task << " is not supported." << std::endl;
+      MPI_Abort(comm,1);
+  }
+
+  // Create simulation environment and set dump frequency
+  ArgumentParser parser(_argc, _argv);
+  Simulation *_environment = new Simulation(comm, parser);
+  _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+
+  // Obtain agents and set initial conditions
+  std::vector<std::shared_ptr<Obstacle>> shapes = _environment->getObstacleVector();
+  std::vector<cubismup3d::StefanFish *> agents(nAgents);
+  for(int i = 0; i<nAgents; i++ )
+  {
+     agents[i] = dynamic_cast<cubismup3d::StefanFish *>(shapes[i].get());
+     setInitialConditions(agents[i], i, s["Mode"] == "Training", rank, comm);
+  }
+  _environment->initialGridRefinement();//setting ICs means moving the fish from their default position, so the grid needs to be adapted.
+  return _environment;
 }

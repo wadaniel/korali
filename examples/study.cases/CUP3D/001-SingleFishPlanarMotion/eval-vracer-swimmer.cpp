@@ -1,5 +1,8 @@
-// Select which environment to use
-#include "_model/swimmerEnvironment.hpp"
+#if modelDIM == 2
+#include "_model2D/swimmerEnvironment2D.hpp"
+#else
+#include "_model3D/swimmerEnvironment3D.hpp"
+#endif
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
@@ -27,8 +30,9 @@ int main(int argc, char *argv[])
   N = (int)(N / nRanks); // Divided by the ranks per worker
 
   // Setting results path
+  //std::string trainingResultsPath = "_trainingResults-"+std::to_string(modelDIM)+"D/";
   std::string trainingResultsPath = "_trainingResults/";
-  std::string testingResultsPath = "_testingResults/";
+  std::string testingResultsPath = "_testingResults-"+std::to_string(modelDIM)+"D/";
 
   // Creating Korali experiment
   auto e = korali::Experiment();
@@ -57,6 +61,10 @@ int main(int argc, char *argv[])
 
   // random seeds for environment
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
+
+  //set testing policy = training policy for testing!
+  e["Solver"]["Testing"]["Current Policies"]["Policy Hyperparameters"] =  e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
+  e["Solver"]["Testing"]["Best Policies"]["Policy Hyperparameters"] =  e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"]; 
 
   k.run(e);
 }

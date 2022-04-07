@@ -1,37 +1,37 @@
 #! /usr/bin/env bash
 
-if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME"
+if [ $# -lt 3 ] ; then
+	echo "Usage: ./sbatch-run-vracer-swimmer.sh RUNNAME TASK DIMENSION"
 	exit 1
 fi
-if [ $# -gt 0 ] ; then
-	RUNNAME=$1
+
+RUNNAME=$1
+TASK=$2
+DIMENSION=$3
+EXECUTABLE=run-vracer-swimmer-"${DIMENSION}"D
+
+EXTRA=
+if [ $DIMENSION == 3 ]
+then
+source _model3D/settings3D.sh
+echo ${FACTORY}
+EXTRA=${OPTIONS}" -factory-content \""${FACTORY}"\""
 fi
+echo ${EXTRA}
 
-# number of agents in the environment
-NAGENTS=1
-
-# number of workers
-NWORKER=32
-
-# number of nodes per worker
-NRANKS=4
-
-# number of workers * number of nodes per worker
-NNODES=$(( $NWORKER * $NRANKS ))
+NAGENTS=1   # number of agents
+NWORKER=63  # number of workers
+NRANKS=1    # nodes per worker
+NUMCORES=12 # cores per worker
+NNODES=$(( $NWORKER * $NRANKS )) # number of workers * number of nodes per worker
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
-cp run-vracer-swimmer ${RUNPATH}
-cp settings.sh ${RUNPATH}
-cp run-vracer-swimmer.cpp ${RUNPATH}
-cp -r _model ${RUNPATH}
+cp $EXECUTABLE ${RUNPATH}
 cd ${RUNPATH}
 
-source settings.sh
-
-cat <<EOF >daint_sbatch_training
+cat <<EOF >daint_sbatch_training-"${DIMENSION}"D
 #!/bin/bash -l
 #SBATCH --account=s929
 #SBATCH --constraint=gpu
@@ -40,9 +40,8 @@ cat <<EOF >daint_sbatch_training
 #SBATCH --partition=normal
 #SBATCH --nodes=$((NNODES+1))
 
-# Korali engine gets 12 threads and 1 rank, CUP gets 1 threads and 12 ranks
-srun --nodes=$NNODES --ntasks-per-node=12 --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=12 --threads-per-core=1 ./run-vracer-swimmer ${OPTIONS} -factory-content $(printf "%q" "${FACTORY}") -nAgents $NAGENTS -nRanks $(( $NRANKS * 12 ))
+srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./$EXECUTABLE $EXTRA -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./$EXECUTABLE $EXTRA -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
 EOF
 
-chmod 755 daint_sbatch_training
-sbatch daint_sbatch_training
+chmod 755 daint_sbatch_training-"${DIMENSION}"D
+sbatch daint_sbatch_training-"${DIMENSION}"D

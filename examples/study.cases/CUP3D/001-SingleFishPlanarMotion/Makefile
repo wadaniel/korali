@@ -7,7 +7,7 @@ all: run-vracer-swimmer-2D run-vracer-swimmer-3D eval-vracer-swimmer-2D eval-vra
 
 #         2D          #
 #######################
-CUP2DFOLDER=../_deps/CUP-2D
+CUP2DFOLDER=../../CUP2D/_deps/CUP-2D
 CUBISM2DCFLAGS=$(shell cat ${CUP2DFOLDER}/makefiles/cup.cflags.txt) -I${CUP2DFOLDER}/source -I${CUP2DFOLDER}/Cubism/include -DCUBISM -Wno-shadow
 CUBISM2DLIBS= ${CUP2DFOLDER}/makefiles/libcup.a $(shell cat ${CUP2DFOLDER}/makefiles/cup.libs.txt) -lstdc++fs
 swimmerEnvironment2D.o:
@@ -23,7 +23,7 @@ eval-vracer-swimmer-2D: eval-vracer-swimmer-2D.o swimmerEnvironment2D.o ${CUP2DF
 
 #         3D          #
 #######################
-CUP3DFOLDER=../../CUP3D/_deps/CUP-3D
+CUP3DFOLDER=../_deps/CUP-3D
 CUBISM3DCFLAGS=$(shell cat ${CUP3DFOLDER}/makefiles/cup.cflags.txt) -I${CUP3DFOLDER}/source -I${CUP3DFOLDER}/Cubism/include -DCUBISM -Wno-shadow -Wno-float-equal
 CUBISM3DLIBS= ${CUP3DFOLDER}/makefiles/libcup.a $(shell cat ${CUP3DFOLDER}/makefiles/cup.libs.txt) -lstdc++fs
 swimmerEnvironment3D.o:

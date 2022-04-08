@@ -10,3 +10,5 @@ extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
 void setInitialConditions(Windmill* agent, double init_angle, bool randomized);
+
+double choosePolicy(double value, bool randomized);

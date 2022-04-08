@@ -10,114 +10,155 @@ int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
 
-// 4 windmills with variable torque applied to them
+// 2 windmills with variable angular acceleration applied to them
+// mpi version of the code
 void runEnvironment(korali::Sample &s)
 {
-  std::cout<<"Before state env"<<std::endl;
-  ////////////////////////////////////////// setup stuff 
+  // Get MPI communicator
+  MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
+
+  // Get rank and size of subcommunicator
+  int rank, size;
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+
+  // Get rank in world
+  int rankGlobal;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
+
   // Setting seed
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
-  std::filesystem::create_directories(resDir);
+  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  if( rank == 0 )
+  if( not std::filesystem::exists(resDir) )
+  if( not std::filesystem::create_directories(resDir) )
+  {
+    fprintf(stderr, "[Korali] Error creating results directory for environment: %s.\n", resDir);
+    exit(-1);
+  };
 
   // Redirecting all output to the log file
-  char logFilePath[128];
-  sprintf(logFilePath, "%s/log.txt", resDir);
-  auto logFile = freopen(logFilePath, "a", stdout);
-  if (logFile == NULL)
-  {
-    printf("Error creating log file: %s.\n", logFilePath);
-    exit(-1);
+  FILE * logFile;
+  if( rank == 0 ) {
+    char logFilePath[128];
+    sprintf(logFilePath, "%s/log.txt", resDir);
+    logFile = freopen(logFilePath, "w", stdout);
+    if (logFile == NULL)
+    {
+      printf("[Korali] Error creating log file: %s.\n", logFilePath);
+      exit(-1);
+    }
   }
+  // Make sure folder / logfile is created before switching path
+  MPI_Barrier(comm);
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-
-  // copy the contents of the profile.dat file into vector c++
-
-  std::vector<std::vector<double>> profiles(200, std::vector<double> (33, 0.0)); // initialize vector of size 200 x 33
-
-  std::ifstream myfile;
-  myfile.open("../../profile.dat", ios::in);
-
-  if (myfile.is_open()){
-    std::cout<<"File is open"<<std::endl;
-
-  } else{
-    std::cout<<"File is closed"<<std::endl;
-    std::cerr<<"Failed to open the file"<<std::endl;
-  }
-
-  std::string line;
-  int i = 0;
-  int j_copy = 0;
-
-  while (std::getline(myfile, line))
-  {
-    std::istringstream data_line(line);
-    int j = 0;
-    for (j=0; j < 33; ++j)
-    {
-      if (data_line >> profiles[i][j])
-      {
-
-      } else{
-        std::cout<<"Failed to read number"<<std::endl;
-      }
-    }
-    i += 1;
-    j_copy = j;
-  }
-  myfile.close();
-
-  std::cout<<"ij"<<i<<" "<<j_copy<<std::endl;
-
-
-
-  //if(std::filesystem::copy_file("../../profile.dat", "profile.dat")) std::cout<<"File was copied successfully"<<std::endl;;
-
   // Creating simulation environment
-  Simulation *_environment = new Simulation(_argc, _argv);
+  Simulation *_environment = new Simulation(_argc, _argv, comm);
   _environment->init();
-  ////////////////////////////////////////// setup stuff 
 
-  ////////////////////////////////////////// Initialize agents and objective
-  // Obtaining agent, 4 windmills 
-  Windmill* agent1 = dynamic_cast<Windmill*>(_environment->getShapes()[0]);
-  Windmill* agent2 = dynamic_cast<Windmill*>(_environment->getShapes()[1]);
-
-  // useful agent functions :
-  // void act( double action );
-  // double reward( std::array<Real,2> target, std::vector<double> target_vel, double C = 10);
-  // std::vector<double> state();
+  // Obtaining agents, 2 windmills 
+  std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
+  Windmill* agent1 = dynamic_cast<Windmill*>(shapes[0].get());
+  Windmill* agent2 = dynamic_cast<Windmill*>(shapes[1].get());
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Setting initial conditions
-  setInitialConditions(agent1, 0.0, s["Mode"] == "Training");
-  setInitialConditions(agent2, 0.0, s["Mode"] == "Training");
+  // Setting initial conditions, two fans are initialized with an angle of zero degrees
+  setInitialConditions(agent1, 0.0, false);
+  setInitialConditions(agent2, 0.0, false);
+
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 
 
-  // std::vector<double> state1 = agent1->state();
-  // std::vector<double> state2 = agent2->state();
-  // std::vector<double> state = {state1[0], state1[1], state2[0], state2[1]};
+  // the state of the environment is a vector of size 35:
+  // the first 32 components are the velocity profile at the target
+  // the next 2 componenets are the angular velocities of the windmills
+  // the final component is a number t between -1 and 1, steps of 0.2
+  // it tells the network which policy we want to obtain
 
-  //std::vector<double> state = getUniformLevelGridVort(_environment, target_pos);
-  //std::vector<double> state = velGridProfile(_environment);
-  std::vector<double> state = vortGridProfile(_environment);
-
-  // std::cout<<"State is of size :"<<state.size()<<std::endl;
+  // Setting initial state [Careful, state function needs to be called by all ranks!]
+  // the state function returns the entire state already, done in CUP
+  std::vector<double> state = agent1->vel_profile(); // vector of size 32, has the velocity profile values
+  double omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+  double omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+  double num_policy = choosePolicy(0, true); // number to give to the agent to decide which policy to follow, between -1 and 1
+  state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
   s["State"] = state;
+
+  // load the target profile
+  // copy the contents of the avgprofiles.dat file into vector c++
+  int num_profiles = 11;
+
+  std::vector<std::vector<double>> profiles(num_profiles, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 33
+  std::vector<double> target_profile(32, 0.0);
+
+  // load the data with rank 0
+  if (rank == 0)
+  {
+    std::ifstream myfile;
+    myfile.open("../../avgprofiles.dat", ios::in);
+
+    if (myfile.is_open()){
+      std::cout<<"File is open"<<std::endl;
+      std::cerr<<"Succesfully opened the file"<<std::endl;
+
+    } else{
+      std::cout<<"File is closed"<<std::endl;
+      std::cerr<<"Failed to open the file"<<std::endl;
+    }
+
+    std::string line;
+    int i = 0;
+    std::cout<<"Before while "<< i <<std::endl;
+    while (std::getline(myfile, line))
+    {
+      std::cout<<"line "<< i <<std::endl;
+      std::istringstream data_line(line);
+      int j = 0;
+      for (j=0; j < 32; ++j)
+      {
+        if (data_line >> profiles[i][j])
+        {
+
+        } else{
+          std::cout<<"Failed to read number"<<std::endl;
+        }
+      }
+      i += 1;
+    }
+    myfile.close();
+
+    int index = int((num_policy + 1) * 5);
+    std::cout<<"index : "<< index <<std::endl;
+    target_profile = profiles[index];
+  }
+
+  // broadcast the target_profile to everyone
+  MPI_Bcast(&target_profile.front(), 32, MPI_DOUBLE, 0, comm);
+  std::cout<<"After first broadcast"<<std::endl;
+  std::cout<<target_profile[0]<<" "<<target_profile[1]<<std::endl;
+
+  std::vector<double> action(2, 0.0); 
+
+  std::vector<double> profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> sum_profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> profile_t_ = vector<double>(32, 0.0);
+  std::vector<double> sum_profile_t_ = vector<double>(32, 0.0);
+
+  std::vector<double> avg_profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> avg_profile_t_ = vector<double>(32, 0.0);
+  
 
   // Setting initial time and step conditions
   double t = 0;        // Current time
@@ -125,112 +166,109 @@ void runEnvironment(korali::Sample &s)
   size_t curStep = 0;  // current Step
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200; // 2000 for training
+  size_t maxSteps = 4000; // 200s of simulations
 
-  // std::fstream myfile;
-  // myfile.open("profile.dat", ios::in);
+  double reward = 0;
 
-  // if (myfile.is_open()){
-  //   std::cout<<"File is open"<<std::endl;
-  // } else{
-  //   std::cout<<"File is closed"<<std::endl;
-  // }
+  bool done = false; // is true if |omega| is superior 10
 
-  std::vector<double> true_prof = {19.9993, 0.0531483, 0.053797, 0.0541452, 0.05426, 0.0542343, 0.0541726, 0.0541775, 0.0543413, 0.0547629,
-                                   0.0555199, 0.0567263, 0.0584773, 0.0608873, 0.063975, 0.0675119, 0.0707227, 0.0725255, 0.0724874,
-                                   0.0722369, 0.0752008, 0.0817008, 0.0888002, 0.0975837, 0.109082, 0.121681, 0.133602, 0.143548,
-                                   0.150564, 0.153644, 0.151996, 0.145743, 0.136029};
-  
-
-  int index_step = 0;
-
-  while (curStep < maxSteps)
+  // RL loop
+  while (curStep < maxSteps && done == false)
   {
-    // Getting new action
-    s.update();
+    // Only rank 0 communicates with Korali
+    if (rank == 0)
+    {
+      // Getting new action
+      s.update();
 
-    // Reading new action
-    std::vector<double> action = s["Action"];
+      // Reading new action
+      auto actionJSON = s["Action"];
+      action = actionJSON.get<std::vector<double>>();
+    }
+
+    // broadcast the action to the different processes
+    MPI_Bcast(&action[0], 2, MPI_DOUBLE, 0, comm );
 
     // Setting action for 
     agent1->act( action[0] );
     agent2->act( action[1] );
 
     // Run the simulation until next action is required
-    tNextAct += 0.1;
+    tNextAct += 0.05 ;
     while ( t < tNextAct )
     {
       // Calculate simulation timestep
-      const double dt = std::min(_environment->calcMaxTimestep(), 0.01);
+      const double dt = std::min(_environment->calcMaxTimestep(), 0.05);
       t += dt;
 
       // Advance simulation
       _environment->advance(dt);
     }
 
-    // std::vector<double> profile;
-    // std::string line;
+    profile_t_ = agent1->vel_profile(); // vector of size 32, has the velocity profile values
+    state = profile_t_;
+    omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+    omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+    state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
-    // if (myfile.is_open()){
-    //   std::cout<<"File is open"<<std::endl;
-    // } 
+    // check if angular velocities are over the threshold, true if either of the angular velocities is more than 10
+    done = (omega1*omega1 > 100 || omega2*omega2 > 100) ? true : false;
 
-    // std::getline(myfile, line);
-    // std::istringstream data_line(line);
-    // std::cout<<line<<std::endl;
-    
+    // must time average the profiles as well before passing them to reward fct
+    for(int i(0); i < 32; ++i)
+    {
+      sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
+      avg_profile_t_1[i] = sum_profile_t_1[i] / t;
 
-    // double value = 0.0;
+      sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
+      avg_profile_t_[i] = sum_profile_t_[i] / t;
+    }
 
-    // while (data_line >> value)
-    // {
-    //   profile.push_back(value);
-    // }
-    // std::cout<<" After reading file line "<<profile[0]<<std::endl;
 
-    Real factor = 10.0;
-
-    double reward = agent1->reward(factor, profiles[index_step]);
-
+    reward = agent1->reward(target_profile, avg_profile_t_1, avg_profile_t_);
     // Storing reward
-    s["Reward"] = reward;
 
-    index_step += 1;
-
-    // get state
-    // state1 = agent1->state();
-    // state2 = agent2->state();
-    // state = {state1[0], state1[1], state2[0], state2[1]};
+    s["Reward"] = done ? -2000 : reward;
     
-    //state = getUniformLevelGridVort(_environment, target_pos);
-    //state = velGridProfile(_environment);
-    state = vortGridProfile(_environment);
-    //std::cout<<"AFT2"<<std::endl;
+    // storing the new profile in the old profile
+    profile_t_1 = profile_t_;
+    
 
     // Storing new state
     s["State"] = state;
+
+    if( rank == 0 ) {
+      printf("[Korali] -------------------------------------------------------\n");
+      printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+      printf("[Korali] State: [ %.3f", state[0]);
+      for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+      printf("]\n");
+      printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+      printf("[Korali] Reward: %.3f\n", reward);
+      printf("[Korali] -------------------------------------------------------\n");
+    }
 
     // Advancing to next step
     curStep++;
   }
 
-  // myfile.close();
+  // Setting finalization status
+  s["Termination"] = done ? "Terminal" : "Truncated";
 
   // Flush CUP logger
   logger.flush();
 
+  // Closing log file
+  if( rank == 0 ) fclose(logFile);
+
   // delete simulation class
   delete _environment;
-
-  // Setting finalization status
-  s["Termination"] = "Truncated";
 
   // Switching back to experiment directory
   std::filesystem::current_path(curPath);
 
-  // Closing log file
-  fclose(logFile);
 }
+
 
 // set initial conditions of the agent
 void setInitialConditions(Windmill* agent, double init_angle, bool randomized)
@@ -252,655 +290,237 @@ void setInitialConditions(Windmill* agent, double init_angle, bool randomized)
   agent->setOrientation(angle);
 }
 
-// from fully refined grid (simulation at level 1 fo refinement), get the block and the 8 neighbouring blocks next to
-// the pos. Essentially very slow as the simulation has to be full refined for this to work
-
-std::vector<double> getConvState(Simulation *_environment, std::vector<double> pos)
+double choosePolicy(double value, bool randomized)
 {
-  std::vector<double> vorticities;
-  // get the simulation data
-  const auto K1 = computeVorticity(_environment->sim); K1.run();
+  // returns values between -1 and 1, in steps of 0.2
+  double val = value;
 
-  // the vorticity is stored in the ScalarGrid* tmp
-  // get the part of the grid that interests us
-  // we will get all the blocks that together contain the area fully
-  const std::vector<cubism::BlockInfo>& vortInfo = _environment->sim.tmp->getBlocksInfo();
-
-  int bpdx = _environment->sim.bpdx;
-  int bpdy = _environment->sim.bpdy;
-
-  size_t num_points_x = ScalarBlock::sizeX;
-  size_t num_points_y = ScalarBlock::sizeY;
-
-  int index = 0;
-
-  // get index of block containing point "pos"
-  // loop over all the blocks
-  for(size_t t=0; t < vortInfo.size(); ++t)
+  if (randomized)
   {
-    const cubism::BlockInfo & info = vortInfo[t];
-    
-    // find block associated with the center_area point
-    // get gridspacing in block
-    const Real h = info.h_gridpoint;
-
-    // compute lower left corner of block
-    std::array<Real,2> MIN = info.pos<Real>(0, 0);
-    for(int j=0; j<2; ++j)
-      MIN[j] -= 0.5 * h; // pos returns cell centers
-
-    // compute top right corner of block
-    std::array<Real,2> MAX = info.pos<Real>(num_points_x-1, num_points_y-1);
-    for(int j=0; j<2; ++j)
-      MAX[j] += 0.5 * h; // pos returns cell centers
-
-    // check whether point is inside block
-    if( pos[0] >= MIN[0] && pos[1] >= MIN[1] && pos[0] <= MAX[0] && pos[1] <= MAX[1] )
+    std::uniform_real_distribution<double> dis(-11, 11);
+    val = std::floor(dis(_randomGenerator));
+    if (std::fmod(val, 2) != 0)
     {
-      // select block
-      index = t;
-    }
-
-  }
-
-  // get all the blocks surrounding the block that contains the point
-  const cubism::BlockInfo & info = vortInfo[index];
-
-  const cubism::BlockInfo & west  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, 0, 0));
-  const cubism::BlockInfo & east  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, 0, 0));
-  const cubism::BlockInfo & north  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(0, 1, 0));
-  const cubism::BlockInfo & south  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(0, -1, 0));
-
-  const cubism::BlockInfo & ne  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, 1, 0));
-  const cubism::BlockInfo & nw  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, 1, 0));
-  const cubism::BlockInfo & sw  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(-1, -1, 0));
-  const cubism::BlockInfo & se  = _environment->sim.tmp->getBlockInfoAll(info.level, info.Znei_(1, -1, 0));
-
-  const std::vector<std::vector<cubism::BlockInfo>>& blocks = {{nw, north, ne}, {west, info, east}, {sw, south, se}};
-
-  for(size_t b_i = 0; b_i < 3; ++b_i)
-  for(size_t b_j = 0; b_j < 3; ++b_j)
-  for(size_t i = 0; i < num_points_x; ++i)
-  for(size_t j = 0; j < num_points_y; ++j)
-  {
-    const ScalarBlock& b = * (const ScalarBlock*) blocks[b_i][b_j].ptrBlock;
-    
-    vorticities.push_back(b(i,j).s);
-  }
-
-  /////////////////////////////////////////////////////////
-
-
-  // size_t num_points = ScalarBlock::sizeY;
-
-  // // loop over the rows
-  // for(size_t j=0; j < num_points; ++j)
-  // {
-  //   // loop over all the blocks
-  //   for(size_t t=0; t < vortInfo.size(); ++t)
-  //   {
-  //     // get pointer on block
-  //     const ScalarBlock& b = * (const ScalarBlock*) vortInfo[t].ptrBlock;
-
-  //     // loop over the cols
-  //     for(size_t i=0; i < b.sizeX; ++i)
-  //       {
-  //         const std::array<Real,2> oSens = vortInfo[t].pos<Real>(i, j);
-  //         if (isInConvArea(oSens, center_area, dim))
-  //         {
-  //           vorticities.push_back(b(i,j).s);
-  //         }
-  //       }
-  //   }
-  // }
-
-  std::cout<<"size of vorticities: "<<vorticities.size()<<std::endl;
-
-  return vorticities;
-}
-
-bool isInConvArea(const std::array<Real,2> point, std::vector<double> target, std::vector<double> dimensions)
-{
-  std::array<Real, 2> lower_left = {target[0]-dimensions[0]/2.0, target[1]-dimensions[1]/2.0};
-  std::array<Real, 2> upper_right = {target[0]+dimensions[0]/2.0, target[1]+dimensions[1]/2.0};
-
-  if(point[0] >= lower_left[0] && point[0] <= upper_right[0])
-  {
-    if(point[1] >= lower_left[1] && point[1] <= upper_right[1])
-    {
-      return true;
+      val += 1;
     }
   }
-
-  return false;
+  val /= 10.0;
+  return val;
 }
 
 
-// std::vector<double> getRefinedBlock(Simulation *_environment, const std::array<Real,2> pos)
+// // 2 windmills with variable torque applied to them
+// void runEnvironment(korali::Sample &s)
 // {
-//   const unsigned int nX = ScalarBlock::sizeX;
-//   const unsigned int nY = ScalarBlock::sizeY;
+//   std::cout<<"Before state env"<<std::endl;
+//   ////////////////////////////////////////// setup stuff 
+//   // Setting seed
+//   size_t sampleId = s["Sample Id"];
+//   _randomGenerator.seed(sampleId);
 
-//   const auto K1 = computeVorticity(_environment->sim); K1.run();
+//   // Creating results directory
+//   char resDir[64];
+//   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+//   std::filesystem::create_directories(resDir);
+
+//   // Redirecting all output to the log file
+//   char logFilePath[128];
+//   sprintf(logFilePath, "%s/log.txt", resDir);
+//   auto logFile = freopen(logFilePath, "a", stdout);
+//   if (logFile == NULL)
+//   {
+//     printf("Error creating log file: %s.\n", logFilePath);
+//     exit(-1);
+//   }
+
+//   // Switching to results directory
+//   auto curPath = std::filesystem::current_path();
+//   std::filesystem::current_path(resDir);
+
+//   int sec = 30;
+//   int num_steps_per_sec = 100;
+//   int num_steps =  num_steps_per_sec * sec;
 
 
+//   // copy the contents of the profile.dat file into vector c++
+
+//   std::vector<std::vector<double>> profiles(num_steps, std::vector<double> (33, 0.0)); // initialize vector of size numsteps x 33
+
+//   std::ifstream myfile;
+//   myfile.open("../../profile.dat", ios::in);
+
+//   if (myfile.is_open()){
+//     std::cout<<"File is open"<<std::endl;
+//     std::cerr<<"Succesfully opened the file"<<std::endl;
+
+//   } else{
+//     std::cout<<"File is closed"<<std::endl;
+//     std::cerr<<"Failed to open the file"<<std::endl;
+//   }
+
+//   std::string line;
+//   int i = 0;
+//   int j_copy = 0;
+
+//   while (std::getline(myfile, line))
+//   {
+//     std::istringstream data_line(line);
+//     int j = 0;
+//     for (j=0; j < 33; ++j)
+//     {
+//       if (data_line >> profiles[i][j])
+//       {
+
+//       } else{
+//         std::cout<<"Failed to read number"<<std::endl;
+//       }
+//     }
+//     i += 1;
+//     j_copy = j;
+//   }
+//   myfile.close();
+
+//   std::cout<<"ij"<<i<<" "<<j_copy<<std::endl;
+
+
+
+//   //if(std::filesystem::copy_file("../../profile.dat", "profile.dat")) std::cout<<"File was copied successfully"<<std::endl;;
+
+//   // Creating simulation environment
+//   Simulation *_environment = new Simulation(_argc, _argv);
+//   _environment->init();
+//   ////////////////////////////////////////// setup stuff 
+
+//   ////////////////////////////////////////// Initialize agents and objective
+//   // Obtaining agent, 4 windmills 
+//   Windmill* agent1 = dynamic_cast<Windmill*>(_environment->getShapes()[0]);
+//   Windmill* agent2 = dynamic_cast<Windmill*>(_environment->getShapes()[1]);
+
+//   // useful agent functions :
+//   // void act( double action );
+//   // double reward( std::array<Real,2> target, std::vector<double> target_vel, double C = 10);
+//   // std::vector<double> state();
+
+//   // Establishing environment's dump frequency
+//   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+
+//   // Setting initial conditions
+//   setInitialConditions(agent1, 0.0, s["Mode"] == "Training");
+//   setInitialConditions(agent2, 0.0, s["Mode"] == "Training");
+//   // After moving the agent, the obstacles have to be restarted
+//   _environment->startObstacles();
+
+//   //std::vector<double> state = velGridProfile(_environment);
+//   std::vector<double> state = agent1->vel_profile();
+
+//   // std::cout<<"State is of size :"<<state.size()<<std::endl;
+
+//   s["State"] = state;
+
+//   // Setting initial time and step conditions
+//   double t = 0;        // Current time
+//   double tNextAct = 0; // Time until next action
+//   size_t curStep = 0;  // current Step
+
+//   // Setting maximum number of steps before truncation
+//   size_t maxSteps = num_steps; // 2000 for training
+
+//   // std::fstream myfile;
+//   // myfile.open("profile.dat", ios::in);
+
+//   // if (myfile.is_open()){
+//   //   std::cout<<"File is open"<<std::endl;
+//   // } else{
+//   //   std::cout<<"File is closed"<<std::endl;
+//   // }
+
+//   std::vector<double> true_prof = {19.9993, 0.0531483, 0.053797, 0.0541452, 0.05426, 0.0542343, 0.0541726, 0.0541775, 0.0543413, 0.0547629,
+//                                    0.0555199, 0.0567263, 0.0584773, 0.0608873, 0.063975, 0.0675119, 0.0707227, 0.0725255, 0.0724874,
+//                                    0.0722369, 0.0752008, 0.0817008, 0.0888002, 0.0975837, 0.109082, 0.121681, 0.133602, 0.143548,
+//                                    0.150564, 0.153644, 0.151996, 0.145743, 0.136029};
+  
+
+//   int index_step = 0;
+
+//   while (curStep < maxSteps)
+//   {
+//     // Getting new action
+//     s.update();
+
+//     // Reading new action
+//     std::vector<double> action = s["Action"];
+
+//     // Setting action for 
+//     agent1->act( action[0] );
+//     agent2->act( action[1] );
+
+//     // Run the simulation until next action is required
+//     tNextAct += 1.0 / num_steps_per_sec ;
+//     while ( t < tNextAct )
+//     {
+//       // Calculate simulation timestep
+//       const double dt = std::min(_environment->calcMaxTimestep(), 1.0 / num_steps_per_sec);
+//       t += dt;
+
+//       // Advance simulation
+//       _environment->advance(dt);
+//     }
+
+//     // std::vector<double> profile;
+//     // std::string line;
+
+//     // if (myfile.is_open()){
+//     //   std::cout<<"File is open"<<std::endl;
+//     // } 
+
+//     // std::getline(myfile, line);
+//     // std::istringstream data_line(line);
+//     // std::cout<<line<<std::endl;
+    
+
+//     // double value = 0.0;
+
+//     // while (data_line >> value)
+//     // {
+//     //   profile.push_back(value);
+//     // }
+//     // std::cout<<" After reading file line "<<profile[0]<<std::endl;
+
+//     Real factor = 10.0;
+
+//     double reward = agent1->reward(factor, profiles[index_step]);
+
+//     // Storing reward
+//     s["Reward"] = reward;
+
+//     index_step += 1;
+
+
+//     //state = velGridProfile(_environment);
+//     state = agent1->vel_profile();
+
+//     // Storing new state
+//     s["State"] = state;
+
+//     // Advancing to next step
+//     curStep++;
+//   }
+
+//   // myfile.close();
+
+//   // Flush CUP logger
+//   logger.flush();
+
+//   // delete simulation class
+//   delete _environment;
+
+//   // Setting finalization status
+//   s["Termination"] = "Truncated";
+
+//   // Switching back to experiment directory
+//   std::filesystem::current_path(curPath);
+
+//   // Closing log file
+//   fclose(logFile);
 // }
 
-
-// From the simulation, get the uniform grid of vorticities.
-
-std::vector<double> getUniformGridVort(Simulation *_environment, const std::array<Real,2> pos)
-{
-  const unsigned int nX = ScalarBlock::sizeX;
-  const unsigned int nY = ScalarBlock::sizeY;
-
-  const auto K1 = computeVorticity(_environment->sim); K1.run();
-
-  const std::vector<cubism::BlockInfo>& vortInfo = _environment->sim.tmp->getBlocksInfo();
-
-  const int levelMax = _environment->sim.tmp->getlevelMax();
-
-  std::array<int, 3> bpd = _environment->sim.tmp->getMaxBlocks();
-  const unsigned int unx = bpd[0]*(1<<(levelMax-1))*nX; // maximum number of points in x directions, fully refined
-  const unsigned int uny = bpd[1]*(1<<(levelMax-1))*nY; // same in y direction
-
-  // need to change this if not square grid
-  // double extent = _environment_>sim.extent; // extent of dim with most bpd
-  // double h_min = extent / std::max(unx, uny);
-  // double h_max
-
-
-  //std::vector<double> uniform_mesh(uny*unx); // vector containing all the points in the simulation
-  std::vector<std::vector<double>> uniform_mesh (uny, std::vector<double> (unx, 0));
-
-  // info and block containing the pos point
-  size_t id = holdingBlockID(pos, vortInfo);
-  const cubism::BlockInfo & point_info = vortInfo[id];
-  const ScalarBlock& point_b = * (const ScalarBlock*) point_info.ptrBlock;
-
-  // get origin of block
-  const std::array<Real,2> oSens = point_info.pos<Real>(0, 0);
-
-  // get inverse gridspacing in block
-  const Real invh = 1/(point_info.h_gridpoint);
-
-  // get index for sensor
-  const std::array<int,2> iSens = safeIdInBlock(pos, oSens, invh);
-
-  const int level_block = point_info.level;
-
-  int N_block = (1<< ( (levelMax-1)-level_block ) );
-  int i_point = (point_info.index[0]*nX + iSens[0])*N_block;
-  int j_point = (point_info.index[1]*nY + iSens[1])*N_block; // gets coordinate of point for fully refined grid
-  
-  // std::cout<<"Before loop"<<std::endl;
-
-
-  // loop over the blocks
-  for (size_t i = 0 ; i < vortInfo.size() ; i++)
-  {
-    const int level = vortInfo[i].level;
-    const cubism::BlockInfo & info = vortInfo[i];
-    const ScalarBlock& b = * (const ScalarBlock*) info.ptrBlock;
-
-    const Real h = vortInfo[i].h_gridpoint;
-
-    for (unsigned int y = 0; y < nY; y++)
-    for (unsigned int x = 0; x < nX; x++)
-    {
-      double output = 0.0;
-      double dudx = 0.0;
-      double dudy = 0.0;
-
-      output = b(x,y).s;
-      if (x!= 0 && x!= nX-1)
-      {
-        double output_p = 0.0;
-        double output_m = 0.0;
-        output_p = b(x+1, y).s;
-        output_m = b(x-1, y).s;
-        dudx = 0.5*(output_p-output_m);
-      }
-      else if (x==0)
-      {
-        double output_p = 0.0;
-        output_p = b(x+1,y).s;
-        dudx = output_p-output;   
-      }
-      else
-      {
-        double output_m = 0.0;
-        output_m = b(x-1, y).s;
-        dudx = output-output_m;     
-      }
-
-      if (y!= 0 && y!= nY-1)
-      {
-        double output_p = 0.0;
-        double output_m = 0.0;
-        output_p = b(x, y+1).s;
-        output_m = b(x, y-1).s;
-        dudy = 0.5*(output_p-output_m);
-      }
-      else if (y==0)
-      {
-        double output_p = 0.0;
-        output_p = b(x, y+1).s;
-        dudy = output_p-output;     
-      }
-      else
-      {
-        double output_m = 0.0;
-        output_m = b(x, y-1).s;
-        dudy = output-output_m;       
-      }
-
-      // refinement part
-      // for each bloc, indepent of how refined they are, fully refine them
-
-      // index[] //(i,j,k) coordinates of block at given refinement level, i.e.,
-      // if the entire grid was at the same refinement level, what would be the index of the point
-      // nY and nY = # of points per direction in each block
-      int N = (1<< ( (levelMax-1)-level ) ); // number of points to add per point so that grid is fully refined
-      int iy_start = (info.index[1]*nY + y)*N; // gets coordinate of point for fully refined grid
-      int ix_start = (info.index[0]*nX + x)*N;
-
-
-      // const int points = 1<< ( (levelMax-1)-level ); // multiply 1 by 2^(levelMax-1 - level), i.e. number of points per direction
-      const double dh = 1.0/N; // grid spacing
-
-      for (int iy = iy_start; iy< iy_start + N; iy++)
-      for (int ix = ix_start; ix< ix_start + N; ix++)
-      {
-        double cx = (ix - ix_start - N/2 + 1 - 0.5)*dh;
-        double cy = (iy - iy_start - N/2 + 1 - 0.5)*dh;
-        //uniform_mesh[iy*unx+ix] = output + cx*dudx + cy*dudy;
-        uniform_mesh[iy][ix] = output + cx*dudx + cy*dudy;
-        // for (unsigned int j = 0; j < NCHANNELS; ++j)
-        //   uniform_mesh[iy*NCHANNELS*unx+ix*NCHANNELS+j] = output[j]+ cx*dudx[j]+ cy*dudy[j];
-      }
-
-
-    }
-  }
-
-  // std::cout<<"After loop"<<std::endl;
-
-  std::vector<double> subsample(576);
-  int ind = 0;
-
-  for(int i = -12; i < 12; ++i)
-  for(int j = -12; j < 12; ++j)
-  {
-    subsample[ind] = uniform_mesh[i_point + i][j_point + j];
-    ind+=1;
-  }
-
-
-  //std::cout<<"Total size of grid: "<<uniform_mesh.size()<<std::endl;
-
-  return subsample;
-
-}
-
-std::vector<double> getUniformLevelGridVort(Simulation *_environment, const std::array<Real,2> pos, int grid_level)
-{
-  // this function gets the uniform grid at a certain level
-  // works similarly to the getUniformGridVort except it averages the vorticities if the block is too refined
-  const unsigned int nX = ScalarBlock::sizeX;
-  const unsigned int nY = ScalarBlock::sizeY;
-
-  const auto K1 = computeVorticity(_environment->sim); K1.run();
-
-  const std::vector<cubism::BlockInfo>& vortInfo = _environment->sim.tmp->getBlocksInfo();
-
-  const int levelMax = _environment->sim.tmp->getlevelMax();
-
-  std::array<int, 3> bpd = _environment->sim.tmp->getMaxBlocks();
-
-
-  ////// 
-  const unsigned int unx = bpd[0]*(1<<(grid_level-1))*nX; // maximum number of points in x directions, refined to grid_level
-  const unsigned int uny = bpd[1]*(1<<(grid_level-1))*nY; // same in y direction
-
-  // need to change this if not square grid
-  // double extent = _environment_>sim.extent; // extent of dim with most bpd
-  // double h_min = extent / std::max(unx, uny);
-  // double h_max
-
-
-  //std::vector<double> uniform_mesh(uny*unx); // vector containing all the points in the simulation
-  std::vector<std::vector<double>> uniform_mesh (uny, std::vector<double> (unx, 0));
-
-  // loop over the blocks
-  for (size_t i = 0 ; i < vortInfo.size() ; i++)
-  {
-    const int level = vortInfo[i].level;
-    const cubism::BlockInfo & info = vortInfo[i];
-    const ScalarBlock& b = * (const ScalarBlock*) info.ptrBlock;
-
-    // grid is more refined that it needs to be
-    // average the values
-    if(level+1 == grid_level+1)
-    {
-      for (unsigned int y = 0; y < nY; y+=2)
-      for (unsigned int x = 0; x < nX; x+=2)
-      {
-        double avg = b(x, y).s + b(x+1, y).s + b(x, y+1).s + b(x+1,y+1).s;
-
-        int N = 2;
-        
-        int iy = (info.index[1]*nY + y)/N; // gets coordinate of point for fully refined grid
-        int ix = (info.index[0]*nX + x)/N;
-
-        uniform_mesh[iy][ix] = avg;
-      }
-
-    } else if (level+1 == grid_level) // grid is at same level of refinement
-    {
-      for (unsigned int y = 0; y < nY; y++)
-      for (unsigned int x = 0; x < nX; x++)
-      {
-        if (level == grid_level) // get indices of points
-        {
-          int N = 2;
-          
-          int iy = (info.index[1]*nY + y); // gets coordinate of point for fully refined grid
-          int ix = (info.index[0]*nX + x);
-
-          uniform_mesh[iy][ix] = b(x, y).s;
-        }
-      }
-    }
-    else // grid needs to be refined
-    {
-      const Real h = vortInfo[i].h_gridpoint;
-
-      for (unsigned int y = 0; y < nY; y++)
-      for (unsigned int x = 0; x < nX; x++)
-      {
-        double output = 0.0;
-        double dudx = 0.0;
-        double dudy = 0.0;
-
-        output = b(x,y).s;
-        if (x!= 0 && x!= nX-1)
-        {
-          double output_p = 0.0;
-          double output_m = 0.0;
-          output_p = b(x+1, y).s;
-          output_m = b(x-1, y).s;
-          dudx = 0.5*(output_p-output_m);
-        }
-        else if (x==0)
-        {
-          double output_p = 0.0;
-          output_p = b(x+1,y).s;
-          dudx = output_p-output;   
-        }
-        else
-        {
-          double output_m = 0.0;
-          output_m = b(x-1, y).s;
-          dudx = output-output_m;     
-        }
-
-        if (y!= 0 && y!= nY-1)
-        {
-          double output_p = 0.0;
-          double output_m = 0.0;
-          output_p = b(x, y+1).s;
-          output_m = b(x, y-1).s;
-          dudy = 0.5*(output_p-output_m);
-        }
-        else if (y==0)
-        {
-          double output_p = 0.0;
-          output_p = b(x, y+1).s;
-          dudy = output_p-output;     
-        }
-        else
-        {
-          double output_m = 0.0;
-          output_m = b(x, y-1).s;
-          dudy = output-output_m;       
-        }
-
-        // refinement part
-        // for each bloc, indepent of how refined they are, fully refine them
-
-        // index[] //(i,j,k) coordinates of block at given refinement level, i.e.,
-        // if the entire grid was at the same refinement level, what would be the index of the point
-        // nY and nY = # of points per direction in each block
-        int N = (1<< ( (grid_level-1)-level ) ); // number of points to add per point so that grid is fully refined
-        int iy_start = (info.index[1]*nY + y)*N; // gets coordinate of point for fully refined grid
-        int ix_start = (info.index[0]*nX + x)*N;
-
-
-        // const int points = 1<< ( (levelMax-1)-level ); // multiply 1 by 2^(levelMax-1 - level), i.e. number of points per direction
-        const double dh = 1.0/N; // grid spacing
-
-        for (int iy = iy_start; iy< iy_start + N; iy++)
-        for (int ix = ix_start; ix< ix_start + N; ix++)
-        {
-          double cx = (ix - ix_start - N/2 + 1 - 0.5)*dh;
-          double cy = (iy - iy_start - N/2 + 1 - 0.5)*dh;
-          //uniform_mesh[iy*unx+ix] = output + cx*dudx + cy*dudy;
-          uniform_mesh[iy][ix] = output + cx*dudx + cy*dudy;
-          // for (unsigned int j = 0; j < NCHANNELS; ++j)
-          //   uniform_mesh[iy*NCHANNELS*unx+ix*NCHANNELS+j] = output[j]+ cx*dudx[j]+ cy*dudy[j];
-        }
-
-
-      }
-    }
-  }
-
-
-  // info and block containing the pos point
-  size_t id = holdingBlockID(pos, vortInfo);
-  const cubism::BlockInfo & point_info = vortInfo[id];
-  const ScalarBlock& point_b = * (const ScalarBlock*) point_info.ptrBlock;
-
-  // get origin of block
-  const std::array<Real,2> oSens = point_info.pos<Real>(0, 0);
-
-  // get inverse gridspacing in block
-  const Real invh = 1/(point_info.h_gridpoint);
-
-  // get index for sensor
-  const std::array<int,2> iSens = safeIdInBlock(pos, oSens, invh);
-
-  const int level_block = point_info.level;
-
-  int N_block = (1<< ( (grid_level-1)-level_block ) );
-  int i_point = (point_info.index[0]*nX + iSens[0]);
-  int j_point = (point_info.index[1]*nY + iSens[1]);
-  if (level_block+1==grid_level+1){
-    i_point /= 2;
-    j_point /= 2;
-  } else if (level_block+1 == grid_level)
-  {
-    // pass
-  } else
-  {
-    i_point *= N_block;
-    j_point *= N_block;
-  }
-
-  // std::cout<<"After loop"<<std::endl;
-
-  std::vector<double> subsample(576);
-  int ind = 0;
-
-  for(int i = -12; i < 12; ++i)
-  for(int j = -12; j < 12; ++j)
-  {
-    subsample[ind] = uniform_mesh[i_point + i][j_point + j];
-    ind+=1;
-  }
-
-
-  //std::cout<<"Total size of grid: "<<uniform_mesh.size()<<std::endl;
-
-  return subsample;
-
-}
-
-std::vector<double> vortGridProfile(Simulation *_environment)
-{
-  std::vector<double> vort_profile(576, 0.0);
-
-  double height = 0.021875;
-  double region_area = height * height;
-
-  const std::vector<cubism::BlockInfo>& velInfo = _environment->sim.tmp->getBlocksInfo();
-  
-  // loop over all the blocks
-  for(size_t t=0; t < velInfo.size(); ++t)
-  {
-    // get pointer on block
-    const ScalarBlock& b = * (const ScalarBlock*) velInfo[t].ptrBlock;
-   
-    double da = velInfo[t].h_gridpoint * velInfo[t].h_gridpoint;
-    // loop over all the points
-    for(size_t i=0; i < b.sizeX; ++i)
-    {
-      for(size_t j=0; j < b.sizeY; ++j)
-      {
-        const std::array<Real,2> oSens = velInfo[t].pos<Real>(i, j);
-        std::vector<int> num = idRegion(oSens, height);
-        if (num[0] == 1)
-        {
-          int index = 24 * (num[1]-1) + num[2] - 1;
-          vort_profile[index] += b(i,j).s * da;
-        }
-      }
-    }
-  }
-
-  // divide each vel_avg by the corresponding area
-
-  for (int k = 0; k < 24; ++k)
-  {
-    for (int p = 0; p < 24; ++p)
-    {
-      vort_profile[24*k + p] /= region_area;
-    }
-  }
-
-  return vort_profile;
-}
-
-std::vector<double> velGridProfile(Simulation *_environment)
-{
-  std::vector<double> vel_profile(576, 0.0);
-
-  double height = 0.021875;
-  double region_area = height * height;
-
-  const std::vector<cubism::BlockInfo>& velInfo = _environment->sim.vel->getBlocksInfo();
-  
-  // loop over all the blocks
-  for(size_t t=0; t < velInfo.size(); ++t)
-  {
-    // get pointer on block
-    const VectorBlock& b = * (const VectorBlock*) velInfo[t].ptrBlock;
-   
-    double da = velInfo[t].h_gridpoint * velInfo[t].h_gridpoint;
-    // loop over all the points
-    for(size_t i=0; i < b.sizeX; ++i)
-    {
-      for(size_t j=0; j < b.sizeY; ++j)
-      {
-        const std::array<Real,2> oSens = velInfo[t].pos<Real>(i, j);
-        std::vector<int> num = idRegion(oSens, height);
-        if (num[0] == 1)
-        {
-          int index = 24 * (num[1]-1) + num[2] - 1;
-          vel_profile[index] += std::sqrt(b(i, j).u[0]*b(i, j).u[0] + b(i, j).u[1]*b(i, j).u[1]) * da;
-        }
-      }
-    }
-  }
-
-  // divide each vel_avg by the corresponding area
-
-  for (int k = 0; k < 24; ++k)
-  {
-    for (int p = 0; p < 24; ++p)
-    {
-      vel_profile[24*k + p] /= region_area;
-    }
-  }
-
-  return vel_profile;
-}
-
-std::vector<int> idRegion(const std::array<Real, 2> point, double height)
-{
-  // returns 0 if outside of the box
-  std::array<Real, 2> lower_left = {0.525, 0.35};
-  std::array<Real, 2> upper_right = {1.05, 0.875};
-  double rel_pos_height = point[1] - lower_left[1];
-  double rel_pos_width = point[0] - lower_left[0];
-  //std::array<Real, 2> rel_pos = {point[0] - lower_left[0], point[1] - lower_left[1]};
-  std::vector<int> num(3, 0);
-
-  if(point[0] >= lower_left[0] && point[0] <= upper_right[0])
-  {
-    if(point[1] >= lower_left[1] && point[1] <= upper_right[1])
-    {
-      // point is inside the rectangle to compute velocity profile
-      // now find out in what region of the rectangle we are in
-      num[0] = 1;
-      num[1] = static_cast<int>(std::ceil(rel_pos_height/height));
-      num[2] = static_cast<int>(std::ceil(rel_pos_width/height));
-      //std::cout<<"num "<<num[1]<<" "<<num[2]<<std::endl;
-      
-      return num;
-    }
-  }
-
-  return num;
-}
-
-// function that finds block id of block containing pos (x,y)
-size_t holdingBlockID(const std::array<Real,2> pos, const std::vector<cubism::BlockInfo>& velInfo)
-{
-  for(size_t i=0; i<velInfo.size(); ++i)
-  {
-    // get gridspacing in block
-    const Real h = velInfo[i].h_gridpoint;
-
-    // compute lower left corner of block
-    std::array<Real,2> MIN = velInfo[i].pos<Real>(0, 0);
-    for(int j=0; j<2; ++j)
-      MIN[j] -= 0.5 * h; // pos returns cell centers
-
-    // compute top right corner of block
-    std::array<Real,2> MAX = velInfo[i].pos<Real>(VectorBlock::sizeX-1, VectorBlock::sizeY-1);
-    for(int j=0; j<2; ++j)
-      MAX[j] += 0.5 * h; // pos returns cell centers
-
-    // check whether point is inside block
-    if( pos[0] >= MIN[0] && pos[1] >= MIN[1] && pos[0] <= MAX[0] && pos[1] <= MAX[1] )
-    {
-      // select block
-      return i;
-    }
-  }
-  printf("ABORT: coordinate (%g,%g) could not be associated to block\n", pos[0], pos[1]);
-  fflush(0); abort();
-  return 0;
-};
-
-// function that gives indice of point in block
-std::array<int, 2> safeIdInBlock(const std::array<Real,2> pos, const std::array<Real,2> org, const Real invh )
-{
-  const int indx = (int) std::round((pos[0] - org[0])*invh);
-  const int indy = (int) std::round((pos[1] - org[1])*invh);
-  const int ix = std::min( std::max(0, indx), VectorBlock::sizeX-1);
-  const int iy = std::min( std::max(0, indy), VectorBlock::sizeY-1);
-  return std::array<int, 2>{{ix, iy}};
-};

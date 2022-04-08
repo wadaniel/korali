@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 if [ $# -lt 1 ] ; then
 	echo "Usage: ./run-vracer-windmill.sh RUNNAME"
@@ -8,24 +8,30 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
+# number of nodes per worker/simulation
+NRANKS=2
+
+# number of cores per nodes for worker/simulation
+NUMCORES=12
+
 # Set number of nodes here
-mpiflags="mpirun -n 2"
+mpiflags="mpirun -n 12"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- mpiflags="srun -N $N -n $((N+1)) -c 12"
 fi
 
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
-cp profiles/freqnu2hz.dat ${RUNPATH}/profile.dat
-cp profiles/freqnu2hz.dat ${RUNPATH} # indication of which data file to use
+cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
 cd ${RUNPATH}
 
 source settings.sh
 
 set -ux
 
-$mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+# need at least two nodes 
+# heterogenous run, that will have N-1 nodes with pure mpi, i.e. 12 ranks and 1 node with openMP, i.e. 1 rank and 12 threads
+srun --nodes=$((N-1)) --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))

@@ -8,37 +8,47 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
-# number of agents
-NNODES=64
+# number of workers/simulations in parallel
+NWORKER=16
+
+# number of nodes per worker/simulation
+NRANKS=2
+
+# number of cores per nodes (for workers)
+NUMCORES=12
+
+# number of worker * number of nodes per worker = number of nodes in total
+NNODES=$(( $NWORKER * $NRANKS))
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
-cp profiles/freqnu.dat ${RUNPATH}/profile.dat
-cp profiles/freqnu.dat ${RUNPATH} # indication of which data file to use
+cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
 cd ${RUNPATH}
 
 source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
+#SBATCH --account=s929
+#SBATCH --constraint=gpu
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
 #SBATCH --time=24:00:00
-#SBATCH --nodes=$((NNODES+1))
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=12
-#SBATCH --ntasks-per-core=1
 #SBATCH --partition=normal
-#SBATCH --constraint=gpu
-#SBATCH --account=s929
+#SBATCH --nodes=$((NNODES+1))
 
-srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+
+srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
+# srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 # srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 EOF
+
+echo "Starting ${NWORKER} simulations each using ${NRANKS} nodes with ${NUMCORES} cores"
+echo "----------------------------"
 
 chmod 755 daint_sbatch
 sbatch daint_sbatch

@@ -9,7 +9,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of nodes per worker/simulation
-NRANKS=2
+NRANKS=1
 
 # number of cores per nodes for worker/simulation
 NUMCORES=12

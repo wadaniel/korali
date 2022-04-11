@@ -113,16 +113,26 @@ def plotEnergy( root, obstacleId, output ):
 def compareDisplacement():
     y0 = 0.5
     output = "displacement.png"
-    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+    # output = ""
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish.eval/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0001", "/scratch/snx3000/pweber/korali/MAcolumnFish.eval/MAcolumnFish_efficiency/_testingResults/sample0001"]
 
-    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+    fig, ax = plt.subplots(2, 1, sharex=True,figsize=(6,6), dpi=100)
 
     for j, root in enumerate(dirs):
+        print(root)
         for obstacleId in range(1,4):
             data = np.loadtxt(root+"/velocity_{}.dat".format(obstacleId), skiprows=1)
-            ax.plot(data[:,0], data[:,3]-y0, color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
-    ax.set_xlabel("time $t$")
-    ax.set_ylabel("lateral displacement $\Delta y$")
+            ax[j].plot(data[:,0], np.abs(data[:,3]-y0), color="C{}".format(obstacleId-1), label="agent {}".format(obstacleId), linewidth=2) #or -1
+            mean = np.mean(np.abs(data[:,3]-y0))
+            ax[j].axhline(mean, linestyle="--", color="C{}".format(obstacleId-1))
+            print("mean displacement agent {}: ".format(obstacleId), mean)
+    ax[1].set_xlabel("time $t$")
+    ax[0].set_ylabel("lateral displacement $|\Delta y|$")
+    ax[1].set_ylabel("lateral displacement $|\Delta y|$")
+    ax[0].set_title("minimize displacement")
+    ax[1].set_title("maximize efficiency")
+    # ax[0].legend()
+    ax[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.22), ncol=3, facecolor="white", edgecolor="white")
     plt.tight_layout()
     if output != "":
         plt.savefig(output)
@@ -131,7 +141,7 @@ def compareDisplacement():
 
 def compareForces():
     output = "forces.png"
-    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0001", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0001"]
 
     fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
 
@@ -152,24 +162,38 @@ def compareForces():
 
 def compareEfficiency():
     output = "efficiency.png"
-    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0000", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0000"]
+    # output = ""
+    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish.eval/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0001", "/scratch/snx3000/pweber/korali/MAcolumnFish.eval/MAcolumnFish_efficiency/_testingResults/sample0001"]
 
-    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+    fig, ax = plt.subplots(2, 1, sharex=True,figsize=(6,6), dpi=100)
 
     for j, root in enumerate(dirs):
+        print(root)
         for obstacleId in range(1,4):
             data = np.loadtxt(root+"/powerValues_{}.dat".format(obstacleId), skiprows=1)
             # smoothned = savgol_filter(data[:,-1], 51, 3)
-            averaged = uniform_filter1d(data[:,-1], size=20000)
-            ax.plot(data[:,0], averaged, label='efficiency', color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
-    ax.set_xlabel("time $t$")
-    ax.set_ylabel("averaged efficiency $\eta$")
+            # averaged = uniform_filter1d(data[:,-1], size=5000)
+            filterWidth = 10000
+            # averaged = np.convolve(data[:,-1], np.ones(filterWidth)/filterWidth, mode='valid')
+            averageReturns = np.cumsum(data[:,-1])
+            averaged = (averageReturns[filterWidth:]-averageReturns[:-filterWidth])/float(filterWidth)
+            averaged = np.insert(averaged, 0,averageReturns[filterWidth-1]/float(filterWidth))
+            ax[j].plot(data[filterWidth-1:,0], averaged, color="C{}".format(obstacleId-1), label="agent {}".format(obstacleId), linewidth=2) #or -1
+            mean = np.mean(data[:,-1])
+            ax[j].axhline(mean, linestyle="--", color="C{}".format(obstacleId-1))
+            print("mean efficiency agent {}: ".format(obstacleId), mean)
+    ax[1].set_xlabel("time $t$")
+    ax[0].set_ylabel("averaged efficiency $\eta$")
+    ax[1].set_ylabel("averaged efficiency $\eta$")
+    ax[0].set_title("minimize displacement")
+    ax[1].set_title("maximize efficiency")
+    # ax[0].legend()
+    ax[1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.22), ncol=3, facecolor="white", edgecolor="white")
     plt.tight_layout()
     if output != "":
         plt.savefig(output)
     else:
         plt.show()
-
 
 def plotEfficiency():
     rootControlled = "/scratch/snx3000/mchatzim/CUP2D/School_Control_09Fish/"
@@ -271,11 +295,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    plotTrajectory(args.dir, args.obstacleId, args.output)
-    plotForces(args.dir, args.obstacleId, args.output)
-    plotEnergy(args.dir, args.obstacleId, args.output)
-    # compareDisplacement()
+    # plotTrajectory(args.dir, args.obstacleId, args.output)
+    # plotForces(args.dir, args.obstacleId, args.output)
+    # plotEnergy(args.dir, args.obstacleId, args.output)
+    compareDisplacement()
     # compareForces()
-    # compareEfficiency()
+    compareEfficiency()
     # animateCoM()
     # plotEfficiency()

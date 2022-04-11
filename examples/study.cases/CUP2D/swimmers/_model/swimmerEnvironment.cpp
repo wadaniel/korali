@@ -90,7 +90,16 @@ void runEnvironment(korali::Sample &s)
   // Argument string to inititialize Simulation
   std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS ) + " -shapes ";
 
-  /* Add Obstacle */
+  /* Add Obstacle for cases 0,1,2,3; cases >3 do not have an obstacle!
+     CASE 0: Halfdisk, maximize efficiency
+     CASE 1: Hydrofoil, maximize efficiency
+     CASE 2: Stefanfish, minimize lateral displacement
+     CASE 3: Stefanfish, maximize efficiency
+     CASE 4: None, minimize lateral displacement while maximizing efficiency
+     CASE 5: None, periodic domain 
+     CASE 6: None, minimize lateral displacement
+     CASE 7: None, maximize efficiency
+   */
   switch(task) {
     case 0 : // DCYLINDER
     {
@@ -168,17 +177,9 @@ void runEnvironment(korali::Sample &s)
       argumentString = argumentString + OBJECT + std::to_string(length);
       break;
     }
-    case 4 :
-    {
-      // TASK 4
-      std::string OBJECT = "waterturbine semiAxisX=0.05 semiAxisY=0.017 xpos=0.4 bForced=1 bFixed=1 xvel=0.2 angvel=-0.79 tAccel=0 ";
-      argumentString = argumentString + OBJECT;
-      break;
-    }
   }
 
   /* Add Agent(s) */
-
   std::string AGENTPOSX  = " xpos=";
   std::string AGENTPOSY  = " ypos=";
   std::string AGENTANGLE = " angle=";
@@ -211,7 +212,7 @@ void runEnvironment(korali::Sample &s)
     if ( s["Mode"] == "Training" ) 
     {
       // only rank 0 samples initial data
-      if( (rank == 0) and (task != 5) )
+      if( rank == 0 )
       {
         std::uniform_real_distribution<double> disA(-5. / 180. * M_PI, 5. / 180. * M_PI);
         std::uniform_real_distribution<double> disX(-0.05, 0.05);
@@ -250,7 +251,7 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agents
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(nAgents);
-  if( task == 5 )
+  if( task > 3 )
   {
     //all five fish are agents in task 5
     for( int i = 0; i<nAgents; i++ )
@@ -295,7 +296,7 @@ void runEnvironment(korali::Sample &s)
   const size_t maxSteps = 200;
 
   // Careful, hardcoded the number of action(s)!
-  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(2));
+  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(1));
 
   // Starting main environment loop
   bool done = false;
@@ -322,8 +323,8 @@ void runEnvironment(korali::Sample &s)
     // Broadcast and apply action(s) [Careful, hardcoded the number of action(s)!]
     for( int i = 0; i<nAgents; i++ )
     {
-      MPI_Bcast( actions[i].data(), 2, MPI_DOUBLE, 0, comm );
-      if( actions[i].size() != 2 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
+      MPI_Bcast( actions[i].data(), 1, MPI_DOUBLE, 0, comm );
+      if( actions[i].size() != 1 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
       agents[i]->act(t, actions[i]);
     }
 
@@ -333,7 +334,10 @@ void runEnvironment(korali::Sample &s)
       {
           ofstream myfile;
           myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
-          myfile << t << " " << actions[i][0] << " " << actions[i][1] << std::endl;
+          myfile << t << " ";
+          for( size_t a = 0; a<actions[i].size(); a++ )
+            myfile << actions[i][a] << " ";
+          myfile << std::endl;
           myfile.close();
       }
     }
@@ -372,8 +376,10 @@ void runEnvironment(korali::Sample &s)
 
         // assign state/reward to container
         states[i]  = state;
-        if( task == 2 )
+        if( (task == 2) || (task ==6) )
           rewards[i] = done ? -10.0 : -std::abs(agents[i]->center[1]-initialPosition[1]);
+        else if( task == 4 )
+          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::abs(agents[i]->center[1]-initialPosition[1]);
         else
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
@@ -401,7 +407,9 @@ void runEnvironment(korali::Sample &s)
           printf("[Korali] State: [ %.3f", state[0]);
           for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
           printf("]\n");
-          printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+          printf("[Korali] Action: [ %.3f", action[0]);
+          for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
+          printf("]\n");
           printf("[Korali] Reward: %.3f\n", reward);
           printf("[Korali] Terminal?: %d\n", done);
           printf("[Korali] -------------------------------------------------------\n");
@@ -414,7 +422,9 @@ void runEnvironment(korali::Sample &s)
         printf("[Korali] State: [ %.3f", state[0]);
         for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
         printf("]\n");
-        printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+        printf("[Korali] Action: [ %.3f", state[0]);
+        for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
+        printf("]\n");
         printf("[Korali] Reward: %.3f\n", reward);
         printf("[Korali] Terminal?: %d\n", done);
         printf("[Korali] -------------------------------------------------------\n");
@@ -489,9 +499,13 @@ bool isTerminal(StefanFish *agent, int nAgents)
   }
   else if( nAgents == 4 ){
     xMin = 0.1;
-    xMax = 1.07;
-    yMin = 0.05;
-    yMax = 0.35;
+    xMax = 1.9;
+    yMin = 0.1;
+    yMax = 0.9;
+    // xMin = 0.1;
+    // xMax = 1.07;
+    // yMin = 0.05;
+    // yMax = 0.35;
   }
   else if( nAgents == 5 ){
     //periodic [0,1]x[0,1] domain with 5 fish

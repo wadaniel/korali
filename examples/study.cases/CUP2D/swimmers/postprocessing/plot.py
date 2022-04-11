@@ -34,6 +34,7 @@ import glob
 
 def loadTestingReturns( prefix, path ):
     # Go to target directory and get list with wished files
+    currentDir = os.getcwd()
     os.chdir(path)
     files = sorted(glob.glob("{}*".format(prefix)))
 
@@ -47,7 +48,9 @@ def loadTestingReturns( prefix, path ):
                     current.append(float(line[-10:]))
         returns.append(current)
 
-    print("returns {}:".format(path), returns)
+    # go back to original dir
+    os.chdir(currentDir)
+
     # return matrix
     return np.array(returns)
 
@@ -72,8 +75,8 @@ def plotTestReturn( axs ):
     axs[0].plot(radiusHalfdisk, np.mean(returnsHydrofoilHalfdisk,axis=1), color="C1", linewidth=2)
     axs[0].fill_between(radiusHalfdisk, returnsHydrofoilHalfdisk.min(axis=1), returnsHydrofoilHalfdisk.max(axis=1), color="C1", alpha=0.5)
 
-    axs[0].set_xlabel('radius')
-    axs[0].set_ylabel('testing return')
+    axs[0].set_xlabel('Radius')
+    axs[0].set_ylabel('Testing Return')
     axs[0].grid(True, which='minor')
 
     axs[1].plot(frequencyHydrofoil, np.mean(returnsHydrofoil,axis=1), color="C1", linewidth=2)
@@ -85,10 +88,8 @@ def plotTestReturn( axs ):
     axs[1].plot(frequencyHydrofoil, np.mean(returnsHalfDiskHydrofoil, axis=1), color="C0", linewidth=2)
     axs[1].fill_between(frequencyHydrofoil, returnsHalfDiskHydrofoil.min(axis=1), returnsHalfDiskHydrofoil.max(axis=1), color="C0", alpha=0.5)
 
-    axs[1].set_xlabel('frequency')
+    axs[1].set_xlabel('Frequency')
     axs[1].grid(True, which='minor')
-
-    plt.show()
 
 def parseRM( dir ):
 
@@ -447,7 +448,7 @@ if __name__ == '__main__':
         evaluateNeuralNetwork( data, config, args.xlim, args.ylim, args.N, args.dir )
 
         ### Creating figure
-        fig, ax = plt.subplots(1, 1, figsize=(12,6))
+        fig, ax = plt.subplots(1, 1, figsize=(6,3))
 
         ax.set_xlim([0, args.xlim])
         ax.set_ylim([0, args.ylim])

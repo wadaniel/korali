@@ -226,7 +226,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Append agent to argument string
-    argumentString = argumentString + ( task==5 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+    argumentString = argumentString + ( task>3 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
   }
 
   // printf("%s\n",argumentString.c_str());

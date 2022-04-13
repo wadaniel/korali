@@ -9,10 +9,10 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of workers/simulations in parallel
-NWORKER=16
+NWORKER=32
 
 # number of nodes per worker/simulation
-NRANKS=2
+NRANKS=1
 
 # number of cores per nodes (for workers)
 NUMCORES=12
@@ -41,8 +41,9 @@ cat <<EOF >daint_sbatch
 #SBATCH --partition=normal
 #SBATCH --nodes=$((NNODES+1))
 
+srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS ))
 
-srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
+# srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
 # srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 # srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 EOF

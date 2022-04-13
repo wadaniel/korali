@@ -94,6 +94,11 @@ void runEnvironment(korali::Sample &s)
   double num_policy = choosePolicy(0, true); // number to give to the agent to decide which policy to follow, between -1 and 1
   state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
+  printf("[Korali] Initial State: [ %.3f", state[0]);
+  for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+  printf("]\n");
+
+
   s["State"] = state;
 
   // load the target profile
@@ -150,23 +155,23 @@ void runEnvironment(korali::Sample &s)
   std::cout<<target_profile[0]<<" "<<target_profile[1]<<std::endl;
 
   // compute the norm of the target_profile
-  double norm_prof = 0;
+  // double norm_prof = 0;
 
-  for (auto e : target_profile)
-  {
-    norm_prof += e * e;
-  }
-  norm_prof = std::sqrt(norm_prof);
+  // for (auto e : target_profile)
+  // {
+  //   norm_prof += e * e;
+  // }
+  // norm_prof = std::sqrt(norm_prof);
 
   std::vector<double> action(2, 0.0); 
 
   std::vector<double> profile_t_1 = vector<double>(32, 0.0);
-  //std::vector<double> sum_profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> sum_profile_t_1 = vector<double>(32, 0.0);
   std::vector<double> profile_t_ = vector<double>(32, 0.0);
-  //std::vector<double> sum_profile_t_ = vector<double>(32, 0.0);
+  std::vector<double> sum_profile_t_ = vector<double>(32, 0.0);
 
-  //std::vector<double> avg_profile_t_1 = vector<double>(32, 0.0);
-  //std::vector<double> avg_profile_t_ = vector<double>(32, 0.0);
+  std::vector<double> avg_profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> avg_profile_t_ = vector<double>(32, 0.0);
   
 
   // Setting initial time and step conditions
@@ -221,20 +226,20 @@ void runEnvironment(korali::Sample &s)
     state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
     // check if angular velocities are over the threshold, true if either of the angular velocities is more than 10
-    done = (omega1*omega1 > 100 || omega2*omega2 > 100) ? true : false;
+    done = (omega1*omega1 > 144 || omega2*omega2 > 144) ? true : false;
 
     // must time average the profiles as well before passing them to reward fct
-    // for(int i(0); i < 32; ++i)
-    // {
-    //   sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
-    //   avg_profile_t_1[i] = sum_profile_t_1[i] / t;
+    for(int i(0); i < 32; ++i)
+    {
+      sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
+      avg_profile_t_1[i] = sum_profile_t_1[i] / t;
 
-    //   sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
-    //   avg_profile_t_[i] = sum_profile_t_[i] / t;
-    // }
+      sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
+      avg_profile_t_[i] = sum_profile_t_[i] / t;
+    }
 
 
-    reward = agent1->reward(target_profile, profile_t_1, profile_t_, norm_prof);
+    reward = agent1->reward(target_profile, avg_profile_t_1, avg_profile_t_, 1.0);
     // Storing reward
 
     s["Reward"] = done ? -3000 : reward;

@@ -86,9 +86,6 @@ int main(int argc, char *argv[])
 
 
   //--------------------------------------------------------------------------------------------------------//
-  // used for RNNs
-  e["Solver"]["Time Sequence Length"] = 20; // length of time sequence, corresponding to number of time steps
-  
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
@@ -99,7 +96,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy distribution and scaling parameters
   e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["State Rescaling"]["Enabled"] = false;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
   // Configuring the neural network and its hidden layers
@@ -130,11 +127,13 @@ int main(int argc, char *argv[])
   // e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"] = "Elementwise/Tanh";
 
   // recurrent network
+  e["Solver"]["Time Sequence Length"] = 20; // length of time sequence, corresponding to number of time steps
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/LSTM";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Depth"] = 1;
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
   
   ////// Defining Termination Criteria
   e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;

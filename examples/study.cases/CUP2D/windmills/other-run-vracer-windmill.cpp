@@ -17,10 +17,14 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
+  // retrieving number of ranks
+  int nRanks = atoi(argv[argc-1]);
+
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
+  N = (int)(N/nRanks); // divide by number of ranks per worker
 
   // Set results path
   std::string trainingResultsPath = "_trainingResults/";
@@ -36,34 +40,39 @@ int main(int argc, char *argv[])
   // Configuring problem (for test eliminate after)
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  // e["Problem"]["Training Reward Threshold"] = 8.0;
-  // e["Problem"]["Policy Testing Episodes"] = 5;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
-
-  const size_t num_windmills = 4;
-  const size_t numStates = 2*num_windmills;
-  for (size_t curVariable = 0; curVariable < numStates; curVariable++)
+  
+  const size_t profileStates = 32;
+  for (size_t i = 0; i < profileStates; i++)
   {
-    if(curVariable%2==0){
-      e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
-    } else{
-      e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
-    }
-    
-    e["Variables"][curVariable]["Type"] = "State";
+    e["Variables"][i]["Name"] = std::string("Velocity ") + std::to_string(i+1);
+    e["Variables"][i]["Type"] = "State";
   }
 
-  double max_torque = 1e-4;
-  for(size_t j=numStates; j < numStates + num_windmills; ++j){
-    e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
-    e["Variables"][j]["Type"] = "Action";
-    e["Variables"][j]["Lower Bound"] = -max_torque;
-    e["Variables"][j]["Upper Bound"] = +max_torque;
-    e["Variables"][j]["Initial Exploration Noise"] = 0.5;
-  }
+  e["Variables"][32]["Name"] = std::string("Omega 1");
+  e["Variables"][32]["Type"] = "State";
+  e["Variables"][33]["Name"] = std::string("Omega 2");
+  e["Variables"][33]["Type"] = "State";
+  e["Variables"][34]["Name"] = std::string("Policy number");
+  e["Variables"][34]["Type"] = "State";
+
+  double max_angular_acceleration = 15;
+  double exploration_noise = 12;
+
+  e["Variables"][35]["Name"] = "Angular acceleration 1";
+  e["Variables"][35]["Type"] = "Action";
+  e["Variables"][35]["Lower Bound"] = -max_angular_acceleration;
+  e["Variables"][35]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][35]["Initial Exploration Noise"] = exploration_noise;
+
+  e["Variables"][36]["Name"] = "Angular acceleration 2";
+  e["Variables"][36]["Type"] = "Action";
+  e["Variables"][36]["Lower Bound"] = -max_angular_acceleration;
+  e["Variables"][36]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][36]["Initial Exploration Noise"] = exploration_noise;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
@@ -72,11 +81,11 @@ int main(int argc, char *argv[])
   e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.95;
+  e["Solver"]["Discount Factor"] = 0.95; // used to be 0.95
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  //e["Solver"]["Policy"]["Distribution"] = "Normal";
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
 
+
+  //--------------------------------------------------------------------------------------------------------//
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
@@ -85,30 +94,31 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
-
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
+  e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
+  e["Solver"]["State Rescaling"]["Enabled"] = false;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
-  /// Configuring the neural network and its hidden layers
+  // Configuring the neural network and its hidden layers
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
   
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 
+  // recurrent network
+  e["Solver"]["Time Sequence Length"] = 40; // length of time sequence, corresponding to number of time steps
+
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/LSTM";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
-
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  
   ////// Defining Termination Criteria
   e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
 
@@ -128,6 +138,7 @@ int main(int argc, char *argv[])
 
   // set conduit and MPI communicator
   k["Conduit"]["Type"] = "Distributed";
+  k["Conduit"]["Ranks Per Worker"] = nRanks;
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   // run korali

@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
   // e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"] = "Elementwise/Tanh";
 
   // recurrent network
-  e["Solver"]["Time Sequence Length"] = 20; // length of time sequence, corresponding to number of time steps
+  e["Solver"]["Time Sequence Length"] = 40; // length of time sequence, corresponding to number of time steps
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;

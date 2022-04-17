@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
-  // e["Problem"]["Policies Per Environment"] = nAgents;
+  e["Problem"]["Policies Per Environment"] = nAgents;
 
   #if 0
   if( task == -1 )
@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Swimming Period";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -0.50;
-  e["Variables"][curVariable]["Upper Bound"] = +0.50;
+  e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  e["Variables"][curVariable]["Upper Bound"] = +0.25;
   e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
 
   /// Defining Agent Configuration
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 5e5;
 
   ////// Setting Korali output configuration
   e["Console Output"]["Verbosity"] = "Normal";

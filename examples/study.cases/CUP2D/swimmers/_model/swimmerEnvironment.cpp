@@ -11,7 +11,7 @@ int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
 
-int NUMACTIONS = 2;
+size_t NUMACTIONS = 2;
 
 // Environment Function
 void runEnvironment(korali::Sample &s)
@@ -298,7 +298,7 @@ void runEnvironment(korali::Sample &s)
   const size_t maxSteps = 200;
 
   // Container for actions
-  std::vector<std::vector<double>> actions(nAgents);
+  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(NUMACTIONS));
 
   // Starting main environment loop
   bool done = false;

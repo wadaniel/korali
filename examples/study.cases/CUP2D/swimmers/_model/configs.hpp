@@ -5,10 +5,12 @@
 /*  SOLVER OPTIONS */
 /*******************/
 
-std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+// std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+
+std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // Testing options
-// std::string OPTIONS = "-bpdx 8 -bpdy 4 -levelMax 7 -levelStart 4 -Rtol 0.1 -Ctol 0.01 -extent 2 -CFL 0.2 -poissonTol 1e-11 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 9 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonTol 1e-6 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // dx=0.25, dy=0.5
 // std::string OPTIONS_periodic = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 1 -CFL 0.5 -poissonTol 5e-6 -poissonTolRel 0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
@@ -26,11 +28,34 @@ std::string OPTIONS_periodic = "-bpdx 4 -bpdy 3 -levelMax 7 -levelStart 4 -Rtol 
 /*********************/
 
 // COLUMN OF FISH
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.60, 0.50},
+// 	{0.90, 0.50},
+// 	{1.20, 0.50},
+// 	{1.50, 0.50}
+// }};
+
 std::vector<std::vector<double>> initialPositions{{
-	{0.60, 0.50},
-	{0.90, 0.50},
-	{1.20, 0.50},
-	{1.50, 0.50}
+	{ 0.60, 0.90 },
+	{ 0.60, 1.10 },
+	{ 0.90, 0.80 },
+	{ 0.90, 1.00 },
+	{ 0.90, 1.20 },
+	{ 1.20, 0.90 },
+	{ 1.20, 1.10 },
+	{ 1.50, 0.80 },
+	{ 1.50, 1.00 },
+	{ 1.50, 1.20 },
+	{ 1.80, 0.90 },
+	{ 1.80, 1.10 },
+	{ 2.10, 0.80 },
+	{ 2.10, 1.00 },
+	{ 2.10, 1.20 },
+	{ 2.40, 0.90 },
+	{ 2.40, 1.10 },
+	{ 2.70, 0.80 },
+	{ 2.70, 1.00 },
+	{ 2.70, 1.20 }
 }};
 
 // PERIODIC FISH

@@ -350,10 +350,10 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Run the simulation until next action is required
-    dtAct = 0.;
-    for( int i = 0; i<nAgents; i++ )
-    if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
-      dtAct = agents[i]->getLearnTPeriod() * 0.5;
+    dtAct = 0.5;
+    // for( int i = 0; i<nAgents; i++ )
+    // if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
+    //   dtAct = agents[i]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
     while ( t < tNextAct && done == false )
     {

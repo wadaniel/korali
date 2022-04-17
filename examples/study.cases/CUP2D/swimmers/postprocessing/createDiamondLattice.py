@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 
 def printInitialPosition():
     # define size of domain
-    Lx = 4
-    Ly = 4
+    Lx = 4.0001
+    Ly = 2.0001
 
     # margins at boundary
     marginLeft        = 0.6
-    marginRight       = 1
-    yMargin           = 0.5
+    marginRight       = 1.2
+    yMargin           = 0.8
 
     # define diamond parameters
     dx = 0.3
@@ -41,7 +41,7 @@ def printInitialPosition():
         for j in range(Ny):
             x = x0+i*dx
             y = y0+j*dy
-            # plt.plot(x,y,"D")
+            plt.plot(x,y,"D")
 
             if( (i == Nx-1) and (j == Ny-1) ):
                 print("{","{:.2f}, {:.2f}".format( x, y ),"}")
@@ -51,7 +51,8 @@ def printInitialPosition():
             N = N+1
     print("}};")
     print("This are initial condition for {} fish".format(N))
-    # plt.show()
+    plt.gca().set_aspect('equal')
+    plt.show()
 
 # For Diamond like school we have M^2 fish, i.e. 
 def createDiamond( N, dx, dy ):
@@ -128,37 +129,39 @@ def evaluateDiamond( N, dx, dy ):
     return meanForce, meanEfficiency
 
 if __name__ == '__main__':
-    Ns = [4, 9, 16, 25]
-    # Ns = [9] 
-    deltaX = [ 0.2, 0.3, 0.4, 0.5, 0.6 ]
-    # deltaX = [ 0.3 ]
-    deltaY = [ 0.05, 0.1, 0.15, 0.2 ]
-    # deltaY = [ 0.1 ]
-    for N in Ns:
-        forcesVsSpacing = []
-        efficienciesVsSpacing = []
-        for dx in deltaX:
-            forcesDy    = []
-            efficiencyDy = []
-            for dy in deltaY:
-                # createDiamond( N, dx, dy )
-                meanForce, meanEfficiency = evaluateDiamond( N, dx, dy )
-                forcesDy.append(meanForce)
-                efficiencyDy.append(meanEfficiency)
-            forcesVsSpacing.append(forcesDy)
-            efficienciesVsSpacing.append(efficiencyDy)
+    # Ns = [4, 9, 16, 25]
+    # # Ns = [9] 
+    # deltaX = [ 0.2, 0.3, 0.4, 0.5, 0.6 ]
+    # # deltaX = [ 0.3 ]
+    # deltaY = [ 0.05, 0.1, 0.15, 0.2 ]
+    # # deltaY = [ 0.1 ]
+    # for N in Ns:
+    #     forcesVsSpacing = []
+    #     efficienciesVsSpacing = []
+    #     for dx in deltaX:
+    #         forcesDy    = []
+    #         efficiencyDy = []
+    #         for dy in deltaY:
+    #             # createDiamond( N, dx, dy )
+    #             meanForce, meanEfficiency = evaluateDiamond( N, dx, dy )
+    #             forcesDy.append(meanForce)
+    #             efficiencyDy.append(meanEfficiency)
+    #         forcesVsSpacing.append(forcesDy)
+    #         efficienciesVsSpacing.append(efficiencyDy)
 
-        fig, axs = plt.subplots(1, 2, figsize=(6,3))
+    #     fig, axs = plt.subplots(1, 2, figsize=(6,3))
 
-        X, Y = np.meshgrid(deltaX, deltaY, indexing='ij')
+    #     X, Y = np.meshgrid(deltaX, deltaY, indexing='ij')
 
-        im0 = axs[0].pcolormesh(X, Y, forcesVsSpacing, cmap='viridis')
-        axs[0].set_title("Average Force")
-        im1 = axs[1].pcolormesh(X, Y, efficienciesVsSpacing, cmap='viridis')
-        axs[1].set_title("Average Efficiency")
-        fig.colorbar(im0, ax=axs[0])
-        fig.colorbar(im1, ax=axs[1])
-        plt.show()
+    #     im0 = axs[0].pcolormesh(X, Y, forcesVsSpacing, cmap='viridis')
+    #     axs[0].set_title("Average Force")
+    #     im1 = axs[1].pcolormesh(X, Y, efficienciesVsSpacing, cmap='viridis')
+    #     axs[1].set_title("Average Efficiency")
+    #     fig.colorbar(im0, ax=axs[0])
+    #     fig.colorbar(im1, ax=axs[1])
+    #     plt.show()
+
+    printInitialPosition()
 
 
 

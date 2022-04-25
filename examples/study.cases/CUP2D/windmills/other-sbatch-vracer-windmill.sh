@@ -23,13 +23,14 @@ NNODES=$(( $NWORKER * $NRANKS))
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
-cp run-vracer-windmill ${RUNPATH}
+cp other-run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
-cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
-cp avgprofiles/stdprofiles.dat ${RUNPATH}/stdprofiles.dat
+cp avgprofiles/avgprofiles.dat ${RUNPATH}/
+# cp avgprofiles/avgprofile_*.dat ${RUNPATH}/
+# cp avgprofiles/stdprofile_*.dat ${RUNPATH}/
 cd ${RUNPATH}
 
-# source settings.sh
+source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
@@ -42,15 +43,16 @@ cat <<EOF >daint_sbatch
 #SBATCH --partition=normal
 #SBATCH --nodes=$((NNODES+1))
 
-srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS ))
+srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./other-run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./other-run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS ))
 EOF
-
-# srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
-# srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
-# srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 
 echo "Starting ${NWORKER} simulations each using ${NRANKS} nodes with ${NUMCORES} cores"
 echo "----------------------------"
 
 chmod 755 daint_sbatch
 sbatch daint_sbatch
+
+
+# srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
+# srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+# srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"

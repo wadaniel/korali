@@ -11,6 +11,8 @@ int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
 
+size_t NUMACTIONS = 2;
+
 // Environment Function
 void runEnvironment(korali::Sample &s)
 {
@@ -88,16 +90,16 @@ void runEnvironment(korali::Sample &s)
   }
 
   // Argument string to inititialize Simulation
-  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : OPTIONS ) + " -shapes ";
+  std::string argumentString = "CUP-RL " + ( task == 5 ? OPTIONS_periodic : s["Mode"] == "Training"  ? OPTIONS : OPTIONS_testing ) + " -shapes ";
 
   /* Add Obstacle for cases 0,1,2,3; cases >3 do not have an obstacle!
      CASE 0: Halfdisk, maximize efficiency
      CASE 1: Hydrofoil, maximize efficiency
      CASE 2: Stefanfish, minimize lateral displacement
      CASE 3: Stefanfish, maximize efficiency
-     CASE 4: None, minimize lateral displacement while maximizing efficiency
+     CASE 4: None, minimize displacement while maximizing efficiency
      CASE 5: None, periodic domain 
-     CASE 6: None, minimize lateral displacement
+     CASE 6: None, minimize displacement
      CASE 7: None, maximize efficiency
    */
   switch(task) {
@@ -208,8 +210,8 @@ void runEnvironment(korali::Sample &s)
     initialData[1] = initialPosition[0];
     initialData[2] = initialPosition[1];
 
-    // During training, add noise to inital configuration of agent
-    if ( s["Mode"] == "Training" ) 
+    // During training, add noise to inital position of agent
+    // if ( s["Mode"] == "Training" )
     {
       // only rank 0 samples initial data
       if( rank == 0 )
@@ -226,7 +228,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Append agent to argument string
-    argumentString = argumentString + ( task==5 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+    argumentString = argumentString + ( task>3 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -295,8 +297,8 @@ void runEnvironment(korali::Sample &s)
   // Setting maximum number of steps before truncation
   const size_t maxSteps = 200;
 
-  // Careful, hardcoded the number of action(s)!
-  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(1));
+  // Container for actions
+  std::vector<std::vector<double>> actions(nAgents, std::vector<double>(NUMACTIONS));
 
   // Starting main environment loop
   bool done = false;
@@ -323,8 +325,13 @@ void runEnvironment(korali::Sample &s)
     // Broadcast and apply action(s) [Careful, hardcoded the number of action(s)!]
     for( int i = 0; i<nAgents; i++ )
     {
-      MPI_Bcast( actions[i].data(), 1, MPI_DOUBLE, 0, comm );
-      if( actions[i].size() != 1 ) std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
+      if( actions[i].size() != NUMACTIONS )
+      {
+        std::cout << "Korali returned the wrong number of actions " << actions[i].size() << "\n";
+        fflush(0);
+        abort();
+      }
+      MPI_Bcast( actions[i].data(), NUMACTIONS, MPI_DOUBLE, 0, comm );
       agents[i]->act(t, actions[i]);
     }
 
@@ -343,10 +350,10 @@ void runEnvironment(korali::Sample &s)
     }
 
     // Run the simulation until next action is required
-    dtAct = 0.;
-    for( int i = 0; i<nAgents; i++ )
-    if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
-      dtAct = agents[i]->getLearnTPeriod() * 0.5;
+    if( nAgents > 1 )
+      dtAct = 0.5;
+    else
+      dtAct = agents[0]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
     while ( t < tNextAct && done == false )
     {
@@ -376,10 +383,18 @@ void runEnvironment(korali::Sample &s)
 
         // assign state/reward to container
         states[i]  = state;
-        if( (task == 2) || (task ==6) )
-          rewards[i] = done ? -10.0 : -std::abs(agents[i]->center[1]-initialPosition[1]);
+        if( (task == 2) || (task == 6) )
+        {
+          double xDisplacement = agents[i]->center[0]-initialPosition[0];
+          double yDisplacement = agents[i]->center[1]-initialPosition[1];
+          rewards[i] = done ? -10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+        }
         else if( task == 4 )
-          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::abs(agents[i]->center[1]-initialPosition[1]);
+        {
+          double xDisplacement = agents[i]->center[0]-initialPosition[0];
+          double yDisplacement = agents[i]->center[1]-initialPosition[1];
+          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+        }
         else
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
@@ -526,6 +541,13 @@ bool isTerminal(StefanFish *agent, int nAgents)
     xMax = 2.6;
     yMin = 0.5;
     yMax = 1.5;
+  }
+  else if( nAgents == 20 )
+  {
+    xMin = 0.1;
+    xMax = 3.9;
+    yMin = 0.1;
+    yMax = 1.9;
   }
   else if( nAgents == 24 )
   {

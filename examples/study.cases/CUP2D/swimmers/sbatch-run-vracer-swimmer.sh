@@ -9,7 +9,7 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=4
+NAGENTS=20
 
 # number of workers
 NWORKER=64
@@ -43,6 +43,7 @@ cat <<EOF >daint_sbatch
 # #SBATCH --time=00:30:00
 # #SBATCH --partition=debug
 #SBATCH --nodes=$((NNODES+1))
+# #SBATCH --begin=08:40:00
 
 srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS ))
 EOF

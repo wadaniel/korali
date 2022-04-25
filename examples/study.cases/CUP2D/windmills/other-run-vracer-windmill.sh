@@ -25,7 +25,9 @@ RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp ./other-run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
-cp avgprofiles/avgprofile_*.dat ${RUNPATH}/
+cp avgprofiles/avgprofiles.dat ${RUNPATH}/
+# cp avgprofiles/avgprofile_*.dat ${RUNPATH}/
+# cp avgprofiles/stdprofile_*.dat ${RUNPATH}/
 cd ${RUNPATH}
 
 source settings.sh

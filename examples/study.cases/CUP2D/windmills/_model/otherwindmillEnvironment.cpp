@@ -91,6 +91,7 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> state = agent1->vel_profile(); // vector of size 32, has the velocity profile values
   double omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
   double omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+  // we choose one constant policy
   double num_policy = choosePolicy(0, false); // number to give to the agent to decide which policy to follow, between -1 and 1
   state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
@@ -104,18 +105,96 @@ void runEnvironment(korali::Sample &s)
   // load the target profile
   // copy the contents of the avgprofiles.dat file into vector c++
 
-  std::vector<std::vector<double>> profiles(4000, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 32
+  // std::vector<std::vector<double>> profiles(4000, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 32
+  // std::vector<std::vector<double>> stds(4000, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 32
+
+  // // load the data with rank 0
+  // if (rank == 0)
+  // {
+  //   int index = int((num_policy + 1) * 5);
+  //   std::cout<<"index : "<< index <<std::endl;
+
+  //   std::string file_name = "../../avgprofile_" + std::to_string(index) + ".dat";
+
+  //   std::ifstream myfile;
+  //   myfile.open(file_name, ios::in);
+
+  //   if (myfile.is_open()){
+  //     std::cout<<"File is open"<<std::endl;
+  //     std::cerr<<"Succesfully opened the file"<<std::endl;
+
+  //   } else{
+  //     std::cout<<"File is closed"<<std::endl;
+  //     std::cerr<<"Failed to open the file"<<std::endl;
+  //   }
+
+  //   std::string line;
+  //   int i = 0;
+  //   std::cout<<"Before while "<< i <<std::endl;
+  //   while (std::getline(myfile, line))
+  //   {
+  //     std::cout<<"line "<< i <<std::endl;
+  //     std::istringstream data_line(line);
+  //     int j = 0;
+  //     for (j=0; j < 32; ++j)
+  //     {
+  //       if (data_line >> profiles[i][j])
+  //       {
+
+  //       } else{
+  //         std::cout<<"Failed to read number"<<std::endl;
+  //       }
+  //     }
+  //     i += 1;
+  //   }
+  //   myfile.close();
+
+  //   // std file
+  //   file_name = "../../stdprofile_" + std::to_string(index) + ".dat";
+
+  //   myfile;
+  //   myfile.open(file_name, ios::in);
+
+  //   if (myfile.is_open()){
+  //     std::cout<<"File is open"<<std::endl;
+  //     std::cerr<<"Succesfully opened the file"<<std::endl;
+
+  //   } else{
+  //     std::cout<<"File is closed"<<std::endl;
+  //     std::cerr<<"Failed to open the file"<<std::endl;
+  //   }
+
+  //   i = 0;
+  //   std::cout<<"Before while "<< i <<std::endl;
+  //   while (std::getline(myfile, line))
+  //   {
+  //     std::cout<<"line "<< i <<std::endl;
+  //     std::istringstream data_line(line);
+  //     int j = 0;
+  //     for (j=0; j < 32; ++j)
+  //     {
+  //       if (data_line >> stds[i][j])
+  //       {
+
+  //       } else{
+  //         std::cout<<"Failed to read number"<<std::endl;
+  //       }
+  //     }
+  //     i += 1;
+  //   }
+  //   myfile.close();
+  // }
+
+  int num_profiles = 11;
+
+  std::vector<std::vector<double>> profiles(num_profiles, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 33
+  std::vector<double> target_profile(32, 0.0);
 
   // load the data with rank 0
   if (rank == 0)
   {
-    int index = int((num_policy + 1) * 5);
-    std::cout<<"index : "<< index <<std::endl;
-
-    std::string file_name = "../../avgprofile_" + std::to_string(index) + ".dat";
-
     std::ifstream myfile;
-    myfile.open(file_name, ios::in);
+    myfile.open("../../avgprofiles.dat", ios::in);
 
     if (myfile.is_open()){
       std::cout<<"File is open"<<std::endl;
@@ -146,6 +225,10 @@ void runEnvironment(korali::Sample &s)
       i += 1;
     }
     myfile.close();
+
+    int index = int((num_policy + 1) * 5);
+    std::cout<<"index : "<< index <<std::endl;
+    target_profile = profiles[index];
   }
 
   // broadcast the target_profile to everyone
@@ -223,18 +306,33 @@ void runEnvironment(korali::Sample &s)
     // check if angular velocities are over the threshold, true if either of the angular velocities is more than 12
     done = (omega1*omega1 > 144 || omega2*omega2 > 144) ? true : false;
 
-    // must time average the profiles as well before passing them to reward fct
+    // reset reward
+    reward = 0;
+
+    // reward 1 : deviation from mean profile
     for(int i(0); i < 32; ++i)
     {
-      sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
-      avg_profile_t_[i] = sum_profile_t_[i] / t;
-
-      reward += -(avg_profile_t_[i] - profiles[curStep][i]) * (avg_profile_t_[i] - profiles[curStep][i]);
+      reward -=  ((profile_t_[i] - target_profile[i]) / target_profile[i]) * ((profile_t_[i] - target_profile[i]) / target_profile[i]);
     }
 
-    // Storing reward
+    // must time average the profiles as well before passing them to reward fct
+    // for(int i(0); i < 32; ++i)
+    // {
+    //   sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
+    //   avg_profile_t_[i] = sum_profile_t_[i] / t;
 
-    s["Reward"] = done ? -5000 : reward;
+    //   //reward += -(avg_profile_t_[i] - profiles[curStep][i]) * (avg_profile_t_[i] - profiles[curStep][i]) / stds[curStep][i];
+    //   //reward += -std::abs(avg_profile_t_[i] - profiles[curStep][i]) / std::sqrt(stds[curStep][i]);
+    //   reward += - std::sqrt((avg_profile_t_[i] - profiles[curStep][i]) * (avg_profile_t_[i] - profiles[curStep][i]) / profiles[curStep][i]);
+    // }
+
+    // Storing reward
+    double pen_reward = -40000.0;
+    agent1->printRewards(done ? pen_reward : reward);
+
+    s["Reward"] = done ? pen_reward : reward;
+
+    
 
     // Storing new state
     s["State"] = state;

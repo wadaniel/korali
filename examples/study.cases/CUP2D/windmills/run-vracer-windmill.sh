@@ -24,11 +24,17 @@ fi
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
 cp run-vracer-windmill ${RUNPATH}
-cp settings.sh ${RUNPATH}
+# cp settings.sh ${RUNPATH}
 cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
+cp avgprofiles/stdprofiles.dat ${RUNPATH}/stdprofiles.dat
 cd ${RUNPATH}
 
-source settings.sh
+STATE=1
+REWARD=1
+ALPHA=6
+SEQLEN=40
+
+# source settings.sh
 
 set -ux
 
@@ -38,4 +44,5 @@ set -ux
 
 # now we use cuda to solve the poisson problem. 
 # each simulation gets nranks 
-srun --nodes=$((N-1)) --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS ))
+
+srun --nodes=$((N-1)) --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS ))

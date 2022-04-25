@@ -26,9 +26,10 @@ mkdir -p ${RUNPATH}
 cp run-vracer-windmill ${RUNPATH}
 cp settings.sh ${RUNPATH}
 cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
+cp avgprofiles/stdprofiles.dat ${RUNPATH}/stdprofiles.dat
 cd ${RUNPATH}
 
-source settings.sh
+# source settings.sh
 
 cat <<EOF >daint_sbatch
 #!/bin/bash -l
@@ -42,11 +43,11 @@ cat <<EOF >daint_sbatch
 #SBATCH --nodes=$((NNODES+1))
 
 srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS ))
+EOF
 
 # srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -nRanks $(( $NRANKS * $NUMCORES ))
 # srun ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
 # srun ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
-EOF
 
 echo "Starting ${NWORKER} simulations each using ${NRANKS} nodes with ${NUMCORES} cores"
 echo "----------------------------"

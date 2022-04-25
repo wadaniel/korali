@@ -1,4 +1,5 @@
 #include "windmillEnvironment.hpp"
+#include "configs.hpp"
 #include "Operators/Helpers.h"
 #include "Definitions.h"
 #include <chrono>
@@ -14,6 +15,7 @@ std::mt19937 _randomGenerator;
 // mpi version of the code
 void runEnvironment(korali::Sample &s)
 {
+  std::cerr<<"Entering runEnvironment function"<<std::endl; //------------------------------------------
   // Get MPI communicator
   MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
 
@@ -60,14 +62,41 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
+  std::cerr<<"Before retrieving tasks"<<std::endl; //------------------------------------------
+
+  // retrieving task alpha and task reward and state
+  int task_alpha = atoi(_argv[_argc-5]);
+
+  int task_reward = atoi(_argv[_argc-7]);
+
+  int task_state = atoi(_argv[_argc-9]);
+
+  std::string argumentString = OPTIONS + OBJECTS; // this is what we feed to the simulation
+
+  std::stringstream ss(argumentString);
+  std::string item;
+  std::vector<std::string> arguments;
+  while ( std::getline(ss, item, ' ') )
+    arguments.push_back(item);
+
+  // Create argc / argv to pass to CUP
+  std::vector<char*> argv;
+  for (const auto& arg : arguments)
+    argv.push_back((char*)arg.data());
+  argv.push_back(nullptr);
+
+  std::cerr<<"Before new Simulation"<<std::endl; //------------------------------------------
+
   // Creating simulation environment
-  Simulation *_environment = new Simulation(_argc, _argv, comm);
+  Simulation *_environment = new Simulation(argv.size()-1, argv.data(), comm);
   _environment->init();
 
   // Obtaining agents, 2 windmills 
   std::vector<std::shared_ptr<Shape>> shapes = _environment->getShapes();
   Windmill* agent1 = dynamic_cast<Windmill*>(shapes[0].get());
   Windmill* agent2 = dynamic_cast<Windmill*>(shapes[1].get());
+
+  std::cerr<<"After new Simulation"<<std::endl; //------------------------------------------
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
@@ -86,18 +115,48 @@ void runEnvironment(korali::Sample &s)
   // the final component is a number t between -1 and 1, steps of 0.2
   // it tells the network which policy we want to obtain
 
-  // Setting initial state [Careful, state function needs to be called by all ranks!]
-  // the state function returns the entire state already, done in CUP
-  std::vector<double> state = agent1->vel_profile(); // vector of size 32, has the velocity profile values
-  double omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
-  double omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
-  double num_policy = choosePolicy(0, true); // number to give to the agent to decide which policy to follow, between -1 and 1
-  state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
 
+  // now we separate possibilities according to the task at hand
+
+  //-------------------------------------------------------------------------- state
+  std::vector<double> state;
+  double omega1(0.0);
+  double omega2(0.0);
+
+
+  switch(task_state){
+    case 1:
+    {
+      omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+      omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+      state.push_back(omega1); state.push_back(omega2);
+      printf("The state is only the angular velocities. \n");
+      break;
+    }
+    case 2:
+    {
+      state = agent1->vel_profile();
+      printf("The state is only the velocity profile. \n");
+      break;
+    }
+    case 3:
+    {
+      state = agent1->vel_profile();
+      omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+      omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+      state.push_back(omega1); state.push_back(omega2);
+      printf("The state is both the angular velocities and the velocity profile. \n");
+      break;
+    }
+  }
+
+  double num_policy = choosePolicy(task_alpha);
+  if (task_alpha == 11) state.push_back(num_policy); //append policy number to the state;
+
+  // print out the state
   printf("[Korali] Initial State: [ %.3f", state[0]);
   for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
   printf("]\n");
-
 
   s["State"] = state;
 
@@ -106,7 +165,13 @@ void runEnvironment(korali::Sample &s)
   int num_profiles = 11;
 
   std::vector<std::vector<double>> profiles(num_profiles, std::vector<double> (32, 0.0)); // initialize vector of size numsteps x 33
+  std::vector<std::vector<double>> sigmas(num_profiles, std::vector<double> (32, 0.0));
+  
   std::vector<double> target_profile(32, 0.0);
+  std::vector<double> sigma_profile(32, 0.0);
+
+  int index = int((num_policy + 1) * 5);
+  std::cerr<<"index : "<< index <<std::endl;
 
   // load the data with rank 0
   if (rank == 0)
@@ -115,20 +180,20 @@ void runEnvironment(korali::Sample &s)
     myfile.open("../../avgprofiles.dat", ios::in);
 
     if (myfile.is_open()){
-      std::cout<<"File is open"<<std::endl;
+      std::cerr<<"File is open"<<std::endl;
       std::cerr<<"Succesfully opened the file"<<std::endl;
 
     } else{
-      std::cout<<"File is closed"<<std::endl;
+      std::cerr<<"File is closed"<<std::endl;
       std::cerr<<"Failed to open the file"<<std::endl;
     }
 
     std::string line;
     int i = 0;
-    std::cout<<"Before while "<< i <<std::endl;
+    // std::cerr<<"Before while "<< i <<std::endl;
     while (std::getline(myfile, line))
     {
-      std::cout<<"line "<< i <<std::endl;
+      //std::cerr<<"line "<< i <<std::endl;
       std::istringstream data_line(line);
       int j = 0;
       for (j=0; j < 32; ++j)
@@ -137,31 +202,65 @@ void runEnvironment(korali::Sample &s)
         {
 
         } else{
-          std::cout<<"Failed to read number"<<std::endl;
+          std::cerr<<"Failed to read number"<<std::endl;
         }
       }
       i += 1;
     }
     myfile.close();
 
-    int index = int((num_policy + 1) * 5);
-    std::cout<<"index : "<< index <<std::endl;
     target_profile = profiles[index];
   }
 
   // broadcast the target_profile to everyone
   MPI_Bcast(&target_profile.front(), 32, MPI_DOUBLE, 0, comm);
-  std::cout<<"After first broadcast"<<std::endl;
-  std::cout<<target_profile[0]<<" "<<target_profile[1]<<std::endl;
+  std::cerr<<"After first broadcast"<<std::endl;
+  std::cerr<<target_profile[0]<<" "<<target_profile[1]<<std::endl;
 
-  // compute the norm of the target_profile
-  // double norm_prof = 0;
+  if (task_reward == 3)
+  {
+    // load the data with rank 0
+    if (rank == 0)
+    {
+      std::ifstream myfile;
+      myfile.open("../../stdprofiles.dat", ios::in);
 
-  // for (auto e : target_profile)
-  // {
-  //   norm_prof += e * e;
-  // }
-  // norm_prof = std::sqrt(norm_prof);
+      if (myfile.is_open()){
+        std::cerr<<"File is open"<<std::endl;
+        std::cerr<<"Succesfully opened the file"<<std::endl;
+
+      } else{
+        std::cerr<<"File is closed"<<std::endl;
+        std::cerr<<"Failed to open the file"<<std::endl;
+      }
+
+      std::string line;
+      int i = 0;
+      std::cerr<<"Before while "<< i <<std::endl;
+      while (std::getline(myfile, line))
+      {
+        std::cerr<<"line "<< i <<std::endl;
+        std::istringstream data_line(line);
+        int j = 0;
+        for (j=0; j < 32; ++j)
+        {
+          if (data_line >> sigmas[i][j])
+          {
+
+          } else{
+            std::cerr<<"Failed to read number"<<std::endl;
+          }
+        }
+        i += 1;
+      }
+      myfile.close();
+
+      sigma_profile = sigmas[index];
+    }
+
+    // broadcast the target_profile to everyone
+    MPI_Bcast(&sigma_profile.front(), 32, MPI_DOUBLE, 0, comm);
+  }
 
   std::vector<double> action(2, 0.0); 
 
@@ -181,12 +280,14 @@ void runEnvironment(korali::Sample &s)
 
   // Setting maximum number of steps before truncation
   size_t maxSteps = 4000; // 200s of simulations
+  double time_step = 0.05;
 
   double reward = 0;
 
   bool done = false; // is true if |omega| is superior 10
 
   // RL loop
+  std::cerr<<"Before entering RL Loop"<<std::endl;
   while (curStep < maxSteps && done == false)
   {
     // Only rank 0 communicates with Korali
@@ -199,9 +300,10 @@ void runEnvironment(korali::Sample &s)
       auto actionJSON = s["Action"];
       action = actionJSON.get<std::vector<double>>();
     }
-
+    //std::cerr<<"Before action Bcast"<<std::endl;
     // broadcast the action to the different processes
     MPI_Bcast(&action[0], 2, MPI_DOUBLE, 0, comm );
+    //std::cerr<<"After action Bcast"<<std::endl;
 
     // Setting action for 
     agent1->act( action[0] );
@@ -218,31 +320,113 @@ void runEnvironment(korali::Sample &s)
       // Advance simulation
       _environment->advance(dt);
     }
+    //std::cerr<<"After CUP2D sim steps"<<std::endl;
 
     profile_t_ = agent1->vel_profile(); // vector of size 32, has the velocity profile values
-    state = profile_t_;
-    omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
-    omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
-    state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
+
+    //-------------------------------------------------------------------------- state
+    switch(task_state){
+      case 1:
+      {
+        omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+        omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+        state = {omega1, omega2};
+        break;
+      }
+      case 2:
+      {
+        state = profile_t_;
+        printf("The state is only the velocity profile. \n");
+        break;
+      }
+      case 3:
+      {
+        state = profile_t_;
+        omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+        omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+        state.push_back(omega1); state.push_back(omega2);
+        printf("The state is both the angular velocities and the velocity profile. \n");
+        break;
+      }
+    }
+
+    //std::cerr<<"After state is obtained"<<std::endl;
+
+    if (task_alpha == 11) state.push_back(num_policy); //append policy number to the state;
 
     // check if angular velocities are over the threshold, true if either of the angular velocities is more than 10
-    done = (omega1*omega1 > 144 || omega2*omega2 > 144) ? true : false;
+    if (omega1*omega1 > 100 || omega2*omega2 > 100) done = true;
 
     // must time average the profiles as well before passing them to reward fct
     for(int i(0); i < 32; ++i)
     {
       sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
-      avg_profile_t_1[i] = sum_profile_t_1[i] / t;
+      avg_profile_t_1[i] = sum_profile_t_1[i] * time_step / t;
 
       sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
-      avg_profile_t_[i] = sum_profile_t_[i] / t;
+      avg_profile_t_[i] = sum_profile_t_[i] * time_step / t;
     }
 
+    //-------------------------------------------------------------------------- reward
 
-    reward = agent1->reward(target_profile, avg_profile_t_1, avg_profile_t_, 1.0);
+    reward = 0; // reset the reward to zero
+
+    switch(task_reward){
+      case 1:
+      {
+        // squared difference between deviation from the mean at time t and time t-1, normalized by the target profile
+        for (size_t i(0); i < 32; ++i)
+        {
+          reward -= ((avg_profile_t_[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_[i] - target_profile[i])/target_profile[i]);
+          reward += ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]);
+        }
+        break;
+      }
+      case 2:
+      {
+        // squared difference between deviation from the mean at time t and time t-1, non-normalized
+        for (size_t i(0); i < 32; ++i)
+        {
+          reward -= (avg_profile_t_[i] - target_profile[i]) * (avg_profile_t_[i] - target_profile[i]);
+          reward += (avg_profile_t_1[i] - target_profile[i]) * (avg_profile_t_1[i] - target_profile[i]);
+        }
+        break;
+      }
+      case 3:
+      {
+        // log-likelihood for hypothetical normal distribution
+        for (size_t i(0); i < 32; ++i)
+        {
+          reward -= (profile_t_[i] - target_profile[i]) * (profile_t_[i] - target_profile[i]) / (2*sigma_profile[i]*sigma_profile[i]);
+          reward -= 0.5 * std::log(2 * M_PI * sigma_profile[i] * sigma_profile[i]);
+        }
+        break;
+      }
+      case 4:
+      {
+        // difference between current profile and target, normalized
+        for (size_t i(0); i < 32; ++i)
+        {
+          reward -= (profile_t_[i] - target_profile[i]) / target_profile[i];
+        }
+        break;
+      }
+      case 5:
+      {
+        // difference between current profile and target, non-normalized
+        for (size_t i(0); i < 32; ++i)
+        {
+          reward -= (profile_t_[i] - target_profile[i]);
+        }
+        break;
+      }
+    }
+
     // Storing reward
+    double pen_reward = -4000;
+    agent1->printRewards(done ? pen_reward : reward);
 
-    s["Reward"] = done ? -3000 : reward;
+    s["Reward"] = done ? pen_reward : reward;
     
     // storing the new profile in the old profile
     profile_t_1 = profile_t_;
@@ -266,6 +450,7 @@ void runEnvironment(korali::Sample &s)
     curStep++;
   }
 
+  std::cerr<<"After RL loop"<<std::endl;
   // Setting finalization status
   s["Termination"] = done ? "Terminal" : "Truncated";
 
@@ -275,8 +460,12 @@ void runEnvironment(korali::Sample &s)
   // Closing log file
   if( rank == 0 ) fclose(logFile);
 
+  std::cerr<<"After closing log file"<<std::endl;
+
   // delete simulation class
   delete _environment;
+
+  std::cerr<<"After deleting environment"<<std::endl;
 
   // Switching back to experiment directory
   std::filesystem::current_path(curPath);
@@ -304,12 +493,12 @@ void setInitialConditions(Windmill* agent, double init_angle, bool randomized)
   agent->setOrientation(angle);
 }
 
-double choosePolicy(double value, bool randomized)
+double choosePolicy(double value)
 {
   // returns values between -1 and 1, in steps of 0.2
   double val = value;
 
-  if (randomized)
+  if (value == 11)
   {
     std::uniform_real_distribution<double> dis(-11, 11);
     val = std::floor(dis(_randomGenerator));
@@ -317,224 +506,13 @@ double choosePolicy(double value, bool randomized)
     {
       val += 1;
     }
+    val /= 10.0;
   }
-  val /= 10.0;
+  else
+  {
+    val = value/5.0 - 1; // this is in the range -1, 1
+  }
+  
   return val;
 }
-
-
-// // 2 windmills with variable torque applied to them
-// void runEnvironment(korali::Sample &s)
-// {
-//   std::cout<<"Before state env"<<std::endl;
-//   ////////////////////////////////////////// setup stuff 
-//   // Setting seed
-//   size_t sampleId = s["Sample Id"];
-//   _randomGenerator.seed(sampleId);
-
-//   // Creating results directory
-//   char resDir[64];
-//   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
-//   std::filesystem::create_directories(resDir);
-
-//   // Redirecting all output to the log file
-//   char logFilePath[128];
-//   sprintf(logFilePath, "%s/log.txt", resDir);
-//   auto logFile = freopen(logFilePath, "a", stdout);
-//   if (logFile == NULL)
-//   {
-//     printf("Error creating log file: %s.\n", logFilePath);
-//     exit(-1);
-//   }
-
-//   // Switching to results directory
-//   auto curPath = std::filesystem::current_path();
-//   std::filesystem::current_path(resDir);
-
-//   int sec = 30;
-//   int num_steps_per_sec = 100;
-//   int num_steps =  num_steps_per_sec * sec;
-
-
-//   // copy the contents of the profile.dat file into vector c++
-
-//   std::vector<std::vector<double>> profiles(num_steps, std::vector<double> (33, 0.0)); // initialize vector of size numsteps x 33
-
-//   std::ifstream myfile;
-//   myfile.open("../../profile.dat", ios::in);
-
-//   if (myfile.is_open()){
-//     std::cout<<"File is open"<<std::endl;
-//     std::cerr<<"Succesfully opened the file"<<std::endl;
-
-//   } else{
-//     std::cout<<"File is closed"<<std::endl;
-//     std::cerr<<"Failed to open the file"<<std::endl;
-//   }
-
-//   std::string line;
-//   int i = 0;
-//   int j_copy = 0;
-
-//   while (std::getline(myfile, line))
-//   {
-//     std::istringstream data_line(line);
-//     int j = 0;
-//     for (j=0; j < 33; ++j)
-//     {
-//       if (data_line >> profiles[i][j])
-//       {
-
-//       } else{
-//         std::cout<<"Failed to read number"<<std::endl;
-//       }
-//     }
-//     i += 1;
-//     j_copy = j;
-//   }
-//   myfile.close();
-
-//   std::cout<<"ij"<<i<<" "<<j_copy<<std::endl;
-
-
-
-//   //if(std::filesystem::copy_file("../../profile.dat", "profile.dat")) std::cout<<"File was copied successfully"<<std::endl;;
-
-//   // Creating simulation environment
-//   Simulation *_environment = new Simulation(_argc, _argv);
-//   _environment->init();
-//   ////////////////////////////////////////// setup stuff 
-
-//   ////////////////////////////////////////// Initialize agents and objective
-//   // Obtaining agent, 4 windmills 
-//   Windmill* agent1 = dynamic_cast<Windmill*>(_environment->getShapes()[0]);
-//   Windmill* agent2 = dynamic_cast<Windmill*>(_environment->getShapes()[1]);
-
-//   // useful agent functions :
-//   // void act( double action );
-//   // double reward( std::array<Real,2> target, std::vector<double> target_vel, double C = 10);
-//   // std::vector<double> state();
-
-//   // Establishing environment's dump frequency
-//   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-
-//   // Setting initial conditions
-//   setInitialConditions(agent1, 0.0, s["Mode"] == "Training");
-//   setInitialConditions(agent2, 0.0, s["Mode"] == "Training");
-//   // After moving the agent, the obstacles have to be restarted
-//   _environment->startObstacles();
-
-//   //std::vector<double> state = velGridProfile(_environment);
-//   std::vector<double> state = agent1->vel_profile();
-
-//   // std::cout<<"State is of size :"<<state.size()<<std::endl;
-
-//   s["State"] = state;
-
-//   // Setting initial time and step conditions
-//   double t = 0;        // Current time
-//   double tNextAct = 0; // Time until next action
-//   size_t curStep = 0;  // current Step
-
-//   // Setting maximum number of steps before truncation
-//   size_t maxSteps = num_steps; // 2000 for training
-
-//   // std::fstream myfile;
-//   // myfile.open("profile.dat", ios::in);
-
-//   // if (myfile.is_open()){
-//   //   std::cout<<"File is open"<<std::endl;
-//   // } else{
-//   //   std::cout<<"File is closed"<<std::endl;
-//   // }
-
-//   std::vector<double> true_prof = {19.9993, 0.0531483, 0.053797, 0.0541452, 0.05426, 0.0542343, 0.0541726, 0.0541775, 0.0543413, 0.0547629,
-//                                    0.0555199, 0.0567263, 0.0584773, 0.0608873, 0.063975, 0.0675119, 0.0707227, 0.0725255, 0.0724874,
-//                                    0.0722369, 0.0752008, 0.0817008, 0.0888002, 0.0975837, 0.109082, 0.121681, 0.133602, 0.143548,
-//                                    0.150564, 0.153644, 0.151996, 0.145743, 0.136029};
-  
-
-//   int index_step = 0;
-
-//   while (curStep < maxSteps)
-//   {
-//     // Getting new action
-//     s.update();
-
-//     // Reading new action
-//     std::vector<double> action = s["Action"];
-
-//     // Setting action for 
-//     agent1->act( action[0] );
-//     agent2->act( action[1] );
-
-//     // Run the simulation until next action is required
-//     tNextAct += 1.0 / num_steps_per_sec ;
-//     while ( t < tNextAct )
-//     {
-//       // Calculate simulation timestep
-//       const double dt = std::min(_environment->calcMaxTimestep(), 1.0 / num_steps_per_sec);
-//       t += dt;
-
-//       // Advance simulation
-//       _environment->advance(dt);
-//     }
-
-//     // std::vector<double> profile;
-//     // std::string line;
-
-//     // if (myfile.is_open()){
-//     //   std::cout<<"File is open"<<std::endl;
-//     // } 
-
-//     // std::getline(myfile, line);
-//     // std::istringstream data_line(line);
-//     // std::cout<<line<<std::endl;
-    
-
-//     // double value = 0.0;
-
-//     // while (data_line >> value)
-//     // {
-//     //   profile.push_back(value);
-//     // }
-//     // std::cout<<" After reading file line "<<profile[0]<<std::endl;
-
-//     Real factor = 10.0;
-
-//     double reward = agent1->reward(factor, profiles[index_step]);
-
-//     // Storing reward
-//     s["Reward"] = reward;
-
-//     index_step += 1;
-
-
-//     //state = velGridProfile(_environment);
-//     state = agent1->vel_profile();
-
-//     // Storing new state
-//     s["State"] = state;
-
-//     // Advancing to next step
-//     curStep++;
-//   }
-
-//   // myfile.close();
-
-//   // Flush CUP logger
-//   logger.flush();
-
-//   // delete simulation class
-//   delete _environment;
-
-//   // Setting finalization status
-//   s["Termination"] = "Truncated";
-
-//   // Switching back to experiment directory
-//   std::filesystem::current_path(curPath);
-
-//   // Closing log file
-//   fclose(logFile);
-// }
 

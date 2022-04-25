@@ -64,7 +64,7 @@ void Continuous::initializeAgent()
       _policyParameterShifting[i] = _actionShifts[i];
 
       // Softplus mask for Sigmas
-      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus"; // x = 0.5 * (x + std::sqrt(1. + x * x));
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus"; // f(x) = 0.5 * (x + std::sqrt(1. + x * x));
       _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
     }

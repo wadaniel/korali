@@ -11,7 +11,7 @@ export OMP_NUM_THREADS=12
 
 FOLDERNAME=${BASEPATH}/${RUNNAME}
 mkdir -p ${FOLDERNAME}
-cp ./kolmogorov_flow.py ${FOLDERNAME}
+cp ./run-kolmogorov-flow.py ${FOLDERNAME}
 cd ${FOLDERNAME}
 
 cat <<EOF >daint_sbatch
@@ -27,7 +27,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --cpus-per-task=12
 #SBATCH --constraint=gpu
 
-srun python kolmogorov_flow.py --N $N -Cs 0.0
+srun python run-kolmogorov-flow.py --N $N -Cs 0.0
 EOF
 
 chmod 755 daint_sbatch

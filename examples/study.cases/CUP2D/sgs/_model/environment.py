@@ -2,10 +2,13 @@
 
 import cubismup2d as cup2d
 import numpy as np
+import sys
+import os
 
 
-######### ATTENTION #########
-# Make sure this computation corresponds to the one in run-kolmogorov-flow.py!!
+################################### ATTENTION ###################################
+# Make sure this computation corresponds to the one in run-kolmogorov-flow.py!! #
+#################################################################################
 class ComputeSpectralLoss(cup2d.Operator):
     def __init__(self, sim, stepsPerAction, pathToGroundtruth):
         super().__init__(sim)
@@ -108,15 +111,27 @@ class ComputeSpectralLoss(cup2d.Operator):
         # self.reward = np.mean(logLikelihood)
 
 def runEnvironment(s, env, numblocks, stepsPerAction, pathToGroundtruth):
+    # Save rundir
+    curdir = os.getcwd()
+
+    # Create output directory (if it does not exist already)
+    outputDir = "_trainingResults/simulationData/"
+
+    if not os.path.isdir(outputDir):
+        os.mkdir(outputDir)
+
+    # Go to output directory
+    os.chdir(outputDir)
+
     # Initialize Simulation
     # Set smagorinskyCoeff to something non-zero to enable the SGS
     if env == "rectangle":
-        sim = cup2d.Simulation(cells=(numblocks*16, numblocks*8), nlevels=1, start_level=0, extent=4, tdump=0.0, smagorinskyCoeff=0.1 )
+        sim = cup2d.Simulation(cells=(numblocks*16, numblocks*8), nlevels=1, start_level=0, extent=4, tdump=0.0, smagorinskyCoeff=0.1, mute_all=True, output_dir="./" )
         rectangle = cup2d.Rectangle(sim, a=0.2, b=0.2, center=(0.5, 0.5), vel=(0.2, 0.0), fixed=True, forced=True)
         sim.add_shape(rectangle)
 
     if env == "kolmogorovFlow":
-        sim = cup2d.Simulation(cells=(numblocks*8, numblocks*8), nlevels=1, start_level=0, extent=2.0*np.pi, tdump=0.0, ic="random", bForcing=1, smagorinskyCoeff=0.1 )
+        sim = cup2d.Simulation(cells=(numblocks*8, numblocks*8), nlevels=1, start_level=0, extent=2.0*np.pi, tdump=0.0, ic="random", bForcing=1, smagorinskyCoeff=0.1, mute_all=True, output_dir="./" )
 
     sim.init()
     spectralLoss = ComputeSpectralLoss(sim, stepsPerAction, pathToGroundtruth)
@@ -170,3 +185,6 @@ def runEnvironment(s, env, numblocks, stepsPerAction, pathToGroundtruth):
         s["Termination"] = "Terminal"
     else:
         s["Termination"] = "Truncated"
+
+    # Go back to base-directory and reset cout
+    os.chdir(curdir)

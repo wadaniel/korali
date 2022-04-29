@@ -13,9 +13,13 @@ int main(int argc, char *argv[])
   }
 
   // retreiving number of task, agents, and ranks
-  int task    = atoi(argv[argc-5]);
-  int nAgents = atoi(argv[argc-3]);
-  int nRanks  = atoi(argv[argc-1]);
+  const int task    = atoi(argv[argc-5]);
+  const int nAgents = atoi(argv[argc-3]);
+  const int nRanks  = atoi(argv[argc-1]);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  if (rank == 0)
+	  std::cout << "Running task : " << task << " with nAgents=" << nAgents << std::endl;
 
   // Storing parameters for environment
   _argc = argc;

@@ -275,7 +275,7 @@ void runEnvironment(korali::Sample &s)
     for( int i = 0; i<nAgents; i++ )
     {
       std::vector<double> initialPosition = initialPositions[i];
-      std::vector<double> state = agents[i]->state(initialPosition);
+      std::vector<double> state = getState(agents[i],initialPosition,_environment->sim,nAgents,i,task);
 
       // assign state/reward to container
       states[i]  = state;
@@ -285,7 +285,7 @@ void runEnvironment(korali::Sample &s)
   else
   {
     std::vector<double> initialPosition{ 0.9, 0.5 };
-    s["State"] = agents[0]->state(initialPosition);
+    s["State"] = getState(agents[0],initialPosition,_environment->sim,nAgents,0,task);
   }
 
   // Variables for time and step conditions
@@ -379,7 +379,7 @@ void runEnvironment(korali::Sample &s)
       for( int i = 0; i<nAgents; i++ )
       {
         std::vector<double> initialPosition = initialPositions[i];
-        std::vector<double> state = agents[i]->state(initialPosition);
+        std::vector<double> state = getState(agents[i],initialPosition,_environment->sim,nAgents,i,task);
 
         // assign state/reward to container
         states[i]  = state;
@@ -403,7 +403,7 @@ void runEnvironment(korali::Sample &s)
     }
     else {
       std::vector<double> initialPosition{ 0.9, 0.5 };
-      s["State"] = agents[0]->state(initialPosition);
+      s["State"] = getState(agents[0],initialPosition,_environment->sim,nAgents,0,task);
       s["Reward"] = done ? -10.0 : agents[0]->EffPDefBnd;
     }
 
@@ -578,4 +578,132 @@ bool isTerminal(StefanFish *agent, int nAgents)
   if (Y > yMax) terminal = true;
 
   return terminal;
+}
+
+
+std::vector<double> getState(StefanFish *agent, const std::vector<double>& origin, const SimulationData & sim, const int nAgents, const int agentID, const int task)
+{
+   const CurvatureFish* const cFish = dynamic_cast<CurvatureFish*>( agent->myFish );
+   const auto & myFish = agent->myFish;
+   const double length = agent->length;
+   const double Tperiod = agent->Tperiod;
+   std::vector<double> S(10,0);
+   S[0] = ( agent->center[0] - origin[0] )/ length;
+   S[1] = ( agent->center[1] - origin[1] )/ length;
+   S[2] = agent->getOrientation();
+   S[3] = agent->getPhase( sim.time );
+   S[4] = agent->getU() * Tperiod / length;
+   S[5] = agent->getV() * Tperiod / length;
+   S[6] = agent->getW() * Tperiod;
+   S[7] = cFish->lastTact;
+   S[8] = cFish->lastCurv;
+   S[9] = cFish->oldrCurv;
+
+   #ifndef STEFANS_SENSORS_STATE
+     return S;
+   #else
+
+   S.resize(16);
+
+   // Get velInfo
+   const std::vector<cubism::BlockInfo>& velInfo = sim.vel->getBlocksInfo();
+
+   // Get fish skin
+   const auto &DU = myFish->upperSkin, &DL = myFish->lowerSkin;
+
+   //// Sensor Signal on Front of Fish ////
+   ////////////////////////////////////////
+
+   // get front-point
+   const std::array<Real,2> pFront = {DU.xSurf[0], DU.ySurf[0]};
+
+   // first point of the two skins is the same
+   // normal should be almost the same: take the mean
+   const std::array<Real,2> normalFront = { (DU.normXSurf[0] + DL.normXSurf[0]) / 2,
+                                            (DU.normYSurf[0] + DL.normYSurf[0]) / 2 };
+
+   // compute shear stress
+   std::array<Real,2> tipShear = agent->getShear( pFront, normalFront, velInfo );
+
+   //// Sensor Signal on Side of Fish ////
+   ///////////////////////////////////////
+
+   std::array<Real,2> lowShear={}, topShear={};
+
+   // get index for sensors on the side of head
+   int iHeadSide = 0;
+   for(int i=0; i<myFish->Nm-1; ++i)
+       if( myFish->rS[i] <= 0.04*length && myFish->rS[i+1] > 0.04*length )
+         iHeadSide = i;
+   assert(iHeadSide>0);
+
+   for(int a = 0; a<2; ++a)
+   {
+      // distinguish upper and lower skin
+      const auto& D = a==0 ? myFish->upperSkin : myFish->lowerSkin;
+
+      // get point
+      const std::array<Real,2> pSide = { D.midX[iHeadSide], D.midY[iHeadSide] };
+
+      // get normal to surface
+      const std::array<Real,2> normSide = { D.normXSurf[iHeadSide], D.normYSurf[iHeadSide] };
+
+      // compute shear stress
+      std::array<Real,2> sideShear = agent->getShear( pSide, normSide, velInfo );
+
+      // now figure out how to rotate it along the fish skin for consistency:
+      const Real dX = D.xSurf[iHeadSide+1] - D.xSurf[iHeadSide];
+      const Real dY = D.ySurf[iHeadSide+1] - D.ySurf[iHeadSide];
+      const Real proj = dX * normSide[0] - dY * normSide[1];
+      const Real tangX = proj>0?  normSide[0] : -normSide[0]; // s.t. tang points from head
+      const Real tangY = proj>0? -normSide[1] :  normSide[1]; // to tail, normal outward
+       (a==0? topShear[0] : lowShear[0]) = sideShear[0] * normSide[0] + sideShear[1] * normSide[1];
+       (a==0? topShear[1] : lowShear[1]) = sideShear[0] * tangX + sideShear[1] * tangY;
+   }
+
+   // put non-dimensional results into state into state
+   S[10] = tipShear[0] * Tperiod / length;
+   S[11] = tipShear[1] * Tperiod / length;
+   S[12] = lowShear[0] * Tperiod / length;
+   S[13] = lowShear[1] * Tperiod / length;
+   S[14] = topShear[0] * Tperiod / length;
+   S[15] = topShear[1] * Tperiod / length;
+   // printf("shear tip:[%f %f] lower side:[%f %f] upper side:[%f %f]\n", S[10],S[11], S[12],S[13], S[14],S[15]);
+   // fflush(0);
+
+   #endif //STEFANS_SENSORS_STATE
+
+   #ifndef STEFANS_NEIGHBOUR_STATE
+   return S;
+   #else
+   S.resize(22);
+
+   // Get all shapes in simulaton
+   const auto& shapes = sim.shapes;
+   const size_t N = shapes.size();
+
+   // Compute distance vector pointing from agent to neighbours
+   std::vector<std::vector<Real>> distanceVector(N, std::vector<Real>(2));
+   std::vector<std::pair<Real, size_t>> distances(N);
+   for( size_t i = 0; i<N; i++ )
+   {
+       const double distX = shapes[i]->center[0] - center[0];
+       const double distY = shapes[i]->center[1] - center[1];
+       distanceVector[i][0] = distX;
+       distanceVector[i][1] = distY;
+       distances[i].first = std::sqrt( distX*distX + distY*distY );
+       distances[i].second = i;
+   }
+
+   // Only add distance vector for (first) three neighbours to state
+   std::sort( distances.begin(), distances.end() );
+   for( size_t i = 0; i<3; i++ )
+   {
+       // Ignore first entry, which will be the distance to itself
+       S[16+2*i]   = distanceVector[distances[i+1].second][0];
+       S[16+2*i+1] = distanceVector[distances[i+1].second][1];
+     }
+
+   return S;
+   #endif
 }

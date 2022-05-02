@@ -1,11 +1,5 @@
-_trainingResults
-_testingResults
-_results*
-core.*
-*.txt
-*.h5
-*.xmf
-*.dat
 _deps
-*.a
-eval-vracer-swimmer
+**/eval-vracer-swimmer-2D
+**/eval-vracer-swimmer-2D
+**/run-vracer-swimmer-3D
+**/run-vracer-swimmer-3D

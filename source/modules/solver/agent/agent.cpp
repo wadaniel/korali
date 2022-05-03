@@ -1937,6 +1937,7 @@ void Agent::setConfiguration(knlohmann::json& js)
  bool validOption = false; 
  if (_multiAgentRelationship == "Individual") validOption = true; 
  if (_multiAgentRelationship == "Cooperation") validOption = true; 
+ if (_multiAgentRelationship == "Competition") validOption = true; 
  if (validOption == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ['Multi Agent Relationship'] required by agent.\n", _multiAgentRelationship.c_str()); 
 }
    eraseValue(js, "Multi Agent Relationship");

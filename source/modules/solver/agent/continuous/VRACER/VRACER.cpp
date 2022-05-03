@@ -34,6 +34,9 @@ void VRACER::initializeAgent()
 
   _effectiveMinibatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
 
+  if( _multiAgentRelationship == "Competition" )
+    _effectiveMinibatchSize = _miniBatchSize;
+
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
   {
     _criticPolicyExperiment[p]["Problem"]["Type"] = "Supervised Learning";
@@ -91,6 +94,10 @@ void VRACER::trainPolicy()
   // Gathering state sequences for selected minibatch
   const auto stateSequenceBatch = getMiniBatchStateSequence(miniBatch);
 
+  // Prepare stateSequenceBatch and miniBatch
+  auto _miniBatch          = miniBatch;
+  auto _stateSequenceBatch = stateSequenceBatch;
+
   // Buffer for policy info to update experience metadata
   std::vector<policy_t> policyInfoUpdateMetadata(miniBatch.size());
 
@@ -100,15 +107,29 @@ void VRACER::trainPolicy()
   // Update all policies using all experiences
   for (size_t p = 0; p < numPolicies; p++)
   {
+    // Disable experience sharing by splitting minibatch for competing agents
+    if( _multiAgentRelationship == "Competition" )
+    {
+      std::vector<std::pair<size_t, size_t>> miniBatchBuffer(_miniBatchSize);
+      std::vector<std::vector<std::vector<float>>> stateSequenceBuffer(_miniBatchSize);
+      for( size_t i = 0; i<_miniBatchSize; i++ )
+      {
+        miniBatchBuffer[i]     = miniBatch[ i*_problem->_agentsPerEnvironment + p ];
+        stateSequenceBuffer[i] = stateSequenceBatch[ i*_problem->_agentsPerEnvironment + p ];
+      }
+      _miniBatch          = miniBatchBuffer;
+      _stateSequenceBatch = stateSequenceBuffer;
+    }
+
     // Forward NN
     std::vector<policy_t> policyInfo;
-    runPolicy(stateSequenceBatch, policyInfo, p);
+    runPolicy(_stateSequenceBatch, policyInfo, p);
 
     // Using policy information to update experience's metadata
-    updateExperienceMetadata(miniBatch, policyInfo);
+    updateExperienceMetadata(_miniBatch, policyInfo);
 
     // Now calculating policy gradients
-    calculatePolicyGradients(miniBatch, p);
+    calculatePolicyGradients(_miniBatch, p);
 
     // Updating learning rate for critic/policy learner guided by REFER
     _criticPolicyLearner[p]->_learningRate = _currentLearningRate;
@@ -123,8 +144,8 @@ void VRACER::trainPolicy()
   }
 
   // Correct experience metadata
-  if (numPolicies > 1)
-    updateExperienceMetadata(miniBatch, policyInfoUpdateMetadata);
+  if ( (numPolicies > 1) && (_multiAgentRelationship != "Competition") )
+    updateExperienceMetadata(_miniBatch, policyInfoUpdateMetadata);
 }
 
 void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t>> &miniBatch, const size_t policyIdx)

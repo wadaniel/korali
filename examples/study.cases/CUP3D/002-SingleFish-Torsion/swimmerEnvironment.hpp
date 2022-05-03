@@ -14,14 +14,14 @@
     #include "Utils/BufferedLogger.h"
     #include <Cubism/ArgumentParser.h>
     std::string OPTIONS = "-bpdx 4 -bpdy 4 -levelMax 7 -levelStart 4 -Rtol 10000.0 -Ctol 100.0 -extent 2 -CFL 0.7 -poissonTol 1e-5 -poissonTolRel 0.0 -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
-    std::vector<std::vector<double>> initialPositions{{{1.0, 1.0,1.0}}};
+    std::vector<std::vector<double>> initialPositions{{{1.0, 1.0,0.5}}};
 #else
     #include "obstacles/StefanFish.h"
     #include "Simulation.h"
     #include "utils/BufferedLogger.h"
     #include <Cubism/ArgumentParser.h>
     std::string OPTIONS = " -bpdx 2 -bpdy 2 -bpdz 1 -extentx 2.0 -levelMax 7 -levelStart 5 -Rtol 10000.00 -Ctol 100.00 -fsave 0 -tdump 0 -tend 0 -CFL 0.7 -lambda 1e6 -nu 0.00001 -poissonTol 1e-4 -poissonTolRel 1e-1 -bMeanConstraint 0";
-    std::vector<std::vector<double>> initialPositions{{{1.0, 1.0, 1.0}}};
+    std::vector<std::vector<double>> initialPositions{{{1.0, 1.0, 0.5}}};
     using namespace cubismup3d;
 #endif
 

@@ -10,7 +10,6 @@
 int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
-
 size_t NUMACTIONS = 2;
 
 // Environment Function
@@ -21,12 +20,12 @@ void runEnvironment(korali::Sample &s)
 
   // Get rank and size of subcommunicator
   int rank, size;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &size);
 
   // Get rank in world
   int rankGlobal;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal);
 
   // Setting seed
   const size_t sampleId = s["Sample Id"];
@@ -67,8 +66,8 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Get task and number of agents from command line argument
-  const int nAgents = atoi(_argv[_argc-3]);
-  auto task    = atoi(_argv[_argc-5]);
+  const auto nAgents = atoi(_argv[_argc-3]);
+  auto       task    = atoi(_argv[_argc-5]);
 
   // Process given task variable
   if(task == -1 )
@@ -211,7 +210,7 @@ void runEnvironment(korali::Sample &s)
     initialData[2] = initialPosition[1];
 
     // During training, add noise to inital position of agent
-    // if ( s["Mode"] == "Training" )
+    if ( s["Mode"] == "Training" )
     {
       // only rank 0 samples initial data
       if( rank == 0 )
@@ -269,7 +268,7 @@ void runEnvironment(korali::Sample &s)
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Setting initial state [Careful, state function needs to be called by all ranks!]
+  // Setting initial state
   if( nAgents > 1 ) {
     std::vector<std::vector<double>> states(nAgents);
     for( int i = 0; i<nAgents; i++ )
@@ -292,7 +291,7 @@ void runEnvironment(korali::Sample &s)
   double t = 0;        // Current time
   size_t curStep = 0;  // current Step
   double dtAct;        // Time until next action
-  double tNextAct = 0; // Time of next action     
+  double tNextAct = 0; // Time of next action
 
   // Setting maximum number of steps before truncation
   const size_t maxSteps = 200;
@@ -369,7 +368,7 @@ void runEnvironment(korali::Sample &s)
 
       // Check termination because leaving margins
       for( int i = 0; i<nAgents; i++ )
-        done = ( done || isTerminal(agents[i], nAgents) );
+        done = ( done || isTerminal(agents[i], nAgents, task) );
     }
 
     // Get and store state and reward [Carful, state function needs to be called by all ranks!] 
@@ -468,7 +467,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(curPath);
 }
 
-bool isTerminal(StefanFish *agent, int nAgents)
+bool isTerminal(StefanFish *agent, int nAgents, int task)
 {
   double xMin, xMax, yMin, yMax;
   if( nAgents == 1 ){
@@ -483,14 +482,15 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMax = 0.9;
   }
   else if( nAgents == 2 ){
-    // xMin = 0.1;
-    // xMax = 0.47;
-    // yMin = 0.05;
-    // yMax = 0.35;
-    xMin = 0.10;
-    xMax = 0.70;
-    yMin = 0.10;
-    yMax = 0.50;
+    xMin = 0.1;
+    xMax = 1.9;
+    yMin = 0.1;
+    yMax = 0.9;
+    if( task == 5 )
+      xMin = 0.10;
+      xMax = 0.50;
+      yMin = 0.10;
+      yMax = 0.30;
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
@@ -517,17 +517,13 @@ bool isTerminal(StefanFish *agent, int nAgents)
     xMax = 1.9;
     yMin = 0.1;
     yMax = 0.9;
-    // xMin = 0.1;
-    // xMax = 1.07;
-    // yMin = 0.05;
-    // yMax = 0.35;
-  }
-  else if( nAgents == 5 ){
-    //periodic [0,1]x[0,1] domain with 5 fish
-    xMin = 0.1;
-    xMax = 0.9;
-    yMin = 0.1;
-    yMax = 0.9;
+    if( task == 5 )
+    {
+      xMin = 0.10;
+      xMax = 1.10;
+      yMin = 0.10;
+      yMax = 0.30;
+    }
   }
   else if( nAgents == 8 ){
     xMin = 0.4;
@@ -571,6 +567,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
   const double X = agent->center[0];
   const double Y = agent->center[1];
 
+  // Check if Swimmer is out of Bounds
   bool terminal = false;
   if (X < xMin) terminal = true;
   if (X > xMax) terminal = true;

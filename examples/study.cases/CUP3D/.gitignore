@@ -2,4 +2,9 @@
 **/eval-vracer-swimmer-3D
 **/run-vracer-swimmer-2D
 **/run-vracer-swimmer-3D
+**/test-swimmer-2D
+**/test-swimmer-3D
+**/train-swimmer-2D
+**/train-swimmer-3D
+**/._*
 _deps

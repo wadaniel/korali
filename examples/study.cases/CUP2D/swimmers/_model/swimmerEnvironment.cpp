@@ -308,6 +308,8 @@ void runEnvironment(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
+  bool crashed = false;
+  bool leftDomain = false;
   while ( curStep < maxSteps && done == false )
   {
     // Only rank 0 communicates with Korali
@@ -371,11 +373,14 @@ void runEnvironment(korali::Sample &s)
       _environment->advance(dt);
 
       // Check if there was a collision -> termination.
-      done = _environment->sim.bCollision;
+      crashed = _environment->sim.bCollision;
 
       // Check termination because leaving margins
       for( int i = 0; i<nAgents; i++ )
-        done = ( done || isTerminal(agents[i], nAgents, task) );
+        leftDomain = ( leftDomain || isTerminal(agents[i], nAgents, task) );
+
+      // Terminate when swimmer leaves domain or there is a crash
+      done = leftDomain || crashed;
     }
 
     // Get and store state and reward [Carful, state function needs to be called by all ranks!] 
@@ -408,13 +413,13 @@ void runEnvironment(korali::Sample &s)
           {
             double xDisplacement = agents[i]->center[0]-agents[1]->center[0];
             double yDisplacement = agents[i]->center[1]-agents[1]->center[1];
-            rewards[i] = done ? -10.0 : std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+            rewards[i] = leftDomain ? -10 : ( crashed ? -10.0 : std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
           }
           else // PREDATOR
           {
             double xDisplacement = agents[i]->center[0]-agents[0]->center[0];
             double yDisplacement = agents[i]->center[1]-agents[0]->center[1];
-            rewards[i] = done ? -10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+            rewards[i] = leftDomain ? -10 : ( crashed ? +10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
           }
         }
         else

@@ -694,11 +694,11 @@ void __className__::processEpisode(knlohmann::json &episode)
 
 std::vector<std::pair<size_t, size_t>> __className__::generateMiniBatch()
 {
-  // Allocating storage for mini batch experiecne indexes
-  std::vector<std::pair<size_t, size_t>> miniBatch(_effectiveMinibatchSize);
-
   // Get number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
+
+  // Allocating storage for mini batch experiecne indexes
+  std::vector<std::pair<size_t, size_t>> miniBatch(_miniBatchSize*numAgents);
 
   // Fill minibatch
   for (size_t b = 0; b < _miniBatchSize; b++)
@@ -753,11 +753,14 @@ std::vector<std::pair<size_t, size_t>> __className__::generateMiniBatch()
 
 std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSequence(const std::vector<std::pair<size_t, size_t>> &miniBatch)
 {
+  // Get number of experiences in minibatch
+  const size_t numExperiences = miniBatch.size();
+
   // Allocating state sequence vector
-  std::vector<std::vector<std::vector<float>>> stateSequence(_effectiveMinibatchSize);
+  std::vector<std::vector<std::vector<float>>> stateSequence(numExperiences);
 
 #pragma omp parallel for
-  for (size_t b = 0; b < _effectiveMinibatchSize; b++)
+  for (size_t b = 0; b < numExperiences; b++)
   {
     // Getting current expId and agentId
     const size_t expId = miniBatch[b].first;

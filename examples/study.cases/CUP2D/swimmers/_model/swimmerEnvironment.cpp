@@ -100,6 +100,7 @@ void runEnvironment(korali::Sample &s)
      CASE 5: None, periodic domain 
      CASE 6: None, minimize displacement
      CASE 7: None, maximize efficiency
+     CASE 8: Stefanfish, predator pray
    */
   switch(task) {
     case 0 : // DCYLINDER
@@ -154,6 +155,7 @@ void runEnvironment(korali::Sample &s)
     }
     case 2 : // Y-DISPLACEMENT
     case 3 : // EFFICIENCY
+    case 8 : // PREDATOR PRAY
     {
       // Only rank 0 samples the length
       double length = 0.2;
@@ -161,7 +163,7 @@ void runEnvironment(korali::Sample &s)
       // {
       //   if( rank == 0 )
       //   {
-      //     std::uniform_real_distribution<double> lengthDist(0.15,0.25);
+      //     std::uniform_real_distribution<double> lengthDist(0.10,0.20);
       //     length = lengthDist(_randomGenerator);
       //   }
       // }
@@ -174,7 +176,8 @@ void runEnvironment(korali::Sample &s)
       // MPI_Bcast(&length, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 pid=1 L=";
+      // std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 pid=1 L=";
+      std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 L=";
       argumentString = argumentString + OBJECT + std::to_string(length);
       break;
     }
@@ -202,7 +205,7 @@ void runEnvironment(korali::Sample &s)
   {
     // Set initial position
     std::vector<double> initialPosition{ 0.9, 0.5 };
-    if( nAgents > 1)
+    if( (nAgents > 1) && (task != 8) )
     {
       initialPosition = initialPositions[a];
     }
@@ -228,6 +231,10 @@ void runEnvironment(korali::Sample &s)
 
     // Append agent to argument string
     argumentString = argumentString + ( task>3 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+
+    // Leave loop for Predator-pray
+    if( task == 8 )
+      break;
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -254,7 +261,7 @@ void runEnvironment(korali::Sample &s)
   std::vector<StefanFish *> agents(nAgents);
   if( task > 3 )
   {
-    //all five fish are agents in task 5
+    // All fish are agents
     for( int i = 0; i<nAgents; i++ )
       agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
   }
@@ -394,6 +401,22 @@ void runEnvironment(korali::Sample &s)
           double yDisplacement = agents[i]->center[1]-initialPosition[1];
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
         }
+        else if( task == 8 )
+        {
+          // PRAY
+          if( i == 0 )
+          {
+            double xDisplacement = agents[i]->center[0]-agents[1]->center[0];
+            double yDisplacement = agents[i]->center[1]-agents[1]->center[1];
+            rewards[i] = done ? -10.0 : std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+          }
+          else // PREDATOR
+          {
+            double xDisplacement = agents[i]->center[0]-agents[0]->center[0];
+            double yDisplacement = agents[i]->center[1]-agents[0]->center[1];
+            rewards[i] = done ? -10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+          }
+        }
         else
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
@@ -487,10 +510,12 @@ bool isTerminal(StefanFish *agent, int nAgents, int task)
     yMin = 0.1;
     yMax = 0.9;
     if( task == 5 )
+    {
       xMin = 0.10;
       xMax = 0.50;
       yMin = 0.10;
       yMax = 0.30;
+    }
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH

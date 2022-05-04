@@ -12,7 +12,7 @@ TASK=$2
 NAGENTS=2
 
 # number of workers
-NWORKER=32
+NWORKER=64
 # NWORKER=1
 
 # number of nodes per worker

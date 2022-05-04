@@ -9,7 +9,7 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=1
+NAGENTS=2
 
 # number of nodes per worker
 NRANKS=9

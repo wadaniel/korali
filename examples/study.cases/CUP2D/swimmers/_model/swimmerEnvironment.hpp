@@ -16,9 +16,11 @@ extern int _argc;
 extern char **_argv;
 
 void runEnvironment(korali::Sample &s);
+
 bool isTerminal(StefanFish *agent, 
                 const int nAgents, 
                 const int task);
+
 std::vector<double> getState(StefanFish *agent, 
                              const std::vector<double>& origin,
                              const SimulationData & sim,

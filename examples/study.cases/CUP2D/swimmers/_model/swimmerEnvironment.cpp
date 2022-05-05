@@ -434,45 +434,29 @@ void runEnvironment(korali::Sample &s)
       s["Reward"] = done ? -10.0 : agents[0]->EffPDefBnd;
     }
 
-    // Printing Information:
-    if( rank == 0 ) {
+    // Print information
+    if ( rank == 0 )
+    {
       printf("[Korali] -------------------------------------------------------\n");
       printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-      if( nAgents > 1 )
+      for(int i = 0; i<nAgents; i++ )
       {
-        for( int i = 0; i<nAgents; i++ )
-        {
-          auto state  = s["State"][i].get<std::vector<float>>();
-          auto action = s["Action"][i].get<std::vector<float>>();
-          auto reward = s["Reward"][i].get<float>();
-          printf("[Korali] AGENT %d/%d\n", i, nAgents);
-          printf("[Korali] State: [ %.3f", state[0]);
-          for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
-          printf("]\n");
-          printf("[Korali] Action: [ %.3f", action[0]);
-          for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
-          printf("]\n");
-          printf("[Korali] Reward: %.3f\n", reward);
-          printf("[Korali] Terminal?: %d\n", done);
-          printf("[Korali] -------------------------------------------------------\n");
-        }
-      }
-      else{
-        auto state  = s["State"].get<std::vector<float>>();
-        auto action = s["Action"].get<std::vector<float>>();
-        auto reward = s["Reward"].get<float>();
+        const auto state  = (nAgents > 1) ? s["State" ][i].get<std::vector<float>>():s["State" ].get<std::vector<float>>();
+        const auto action = (nAgents > 1) ? s["Action"][i].get<std::vector<float>>():s["Action"].get<std::vector<float>>();
+        const auto reward = (nAgents > 1) ? s["Reward"][i].get            <float> ():s["Reward"].get            <float> ();
+        printf("[Korali] AGENT %d/%d\n", i, nAgents);
         printf("[Korali] State: [ %.3f", state[0]);
         for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
         printf("]\n");
-        printf("[Korali] Action: [ %.3f", state[0]);
+        printf("[Korali] Action: [ %.3f", action[0]);
         for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
         printf("]\n");
         printf("[Korali] Reward: %.3f\n", reward);
         printf("[Korali] Terminal?: %d\n", done);
         printf("[Korali] -------------------------------------------------------\n");
       }
-      fflush(stdout);
     }
+    fflush(stdout);
 
     // Advancing to next step
     curStep++;

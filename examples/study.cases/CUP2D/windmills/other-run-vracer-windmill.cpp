@@ -138,8 +138,11 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
 
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   
   //--------------------------------------------------------------------------------------------------------//

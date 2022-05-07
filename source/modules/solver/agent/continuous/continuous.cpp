@@ -140,6 +140,11 @@ void Continuous::getAction(korali::Sample &sample)
      * Storing the action and its policy
      ****************************************************************************/
 
+    // Check action
+    for (size_t a = 0; a < _problem->_actionVectorSize; a++)
+      if (std::isfinite(action[i]) == false) KORALI_LOG_ERROR("Agent %lu action %lu returned an invalid value: %f\n", i, action[i]);
+
+    // Write action to sample
     sample["Action"][i] = action;
     sample["Policy"]["State Value"][i] = policy[0].stateValue;
     sample["Policy"]["Unbounded Action"][i] = policy[0].unboundedAction;

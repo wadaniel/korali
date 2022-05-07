@@ -10,7 +10,6 @@
 int _argc;
 char **_argv;
 std::mt19937 _randomGenerator;
-
 size_t NUMACTIONS = 2;
 
 // Environment Function
@@ -21,12 +20,12 @@ void runEnvironment(korali::Sample &s)
 
   // Get rank and size of subcommunicator
   int rank, size;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm, &rank);
+  MPI_Comm_size(comm, &size);
 
   // Get rank in world
   int rankGlobal;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal);
 
   // Setting seed
   const size_t sampleId = s["Sample Id"];
@@ -67,8 +66,8 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(resDir);
 
   // Get task and number of agents from command line argument
-  const int nAgents = atoi(_argv[_argc-3]);
-  auto task    = atoi(_argv[_argc-5]);
+  const auto nAgents = atoi(_argv[_argc-3]);
+  auto       task    = atoi(_argv[_argc-5]);
 
   // Process given task variable
   if(task == -1 )
@@ -101,6 +100,7 @@ void runEnvironment(korali::Sample &s)
      CASE 5: None, periodic domain 
      CASE 6: None, minimize displacement
      CASE 7: None, maximize efficiency
+     CASE 8: Stefanfish, predator pray
    */
   switch(task) {
     case 0 : // DCYLINDER
@@ -155,6 +155,7 @@ void runEnvironment(korali::Sample &s)
     }
     case 2 : // Y-DISPLACEMENT
     case 3 : // EFFICIENCY
+    case 8 : // PREDATOR PRAY
     {
       // Only rank 0 samples the length
       double length = 0.2;
@@ -162,7 +163,7 @@ void runEnvironment(korali::Sample &s)
       // {
       //   if( rank == 0 )
       //   {
-      //     std::uniform_real_distribution<double> lengthDist(0.15,0.25);
+      //     std::uniform_real_distribution<double> lengthDist(0.10,0.20);
       //     length = lengthDist(_randomGenerator);
       //   }
       // }
@@ -175,7 +176,8 @@ void runEnvironment(korali::Sample &s)
       // MPI_Bcast(&length, 1, MPI_DOUBLE, 0, comm);
 
       // Set argument string
-      std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 pid=1 L=";
+      // std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 pid=1 L=";
+      std::string OBJECT = "stefanfish T=1 xpos=0.6 bFixed=1 L=";
       argumentString = argumentString + OBJECT + std::to_string(length);
       break;
     }
@@ -203,7 +205,7 @@ void runEnvironment(korali::Sample &s)
   {
     // Set initial position
     std::vector<double> initialPosition{ 0.9, 0.5 };
-    if( nAgents > 1)
+    if( (nAgents > 1) && (task != 8) )
     {
       initialPosition = initialPositions[a];
     }
@@ -211,7 +213,7 @@ void runEnvironment(korali::Sample &s)
     initialData[2] = initialPosition[1];
 
     // During training, add noise to inital position of agent
-    // if ( s["Mode"] == "Training" )
+    if ( s["Mode"] == "Training" )
     {
       // only rank 0 samples initial data
       if( rank == 0 )
@@ -229,6 +231,10 @@ void runEnvironment(korali::Sample &s)
 
     // Append agent to argument string
     argumentString = argumentString + ( task>3 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
+
+    // Leave loop for Predator-pray
+    if( task == 8 )
+      break;
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -255,7 +261,7 @@ void runEnvironment(korali::Sample &s)
   std::vector<StefanFish *> agents(nAgents);
   if( task > 3 )
   {
-    //all five fish are agents in task 5
+    // All fish are agents
     for( int i = 0; i<nAgents; i++ )
       agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
   }
@@ -269,13 +275,13 @@ void runEnvironment(korali::Sample &s)
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
-  // Setting initial state [Careful, state function needs to be called by all ranks!]
+  // Setting initial state
   if( nAgents > 1 ) {
     std::vector<std::vector<double>> states(nAgents);
     for( int i = 0; i<nAgents; i++ )
     {
       std::vector<double> initialPosition = initialPositions[i];
-      std::vector<double> state = agents[i]->state(initialPosition);
+      std::vector<double> state = getState(agents[i],initialPosition,_environment->sim,nAgents,i,task);
 
       // assign state/reward to container
       states[i]  = state;
@@ -285,14 +291,14 @@ void runEnvironment(korali::Sample &s)
   else
   {
     std::vector<double> initialPosition{ 0.9, 0.5 };
-    s["State"] = agents[0]->state(initialPosition);
+    s["State"] = getState(agents[0],initialPosition,_environment->sim,nAgents,0,task);
   }
 
   // Variables for time and step conditions
   double t = 0;        // Current time
   size_t curStep = 0;  // current Step
   double dtAct;        // Time until next action
-  double tNextAct = 0; // Time of next action     
+  double tNextAct = 0; // Time of next action
 
   // Setting maximum number of steps before truncation
   const size_t maxSteps = 200;
@@ -302,6 +308,8 @@ void runEnvironment(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
+  bool crashed = false;
+  bool leftDomain = false;
   while ( curStep < maxSteps && done == false )
   {
     // Only rank 0 communicates with Korali
@@ -365,11 +373,14 @@ void runEnvironment(korali::Sample &s)
       _environment->advance(dt);
 
       // Check if there was a collision -> termination.
-      done = _environment->sim.bCollision;
+      crashed = _environment->sim.bCollision;
 
       // Check termination because leaving margins
       for( int i = 0; i<nAgents; i++ )
-        done = ( done || isTerminal(agents[i], nAgents) );
+        leftDomain = ( leftDomain || isTerminal(agents[i], nAgents, task) );
+
+      // Terminate when swimmer leaves domain or there is a crash
+      done = leftDomain || crashed;
     }
 
     // Get and store state and reward [Carful, state function needs to be called by all ranks!] 
@@ -379,7 +390,7 @@ void runEnvironment(korali::Sample &s)
       for( int i = 0; i<nAgents; i++ )
       {
         std::vector<double> initialPosition = initialPositions[i];
-        std::vector<double> state = agents[i]->state(initialPosition);
+        std::vector<double> state = getState(agents[i],initialPosition,_environment->sim,nAgents,i,task);
 
         // assign state/reward to container
         states[i]  = state;
@@ -395,6 +406,22 @@ void runEnvironment(korali::Sample &s)
           double yDisplacement = agents[i]->center[1]-initialPosition[1];
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
         }
+        else if( task == 8 )
+        {
+          // PRAY
+          if( i == 0 )
+          {
+            double xDisplacement = agents[i]->center[0]-agents[1]->center[0];
+            double yDisplacement = agents[i]->center[1]-agents[1]->center[1];
+            rewards[i] = leftDomain ? -10 : ( crashed ? -10.0 : std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
+          }
+          else // PREDATOR
+          {
+            double xDisplacement = agents[i]->center[0]-agents[0]->center[0];
+            double yDisplacement = agents[i]->center[1]-agents[0]->center[1];
+            rewards[i] = leftDomain ? -10 : ( crashed ? +10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
+          }
+        }
         else
           rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
       }
@@ -403,49 +430,33 @@ void runEnvironment(korali::Sample &s)
     }
     else {
       std::vector<double> initialPosition{ 0.9, 0.5 };
-      s["State"] = agents[0]->state(initialPosition);
+      s["State"] = getState(agents[0],initialPosition,_environment->sim,nAgents,0,task);
       s["Reward"] = done ? -10.0 : agents[0]->EffPDefBnd;
     }
 
-    // Printing Information:
-    if( rank == 0 ) {
+    // Print information
+    if ( rank == 0 )
+    {
       printf("[Korali] -------------------------------------------------------\n");
       printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-      if( nAgents > 1 )
+      for(int i = 0; i<nAgents; i++ )
       {
-        for( int i = 0; i<nAgents; i++ )
-        {
-          auto state  = s["State"][i].get<std::vector<float>>();
-          auto action = s["Action"][i].get<std::vector<float>>();
-          auto reward = s["Reward"][i].get<float>();
-          printf("[Korali] AGENT %d/%d\n", i, nAgents);
-          printf("[Korali] State: [ %.3f", state[0]);
-          for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
-          printf("]\n");
-          printf("[Korali] Action: [ %.3f", action[0]);
-          for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
-          printf("]\n");
-          printf("[Korali] Reward: %.3f\n", reward);
-          printf("[Korali] Terminal?: %d\n", done);
-          printf("[Korali] -------------------------------------------------------\n");
-        }
-      }
-      else{
-        auto state  = s["State"].get<std::vector<float>>();
-        auto action = s["Action"].get<std::vector<float>>();
-        auto reward = s["Reward"].get<float>();
+        const auto state  = (nAgents > 1) ? s["State" ][i].get<std::vector<float>>():s["State" ].get<std::vector<float>>();
+        const auto action = (nAgents > 1) ? s["Action"][i].get<std::vector<float>>():s["Action"].get<std::vector<float>>();
+        const auto reward = (nAgents > 1) ? s["Reward"][i].get            <float> ():s["Reward"].get            <float> ();
+        printf("[Korali] AGENT %d/%d\n", i, nAgents);
         printf("[Korali] State: [ %.3f", state[0]);
         for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
         printf("]\n");
-        printf("[Korali] Action: [ %.3f", state[0]);
+        printf("[Korali] Action: [ %.3f", action[0]);
         for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
         printf("]\n");
         printf("[Korali] Reward: %.3f\n", reward);
         printf("[Korali] Terminal?: %d\n", done);
         printf("[Korali] -------------------------------------------------------\n");
       }
-      fflush(stdout);
     }
+    fflush(stdout);
 
     // Advancing to next step
     curStep++;
@@ -468,7 +479,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(curPath);
 }
 
-bool isTerminal(StefanFish *agent, int nAgents)
+bool isTerminal(StefanFish *agent, int nAgents, int task)
 {
   double xMin, xMax, yMin, yMax;
   if( nAgents == 1 ){
@@ -483,14 +494,17 @@ bool isTerminal(StefanFish *agent, int nAgents)
     yMax = 0.9;
   }
   else if( nAgents == 2 ){
-    // xMin = 0.1;
-    // xMax = 0.47;
-    // yMin = 0.05;
-    // yMax = 0.35;
-    xMin = 0.10;
-    xMax = 0.70;
-    yMin = 0.10;
-    yMax = 0.50;
+    xMin = 0.1;
+    xMax = 1.9;
+    yMin = 0.1;
+    yMax = 0.9;
+    if( task == 5 )
+    {
+      xMin = 0.10;
+      xMax = 0.50;
+      yMin = 0.10;
+      yMax = 0.30;
+    }
   }
   else if( nAgents == 3 ){
     // FOR SCHOOL OF FISH
@@ -517,17 +531,13 @@ bool isTerminal(StefanFish *agent, int nAgents)
     xMax = 1.9;
     yMin = 0.1;
     yMax = 0.9;
-    // xMin = 0.1;
-    // xMax = 1.07;
-    // yMin = 0.05;
-    // yMax = 0.35;
-  }
-  else if( nAgents == 5 ){
-    //periodic [0,1]x[0,1] domain with 5 fish
-    xMin = 0.1;
-    xMax = 0.9;
-    yMin = 0.1;
-    yMax = 0.9;
+    if( task == 5 )
+    {
+      xMin = 0.10;
+      xMax = 1.10;
+      yMin = 0.10;
+      yMax = 0.30;
+    }
   }
   else if( nAgents == 8 ){
     xMin = 0.4;
@@ -571,6 +581,7 @@ bool isTerminal(StefanFish *agent, int nAgents)
   const double X = agent->center[0];
   const double Y = agent->center[1];
 
+  // Check if Swimmer is out of Bounds
   bool terminal = false;
   if (X < xMin) terminal = true;
   if (X > xMax) terminal = true;
@@ -578,4 +589,132 @@ bool isTerminal(StefanFish *agent, int nAgents)
   if (Y > yMax) terminal = true;
 
   return terminal;
+}
+
+
+std::vector<double> getState(StefanFish *agent, const std::vector<double>& origin, const SimulationData & sim, const int nAgents, const int agentID, const int task)
+{
+   const CurvatureFish* const cFish = dynamic_cast<CurvatureFish*>( agent->myFish );
+   const auto & myFish = agent->myFish;
+   const double length = agent->length;
+   const double Tperiod = agent->Tperiod;
+   std::vector<double> S(10,0);
+   S[0] = ( agent->center[0] - origin[0] )/ length;
+   S[1] = ( agent->center[1] - origin[1] )/ length;
+   S[2] = agent->getOrientation();
+   S[3] = agent->getPhase( sim.time );
+   S[4] = agent->getU() * Tperiod / length;
+   S[5] = agent->getV() * Tperiod / length;
+   S[6] = agent->getW() * Tperiod;
+   S[7] = cFish->lastTact;
+   S[8] = cFish->lastCurv;
+   S[9] = cFish->oldrCurv;
+
+   #ifndef STEFANS_SENSORS_STATE
+     return S;
+   #else
+
+   S.resize(16);
+
+   // Get velInfo
+   const std::vector<cubism::BlockInfo>& velInfo = sim.vel->getBlocksInfo();
+
+   // Get fish skin
+   const auto &DU = myFish->upperSkin, &DL = myFish->lowerSkin;
+
+   //// Sensor Signal on Front of Fish ////
+   ////////////////////////////////////////
+
+   // get front-point
+   const std::array<Real,2> pFront = {DU.xSurf[0], DU.ySurf[0]};
+
+   // first point of the two skins is the same
+   // normal should be almost the same: take the mean
+   const std::array<Real,2> normalFront = { (DU.normXSurf[0] + DL.normXSurf[0]) / 2,
+                                            (DU.normYSurf[0] + DL.normYSurf[0]) / 2 };
+
+   // compute shear stress
+   std::array<Real,2> tipShear = agent->getShear( pFront, normalFront, velInfo );
+
+   //// Sensor Signal on Side of Fish ////
+   ///////////////////////////////////////
+
+   std::array<Real,2> lowShear={}, topShear={};
+
+   // get index for sensors on the side of head
+   int iHeadSide = 0;
+   for(int i=0; i<myFish->Nm-1; ++i)
+       if( myFish->rS[i] <= 0.04*length && myFish->rS[i+1] > 0.04*length )
+         iHeadSide = i;
+   assert(iHeadSide>0);
+
+   for(int a = 0; a<2; ++a)
+   {
+      // distinguish upper and lower skin
+      const auto& D = a==0 ? myFish->upperSkin : myFish->lowerSkin;
+
+      // get point
+      const std::array<Real,2> pSide = { D.midX[iHeadSide], D.midY[iHeadSide] };
+
+      // get normal to surface
+      const std::array<Real,2> normSide = { D.normXSurf[iHeadSide], D.normYSurf[iHeadSide] };
+
+      // compute shear stress
+      std::array<Real,2> sideShear = agent->getShear( pSide, normSide, velInfo );
+
+      // now figure out how to rotate it along the fish skin for consistency:
+      const Real dX = D.xSurf[iHeadSide+1] - D.xSurf[iHeadSide];
+      const Real dY = D.ySurf[iHeadSide+1] - D.ySurf[iHeadSide];
+      const Real proj = dX * normSide[0] - dY * normSide[1];
+      const Real tangX = proj>0?  normSide[0] : -normSide[0]; // s.t. tang points from head
+      const Real tangY = proj>0? -normSide[1] :  normSide[1]; // to tail, normal outward
+       (a==0? topShear[0] : lowShear[0]) = sideShear[0] * normSide[0] + sideShear[1] * normSide[1];
+       (a==0? topShear[1] : lowShear[1]) = sideShear[0] * tangX + sideShear[1] * tangY;
+   }
+
+   // put non-dimensional results into state into state
+   S[10] = tipShear[0] * Tperiod / length;
+   S[11] = tipShear[1] * Tperiod / length;
+   S[12] = lowShear[0] * Tperiod / length;
+   S[13] = lowShear[1] * Tperiod / length;
+   S[14] = topShear[0] * Tperiod / length;
+   S[15] = topShear[1] * Tperiod / length;
+   // printf("shear tip:[%f %f] lower side:[%f %f] upper side:[%f %f]\n", S[10],S[11], S[12],S[13], S[14],S[15]);
+   // fflush(0);
+
+   #endif //STEFANS_SENSORS_STATE
+
+   #ifndef STEFANS_NEIGHBOUR_STATE
+   return S;
+   #else
+   S.resize(22);
+
+   // Get all shapes in simulaton
+   const auto& shapes = sim.shapes;
+   const size_t N = shapes.size();
+
+   // Compute distance vector pointing from agent to neighbours
+   std::vector<std::vector<Real>> distanceVector(N, std::vector<Real>(2));
+   std::vector<std::pair<Real, size_t>> distances(N);
+   for( size_t i = 0; i<N; i++ )
+   {
+       const double distX = shapes[i]->center[0] - center[0];
+       const double distY = shapes[i]->center[1] - center[1];
+       distanceVector[i][0] = distX;
+       distanceVector[i][1] = distY;
+       distances[i].first = std::sqrt( distX*distX + distY*distY );
+       distances[i].second = i;
+   }
+
+   // Only add distance vector for (first) three neighbours to state
+   std::sort( distances.begin(), distances.end() );
+   for( size_t i = 0; i<3; i++ )
+   {
+       // Ignore first entry, which will be the distance to itself
+       S[16+2*i]   = distanceVector[distances[i+1].second][0];
+       S[16+2*i+1] = distanceVector[distances[i+1].second][1];
+     }
+
+   return S;
+   #endif
 }

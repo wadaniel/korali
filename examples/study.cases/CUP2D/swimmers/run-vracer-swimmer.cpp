@@ -16,6 +16,10 @@ int main(int argc, char *argv[])
   int task    = atoi(argv[argc-5]);
   int nAgents = atoi(argv[argc-3]);
   int nRanks  = atoi(argv[argc-1]);
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  if (rank == 0)
+	  std::cout << "Running task : " << task << " with nAgents=" << nAgents << std::endl;
 
   // Storing parameters for environment
   _argc = argc;
@@ -100,6 +104,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
+  e["Solver"]["Multi Agent Relationship"] = "Competition";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;

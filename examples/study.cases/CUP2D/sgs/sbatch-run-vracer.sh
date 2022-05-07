@@ -11,7 +11,8 @@ export OMP_NUM_THREADS=12
 
 FOLDERNAME=${BASEPATH}/${RUNNAME}
 mkdir -p ${FOLDERNAME}
-cp ./run-kolmogorov-flow.py ${FOLDERNAME}
+cp ./run-vracer.py ${FOLDERNAME}
+cp -r ./_model ${FOLDERNAME}
 cd ${FOLDERNAME}
 
 cat <<EOF >daint_sbatch
@@ -27,7 +28,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --cpus-per-task=12
 #SBATCH --constraint=gpu
 
-srun python run-kolmogorov-flow.py --N $N -Cs 0.0
+srun python run-vracer.py
 EOF
 
 chmod 755 daint_sbatch

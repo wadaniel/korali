@@ -698,11 +698,11 @@ void Agent::processEpisode(knlohmann::json &episode)
 
 std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
 {
-  // Allocating storage for mini batch experiecne indexes
-  std::vector<std::pair<size_t, size_t>> miniBatch(_effectiveMinibatchSize);
-
   // Get number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
+
+  // Allocating storage for mini batch experiecne indexes
+  std::vector<std::pair<size_t, size_t>> miniBatch(_miniBatchSize*numAgents);
 
   // Fill minibatch
   for (size_t b = 0; b < _miniBatchSize; b++)
@@ -757,11 +757,14 @@ std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<std::pair<size_t, size_t>> &miniBatch)
 {
+  // Get number of experiences in minibatch
+  const size_t numExperiences = miniBatch.size();
+
   // Allocating state sequence vector
-  std::vector<std::vector<std::vector<float>>> stateSequence(_effectiveMinibatchSize);
+  std::vector<std::vector<std::vector<float>>> stateSequence(numExperiences);
 
 #pragma omp parallel for
-  for (size_t b = 0; b < _effectiveMinibatchSize; b++)
+  for (size_t b = 0; b < numExperiences; b++)
   {
     // Getting current expId and agentId
     const size_t expId = miniBatch[b].first;
@@ -1371,8 +1374,11 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
     }
 
-    printAgentInformation();
-    _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
+    if( _policyUpdateCount != 0 )
+    {
+      printAgentInformation();
+      _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
+    }
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
@@ -1934,6 +1940,7 @@ void Agent::setConfiguration(knlohmann::json& js)
  bool validOption = false; 
  if (_multiAgentRelationship == "Individual") validOption = true; 
  if (_multiAgentRelationship == "Cooperation") validOption = true; 
+ if (_multiAgentRelationship == "Competition") validOption = true; 
  if (validOption == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ['Multi Agent Relationship'] required by agent.\n", _multiAgentRelationship.c_str()); 
 }
    eraseValue(js, "Multi Agent Relationship");

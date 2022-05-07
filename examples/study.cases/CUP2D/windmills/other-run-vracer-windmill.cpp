@@ -45,34 +45,56 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
   
-  const size_t profileStates = 32;
-  for (size_t i = 0; i < profileStates; i++)
-  {
-    e["Variables"][i]["Name"] = std::string("Velocity ") + std::to_string(i+1);
-    e["Variables"][i]["Type"] = "State";
-  }
+  // profile and angular velocities as input
 
-  e["Variables"][32]["Name"] = std::string("Omega 1");
-  e["Variables"][32]["Type"] = "State";
-  e["Variables"][33]["Name"] = std::string("Omega 2");
-  e["Variables"][33]["Type"] = "State";
-  e["Variables"][34]["Name"] = std::string("Policy number");
-  e["Variables"][34]["Type"] = "State";
+  // const size_t profileStates = 32;
+  // for (size_t i = 0; i < profileStates; i++)
+  // {
+  //   e["Variables"][i]["Name"] = std::string("Velocity ") + std::to_string(i+1);
+  //   e["Variables"][i]["Type"] = "State";
+  // }
+
+  // e["Variables"][32]["Name"] = std::string("Omega 1");
+  // e["Variables"][32]["Type"] = "State";
+  // e["Variables"][33]["Name"] = std::string("Omega 2");
+  // e["Variables"][33]["Type"] = "State";
+  // e["Variables"][34]["Name"] = std::string("Policy number");
+  // e["Variables"][34]["Type"] = "State";
+
+  // double max_angular_acceleration = 15;
+  // double exploration_noise = 12;
+
+  // e["Variables"][35]["Name"] = "Angular acceleration 1";
+  // e["Variables"][35]["Type"] = "Action";
+  // e["Variables"][35]["Lower Bound"] = -max_angular_acceleration;
+  // e["Variables"][35]["Upper Bound"] = +max_angular_acceleration;
+  // e["Variables"][35]["Initial Exploration Noise"] = exploration_noise;
+
+  // e["Variables"][36]["Name"] = "Angular acceleration 2";
+  // e["Variables"][36]["Type"] = "Action";
+  // e["Variables"][36]["Lower Bound"] = -max_angular_acceleration;
+  // e["Variables"][36]["Upper Bound"] = +max_angular_acceleration;
+  // e["Variables"][36]["Initial Exploration Noise"] = exploration_noise;
+
+  e["Variables"][0]["Name"] = std::string("Omega 1");
+  e["Variables"][0]["Type"] = "State";
+  e["Variables"][1]["Name"] = std::string("Omega 2");
+  e["Variables"][1]["Type"] = "State";
 
   double max_angular_acceleration = 15;
   double exploration_noise = 12;
 
-  e["Variables"][35]["Name"] = "Angular acceleration 1";
-  e["Variables"][35]["Type"] = "Action";
-  e["Variables"][35]["Lower Bound"] = -max_angular_acceleration;
-  e["Variables"][35]["Upper Bound"] = +max_angular_acceleration;
-  e["Variables"][35]["Initial Exploration Noise"] = exploration_noise;
+  e["Variables"][2]["Name"] = "Angular acceleration 1";
+  e["Variables"][2]["Type"] = "Action";
+  e["Variables"][2]["Lower Bound"] = -max_angular_acceleration;
+  e["Variables"][2]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][2]["Initial Exploration Noise"] = exploration_noise;
 
-  e["Variables"][36]["Name"] = "Angular acceleration 2";
-  e["Variables"][36]["Type"] = "Action";
-  e["Variables"][36]["Lower Bound"] = -max_angular_acceleration;
-  e["Variables"][36]["Upper Bound"] = +max_angular_acceleration;
-  e["Variables"][36]["Initial Exploration Noise"] = exploration_noise;
+  e["Variables"][3]["Name"] = "Angular acceleration 2";
+  e["Variables"][3]["Type"] = "Action";
+  e["Variables"][3]["Lower Bound"] = -max_angular_acceleration;
+  e["Variables"][3]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][3]["Initial Exploration Noise"] = exploration_noise;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
@@ -81,7 +103,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.95; // used to be 0.95
+  e["Solver"]["Discount Factor"] = 1; // used to be 0.95
   e["Solver"]["Mini Batch"]["Size"] =  128;
 
 
@@ -107,7 +129,7 @@ int main(int argc, char *argv[])
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 
   // recurrent network
-  e["Solver"]["Time Sequence Length"] = 100; // length of time sequence, corresponding to number of time steps
+  e["Solver"]["Time Sequence Length"] = 20; // length of time sequence, corresponding to number of time steps
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;

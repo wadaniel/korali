@@ -9,7 +9,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of workers/simulations in parallel
-NWORKER=32
+NWORKER=16
 
 # number of nodes per worker/simulation
 NRANKS=1
@@ -39,7 +39,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=24:00:00
+#SBATCH --time=1:00:00
 #SBATCH --partition=normal
 #SBATCH --nodes=$((NNODES+1))
 

@@ -72,6 +72,7 @@ void runEnvironment(korali::Sample &s)
   int task_state = atoi(_argv[_argc-9]);
 
   std::string argumentString = OPTIONS + OBJECTS; // this is what we feed to the simulation
+  std::cerr<<argumentString<<std::endl;
 
   std::stringstream ss(argumentString);
   std::string item;
@@ -324,12 +325,13 @@ void runEnvironment(korali::Sample &s)
 
     profile_t_ = agent1->vel_profile(); // vector of size 32, has the velocity profile values
 
+    omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
+    omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+
     //-------------------------------------------------------------------------- state
     switch(task_state){
       case 1:
       {
-        omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
-        omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
         state = {omega1, omega2};
         break;
       }
@@ -342,8 +344,6 @@ void runEnvironment(korali::Sample &s)
       case 3:
       {
         state = profile_t_;
-        omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
-        omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
         state.push_back(omega1); state.push_back(omega2);
         printf("The state is both the angular velocities and the velocity profile. \n");
         break;
@@ -361,8 +361,13 @@ void runEnvironment(korali::Sample &s)
     for(int i(0); i < 32; ++i)
     {
       sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
-      avg_profile_t_1[i] = sum_profile_t_1[i] * time_step / t;
-
+      if (curStep == 0)
+      {
+        // the average previous profile is zero
+      } else {
+        avg_profile_t_1[i] = sum_profile_t_1[i] * time_step / (t-time_step);
+      }
+      
       sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
       avg_profile_t_[i] = sum_profile_t_[i] * time_step / t;
     }

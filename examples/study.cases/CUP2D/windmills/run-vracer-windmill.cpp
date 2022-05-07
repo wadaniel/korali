@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
 
-  std::cerr<<"Runfile : Before state definition"<<std::endl;
+  //std::cerr<<"Runfile : Before state definition"<<std::endl;
   // states
   int num_states = 0;
 
@@ -165,8 +165,18 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
 
+  // feedforward network
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+
   // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
   
   ////// Defining Termination Criteria
   e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;

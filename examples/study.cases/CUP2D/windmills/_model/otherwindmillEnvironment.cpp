@@ -88,17 +88,23 @@ void runEnvironment(korali::Sample &s)
 
   // Setting initial state [Careful, state function needs to be called by all ranks!]
   // the state function returns the entire state already, done in CUP
-  std::vector<double> state = agent1->vel_profile(); // vector of size 32, has the velocity profile values
-  double omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
-  double omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
+  //std::vector<double> state = agent1->vel_profile(); // vector of size 32, has the velocity profile values
+  double omega1 = 0.0; // angular velocity of fan 1
+  double omega2 = 0.0; // angular velocity of fan 2
   // we choose one constant policy
-  double num_policy = choosePolicy(0, false); // number to give to the agent to decide which policy to follow, between -1 and 1
-  state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
+  double num_policy = choosePolicy(0); // number to give to the agent to decide which policy to follow, between -1 and 1
+  // state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
+
+  std::vector<double> state = {omega1, omega2};
+
+  std::cerr<<"[Korali] Initial State (debug): SIM "<<rankGlobal<<std::endl;
+  std::cerr<<state[0]<< " " <<state[1]<<std::endl;
 
   printf("[Korali] Initial State: [ %.3f", state[0]);
-  for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+  for (size_t j = 1; j < state.size(); j++) {
+      printf(", %.3f", state[j]);
+  }
   printf("]\n");
-
 
   s["State"] = state;
 
@@ -232,7 +238,7 @@ void runEnvironment(korali::Sample &s)
   }
 
   // broadcast the target_profile to everyone
-  // MPI_Bcast(&target_profile.front(), 128000, MPI_DOUBLE, 0, comm);
+  // MPI_Bcast(&target_profile.front(), 32, MPI_DOUBLE, 0, comm);
   // std::cout<<"After first broadcast"<<std::endl;
   // std::cout<<target_profile[0]<<" "<<target_profile[1]<<std::endl;
 
@@ -250,12 +256,17 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> profile_t_ = vector<double>(32, 0.0);
   std::vector<double> sum_profile_t_ = vector<double>(32, 0.0);
   std::vector<double> avg_profile_t_ = vector<double>(32, 0.0);
+
+  std::vector<double> profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> sum_profile_t_1 = vector<double>(32, 0.0);
+  std::vector<double> avg_profile_t_1 = vector<double>(32, 0.0);
   
 
   // Setting initial time and step conditions
   double t = 0;        // Current time
   double tNextAct = 0; // Time until next action
   size_t curStep = 0;  // current Step
+  double time_step = 0.05;
 
   // Setting maximum number of steps before truncation
   size_t maxSteps = 4000; // 200s of simulations
@@ -281,6 +292,8 @@ void runEnvironment(korali::Sample &s)
     // broadcast the action to the different processes
     MPI_Bcast(&action[0], 2, MPI_DOUBLE, 0, comm );
 
+    if (curStep == 0) std::cerr<<"Sim "<<rankGlobal<<": actions = ("<<action[0]<<", "<<action[1]<<")"<<std::endl;
+
     // Setting action for 
     agent1->act( action[0] );
     agent2->act( action[1] );
@@ -298,40 +311,63 @@ void runEnvironment(korali::Sample &s)
     }
 
     profile_t_ = agent1->vel_profile(); // vector of size 32, has the velocity profile values
-    state = profile_t_;
+    // state = profile_t_;
     omega1 = agent1->getAngularVelocity(); // angular velocity of fan 1
     omega2 = agent2->getAngularVelocity(); // angular velocity of fan 2
-    state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
+    // state.push_back(omega1); state.push_back(omega2); state.push_back(num_policy);// then append them all to the state
+
+    //std::cerr<<"Sim "<<rankGlobal<<" of "<<size<<": omegas = ("<<omega1<<", "<<omega2<<")"<<std::endl;
+
+    state = {omega1, omega2};
 
     // check if angular velocities are over the threshold, true if either of the angular velocities is more than 12
-    done = (omega1*omega1 > 144 || omega2*omega2 > 144) ? true : false;
+    done = (omega1*omega1 > 100.0 || omega2*omega2 > 100.0) ? true : false;
+
+    // must time average the profiles as well before passing them to reward fct
+    for(int i(0); i < 32; ++i)
+    {
+      sum_profile_t_1[i] = sum_profile_t_1[i] + profile_t_1[i];
+      if (curStep == 0)
+      {
+        // the average previous profile is zero
+      } else {
+        avg_profile_t_1[i] = sum_profile_t_1[i] * time_step / (t-time_step);
+      }
+      
+      sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
+      avg_profile_t_[i] = sum_profile_t_[i] * time_step / t;
+    }
 
     // reset reward
     reward = 0;
 
     // reward 1 : deviation from mean profile
-    for(int i(0); i < 32; ++i)
-    {
-      reward -=  ((profile_t_[i] - target_profile[i]) / target_profile[i]) * ((profile_t_[i] - target_profile[i]) / target_profile[i]);
-    }
-
-    // must time average the profiles as well before passing them to reward fct
     // for(int i(0); i < 32; ++i)
     // {
-    //   sum_profile_t_[i] = sum_profile_t_[i] + profile_t_[i];
-    //   avg_profile_t_[i] = sum_profile_t_[i] / t;
-
-    //   //reward += -(avg_profile_t_[i] - profiles[curStep][i]) * (avg_profile_t_[i] - profiles[curStep][i]) / stds[curStep][i];
-    //   //reward += -std::abs(avg_profile_t_[i] - profiles[curStep][i]) / std::sqrt(stds[curStep][i]);
-    //   reward += - std::sqrt((avg_profile_t_[i] - profiles[curStep][i]) * (avg_profile_t_[i] - profiles[curStep][i]) / profiles[curStep][i]);
+    //   reward -=  ((profile_t_[i] - target_profile[i]) / target_profile[i]) * ((profile_t_[i] - target_profile[i]) / target_profile[i]);
     // }
 
+    // squared difference between deviation from the mean at time t and time t-1, normalized by the target profile
+    // for (size_t i(0); i < 32; ++i)
+    // {
+    //   reward -= ((avg_profile_t_[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_[i] - target_profile[i])/target_profile[i]);
+    //   reward += ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]);
+    // }
+
+    // squared difference between deviation from the mean at time t and time t-1, normalized by the target profile
+    for (size_t i(0); i < 32; ++i)
+    {
+      reward -= (avg_profile_t_[i] - target_profile[i]) * (avg_profile_t_[i] - target_profile[i]);
+      reward += (avg_profile_t_1[i] - target_profile[i]) * (avg_profile_t_1[i] - target_profile[i]);
+    }
+
     // Storing reward
-    double pen_reward = -40000.0;
+    double pen_reward = -4000.0;
     agent1->printRewards(done ? pen_reward : reward);
 
     s["Reward"] = done ? pen_reward : reward;
 
+    profile_t_1 = profile_t_;
     
 
     // Storing new state
@@ -390,11 +426,11 @@ void setInitialConditions(Windmill* agent, double init_angle, bool randomized)
   agent->setOrientation(angle);
 }
 
-double choosePolicy(double value, bool randomized)
+double choosePolicy(double value)
 {
   // returns values between -1 and 1, in steps of 0.2
   double val = value;
-
+  bool randomized = false;
   if (randomized)
   {
     std::uniform_real_distribution<double> dis(-11, 11);

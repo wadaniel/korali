@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-  // Gathering actual arguments from MPI
+  /// Initialize MPI
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   if (provided != MPI_THREAD_FUNNELED)
@@ -13,14 +13,14 @@ int main(int argc, char *argv[])
     exit(-1);
   }
 
-  // Storing parameters
-  _argc = argc;
-  _argv = argv;
-
-  // retreiving number of agents, ranks, and path to previous results
+  // retreiving path to trained policy, number of task, agents, and ranks
+  std::string resultsPath = argv[argc-7];
   int nAgents = atoi(argv[argc-3]);
   int nRanks  = atoi(argv[argc-1]);
-  std::string resultsPath = argv[argc-7];
+
+  // Storing parameters for environment
+  _argc = argc;
+  _argv = argv;
 
   // Getting number of workers
   int N = 1;
@@ -47,10 +47,12 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = 1+i;
 
   // Setting up the state variables
-  #ifndef STEFANS_SENSORS_STATE
   size_t numStates = 10;
-  #else
-  size_t numStates = 16;
+  #if defined(STEFANS_SENSORS_STATE)
+  numStates = 16;
+  #endif
+  #if  defined(STEFANS_NEIGHBOUR_STATE)
+  numStates = 22;
   #endif
 
   #ifdef ID
@@ -79,7 +81,8 @@ int main(int argc, char *argv[])
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
-  e["Solver"]["Mode"] = "Testing";
+  // e["Solver"]["Mode"] = "Testing";
+  e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Concurrent Environments"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
@@ -120,7 +123,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = nAgents*5e5;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 5e5;
 
   ////// Setting Korali output configuration
   e["Console Output"]["Verbosity"] = "Normal";
@@ -138,7 +141,59 @@ int main(int argc, char *argv[])
   if( found )
   {
     printf("[Korali] Continuing execution with policy learned in previous run...\n");
-    e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
+    const int nOdd  = 12;
+    const int nEven = 13;
+    for( int a = 0; a<nAgents; a++ )
+    {
+      // First Row
+      if(      a  < 0*(nEven+nOdd) + nOdd/2 )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][0];
+      else if( a  < 0*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][1];
+      // Second Row
+      else if( a == 0*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][2];
+      else if( a  < 0*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][3];
+      else if( a == 0*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][4];
+      // Third Row
+      else if( a  < 1*(nEven+nOdd) + nOdd/2 )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][5];
+      else if( a  < 1*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][6];
+      // Fourth Row
+      else if( a == 1*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][7];
+      else if( a  < 1*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][8];
+      else if( a == 1*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][9];
+      // Fifth Row
+      else if(      a  < 2*(nEven+nOdd) + nOdd/2 )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][10];
+      else if( a  < 2*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][11];
+      // Sixth Row
+      else if( a == 2*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][12];
+      else if( a  < 2*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][13];
+      else if( a == 2*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][14];
+      // Seventh Row
+      else if( a  < 3*(nEven+nOdd) + nOdd/2 )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][15];
+      else if( a  < 3*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][16];
+      // Eigth Row
+      else if( a == 3*(nEven+nOdd) + nOdd )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][17];
+      else if( a  < 3*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][18];
+      else if( a == 3*(nEven+nOdd) + nOdd + nEven )
+        e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][a] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"][19];
+    }
   }
   else
   {

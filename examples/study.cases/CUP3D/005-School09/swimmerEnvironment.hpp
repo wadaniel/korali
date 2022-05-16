@@ -13,16 +13,9 @@
 #include "Utils/BufferedLogger.h"
 #include <Cubism/ArgumentParser.h>
 
-#define _NEW_STATE_
-
-#ifdef _NEW_STATE_
- #define STATES 26 //add five closest fish
-#else
- #define STATES 16
-#endif
-
+#define STATES 35
 #define AGENTS 9
-#define ACTIONS 2
+#define ACTIONS 8
 
 #if modelDIM == 2
     std::string OPTIONS = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 5 -Rtol 5.0 -Ctol 0.1 -extent 2.0 -CFL 0.7 -poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 0 -tdump 0 -nu 0.00001 -poissonSolver cuda_iterative";
@@ -39,17 +32,17 @@
      }};
      std::vector<std::vector<double>> actual_initialPositions;
 #else
-    std::string OPTIONS = " -bpdx 4 -bpdy 4 -bpdz 4 -extentx 2.0 -levelMax 5 -levelStart 4 -Rtol 10000.00 -Ctol 100.00 -fsave 0 -tdump 0 -CFL 0.7 -lambda 1e6 -nu 0.00001 -poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 1 ";
+    std::string OPTIONS = " -bpdx 2 -bpdy 2 -bpdz 1 -extentx 2.0 -levelMax 7 -levelStart 5 -Rtol 5.0 -Ctol 0.1 -tdump 0 -CFL 0.7 -lambda 1e6 -nu 0.00001 -poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 1 ";
     std::vector<std::vector<double>> initialPositions{{
-          {0.90, 1.00, 0.00},
-          {0.90, 0.90, 0.00},
-          {0.90, 1.10, 0.00},
-          {1.20, 0.80, 0.00},
-          {1.20, 1.00, 0.00},
-          {1.20, 1.20, 0.00},
-          {1.50, 0.90, 0.00},
-          {1.50, 1.10, 0.00},
-          {1.80, 1.00, 0.00}
+          {0.60, 1.00, 1.00},
+          {0.90, 0.90, 1.00},
+          {0.90, 1.10, 1.00},
+          {1.20, 0.80, 1.00},
+          {1.20, 1.00, 1.00},
+          {1.20, 1.20, 1.00},
+          {1.50, 0.90, 1.00},
+          {1.50, 1.10, 1.00},
+          {1.80, 1.00, 1.00}
      }};
      std::vector<std::vector<double>> actual_initialPositions;
     using namespace cubismup3d;
@@ -76,7 +69,7 @@ Simulation * initializeEnvironment(korali::Sample &s)
     #else
         std::string argumentString = "CUP-RL " + OPTIONS + " -factory-content ";
         std::string AGENT = " \n\
-        StefanFish L=0.2 T=1";
+        StefanFish L=0.2 T=1 bFixToPlanar=1 bFixFrameOfRef=1 ";
     #endif
 
     // Set initial position for all prey
@@ -92,7 +85,7 @@ Simulation * initializeEnvironment(korali::Sample &s)
                 std::uniform_real_distribution<double> disZ(-0.05, 0.05);
                 initialData[0] += disX(_randomGenerator);
                 initialData[1] += disY(_randomGenerator);
-                initialData[2] += disZ(_randomGenerator);
+                //initialData[2] += disZ(_randomGenerator);
             }
             MPI_Bcast(initialData.data(), 3, MPI_DOUBLE, 0, comm);
         }
@@ -174,26 +167,19 @@ double getReward(std::vector<StefanFish *> & agents, const SimulationData & sim,
     //Check if this fish collided and return penalty only if it did.
     if (sim.bCollision) 
     {
-        #if modelDIM == 2
         for (size_t i = 0; i < sim.bCollisionID.size(); i++)
             if (sim.bCollisionID[i] == agentID) return -10.0;
-        #else
-        std::cerr << "bCollisionID not implemented in CUP3D" << std::endl;
-        MPI_Abort(MPI_COMM_WORLD,666);
-        return -10;
-        #endif
     }
 
     // Return penalty if fish exited the domain
     #if modelDIM == 2
-        const double X = agents[agentID]->center[0];
-        const double Y = agents[agentID]->center[1];
-        const double Z = 1.0;
-    #endif
-    #if modelDIM == 3
-        const double X = agents[agentID]->absPos[0];
-        const double Y = agents[agentID]->absPos[1];
-        const double Z = agents[agentID]->absPos[2];
+    const double X = agents[agentID]->center[0];
+    const double Y = agents[agentID]->center[1];
+    const double Z = 1.0;
+    #else
+    const double X = agents[agentID]->absPos[0];
+    const double Y = agents[agentID]->absPos[1];
+    const double Z = agents[agentID]->absPos[2];
     #endif
     const double xMin = 0.1;
     const double xMax = 1.9;
@@ -212,52 +198,59 @@ double getReward(std::vector<StefanFish *> & agents, const SimulationData & sim,
     return agents[agentID]->EffPDefBnd;
 }
 
-std::vector<double> getState(std::vector<StefanFish *> & agents, const SimulationData & sim,
-                             const int agentID)
+std::vector<double> getState(std::vector<StefanFish *> & agents, const SimulationData & sim, const int agentID)
 {
     std::vector<double> S;
     #if modelDIM == 3
-        std::cerr << "State for 3D school not ready." << std::endl;
-        MPI_Abort(MPI_COMM_WORLD,666);
-        return S;
-    #endif
-    #if modelDIM == 2
+        std::vector<double> s_base = agents[agentID]->state();
+        const double X = agents[agentID]->absPos[0];
+        const double Y = agents[agentID]->absPos[1];
+        const double Z = agents[agentID]->absPos[2];
+    #else
         std::vector<double> s_base = agents[agentID]->state(actual_initialPositions[agentID]);
-        for (size_t i = 0 ; i < s_base.size() ; i++)
-            S.push_back(s_base[i]);
-        #ifdef _NEW_STATE_
-            const double X = agents[agentID]->center[0];
-            const double Y = agents[agentID]->center[1];
-            S[0] = X;
-            S[1] = Y;
-    
-            std::vector<double> x;
-            std::vector<double> y;
-            std::vector<double> d;
-            for (int i = 0 ; i < (int)agents.size(); i++)
-            {
-                if (i == agentID) continue;
-                const double xfish = agents[i]->center[0];
-                const double yfish = agents[i]->center[1];
-                x.push_back(xfish-X);
-                y.push_back(yfish-Y);
-                d.push_back(std::sqrt((xfish-X)*(xfish-X)+(yfish-Y)*(yfish-Y)));
-            }
-    
-            std::vector<int> indices(d.size());
-            std::iota(indices.begin(), indices.end(), 0);
-            std::sort(indices.begin(), indices.end(),
-                    [&](int A, int B) -> bool {
-                         return d[A] < d[B];
-                     });
-    
-            for (int i = 0 ; i < 5; i++)
-            {
-                S.push_back(x[indices[i]]);
-                S.push_back(y[indices[i]]);
-            }
-        #endif
+        const double X = agents[agentID]->center[0];
+        const double Y = agents[agentID]->center[1];
+        const double Z = 0;
     #endif
+    for (size_t i = 0 ; i < s_base.size() ; i++)
+            S.push_back(s_base[i]);
+
+    std::vector<double> x;
+    std::vector<double> y;
+    std::vector<double> z;
+    std::vector<double> d;
+    for (int i = 0 ; i < (int)agents.size(); i++)
+    {
+        if (i == agentID) continue;
+        #if modelDIM == 2
+            const double xfish = agents[i]->center[0];
+            const double yfish = agents[i]->center[1];
+            const double zfish = 0;
+        #else
+            const double xfish = agents[i]->absPos[0];
+            const double yfish = agents[i]->absPos[1];
+            const double zfish = agents[i]->absPos[2];
+        #endif
+        x.push_back(xfish-X);
+        y.push_back(yfish-Y);
+        z.push_back(zfish-Z);
+        d.push_back(std::sqrt((xfish-X)*(xfish-X)+(yfish-Y)*(yfish-Y)+(zfish-Z)*(zfish-Z)));
+    }
+    std::vector<int> indices(d.size());
+    std::iota(indices.begin(), indices.end(), 0);
+    std::sort(indices.begin(), indices.end(), [&](int A, int B) -> bool {return d[A] < d[B];});
+    
+    for (int i = 0 ; i < 3; i++)//distance from three closest fish saved
+    {
+        S.push_back(x[indices[i]]);
+        S.push_back(y[indices[i]]);
+        S.push_back(z[indices[i]]);
+    }
+    if (S.size() != STATES)
+    {
+       std::cout << "wrong state size " << S.size() << "->" << STATES << std::endl;
+       abort();
+    }
     return S;
 }
 
@@ -265,12 +258,11 @@ void takeAction(StefanFish *agent, const SimulationData & sim, const int agentID
                 const std::vector<double> & action, const double l_tnext)
 {
     #if modelDIM == 3
-        //three actions defined for compatibility with 3D motion, only two used for planar motion
+        //eight actions defined for compatibility with 3D motion, only two used for planar motion
         auto * const cFish = dynamic_cast<CurvatureDefinedFishData*>( agent->myFish );
-        cFish->action_curvature(sim.time,l_tnext, action[0]);
-        cFish->action_period   (sim.time,l_tnext, action[1]);
-    #endif
-    #if modelDIM == 2
+        cFish->action_curvature(sim.time,l_tnext,action[0]);
+        cFish->action_period   (sim.time,l_tnext,action[1]);
+    #else
         agent->act(l_tnext,action);
     #endif
 }
@@ -299,6 +291,42 @@ void setupRL(korali::Experiment & e)
     e["Variables"][curVariable]["Lower Bound"] = -0.25;
     e["Variables"][curVariable]["Upper Bound"] = +0.25;
     e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 0";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.2;
+    e["Variables"][curVariable]["Upper Bound"] = +0.2;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 1";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.2;
+    e["Variables"][curVariable]["Upper Bound"] = +0.2;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 2";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.2;
+    e["Variables"][curVariable]["Upper Bound"] = +0.2;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 3";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.5;
+    e["Variables"][curVariable]["Upper Bound"] = +0.5;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 4";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.5;
+    e["Variables"][curVariable]["Upper Bound"] = +0.5;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
+    curVariable++;
+    e["Variables"][curVariable]["Name"] = "Torsion point 5";
+    e["Variables"][curVariable]["Type"] = "Action";
+    e["Variables"][curVariable]["Lower Bound"] = -0.2;
+    e["Variables"][curVariable]["Upper Bound"] = +0.2;
+    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.05;
 
     e["Solver"]["Experiences Between Policy Updates"] = 1;
     e["Solver"]["Learning Rate"] = 1e-4;
@@ -322,15 +350,18 @@ void setupRL(korali::Experiment & e)
  
     e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
     e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
- 
     e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
     e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
  
     e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
     e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64;
- 
     e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
     e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+
+    e["Solver"]["Neural Network"]["Hidden Layers"][4]["Type"] = "Layer/Linear";
+    e["Solver"]["Neural Network"]["Hidden Layers"][4]["Output Channels"] = 64;
+    e["Solver"]["Neural Network"]["Hidden Layers"][5]["Type"] = "Layer/Activation";
+    e["Solver"]["Neural Network"]["Hidden Layers"][5]["Function"] = "Elementwise/Tanh";
 }
 #endif
 }

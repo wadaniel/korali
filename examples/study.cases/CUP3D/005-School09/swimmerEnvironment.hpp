@@ -149,9 +149,9 @@ bool isTerminal(StefanFish *agent, const SimulationData & sim, const int agentID
         const double Z = 1.0;
     #endif
     #if modelDIM == 3
-        const double X = agent->absPos[0];
-        const double Y = agent->absPos[1];
-        const double Z = agent->absPos[2];
+        const double X = agent->position[0];
+        const double Y = agent->position[1];
+        const double Z = agent->position[2];
     #endif
     if (X < xMin) return true;
     if (X > xMax) return true;
@@ -177,9 +177,9 @@ double getReward(std::vector<StefanFish *> & agents, const SimulationData & sim,
     const double Y = agents[agentID]->center[1];
     const double Z = 1.0;
     #else
-    const double X = agents[agentID]->absPos[0];
-    const double Y = agents[agentID]->absPos[1];
-    const double Z = agents[agentID]->absPos[2];
+    const double X = agents[agentID]->position[0];
+    const double Y = agents[agentID]->position[1];
+    const double Z = agents[agentID]->position[2];
     #endif
     const double xMin = 0.1;
     const double xMax = 1.9;
@@ -253,10 +253,15 @@ std::vector<double> getState(std::vector<StefanFish *> & agents, const Simulatio
         S[0 ] = agent->center[0];
         S[1 ] = agent->center[1];
         S[2 ] = 0.0;//Z=0
-        S[3 ] = 0.0;//axis x-component = 0
-        S[4 ] = 0.0;//axis y-component = 0
-        S[5 ] = 1.0;//axis z-component = 1
-        S[6 ] = agent->getOrientation();
+	//S[3 ] = 0.0;//axis x-component = 0
+        //S[4 ] = 0.0;//axis y-component = 0
+        //S[5 ] = 1.0;//axis z-component = 1
+        //S[6 ] = agent->getOrientation();
+	const double theta = agent->getOrientation();
+	S[3] = cos(.5*theta);
+        S[4] = 0;
+	S[5] = 0;
+	S[6] = sin(.5*theta);
         S[7 ] = agent->getPhase( sim.time );
         S[8 ] = agent->getU() * Tperiod / length;
         S[9 ] = agent->getV() * Tperiod / length;

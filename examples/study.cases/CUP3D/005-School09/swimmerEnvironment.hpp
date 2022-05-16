@@ -200,20 +200,109 @@ double getReward(std::vector<StefanFish *> & agents, const SimulationData & sim,
 
 std::vector<double> getState(std::vector<StefanFish *> & agents, const SimulationData & sim, const int agentID)
 {
-    std::vector<double> S;
+    const StefanFish * agent = agents[agentID];
+    std::vector<double> S(26);
     #if modelDIM == 3
-        std::vector<double> s_base = agents[agentID]->state();
+	const auto & myFish = agent->myFish;
+        auto * const cFish = dynamic_cast<CurvatureDefinedFishData*>( myFish );
+        assert( cFish != nullptr);
+        const double length  = cFish->length;
+        const double Tperiod = cFish->Tperiod;
+        S[0 ] = agent->position[0];
+        S[1 ] = agent->position[1];
+        S[2 ] = agent->position[2];
+        S[3 ] = agent->quaternion[0];
+        S[4 ] = agent->quaternion[1];
+        S[5 ] = agent->quaternion[2];
+        S[6 ] = agent->quaternion[3];
+        S[7 ] = agent->getPhase(sim.time);
+        S[8 ] = agent->transVel[0] * Tperiod / length;
+        S[9 ] = agent->transVel[1] * Tperiod / length;
+        S[10] = agent->transVel[2] * Tperiod / length;
+        S[11] = agent->angVel[0] * Tperiod;
+        S[12] = agent->angVel[1] * Tperiod;
+        S[13] = agent->angVel[2] * Tperiod;
+        S[14] = cFish->lastTact;
+        S[15] = cFish->lastCurv;
+        S[16] = cFish->oldrCurv;
+        //sensor locations
+        const std::array<Real,3> locFront = {cFish->sensorLocation[0*3+0],cFish->sensorLocation[0*3+1],cFish->sensorLocation[0*3+2    ]};
+        const std::array<Real,3> locUpper = {cFish->sensorLocation[1*3+0],cFish->sensorLocation[1*3+1],cFish->sensorLocation[1*3+2    ]};
+        const std::array<Real,3> locLower = {cFish->sensorLocation[2*3+0],cFish->sensorLocation[2*3+1],cFish->sensorLocation[2*3+2    ]};
+        //compute shear stress force (x,y,z) components
+        std::array<Real,3> shearFront = agent->getShear( locFront );
+        std::array<Real,3> shearUpper = agent->getShear( locLower );
+        std::array<Real,3> shearLower = agent->getShear( locUpper );
+        S[17] = shearFront[0] * Tperiod / length;
+        S[18] = shearFront[1] * Tperiod / length;
+        S[19] = shearFront[2] * Tperiod / length;
+        S[20] = shearUpper[0] * Tperiod / length;
+        S[21] = shearUpper[1] * Tperiod / length;
+        S[22] = shearUpper[2] * Tperiod / length;
+        S[23] = shearLower[0] * Tperiod / length;
+        S[24] = shearLower[1] * Tperiod / length;
+        S[25] = shearLower[2] * Tperiod / length;
         const double X = agents[agentID]->absPos[0];
         const double Y = agents[agentID]->absPos[1];
         const double Z = agents[agentID]->absPos[2];
     #else
-        std::vector<double> s_base = agents[agentID]->state(actual_initialPositions[agentID]);
+	const double length  = agent->length;
+	const double Tperiod = agent->Tperiod;
+	const auto & myFish = agent->myFish;
+        const CurvatureFish* const cFish = dynamic_cast<CurvatureFish*>( myFish );
+        S[0 ] = agent->center[0];
+        S[1 ] = agent->center[1];
+        S[2 ] = 0.0;//Z=0
+        S[3 ] = 0.0;//axis x-component = 0
+        S[4 ] = 0.0;//axis y-component = 0
+        S[5 ] = 1.0;//axis z-component = 1
+        S[6 ] = agent->getOrientation();
+        S[7 ] = agent->getPhase( sim.time );
+        S[8 ] = agent->getU() * Tperiod / length;
+        S[9 ] = agent->getV() * Tperiod / length;
+        S[10] = 0.0;//z linear vel
+        S[11] = 0.0;//x angular vel
+        S[12] = 0.0;//y angular vel
+        S[13] = agent->getW() * Tperiod;
+        S[14] = cFish->lastTact;
+        S[15] = cFish->lastCurv;
+        S[16] = cFish->oldrCurv;
+
+     	//Shear stress computation at three sensors
+        //******************************************
+        // Get fish skin
+        const auto &DU = myFish->upperSkin;
+        const auto &DL = myFish->lowerSkin;
+
+ 	// index for sensors on the side of head
+        int iHeadSide = 0;
+        for(int i=0; i<myFish->Nm-1; ++i)
+           if( myFish->rS[i] <= 0.04*length && myFish->rS[i+1] > 0.04*length ) iHeadSide = i;
+        assert(iHeadSide>0);
+
+        //sensor locations
+        const std::array<Real,2> locFront = {DU.xSurf[0]       , DU.ySurf[0]       };
+        const std::array<Real,2> locUpper = {DU.midX[iHeadSide], DU.midY[iHeadSide]};
+        const std::array<Real,2> locLower = {DL.midX[iHeadSide], DL.midY[iHeadSide]};
+
+        //compute shear stress force (x,y) components
+        std::array<Real,2> shearFront = agent->getShear( locFront );
+        std::array<Real,2> shearUpper = agent->getShear( locLower );
+        std::array<Real,2> shearLower = agent->getShear( locUpper );
+        S[17] = shearFront[0] * Tperiod / length;
+        S[18] = shearFront[1] * Tperiod / length;
+        S[19] = 0.0;
+        S[20] = shearLower[0] * Tperiod / length;
+        S[21] = shearLower[1] * Tperiod / length;
+        S[22] = 0.0;
+        S[23] = shearUpper[0] * Tperiod / length;
+        S[24] = shearUpper[1] * Tperiod / length;
+        S[25] = 0.0;
+
         const double X = agents[agentID]->center[0];
         const double Y = agents[agentID]->center[1];
         const double Z = 0;
     #endif
-    for (size_t i = 0 ; i < s_base.size() ; i++)
-            S.push_back(s_base[i]);
 
     std::vector<double> x;
     std::vector<double> y;

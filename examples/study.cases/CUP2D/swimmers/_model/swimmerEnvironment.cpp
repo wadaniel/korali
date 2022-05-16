@@ -100,7 +100,6 @@ void runEnvironment(korali::Sample &s)
      CASE 5: None, periodic domain 
      CASE 6: None, minimize displacement
      CASE 7: None, maximize efficiency
-     CASE 8: Stefanfish, predator pray
    */
   switch(task) {
     case 0 : // DCYLINDER
@@ -155,7 +154,6 @@ void runEnvironment(korali::Sample &s)
     }
     case 2 : // Y-DISPLACEMENT
     case 3 : // EFFICIENCY
-    case 8 : // PREDATOR PRAY
     {
       // Only rank 0 samples the length
       double length = 0.2;
@@ -231,10 +229,6 @@ void runEnvironment(korali::Sample &s)
 
     // Append agent to argument string
     argumentString = argumentString + ( task>3 ? AGENT_periodic : AGENT ) + AGENTANGLE + std::to_string(initialData[0]) + AGENTPOSX + std::to_string(initialData[1]) + AGENTPOSY + std::to_string(initialData[2]);
-
-    // Leave loop for Predator-pray
-    if( task == 8 )
-      break;
   }
 
   // printf("%s\n",argumentString.c_str());
@@ -308,8 +302,7 @@ void runEnvironment(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
-  bool crashed = false;
-  bool leftDomain = false;
+  std::vector<char> bFailed(nAgents, false);
   while ( curStep < maxSteps && done == false )
   {
     // Only rank 0 communicates with Korali
@@ -373,14 +366,22 @@ void runEnvironment(korali::Sample &s)
       _environment->advance(dt);
 
       // Check if there was a collision -> termination.
-      crashed = _environment->sim.bCollision;
+      if( _environment->sim.bCollision )
+      {
+        for (size_t i = 0; i < _environment->sim.bCollisionID.size(); i++)
+        {
+          size_t indx = task > 3 ? _environment->sim.bCollisionID[i] : _environment->sim.bCollisionID[i]-1;
+          bFailed[indx] = true;
+        }
+        done = true;
+      }
 
       // Check termination because leaving margins
       for( int i = 0; i<nAgents; i++ )
-        leftDomain = ( leftDomain || isTerminal(agents[i], nAgents, task) );
-
-      // Terminate when swimmer leaves domain or there is a crash
-      done = leftDomain || crashed;
+      {
+        bFailed[i] = isTerminal(agents[i], nAgents, task);
+        done = done || bFailed[i];
+      }
     }
 
     // Get and store state and reward [Carful, state function needs to be called by all ranks!] 
@@ -398,32 +399,16 @@ void runEnvironment(korali::Sample &s)
         {
           double xDisplacement = agents[i]->center[0]-initialPosition[0];
           double yDisplacement = agents[i]->center[1]-initialPosition[1];
-          rewards[i] = done ? -10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
+          rewards[i] = bFailed[i] ? -10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
         }
         else if( task == 4 )
         {
           double xDisplacement = agents[i]->center[0]-initialPosition[0];
           double yDisplacement = agents[i]->center[1]-initialPosition[1];
-          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd-std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
-        }
-        else if( task == 8 )
-        {
-          // PRAY
-          if( i == 0 )
-          {
-            double xDisplacement = agents[i]->center[0]-agents[1]->center[0];
-            double yDisplacement = agents[i]->center[1]-agents[1]->center[1];
-            rewards[i] = leftDomain ? -10 : ( crashed ? -10.0 : std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
-          }
-          else // PREDATOR
-          {
-            double xDisplacement = agents[i]->center[0]-agents[0]->center[0];
-            double yDisplacement = agents[i]->center[1]-agents[0]->center[1];
-            rewards[i] = leftDomain ? -10 : ( crashed ? +10.0 : -std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement) );
-          }
+          rewards[i] = bFailed[i] ? -10.0 : agents[i]->EffPDefBnd-std::sqrt(xDisplacement*xDisplacement + yDisplacement*yDisplacement);
         }
         else
-          rewards[i] = done ? -10.0 : agents[i]->EffPDefBnd;
+          rewards[i] = bFailed[i] ? -10.0 : agents[i]->EffPDefBnd;
       }
       s["State"]  = states;
       s["Reward"] = rewards;
@@ -594,6 +579,7 @@ bool isTerminal(StefanFish *agent, int nAgents, int task)
 
 std::vector<double> getState(StefanFish *agent, const std::vector<double>& origin, const SimulationData & sim, const int nAgents, const int agentID, const int task)
 {
+   // return agent->state(origin);
    const CurvatureFish* const cFish = dynamic_cast<CurvatureFish*>( agent->myFish );
    const auto & myFish = agent->myFish;
    const double length = agent->length;

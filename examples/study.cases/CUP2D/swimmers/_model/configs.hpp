@@ -26,7 +26,7 @@ std::string OPTIONS_periodic = "-bpdx 3 -bpdy 2 -levelMax 6 -levelStart 4 -Rtol 
 /**** Testing options ****/
 
 // 2x1 DOMAIN (with accurate solver)
-std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 8 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonTol 1e-6 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 0";
+std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonTol 1e-6 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 0";
 
 // 4x2 DOMAIN
 // std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
@@ -178,11 +178,11 @@ std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 8 -levelStart 4 -Rtol 2
 
 // dx=0.3, dy=0.2
 // Extent = [0.6, 0.4]
-double margin = 0.1;
-std::vector<std::vector<double>> initialPositions{{
-	{0.15, margin + 0.05},
-	{0.45, margin + 0.15}
-}};
+// double margin = 0.1;
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.15, margin + 0.05},
+// 	{0.45, margin + 0.15}
+// }};
 
 // dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
 // std::vector<std::vector<double>> initialPositions{{
@@ -196,11 +196,12 @@ std::vector<std::vector<double>> initialPositions{{
 
 // 4 SWIMMERS
 // small domain
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.40},
-// 	{0.90, 0.60},
-// 	{1.20, 0.5}
-// }};
+std::vector<std::vector<double>> initialPositions{{
+	{0.60, 0.50},
+	{0.90, 0.40},
+	{0.90, 0.60},
+	{1.20, 0.50}
+}};
 
 // large domain
 // std::vector<std::vector<double>> initialPositions{{

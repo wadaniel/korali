@@ -2,19 +2,18 @@
 
 void runEnvironment(korali::Sample &s)
 {
-  // Get MPI subcommunicator, rank and size
+  // 1) Get MPI subcommunicator, rank and size
+  int rank, size, rankGlobal;
   MPI_Comm comm = *(MPI_Comm*) korali::getWorkerMPIComm();
-  int rank, size;
-  MPI_Comm_rank(comm,&rank);
-  MPI_Comm_size(comm,&size);
-  int rankGlobal;
+  MPI_Comm_rank(comm          ,&rank      );
+  MPI_Comm_size(comm          ,&size      );
   MPI_Comm_rank(MPI_COMM_WORLD,&rankGlobal);
 
-  // Setting seed
+  // 2) Set random seed
   const size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
-  // Create results directory and redirect all output to log file
+  // 3) Create results directory and redirect all output to log file
   char resDir[64];
   FILE * logFile = nullptr;
   sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
@@ -25,7 +24,7 @@ void runEnvironment(korali::Sample &s)
     {
       fprintf(stderr, "[Korali] Error creating results directory for environment: %s.\n", resDir);
       exit(-1);
-    };
+    }
     char logFilePath[128];
     sprintf(logFilePath, "%s/log.txt", resDir);
     logFile = freopen(logFilePath, "a", stdout);
@@ -36,55 +35,40 @@ void runEnvironment(korali::Sample &s)
     }
   }
 
-  // Switch to results directory
+  // 4) Switch to results directory
   MPI_Barrier(comm); // Make sure logfile is created before switching path
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-  // Initialize environment and obtain agents
+  // 5) Initialize environment and obtain agents 
   Simulation *_environment = initializeEnvironment(s);
   auto & shapes = _environment->getShapes();
   std::vector<StefanFish *> agents(AGENTS);
   for(int i = 0; i<AGENTS; i++ )
     agents[i] = dynamic_cast<StefanFish *>(shapes[i].get());
 
-  // Setting initial state [Careful, state function needs to be called by all ranks!]
-  {
-    std::vector<std::vector<double>> states(AGENTS);
-    for(int i = 0; i<AGENTS; i++ ) states[i]  = getState(agents[i],_environment->sim,i);
-    if (AGENTS > 1)  s["State"] = states;
-    else             s["State"] = states[0];
-  }
+  // 6) Set initial state (state function needs to be called by all ranks!)
+  std::vector<std::vector<double>> actions(AGENTS, std::vector<double>(ACTIONS));
+  std::vector<std::vector<double>> states (AGENTS, std::vector<double>(STATES ));
+  std::vector<double> rewards(AGENTS);
+  for(int i = 0; i<AGENTS; i++ ) states[i] = getState(agents,_environment->sim,i);
+  if (AGENTS > 1)  s["State"] = states;
+  else             s["State"] = states[0];
 
-  // Variables for time and step conditions
+  // 7) Main environment loop
   double t        = 0; // Current time
   size_t curStep  = 0; // Current Step
-  double dtAct;        // Time until next action
   double tNextAct = 0; // Time of next action     
-  const size_t maxSteps = 50; // Max steps before truncation
-
-  std::vector<std::vector<double>> actions(AGENTS, std::vector<double>(ACTIONS));
-
-  // Main environment loop
   bool done = false;
-  while ( curStep < maxSteps && done == false )
+  while ( done == false )
   {
-    if( rank == 0 ) // Get new actions, then broadcast and apply them
+    // i) Get new actions, broadcast and apply them (also save them to file)
+    if( rank == 0 )
     {
       s.update();
       for(int i = 0; i<AGENTS; i++ )
-        actions[i] = (AGENTS > 1) ? s["Action"][i].get<std::vector<double>>() : s["Action"].get<std::vector<double>>();
-    }
-    for(int i = 0; i<AGENTS; i++ )
-    {
-      MPI_Bcast( actions[i].data(), ACTIONS, MPI_DOUBLE, 0, comm );
-      takeAction(agents[i],_environment->sim,i,actions[i],t);
-    }
-
-    if (rank == 0) //Write a file with the actions for every agent
-    {
-      for( int i = 0; i<AGENTS; i++ )
       {
+        actions[i] = (AGENTS > 1) ? s["Action"][i].get<std::vector<double>>() : s["Action"].get<std::vector<double>>();
         ofstream myfile;
         myfile.open ("actions"+std::to_string(i)+".txt",ios::app);
         myfile << t << " ";
@@ -94,12 +78,14 @@ void runEnvironment(korali::Sample &s)
         myfile.close();
       }
     }
-
-    // Run the simulation until next action is required
-    dtAct = 0.;
     for(int i = 0; i<AGENTS; i++ )
-    if( dtAct < agents[i]->getLearnTPeriod() * 0.5 )
-      dtAct = agents[i]->getLearnTPeriod() * 0.5;
+    {
+      MPI_Bcast( actions[i].data(), ACTIONS, MPI_DOUBLE, 0, comm );
+      takeAction(agents[i],_environment->sim,i,actions[i],t);
+    }
+
+    // ii) Run the simulation until next action is required
+    const double dtAct = AGENTS > 1 ? 0.5 : agents[0]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
     while ( t < tNextAct && done == false )
     {
@@ -107,60 +93,54 @@ void runEnvironment(korali::Sample &s)
       t += dt;
       _environment->advance(dt);
 
-      done = _environment->sim.bCollision; // if collision -> terminate
-
-      // Check termination because leaving margins
+      // Check termination (leaving margins, collision, max steps etc.)
       for(int i = 0; i<AGENTS; i++ )
-        done = ( done || isTerminal(agents[i],_environment->sim,i) );
+        done = ( done || isTerminal(agents[i],_environment->sim,i,curStep) );
     }
 
-    // Get and store state and reward 
-    // [Careful, state function needs to be called by all ranks!] 
+    // iii) Get and store state and reward (state function needs to be called by all ranks!)
+    for(int i = 0; i<AGENTS; i++ )
     {
-      std::vector<std::vector<double>> states(AGENTS);
-      std::vector<double> rewards(AGENTS);
-      for(int i = 0; i<AGENTS; i++ )
-      {
-        states[i]  = getState (agents[i],_environment->sim,i);
-        rewards[i] = getReward(agents[i],_environment->sim,i);
-      }
-      if (AGENTS > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
-      else             { s["State"] = states[0]; s["Reward"] = rewards[0];}
+      states [i] = getState (agents,_environment->sim,i);
+      rewards[i] = getReward(agents,_environment->sim,i);
     }
+    if (AGENTS > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
+    else            { s["State"] = states[0]; s["Reward"] = rewards[0];}
 
-    // Print information
+    // iv) Print information
     if ( rank == 0 )
     {
       printf("[Korali] -------------------------------------------------------\n");
-      printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+      printf("[Korali] Sample %lu - Step: %lu\n", sampleId, curStep);
       for(int i = 0; i<AGENTS; i++ )
       {
-        auto state  = (AGENTS > 1) ? s["State"][i].get<std::vector<float>>():s["State"].get<std::vector<float>>();
-        auto action = (AGENTS > 1) ? s["Action"][i].get<std::vector<float>>():s["Action"].get<std::vector<float>>();
-        auto reward = (AGENTS > 1) ? s["Reward"][i].get<float>():s["Reward"].get<float>();
+        const auto state  = (AGENTS > 1) ? s["State" ][i].get<std::vector<float>>():s["State" ].get<std::vector<float>>();
+        const auto action = (AGENTS > 1) ? s["Action"][i].get<std::vector<float>>():s["Action"].get<std::vector<float>>();
+        const auto reward = (AGENTS > 1) ? s["Reward"][i].get            <float> ():s["Reward"].get            <float> ();
         printf("[Korali] AGENT %d/%d\n", i, AGENTS);
         printf("[Korali] State: [ %.3f", state[0]);
-        for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
+        for (size_t j = 1; j < state. size(); j++) printf(", %.3f", state[j]);
         printf("]\n");
-        printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+        printf("[Korali] Action: [ %.3f", action[0]);
+        for (size_t j = 1; j < action.size(); j++) printf(", %.3f", action[j]);
+        printf("]\n");
         printf("[Korali] Reward: %.3f\n", reward);
         printf("[Korali] Terminal?: %d\n", done);
         printf("[Korali] -------------------------------------------------------\n");
       }
     }
     fflush(stdout);
+
     curStep++;// Advance to next step
   }
 
-  // Setting termination status
-  s["Termination"] = done ? "Terminal" : "Truncated";
+  s["Termination"] = "Terminal";// Setting termination status
 
   logger.flush();// Flush CUP logger
 
   delete _environment;// delete simulation class
 
-  if( rank == 0 ) // Closing log file
-    fclose(logFile);
+  if( rank == 0 ) fclose(logFile); // Closing log file
 
   std::filesystem::current_path(curPath); // Switching back to experiment directory
 }
@@ -176,7 +156,6 @@ int main(int argc, char *argv[])
   }
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-
 
   // Getting number of workers
   const int nRanks = atoi(argv[argc-1]);
@@ -215,7 +194,7 @@ int main(int argc, char *argv[])
   
     // random seeds for environment
     for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
-  
+
     k.run(e);
   #else
     // Setting results path
@@ -224,7 +203,8 @@ int main(int argc, char *argv[])
     // Creating Korali experiment
     auto e = korali::Experiment();
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-  
+
+#if 1
     #if modelDIM == 2 
   
       //2D simply resumes execution if previous 2D results are available
@@ -283,7 +263,31 @@ int main(int argc, char *argv[])
     e["Solver"]["Mode"] = "Training";
     e["Solver"]["Episodes Per Generation"] = 1;
     e["Solver"]["Concurrent Environments"] = N;
-  
+#else
+  // Loading existing results and transplant best training policy
+  auto eOld = korali::Experiment();
+  auto found = eOld.loadState(trainingResultsPath + "/latest");
+  if( found )
+  {
+    printf("[Korali] Continuing execution with policy learned in previous run...\n");
+    e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
+  }
+  else
+  {
+    printf("[Korali] Did not find the policy learned in previous run, training from scratch...\n");
+  }
+  e["Problem"]["Environment Function"] = &runEnvironment;
+  //Results path and dumping frequency in CUP
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
+  //Agent Configuration
+  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
+  e["Solver"]["Mode"] = "Testing";
+  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Concurrent Environments"] = N;
+  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = 1+i;
+#endif
+
     setupRL(e);//define state, action and neural network
    
     //Policy distribution and scaling parameters

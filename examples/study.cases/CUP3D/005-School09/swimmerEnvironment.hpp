@@ -48,13 +48,13 @@ Simulation * initializeEnvironment(korali::Sample &s)
     #if modelDIM == 2
         std::string OPTIONS = "-bpdx 2 -bpdy 2 -extent 2.0 -CFL 0.7 ";
 	OPTIONS += "-levelMax 7 -levelStart 5 -Rtol 5.0 -Ctol 0.1 -nu 0.00001 ";
-        OPTIONS += "-poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 0 -poissonSolver cuda_iterative";
+        OPTIONS += "-poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 1 -poissonSolver cuda_iterative";
         std::string AGENT = " \n\
         stefanfish L=0.2 T=1 bFixed=1 ";
     #else
         std::string OPTIONS = "-bpdx 2 -bpdy 2 -bpdz 2 -extentx 2.0 -CFL 0.7 ";
 	OPTIONS += "-levelMax 6 -levelStart 4 -Rtol 5.0 -Ctol 0.1 -nu 0.00001 ";
-        OPTIONS += "-poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 0 -poissonSolver cuda_iterative";
+        OPTIONS += "-poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 1 -poissonSolver cuda_iterative";
         std::string AGENT = " \n\
         StefanFish L=0.2 T=1 bFixFrameOfRef=1 ";
     #endif

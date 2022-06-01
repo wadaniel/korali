@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.signal import savgol_filter
@@ -130,26 +131,35 @@ def plotForces( root, obstacleId, output ):
     else:
         plt.show()
 
-def compareForces( root, obstacleId, output ):
+def compareForces( root, output ):
     cases = ["/inPhase_", "/offPhase_"]
     fig, ax = plt.subplots(1, 1,sharex=True,figsize=(6,4), dpi=100)
-    for case in cases:
-        averageForces = []
-        lateralDisplacement = []
-        for i in range(2,21):
-            print("Reading"+root+case+"{}".format(i)+"...")
-            data0 = np.loadtxt(root+case+"{}".format(i)+"/forceValues_0.dat".format(0), skiprows=1)
-            data1 = np.loadtxt(root+case+"{}".format(i)+"/forceValues_1.dat".format(1), skiprows=1)
+    cmaps = [ matplotlib.cm.get_cmap('Blues'), matplotlib.cm.get_cmap('Greens') ]
+    for c, case in enumerate(cases):
+        cmap = cmaps[c]
+        colCurrIndex = 0.0
+        for j in range(1,10):
+            averageForces = []
+            lateralDisplacement = []
+            for i in range(2,21):
+                colorIndx = j/10
+                print("Reading"+root+case+"{}_{}".format(j,i)+"...")
+                data0 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_0.dat".format(0), skiprows=1)
+                data1 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_1.dat".format(1), skiprows=1)
 
-            # 1/2 * (fish length / swimmin period)^2 * fish length
-            nonDimFactor = 0.2**3/2
-            index0 = data0[:,0] > 5
-            index1 = data1[:,0] > 5
-            averageForce = (np.mean(data0[index0,1]) + np.mean(data1[index1,1])) / (2*nonDimFactor)
-            averageForces.append(averageForce)
-            lateralDisplacement.append(2*i/10.0)
+                velData0 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_0.dat".format(0), skiprows=1)
+
+                # 1/2 * (fish length / swimmin period)^2 * fish length
+                speed = 0.02*j
+                nonDimFactor = 0.2*speed**2/2
+                index0 = data0[:,0] > 5
+                index1 = data1[:,0] > 5
+                averageForce = (np.mean(data0[index0,1]) + np.mean(data1[index1,1])) / (2*nonDimFactor)
+                averageForces.append(averageForce)
+                lateralDisplacement.append(2*i/10.0)
             
-        ax.plot( lateralDisplacement, averageForces, "o" )
+            colorIndx = j/10
+            ax.plot( lateralDisplacement, averageForces, color=cmap(colorIndx) )
 
     ax.set_xlabel("lateral displacement $\Delta y/L$")
     ax.set_ylabel("force coeffiecient")
@@ -391,7 +401,7 @@ if __name__ == '__main__':
     # plotForces(args.dir, args.obstacleId, args.output)
     # plotEnergy(args.dir, args.obstacleId, args.output)
     # compareDisplacement()
-    compareForces(args.dir, args.obstacleId, args.output)
+    compareForces(args.dir, args.output)
     # compareEfficiency()
     # animateCoM()
     # plotEfficiency()

@@ -8,20 +8,16 @@
 #include <iostream>
 #include <fstream>
 
+#include "Obstacles/StefanFish.h"
+#include "Simulation.h"
+#include "Utils/BufferedLogger.h"
+#include <Cubism/ArgumentParser.h>
 #if modelDIM == 2
-    #include "Obstacles/StefanFish.h"
     #include "Obstacles/ShapesSimple.h"
-    #include "Simulation.h"
-    #include "Utils/BufferedLogger.h"
-    #include <Cubism/ArgumentParser.h>
     std::string OPTIONS = "-bpdx 2 -bpdy 2 -levelMax 7 -levelStart 5 -Rtol 10000.0 -Ctol 100.0 -extent 2 -CFL 0.7 -poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 0 -bAdaptChiGradient 1 -tdump 0 -nu 0.00001 -tend 0 -muteAll 0 -verbose 1 -poissonSolver cuda_iterative";
     std::vector<std::vector<double>> initialPositions{{{1.5,1.0,0.5}}};
     std::string obstacle = " \n disk radius=0.3 xpos=1.0 ypos=1.0 bForced=1 bFixed=1 xvel=0.0";
 #else
-    #include "obstacles/StefanFish.h"
-    #include "Simulation.h"
-    #include "utils/BufferedLogger.h"
-    #include <Cubism/ArgumentParser.h>
     std::string OPTIONS = " -bpdx 4 -bpdy 4 -bpdz 2 -extentx 2.0 -levelMax 6 -levelStart 4 -Rtol 10000.00 -Ctol 100.00 -fsave 0 -tdump 0 -tend 0 -CFL 0.7 -lambda 1e6 -nu 0.00001 -poissonTol 1e-5 -poissonTolRel 1e-2 -bMeanConstraint 1 -bAdaptChiGradient 1";
     std::vector<std::vector<double>> initialPositions{{{1.5,1.0,0.5}}};
     std::string obstacle = " \n Sphere L=0.6 xpos=1.0 ypos=1.0 xvel=0.0 bForcedInSimFrame=1 bFixFrameOfRef=1";
@@ -102,17 +98,12 @@ Simulation * initializeEnvironment(korali::Sample &s)
     #if modelDIM == 2
         Simulation *_environment = new Simulation(argv.size() - 1, argv.data(), comm);
         _environment->init();
-
-        // Establishing environment's dump frequency
-        _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-        
     #else
         ArgumentParser parser(argv.size()-1, argv.data());
         Simulation *_environment = new Simulation(comm, parser);
-
-        // Establishing environment's dump frequency
-        _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
     #endif
+    // Establishing environment's dump frequency
+    _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
     return _environment;
 }

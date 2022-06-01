@@ -88,17 +88,12 @@ Simulation * initializeEnvironment(korali::Sample &s)
     #if modelDIM == 2
         Simulation *_environment = new Simulation(argv.size() - 1, argv.data(), comm);
         _environment->init();
-
-        // Establishing environment's dump frequency
-        _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
-        
     #else
         ArgumentParser parser(argv.size()-1, argv.data());
         Simulation *_environment = new Simulation(comm, parser);
-
-        // Establishing environment's dump frequency
-        _environment->sim.saveTime = s["Custom Settings"]["Dump Frequency"].get<double>();
     #endif
+    // Establishing environment's dump frequency
+    _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
     return _environment;
 }

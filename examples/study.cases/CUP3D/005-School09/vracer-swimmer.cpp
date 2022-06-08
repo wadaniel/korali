@@ -87,11 +87,15 @@ void runEnvironment(korali::Sample &s)
     // ii) Run the simulation until next action is required
     const double dtAct = AGENTS > 1 ? 0.5 : agents[0]->getLearnTPeriod() * 0.5;
     tNextAct += dtAct;
+    std::vector<double> integral (AGENTS,0);
     while ( t < tNextAct && done == false )
     {
       const double dt = std::min(_environment->calcMaxTimestep(), dtAct);
       t += dt;
       _environment->advance(dt);
+
+      for(int i = 0; i<AGENTS; i++ )
+         integral[i]+= agents[i]->EffPDefBnd * dt;
 
       // Check termination (leaving margins, collision, max steps etc.)
       for(int i = 0; i<AGENTS; i++ )
@@ -103,6 +107,7 @@ void runEnvironment(korali::Sample &s)
     {
       states [i] = getState (agents,_environment->sim,i);
       rewards[i] = getReward(agents,_environment->sim,i);
+      if (rewards[i] > 0) rewards[i] = integral[i]/dtAct;
     }
     if (AGENTS > 1) { s["State"] = states   ; s["Reward"] = rewards   ;}
     else            { s["State"] = states[0]; s["Reward"] = rewards[0];}

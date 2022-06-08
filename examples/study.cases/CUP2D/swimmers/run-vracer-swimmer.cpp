@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy distribution and scaling parameters
   e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  // e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
   //// Defining Neural Network

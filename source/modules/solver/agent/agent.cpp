@@ -117,8 +117,9 @@ void Agent::initialize()
     _rewardRescalingSigma = 1.;
     _rewardRescalingSumSquaredRewards = 0.;
 
-    // Getting agent's initial policy
-    _trainingCurrentPolicies = getAgentPolicy();
+    // If not given, get agent's initial policy
+    if( not isDefined(_trainingCurrentPolicies, "Policy Hyperparameters") )
+      _trainingCurrentPolicies = getAgentPolicy();
   }
 
   // Setting current agent's training state

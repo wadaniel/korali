@@ -8,20 +8,20 @@
 /**** Training options ****/
 
 // 2x1 DOMAIN
-std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+// std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 2 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // 2x2 DOMAIN
 // std::string OPTIONS = "-bpdx 4 -bpdy 4 -levelMax 7 -levelStart 4 -Rtol 1 -Ctol 0.01 -extent 2 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // 4x2 DOMAIN
-// std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
+std::string OPTIONS = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // 4x4 DOMAIN
 // std::string OPTIONS = "-bpdx 4 -bpdy 4 -levelMax 7 -levelStart 4 -Rtol 2 -Ctol 1 -extent 4 -CFL 0.4 -poissonSolver cuda_iterative -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 // 0.8x0.4 PERIODIC DOMAIN
 // dx=0.3, dy=0.2 (same as other diamond school)
-std::string OPTIONS_periodic = "-bpdx 3 -bpdy 2 -levelMax 6 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 0.6 -BC_x periodic -BC_y periodic -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 1 -verbose 0";
+std::string OPTIONS_periodic = "-bpdx 3 -bpdy 2 -levelMax 6 -levelStart 4 -Rtol 5 -Ctol 0.01 -extent 0.6 -BC_x periodic -BC_y periodic -CFL 0.4 -poissonTol 1e-5 -poissonTolRel 0  -bMeanConstraint 1 -bAdaptChiGradient 0 -tdump 0 -nu 0.00004 -tend 0 -muteAll 0 -verbose 1";
 
 /**** Testing options ****/
 
@@ -37,6 +37,106 @@ std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2
 /*********************/
 /* INITIAL POSITIONS */
 /*********************/
+
+// PERIODIC FISH
+
+// dx=0.3, dy=0.2
+// Extent = [0.6, 0.4]
+// double margin = 0.1;
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.15, margin + 0.05},
+// 	{0.45, margin + 0.15}
+// }};
+
+// dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.15, margin + 0.10},
+// 	{0.45, margin + 0.30},
+// 	{0.75, margin + 0.10},
+// 	{1.05, margin + 0.30}
+// }};
+
+// SCHOOLS
+
+// 4 SWIMMERS
+// small domain
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.60, 0.50},
+// 	{0.90, 0.40},
+// 	{0.90, 0.60},
+// 	{1.20, 0.50}
+// }};
+
+// large domain
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.60, 1.00},
+// 	{0.90, 0.90},
+// 	{0.90, 1.10},
+// 	{1.20, 1.00}
+// }};
+
+// 9 SWIMMERS
+// large domain
+// std::vector<std::vector<double>> initialPositions{{
+// 	{0.60, 1.00},
+// 	{0.90, 0.90},
+// 	{0.90, 1.10},
+// 	{1.20, 0.80},
+// 	{1.20, 1.00},
+// 	{1.20, 1.20},
+// 	{1.50, 0.90},
+// 	{1.50, 1.10},
+// 	{1.80, 1.00}
+// }};
+
+// 16 SWIMMERS
+std::vector<std::vector<double>> initialPositions{{
+	{0.60, 1.00},
+	{0.90, 0.90},
+	{0.90, 1.10},
+	{1.20, 0.80},
+	{1.20, 1.00},
+	{1.20, 1.20},
+	{1.50, 0.70},
+	{1.50, 0.90},
+	{1.50, 1.10},
+	{1.50, 1.30},
+	{1.80, 0.80},
+	{1.80, 1.00},
+	{1.80, 1.20},
+	{2.10, 0.90},
+	{2.10, 1.10},
+	{2.40, 1.00}
+}};
+
+// 25 SWIMMERS
+// std::vector<std::vector<double>> initialPositions{{
+//	{0.60, 1.00},
+// 	{0.90, 0.90},
+// 	{0.90, 1.10},
+// 	{1.20, 0.80},
+// 	{1.20, 1.00},
+// 	{1.20, 1.20},
+// 	{1.50, 0.70},
+// 	{1.50, 0.90},
+// 	{1.50, 1.10},
+// 	{1.50, 1.30},
+// 	{1.80, 0.60},
+// 	{1.80, 0.80},
+// 	{1.80, 1.00},
+// 	{1.80, 1.20},
+// 	{1.80, 1.40},
+// 	{2.10, 0.70},
+// 	{2.10, 0.90},
+// 	{2.10, 1.10},
+// 	{2.10, 1.30},
+// 	{2.40, 0.80},
+// 	{2.40, 1.00},
+// 	{2.40, 1.20},
+// 	{2.70, 0.90},
+// 	{2.70, 1.10},
+// 	{3.00, 1.00},
+// }};
 
 // COLUMN WITH 4 FISH
 // std::vector<std::vector<double>> initialPositions{{
@@ -172,99 +272,4 @@ std::string OPTIONS_testing = "-bpdx 4 -bpdy 2 -levelMax 7 -levelStart 4 -Rtol 2
 // 	{ 2.70, 2.80 },
 // 	{ 2.70, 3.00 },
 // 	{ 2.70, 3.20 }
-// }};
-
-// PERIODIC FISH
-
-// dx=0.3, dy=0.2
-// Extent = [0.6, 0.4]
-// double margin = 0.1;
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.15, margin + 0.05},
-// 	{0.45, margin + 0.15}
-// }};
-
-// dx=0.3, dy=0.2 (two fundamental building blocks diamond school)
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.15, margin + 0.10},
-// 	{0.45, margin + 0.30},
-// 	{0.75, margin + 0.10},
-// 	{1.05, margin + 0.30}
-// }};
-
-// SCHOOLS
-
-// 4 SWIMMERS
-// small domain
-std::vector<std::vector<double>> initialPositions{{
-	{0.60, 0.50},
-	{0.90, 0.40},
-	{0.90, 0.60},
-	{1.20, 0.50}
-}};
-
-// large domain
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.90},
-// 	{0.90, 1.10},
-//  {1.20, 1.00}
-// }};
-
-// 9 SWIMMERS
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.90},
-// 	{0.90, 1.10},
-// 	{1.20, 0.80},
-// 	{1.20, 1.00},
-// 	{1.20, 1.20},
-// 	{1.50, 0.90},
-// 	{1.50, 1.10},
-// 	{1.80, 1.00}
-// }};
-
-// 16 SWIMMERS
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.90},
-// 	{0.90, 1.10},
-// 	{1.20, 0.80},
-// 	{1.20, 1.00},
-// 	{1.20, 1.20},
-// 	{1.50, 0.70},
-// 	{1.50, 0.90},
-// 	{1.50, 1.10},
-// 	{1.50, 1.30},
-// 	{1.80, 0.80},
-// 	{1.80, 1.00},
-// 	{1.80, 1.20},
-// 	{2.10, 0.90},
-// 	{2.10, 1.10},
-// 	{2.40, 1.00}
-// }};
-
-// 25 SWIMMERS
-// std::vector<std::vector<double>> initialPositions{{
-// 	{0.90, 0.90},
-// 	{0.90, 1.10},
-// 	{1.20, 0.80},
-// 	{1.20, 1.00},
-// 	{1.20, 1.20},
-// 	{1.50, 0.70},
-// 	{1.50, 0.90},
-// 	{1.50, 1.10},
-// 	{1.50, 1.30},
-// 	{1.80, 0.60},
-// 	{1.80, 0.80},
-// 	{1.80, 1.00},
-// 	{1.80, 1.20},
-// 	{1.80, 1.40},
-// 	{2.10, 0.70},
-// 	{2.10, 0.90},
-// 	{2.10, 1.10},
-// 	{2.10, 1.30},
-// 	{2.40, 0.80},
-// 	{2.40, 1.00},
-// 	{2.40, 1.20},
-// 	{2.70, 0.90},
-// 	{2.70, 1.10},
-// 	{3.00, 1.00},
 // }};

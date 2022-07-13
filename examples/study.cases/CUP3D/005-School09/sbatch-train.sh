@@ -30,6 +30,10 @@ else                   #Use CPU solver with 12 MPI ranks & 1 thread per node
 	THREADS=1
 	RANKS=12
 fi
+#Settings for GPU Poisson solver
+#THREADS=12
+#RANKS=1
+
 RANKS_PER_SAMPLE=$(( $NODES_PER_SAMPLE * $RANKS ))
 
 if [ $TRAIN == 1 ]

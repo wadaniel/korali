@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 def printInitialPosition():
     # define size of domain
     Lx = 4.0001
-    Ly = 2.0001
+    #Ly = 2.0001
+    Ly = 4.0001
 
     # margins at boundary
     marginLeft        = 0.6

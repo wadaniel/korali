@@ -9,16 +9,16 @@ RUNNAME=$1
 TASK=$2
 
 # path to previous run
-RESULTSPATH=/scratch/snx3000/pweber/korali/schoolEfficiency.eval/_trainingResults
+RESULTSPATH=/scratch/snx3000/pweber/korali/16swimmers_transfer
 
 # number of agents
-NAGENTS=100
+NAGENTS=16
 
 # number of workers
 NWORKER=64
 
 # number of nodes per worker
-NRANKS=4
+NRANKS=2
 
 # number of cores per worker
 NUMCORES=12

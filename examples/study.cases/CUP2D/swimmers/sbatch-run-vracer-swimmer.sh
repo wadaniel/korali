@@ -9,14 +9,14 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=2
+NAGENTS=16
 
 # number of workers
 NWORKER=64
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=1
+NRANKS=2
 # NRANKS=9
 
 # number of cores per worker
@@ -56,6 +56,9 @@ sbatch daint_sbatch
 
 #### FOR PURE MPI VERSION
 # srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS * $NUMCORES ))
+
+#### FOR GPU VERSION
+# srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-swimmer -task $TASK -nAgents $NAGENTS -nRanks $(( $NRANKS ))
 
 ## OLD HOMOGENEOUS JOB SETTING ##
 # #SBATCH --ntasks-per-node=1

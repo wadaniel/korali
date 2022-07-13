@@ -12,7 +12,7 @@ TASK=$2
 NAGENTS=1
 
 # number of nodes per worker
-NRANKS=9
+NRANKS=1
 
 # number of cores per worker
 NUMCORES=12
@@ -22,7 +22,6 @@ mpiflags="mpirun -n 2"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- mpiflags="srun -N $N -n $((N)) -c 12"
 fi
 
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"

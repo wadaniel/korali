@@ -120,7 +120,7 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
         episodes = observationHistory[0]
     if showData:
         for i in range(len(returnsHistory)):
-            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, linewidth=2.0, alpha=0.2, zorder=0)
+            ax.plot(episodes, returnsHistory[i], 'x', markersize=1.3, linewidth=2.0, alpha=0.2, zorder=0, color="k")
     if numResults == 1:
         if showCI > 0.0: # Plot median together with CI
             ax.plot(episodes, medianReturns[0], '-', linewidth=2.0, zorder=1, label=dir)
@@ -299,7 +299,7 @@ if __name__ == '__main__':
         ax.legend()
 
     if args.maxEpisodes < math.inf:
-        ax.set_xlim([0, args.maxEpisodes-1])
+        ax.set_xlim([0, args.maxEpisodes])
     if (args.minReward < math.inf) and (args.maxReward > -math.inf):
         ax.set_ylim([args.minReward - 0.1*abs(args.minReward), args.maxReward + 0.1*abs(args.maxReward)])
 

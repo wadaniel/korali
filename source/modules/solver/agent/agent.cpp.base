@@ -113,8 +113,9 @@ void __className__::initialize()
     _rewardRescalingSigma = 1.;
     _rewardRescalingSumSquaredRewards = 0.;
 
-    // Getting agent's initial policy
-    _trainingCurrentPolicies = getAgentPolicy();
+    // If not given, get agent's initial policy
+    if( not isDefined(_trainingCurrentPolicies, "Policy Hyperparameters") )
+      _trainingCurrentPolicies = getAgentPolicy();
   }
 
   // Setting current agent's training state
@@ -1348,13 +1349,12 @@ void __className__::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
     size_t numPolicies = _problem->_policiesPerEnvironment;
-    for (size_t d = 0; d < numPolicies; d++)
+    for (size_t d = 0; d < _problem->_agentsPerEnvironment; d++)
     {
       _k->_logger->logInfo("Normal", "Off-Policy Statistics for policy %lu: \n", d);
       _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", numPolicies > 1 ? _experienceReplayOffPolicyCount[d] : _experienceReplayOffPolicyCount[d] / _problem->_agentsPerEnvironment, _stateVector.size(), _experienceReplayOffPolicyRatio[d], _experienceReplayOffPolicyTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
       _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERCurrentBeta[d]);
-
       _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f\n", d, _trainingLastReward[d]);
       _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth, d, _trainingAverageReward[d]);
       _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n", d, _trainingBestReward[d], _trainingBestEpisodeId[d]);

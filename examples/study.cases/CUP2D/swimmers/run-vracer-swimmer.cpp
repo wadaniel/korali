@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Agents Per Environment"] = nAgents;
-  e["Problem"]["Policies Per Environment"] = nAgents;
+  // e["Problem"]["Policies Per Environment"] = nAgents;
 
   #if 0
   if( task == -1 )
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  e["Solver"]["Multi Agent Relationship"] = "Competition";
+  // e["Solver"]["Multi Agent Relationship"] = "Competition";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy distribution and scaling parameters
   e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  // e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
   //// Defining Neural Network

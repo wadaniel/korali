@@ -8,8 +8,7 @@
 #include "Simulation.h"
 #include "Utils/BufferedLogger.h"
 
-#define STEFANS_SENSORS_STATE
-//#define STEFANS_NEIGHBOUR_STATE
+// #define STEFANS_SENSORS_STATE
 
 // command line arguments are read in Korali application
 extern int _argc;

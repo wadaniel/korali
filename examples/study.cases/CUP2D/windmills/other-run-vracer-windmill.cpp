@@ -129,20 +129,24 @@ int main(int argc, char *argv[])
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 
   // recurrent network
-  e["Solver"]["Time Sequence Length"] = 20; // length of time sequence, corresponding to number of time steps
+  e["Solver"]["Time Sequence Length"] = 40; // length of time sequence, corresponding to number of time steps
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/LSTM";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/LSTM";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   
   //--------------------------------------------------------------------------------------------------------//

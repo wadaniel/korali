@@ -9,16 +9,16 @@ if [ $# -gt 0 ] ; then
 fi
 
 # number of workers/simulations in parallel
-NWORKER=1
+NWORKER=16
 
 # number of nodes per worker/simulation
-NRANKS=2
+NRANKS=1
 
 # number of cores per nodes (for workers)
 NUMCORES=12
 
 # number of worker * number of nodes per worker = number of nodes in total
-NNODES=$(( $NWORKER * $NRANKS))
+NNODES=$(($NWORKER * $NRANKS))
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
@@ -29,10 +29,10 @@ cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
 cp avgprofiles/stdprofiles.dat ${RUNPATH}/stdprofiles.dat
 cd ${RUNPATH}
 
-STATE=3
-REWARD=1
+STATE=1
+REWARD=4
 ALPHA=6
-SEQLEN=40
+SEQLEN=20
 
 # source settings.sh
 
@@ -43,11 +43,11 @@ cat <<EOF >daint_sbatch
 #SBATCH --job-name="${RUNNAME}"
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
-#SBATCH --time=3:00:00
+#SBATCH --time=24:00:00
 #SBATCH --partition=normal
 #SBATCH --nodes=$((NNODES+1))
 
-srun --nodes=$NNODES --ntasks-per-node=$NUMCORES --cpus-per-task=1 --threads-per-core=1  ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS * $NUMCORES )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS * $NUMCORES ))
+srun --nodes=$NNODES --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS )) : --nodes=1 --ntasks-per-node=1 --cpus-per-task=$NUMCORES --threads-per-core=1 ./run-vracer-windmill -state $(($STATE)) -reward $(($REWARD)) -alpha $(($ALPHA)) -seqLen $(($SEQLEN)) -nRanks $(( $NRANKS ))
 
 EOF
 

@@ -71,7 +71,7 @@ void runEnvironment(korali::Sample &s)
 
   int task_state = atoi(_argv[_argc-9]);
 
-  std::string argumentString = OPTIONS + OBJECTS; // this is what we feed to the simulation
+  std::string argumentString = OPTIONS + OBJECTS; // this is what we feed to the simulation from configs.hpp
   std::cerr<<argumentString<<std::endl;
 
   std::stringstream ss(argumentString);
@@ -376,6 +376,8 @@ void runEnvironment(korali::Sample &s)
 
     reward = 0; // reset the reward to zero
 
+    double pen_reward = 0.0;
+
     switch(task_reward){
       case 1:
       {
@@ -385,6 +387,7 @@ void runEnvironment(korali::Sample &s)
           reward -= ((avg_profile_t_[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_[i] - target_profile[i])/target_profile[i]);
           reward += ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]) * ((avg_profile_t_1[i] - target_profile[i])/target_profile[i]);
         }
+        pen_reward = -1000.0;
         break;
       }
       case 2:
@@ -395,6 +398,7 @@ void runEnvironment(korali::Sample &s)
           reward -= (avg_profile_t_[i] - target_profile[i]) * (avg_profile_t_[i] - target_profile[i]);
           reward += (avg_profile_t_1[i] - target_profile[i]) * (avg_profile_t_1[i] - target_profile[i]);
         }
+        pen_reward = -200.0;
         break;
       }
       case 3:
@@ -405,30 +409,23 @@ void runEnvironment(korali::Sample &s)
           reward -= (profile_t_[i] - target_profile[i]) * (profile_t_[i] - target_profile[i]) / (2*sigma_profile[i]*sigma_profile[i]);
           reward -= 0.5 * std::log(2 * M_PI * sigma_profile[i] * sigma_profile[i]);
         }
+        pen_reward = -400000.0;
         break;
       }
       case 4:
       {
-        // difference between current profile and target, normalized
-        for (size_t i(0); i < 32; ++i)
-        {
-          reward -= (profile_t_[i] - target_profile[i]) / target_profile[i];
-        }
-        break;
+        // no reward is given, goal is to teach agent to not have angular velocity faster than 10
+        reward = 2.5e-4;
+        pen_reward = -1;
       }
       case 5:
       {
         // difference between current profile and target, non-normalized
-        for (size_t i(0); i < 32; ++i)
-        {
-          reward -= (profile_t_[i] - target_profile[i]);
-        }
-        break;
+        
       }
     }
 
     // Storing reward
-    double pen_reward = -4000;
     agent1->printRewards(done ? pen_reward : reward);
 
     s["Reward"] = done ? pen_reward : reward;

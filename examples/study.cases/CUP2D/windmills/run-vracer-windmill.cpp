@@ -26,6 +26,12 @@ int main(int argc, char *argv[])
 
   int task_state = atoi(argv[argc-9]);
 
+
+  std::cerr<< "sequence length : "<<task_seqlength<<std::endl;
+  std::cerr<< "alpha : "<<task_alpha<<std::endl;
+  std::cerr<< "reward : "<<task_reward<<std::endl;
+  std::cerr<< "state : "<<task_state<<std::endl;
+
   // Storing parameters
   _argc = argc;
   _argv = argv;
@@ -109,7 +115,7 @@ int main(int argc, char *argv[])
 
   // actions
   double max_angular_acceleration = 15;
-  double exploration_noise = 12;
+  double exploration_noise = 4;
 
   e["Variables"][num_states]["Name"] = "Angular acceleration 1";
   e["Variables"][num_states]["Type"] = "Action";
@@ -146,7 +152,7 @@ int main(int argc, char *argv[])
   //// Defining Policy distribution and scaling parameters
   e["Solver"]["Policy"]["Distribution"] = "Clipped Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = false;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false;
 
   // Configuring the neural network and its hidden layers
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
@@ -161,9 +167,18 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/LSTM";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Depth"] = 1;
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 128;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Linear";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Output Channels"] = 128;
+
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   // feedforward network
   // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";

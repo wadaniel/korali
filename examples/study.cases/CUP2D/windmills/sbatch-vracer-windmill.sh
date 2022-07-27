@@ -29,6 +29,27 @@ cp avgprofiles/avgprofiles.dat ${RUNPATH}/avgprofiles.dat
 cp avgprofiles/stdprofiles.dat ${RUNPATH}/stdprofiles.dat
 cd ${RUNPATH}
 
+# STATE:
+# 1 = {omega1, omega2}
+# 2 = velocity profile
+# 3 = velocity profile + {omega1, omega2}
+
+# REWARD:
+# 1 = squared difference between deviation from the mean 
+# 	  at time t and time t-1, normalized by the target profile
+# 2 = squared difference between deviation from the mean 
+# 	  at time t and time t-1, non-normalized
+# 3 = log-likelihood for hypothetical normal distribution of profiles
+# 4 = slight reward given, goal to teach agent to have angular velocity 
+# 	  smaller than 10. 
+
+# ALPHA:
+# index of the simulation we wish to learn from,
+# values between 0 and 10. 11 means we use all of them
+
+# SEQLEN:
+# the sequence length to be used for the RNNs
+
 STATE=1
 REWARD=4
 ALPHA=6

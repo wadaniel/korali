@@ -263,7 +263,7 @@ void runEnvironment(korali::Sample &s)
     MPI_Bcast(&sigma_profile.front(), 32, MPI_DOUBLE, 0, comm);
   }
 
-  std::vector<double> action(2, 0.0); 
+  std::vector<double> action(4, 0.0); 
 
   std::vector<double> profile_t_1 = vector<double>(32, 0.0);
   std::vector<double> sum_profile_t_1 = vector<double>(32, 0.0);
@@ -303,12 +303,12 @@ void runEnvironment(korali::Sample &s)
     }
     //std::cerr<<"Before action Bcast"<<std::endl;
     // broadcast the action to the different processes
-    MPI_Bcast(&action[0], 2, MPI_DOUBLE, 0, comm );
+    MPI_Bcast(&action[0], 4, MPI_DOUBLE, 0, comm );
     //std::cerr<<"After action Bcast"<<std::endl;
 
     // Setting action for 
-    agent1->act( action[0] );
-    agent2->act( action[1] );
+    agent1->act( {action[0], action[2]} );
+    agent2->act( {action[1], action[3]} );
 
     // Run the simulation until next action is required
     tNextAct += 0.05 ;
@@ -414,14 +414,23 @@ void runEnvironment(korali::Sample &s)
       }
       case 4:
       {
-        // no reward is given, goal is to teach agent to not have angular velocity faster than 10
+        // goal is to teach agent to not have angular velocity faster than 10
         reward = 2.5e-4;
         pen_reward = -1;
       }
       case 5:
       {
-        // difference between current profile and target, non-normalized
-        
+        // goal is to teach agent to have an angular velocity faster than 3 rad/s
+        // but still lower than the 10 
+        if (omega1*omega1 < 9 || omega2*omega2 < 9)
+        {
+          reward = -2.5e-4;
+        } else 
+        {
+          reward = 2.5e-4;
+        }
+
+        pen_reward = -1;
       }
     }
 
@@ -443,8 +452,9 @@ void runEnvironment(korali::Sample &s)
       printf("[Korali] State: [ %.3f", state[0]);
       for (size_t j = 1; j < state.size(); j++) printf(", %.3f", state[j]);
       printf("]\n");
-      printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
-      printf("[Korali] Reward: %.3f\n", reward);
+      printf("[Korali] Action 1: [ %.3f, %.3f ]\n", action[0], action[2]);
+      printf("[Korali] Action 2: [ %.3f, %.3f ]\n", action[1], action[3]);
+      printf("[Korali] Reward: %.6f\n", reward);
       printf("[Korali] -------------------------------------------------------\n");
     }
 

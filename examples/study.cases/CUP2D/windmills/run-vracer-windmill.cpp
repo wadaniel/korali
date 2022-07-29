@@ -113,21 +113,40 @@ int main(int argc, char *argv[])
     num_states += 1;
   }
 
-  // actions
-  double max_angular_acceleration = 15;
+  // actions, w = a * sin( k * t)
+  // actions are the values (a, k) => 4 actions in total
+
+
+
+  double max_angular_velocity = 12;
   double exploration_noise = 4;
 
-  e["Variables"][num_states]["Name"] = "Angular acceleration 1";
+  e["Variables"][num_states]["Name"] = "Angular velocity 1";
   e["Variables"][num_states]["Type"] = "Action";
-  e["Variables"][num_states]["Lower Bound"] = -max_angular_acceleration;
-  e["Variables"][num_states]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][num_states]["Lower Bound"] = -max_angular_velocity;
+  e["Variables"][num_states]["Upper Bound"] = +max_angular_velocity;
   e["Variables"][num_states]["Initial Exploration Noise"] = exploration_noise;
 
-  e["Variables"][num_states + 1]["Name"] = "Angular acceleration 2";
+  e["Variables"][num_states + 1]["Name"] = "Angular velocity 2";
   e["Variables"][num_states + 1]["Type"] = "Action";
-  e["Variables"][num_states + 1]["Lower Bound"] = -max_angular_acceleration;
-  e["Variables"][num_states + 1]["Upper Bound"] = +max_angular_acceleration;
+  e["Variables"][num_states + 1]["Lower Bound"] = -max_angular_velocity;
+  e["Variables"][num_states + 1]["Upper Bound"] = +max_angular_velocity;
   e["Variables"][num_states + 1]["Initial Exploration Noise"] = exploration_noise;
+
+  double max_frequency = 1.0;
+  double exploration_frequency = 0.2;
+
+  e["Variables"][num_states + 2]["Name"] = "Frequency 1";
+  e["Variables"][num_states + 2]["Type"] = "Action";
+  e["Variables"][num_states + 2]["Lower Bound"] = 0;
+  e["Variables"][num_states + 2]["Upper Bound"] = max_frequency;
+  e["Variables"][num_states + 2]["Initial Exploration Noise"] = exploration_frequency;
+
+  e["Variables"][num_states + 3]["Name"] = "Frequency 2";
+  e["Variables"][num_states + 3]["Type"] = "Action";
+  e["Variables"][num_states + 3]["Lower Bound"] = 0;
+  e["Variables"][num_states + 3]["Upper Bound"] = max_frequency;
+  e["Variables"][num_states + 3]["Initial Exploration Noise"] = exploration_frequency;
 
   /// Defining Agent Configuration
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";

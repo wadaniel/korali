@@ -51,7 +51,7 @@ cd ${RUNPATH}
 # the sequence length to be used for the RNNs
 
 STATE=1
-REWARD=4
+REWARD=5
 ALPHA=6
 SEQLEN=20
 

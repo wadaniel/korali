@@ -948,11 +948,13 @@ void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sort
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
 
+  // clang-format off
   // sort indexes based on comparing values in vec
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2)
             {
               return vec[i1] > vec[i2];
             });
+  // clang-format on
 }
 
 void CMAES::printGenerationBefore() { return; }
@@ -1171,14 +1173,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Current Best Variables']\n%s", e.what()); } 
    eraseValue(js, "Current Best Variables");
- }
-
- if (isDefined(js, "Previous Best Value"))
- {
- try { _previousBestValue = js["Previous Best Value"].get<double>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Previous Best Value']\n%s", e.what()); } 
-   eraseValue(js, "Previous Best Value");
  }
 
  if (isDefined(js, "Previous Best Ever Value"))
@@ -1826,7 +1820,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Sample Population"] = _samplePopulation;
    js["Finished Sample Count"] = _finishedSampleCount;
    js["Current Best Variables"] = _currentBestVariables;
-   js["Previous Best Value"] = _previousBestValue;
    js["Previous Best Ever Value"] = _previousBestEverValue;
    js["Sorting Index"] = _sortingIndex;
    js["Covariance Matrix"] = _covarianceMatrix;

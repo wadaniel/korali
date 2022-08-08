@@ -13,8 +13,6 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-#define LSTM_LINEAR_LAYERS 8
-
 __startNamespace__;
 
 void __className__::initialize()
@@ -362,13 +360,17 @@ void __className__::backwardData(const size_t t)
   {
     // Cleaning current weight gradients
     const memory::dim L = _depth;
-    const memory::dim G = _gateCount;      // Gates
-    const memory::dim C = _outputChannels; // channels
-    std::vector<float> nullWeightGradients(L * G * C * C, 0.0f);
-    write_to_dnnl_memory(nullWeightGradients.data(), _weightsLayerGradientMem);
-    write_to_dnnl_memory(nullWeightGradients.data(), _weightsRecurrentGradientMem);
+    const memory::dim G = _gateCount;                   // Gates
+    const memory::dim IC = _prevLayer->_outputChannels; // Input Channels
+    const memory::dim OC = _outputChannels;             // Output Channels
 
-    std::vector<float> nullBiasGradients(L * G * C, 0.0f);
+    std::vector<float> nullInputWeightGradients(L * G * OC * IC, 0.0f);
+    write_to_dnnl_memory(nullInputWeightGradients.data(), _weightsLayerGradientMem);
+
+    std::vector<float> nullRecurrentWeightGradients(L * G * OC * OC, 0.0f);
+    write_to_dnnl_memory(nullRecurrentWeightGradients.data(), _weightsRecurrentGradientMem);
+
+    std::vector<float> nullBiasGradients(L * G * OC, 0.0f);
     write_to_dnnl_memory(nullBiasGradients.data(), _biasGradientMem);
 
     _backwardLSTMPrimitive.execute(_nn->_dnnlStream,

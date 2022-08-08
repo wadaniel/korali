@@ -34,7 +34,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
-  _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["Type"] = "DeepSupervisor";
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
@@ -61,7 +61,7 @@ void VRACER::initializeAgent()
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
-  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
+  _criticPolicyLearner = dynamic_cast<solver::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
@@ -116,13 +116,13 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     size_t expId = miniBatch[b];
 
     // Get state, action and policy for this experience
-    const auto &expPolicy = _expPolicyVector[expId];
-    const auto &expAction = _actionVector[expId];
+    const auto &expPolicy = _expPolicyBuffer[expId];
+    const auto &expAction = _actionBuffer[expId];
 
     // Gathering metadata
-    const float V = _stateValueVector[expId];
-    const auto &curPolicy = _curPolicyVector[expId];
-    const float expVtbc = _retraceValueVector[expId];
+    const float V = _stateValueBuffer[expId];
+    const auto &curPolicy = _curPolicyBuffer[expId];
+    const float expVtbc = _retraceValueBuffer[expId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _policyParameterCount);
@@ -131,22 +131,22 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     gradientLoss[0] = expVtbc - V;
 
     // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (_isOnPolicyVector[expId])
+    if (_isOnPolicyBuffer[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = getScaledReward(_environmentIdVector[expId], _rewardVector[expId]);
+      float Qret = getScaledReward(_environmentIdBuffer[expId], _rewardBuffer[expId]);
 
       // If experience is non-terminal, add Vtbc
-      if (_terminationVector[expId] == e_nonTerminal)
+      if (_terminationBuffer[expId] == e_nonTerminal)
       {
-        float nextExpVtbc = _retraceValueVector[expId + 1];
+        float nextExpVtbc = _retraceValueBuffer[expId + 1];
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // If experience is truncated, add truncated state value
-      if (_terminationVector[expId] == e_truncated)
+      if (_terminationBuffer[expId] == e_truncated)
       {
-        float nextExpVtbc = _truncatedStateValueVector[expId];
+        float nextExpVtbc = _truncatedStateValueBuffer[expId];
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -212,19 +212,19 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
   return policyVector;
 }
 
-knlohmann::json VRACER::getAgentPolicy()
+knlohmann::json VRACER::getPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
-void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+void VRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void VRACER::printAgentInformation()
+void VRACER::printInformation()
 {
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Detailed", " + [VRACER] Max Policy Parameters (Mu & Sigma):\n");

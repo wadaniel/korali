@@ -67,7 +67,7 @@ class VRACER : public Continuous
   /**
    * @brief Pointer to training the actor network
    */
-  learner::DeepSupervisor *_criticPolicyLearner;
+  DeepSupervisor *_criticPolicyLearner;
 
   /**
    * @brief Korali experiment for obtaining the agent's action
@@ -113,10 +113,10 @@ class VRACER : public Continuous
    */
   std::vector<float> _minMiniBatchPolicyStdDev;
 
-  knlohmann::json getAgentPolicy() override;
-  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  knlohmann::json getPolicy() override;
+  void setPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;
-  void printAgentInformation() override;
+  void printInformation() override;
   void initializeAgent() override;
 };
 

@@ -186,6 +186,49 @@ void __className__::runTrainingEpisode(Sample &agent)
   // Setting cumulative reward
   agent["Training Rewards"] = trainingRewards;
 
+  // Finalizing Environment
+  finalizeEnvironment();
+
+  // Setting tested policy flag to false, unless we do testing
+  agent["Tested Policy"] = false;
+
+  // Get current "true" episode count
+  size_t episodeCount = agent["Sample Id"];
+
+  // If the training reward of all the agents exceeds the threshold or meets the periodic conditions, then also run testing on it
+  bool runTest = (_testingFrequency > 0) && (episodeCount % _testingFrequency == 0);
+
+  if (runTest)
+  {
+    float averageTestingReward = 0.0;
+    float bestTestingReward = -Inf;
+    float worstTestingReward = +Inf;
+
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    {
+      runTestingEpisode(agent);
+
+      // Getting current testing reward
+      auto currentTestingReward = agent["Testing Reward"].get<float>();
+
+      // Adding current testing reward to the average and keeping statistics
+      averageTestingReward += currentTestingReward;
+      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+    }
+
+    // Normalizing average
+    averageTestingReward /= (float)_policyTestingEpisodes;
+
+    // Storing testing information
+    agent["Average Testing Reward"] = averageTestingReward;
+    agent["Best Testing Reward"] = bestTestingReward;
+    agent["Worst Testing Reward"] = worstTestingReward;
+
+    // Indicate that the agent has been tested
+    agent["Tested Policy"] = true;
+  }
+
   // Sending last experience last (after testing)
   // This is important to prevent the engine for block-waiting for the return of the sample
   // while the testing runs are being performed.
@@ -194,9 +237,6 @@ void __className__::runTrainingEpisode(Sample &agent)
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episodes;
   KORALI_SEND_MSG_TO_ENGINE(message);
-
-  // Finalizing Environment
-  finalizeEnvironment();
 
   // Adding profiling information to agent
   agent["Computation Time"] = _agentComputationTime;
@@ -263,7 +303,7 @@ void __className__::initializeEnvironment(Sample &agent)
   _conduit = _agent->_k->_engine->_conduit;
 
   // First, we update the initial policy's hyperparameters
-  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
+  _agent->setPolicy(agent["Policy Hyperparameters"]);
 
   // Then, we reset the state sequence for time-dependent learners
   _agent->resetTimeSequence();
@@ -308,7 +348,7 @@ void __className__::requestNewPolicy(Sample &agent)
 
   // If requested new policy, wait for incoming message containing new hyperparameters
   agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
-  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
+  _agent->setPolicy(agent["Policy Hyperparameters"]);
 
   auto t1 = std::chrono::steady_clock::now();                                                       // Profiling
   _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling

@@ -63,8 +63,7 @@ Then, we set the type of the problem to `Direct Evaluation`, and the objective t
 
 .. code-block:: python
 
-    e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-    e["Problem"]["Objective"] = "Maximize"
+    e["Problem"]["Type"] = "Optimization"
 
 The Variables
 -------------

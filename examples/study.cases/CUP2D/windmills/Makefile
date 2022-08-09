@@ -1,4 +1,5 @@
 WINDMILL = run-vracer-windmill eval-vracer-windmill 
+CMAES = run-cmaes-windmill
 # OTHERWINDMILL = other-run-vracer-windmill # eval-vracer-windmill
 KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
@@ -9,12 +10,15 @@ CUBISMLIBS= ${CUPFOLDER}/makefiles/libcup.a $(shell cat ${CUPFOLDER}/makefiles/c
 
 .SECONDARY:
 .PHONY: all
-all: windmill otherwindmill
+all: cmaes
 
 windmill: $(WINDMILL)
-otherwindmill: $(OTHERWINDMILL)
+cmaes: $(CMAES)
 
 $(WINDMILL): %: %.o windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
+	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
+
+$(CMAES): %: %.o windmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 # $(OTHERWINDMILL): %: %.o otherwindmillEnvironment.o ${CUPFOLDER}/makefiles/libcup.a 
@@ -32,3 +36,4 @@ windmillEnvironment.o: _model/windmillEnvironment.cpp
 .PHONY: clean
 clean:
 	$(RM) $(WINDMILL) *.o *.ti *.optrpt *.h5 *.xmf
+	$(RM) $(CMAES) *.o *.ti *.optrpt *.h5 *.xmf

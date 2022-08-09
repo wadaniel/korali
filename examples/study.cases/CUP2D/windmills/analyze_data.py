@@ -6,7 +6,49 @@ import colorsys
 
 from helpers import average_profile, mse
 
-folder='/scratch/snx3000/anoca/CUP2D/velprofiles/'
+name = 'quickdiff/'
+folder='/scratch/snx3000/anoca/CUP2D/' + name
+files = ['x_velocity_profile_0.dat', 'y_velocity_profile_0.dat']
+output_folder = 'results/' + name
+
+x_vel = np.genfromtxt(folder + files[0], delimiter=' ', skip_header=1)
+
+plt.figure(1)
+plt.plot(x_vel[:, 0], x_vel[:, 5])
+plt.savefig(output_folder + 'random_profile_x.png')
+
+plt.figure(2)
+res_x = average_profile(x_vel, 700, 1200)
+plt.plot(res_x)
+plt.savefig(output_folder + 'averaged_profile_x.png')
+
+np.savetxt( output_folder + 'x_profile.dat', res_x[[-1], :])
+
+y_vel = np.genfromtxt(folder + files[1], delimiter=' ', skip_header=1)
+
+plt.figure(3)
+plt.plot(y_vel[:, 0], y_vel[:, 5])
+plt.savefig(output_folder + 'random_profile_y.png')
+
+plt.figure(4)
+res_y = average_profile(y_vel, 700, 1200)
+plt.plot(res_y)
+plt.savefig(output_folder + 'averaged_profile_y.png')
+
+dat = np.genfromtxt(folder + 'velocity_0.dat', delimiter=' ', skip_header=1)
+omega = dat[:, 9]
+
+np.savetxt(output_folder + 'y_profile.dat', res_y[[-1], :])
+
+plt.figure(5)
+plt.plot(omega)
+plt.savefig(output_folder + 'omega.png')
+
+
+
+
+
+
 # subfolders = [ f.path for f in os.scandir(folder) if f.is_dir() ]
 # subfolders.remove('/scratch/snx3000/anoca/CUP2D/old')
 # subfolders.sort()
@@ -18,7 +60,7 @@ files = [ f.path for f in os.scandir(folder) ]
 
 # folders = fans4_folders
 # folders = [folder + "2fans_m1"]
-output_folder = '2fans/'
+# output_folder = '2fans/'
 
 ##### Plot velocity_profile of 2 fans 
 
@@ -198,53 +240,58 @@ output_folder = '2fans/'
 
 ##### Plot the avg profiles at time 200s in subplots
 
-folder_saveprof = 'avgprofiles/avgprofiles.dat'
+# folder_saveprof = 'avgprofiles/avgprofiles.dat'
 
-avgprofiles_200 = np.loadtxt(folder_saveprof)
+# avgprofiles_200 = np.loadtxt(folder_saveprof)
 
-rows = avgprofiles_200.shape[0]
+# rows = avgprofiles_200.shape[0]
 
-fig, axs = plt.subplots(2, 6, figsize=(15,6))
+# fig, axs = plt.subplots(2, 6, figsize=(15,6))
 
-for index, file in enumerate(range(rows)):
+# for index, file in enumerate(range(rows)):
 
-    axs[index // 6 , index % 6].plot(avgprofiles_200[index, :])
-    axs[index // 6 , index % 6].set(xlabel='pos')
-    axs[index // 6 , index % 6].set_ylim([0, 0.25])
-    if index % 6 != 0:
-        axs[index // 6 , index % 6].axes.yaxis.set_visible(False)
-    else:
-        axs[index // 6 , index % 6].set(ylabel='|v|')
+#     axs[index // 6 , index % 6].plot(avgprofiles_200[index, :])
+#     axs[index // 6 , index % 6].set(xlabel='pos')
+#     axs[index // 6 , index % 6].set_ylim([0, 0.25])
+#     if index % 6 != 0:
+#         axs[index // 6 , index % 6].axes.yaxis.set_visible(False)
+#     else:
+#         axs[index // 6 , index % 6].set(ylabel='|v|')
 
-    if index == 10:
-        fig.delaxes(axs[1, 5])
-
-
-plt.savefig(output_folder + 'avgprofile_200.png')
+#     if index == 10:
+#         fig.delaxes(axs[1, 5])
 
 
-##### Plot the avg profiles at time 200s in one colorplot
-
-folder_saveprof = 'avgprofiles/avgprofiles.dat'
-
-avgprofiles_200 = np.loadtxt(folder_saveprof)
-
-rows = avgprofiles_200.shape[0]
-
-x = np.linspace(0.3, 1.5, rows)
-
-fig = plt.figure()
-
-extent = [0, 31, 1.1, -1.1]
-plt.imshow(avgprofiles_200, aspect='auto', extent=extent, cmap='plasma')
-plt.xlabel('pos')
-plt.ylabel('factor')
-plt.colorbar()
-ax = plt.gca()
-ax.set_yticks([-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1])
+# plt.savefig(output_folder + 'avgprofile_200.png')
 
 
-# for i in range(rows):
-#     plt.plot(avgprofiles_200[i, :], color=lighten_color("blue", x[i]))
+# ##### Plot the avg profiles at time 200s in one colorplot
 
-plt.savefig(output_folder + 'avgprofile_200_colormap.png')
+# folder_saveprof = 'avgprofiles/avgprofiles.dat'
+
+# avgprofiles_200 = np.loadtxt(folder_saveprof)
+
+# rows = avgprofiles_200.shape[0]
+
+# x = np.linspace(0.3, 1.5, rows)
+
+# fig = plt.figure()
+
+# extent = [0, 31, 1.1, -1.1]
+# plt.imshow(avgprofiles_200, aspect='auto', extent=extent, cmap='plasma')
+# plt.xlabel('pos')
+# plt.ylabel('factor')
+# plt.colorbar()
+# ax = plt.gca()
+# ax.set_yticks([-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
+
+# # for i in range(rows):
+# #     plt.plot(avgprofiles_200[i, :], color=lighten_color("blue", x[i]))
+
+# plt.savefig(output_folder + 'avgprofile_200_colormap.png')
+
+
+
+##### Compute and plot the normalized mses (of the average) over time
+

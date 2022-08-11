@@ -2,9 +2,14 @@ import numpy as np
 from numpy.random import normal, uniform
 import matplotlib.pyplot as plt
 
-def sample_theta(size_n):
+def sample_theta(size_n, which_prior):
     e = np.sqrt( (1-np.exp(-0.8))/2.88)
-    return uniform(0, e, size=(size_n, 1))
+    if which_prior == 1 :
+        return uniform(0, 1, size=(size_n, 1))
+    elif which_prior == 2 :
+        return uniform(0, e, size=(size_n, 1))
+    elif which_prior == 3 :
+        return uniform(e, 1, size=(size_n, 1))
 
 def model(theta, d): # G
     res = theta * theta * theta * d * d + theta * np.exp(-np.abs(0.2 - d))
@@ -27,6 +32,7 @@ def likelihood2(y, theta, d, sigma): # for the second term
     mu = model(theta, d)
     n = theta.shape[0]
     vec = np.zeros((n, 1))
+
     for i in range(n):
         res = (1/np.sqrt(2*np.pi*sigma*sigma)) * np.exp(-np.multiply((y-mu[i]), (y-mu[i])) / (2*sigma*sigma))
         vec += res/n
@@ -45,23 +51,35 @@ def utility(y_vec, theta_vec, d, sigma):
 
 
 
-n = 2000
+n = 1000
 sigma = 1e-2
 ds = np.linspace(0, 1, 101)
-U = np.zeros(101)
+U1 = np.zeros(101)
+U2 = np.zeros(101)
+U3 = np.zeros(101)
 
 
 
 for ind, d in enumerate(ds):
     print(ind)
-    thetas = sample_theta(n)
-    ys = data(thetas, d, sigma)
-    U[ind] = utility(ys, thetas, d, sigma)
+    t1 = sample_theta(n, 1)
+    ys = data(t1, d, sigma)
+    U1[ind] = utility(ys, t1, d, sigma)
+
+    t2 = sample_theta(n, 2)
+    ys = data(t2, d, sigma)
+    U2[ind] = utility(ys, t2, d, sigma)
+
+    t3 = sample_theta(n, 3)
+    ys = data(t3, d, sigma)
+    U3[ind] = utility(ys, t3, d, sigma)
 
 
 plt.figure(1)
 
-plt.plot(ds, U)
+plt.plot(ds, U1)
+plt.plot(ds, U2)
+plt.plot(ds, U3)
 
 plt.savefig('utility.png')
 

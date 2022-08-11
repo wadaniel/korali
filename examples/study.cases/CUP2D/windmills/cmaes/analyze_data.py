@@ -6,7 +6,7 @@ import colorsys
 
 from helpers import average_profile, mse
 
-name = 'quickdiff/'
+name = 'slowdiff/'
 folder='/scratch/snx3000/anoca/CUP2D/' + name
 files = ['x_velocity_profile_0.dat', 'y_velocity_profile_0.dat']
 output_folder = 'results/' + name
@@ -18,7 +18,7 @@ plt.plot(x_vel[:, 0], x_vel[:, 5])
 plt.savefig(output_folder + 'random_profile_x.png')
 
 plt.figure(2)
-res_x = average_profile(x_vel, 700, 1200)
+res_x = average_profile(x_vel, 720, 1200)
 plt.plot(res_x)
 plt.savefig(output_folder + 'averaged_profile_x.png')
 
@@ -31,7 +31,7 @@ plt.plot(y_vel[:, 0], y_vel[:, 5])
 plt.savefig(output_folder + 'random_profile_y.png')
 
 plt.figure(4)
-res_y = average_profile(y_vel, 700, 1200)
+res_y = average_profile(y_vel, 720, 1200)
 plt.plot(res_y)
 plt.savefig(output_folder + 'averaged_profile_y.png')
 

@@ -695,7 +695,7 @@ void runEnvironmentCMAES(korali::Sample& s)
     }
     //std::cerr<<"After CUP2D sim steps"<<std::endl;
 
-    if (t >= 35)
+    if (t >= 36)
     {
       profile_t_x = agent1->vel_profile()[0]; // vector of size 32, has the velocity profile values
       profile_t_y = agent1->vel_profile()[1];
@@ -715,8 +715,8 @@ void runEnvironmentCMAES(korali::Sample& s)
     // squared difference between deviation from the mean at time t and time t-1, normalized by the target profile
     for (size_t i(0); i < numberRegions; ++i)
     {
-      avg_profile_t_y[i] = sum_profile_t_y[i]/25;
-      avg_profile_t_x[i] = sum_profile_t_x[i]/25;
+      avg_profile_t_y[i] = sum_profile_t_y[i]/24;
+      avg_profile_t_x[i] = sum_profile_t_x[i]/24;
 
       reward -= (target_profile_x[i] - avg_profile_t_x[i]) * (target_profile_x[i] - avg_profile_t_x[i]);
       reward -= (target_profile_y[i] - avg_profile_t_y[i]) * (target_profile_y[i] - avg_profile_t_y[i]);

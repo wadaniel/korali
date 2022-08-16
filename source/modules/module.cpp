@@ -44,6 +44,7 @@
 #include "problem/reinforcementLearning/discrete/discrete.hpp"
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
+#include "problem/reaction.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
@@ -109,10 +110,14 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
 
   // Creating module pointer from it's type.
   Module *module = nullptr;
+  if (iCompare(moduleType, "Experiment")) module = new korali::Experiment();
 
+  // Conduits
   if (iCompare(moduleType, "Concurrent")) module = new korali::conduit::Concurrent();
   if (iCompare(moduleType, "Distributed")) module = new korali::conduit::Distributed();
   if (iCompare(moduleType, "Sequential")) module = new korali::conduit::Sequential();
+  
+  // Distributions
   if (iCompare(moduleType, "Multivariate/Normal")) module = new korali::distribution::multivariate::Normal();
   if (iCompare(moduleType, "Specific/Multinomial")) module = new korali::distribution::specific::Multinomial();
   if (iCompare(moduleType, "Univariate/Beta")) module = new korali::distribution::univariate::Beta();
@@ -127,7 +132,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Univariate/TruncatedNormal")) module = new korali::distribution::univariate::TruncatedNormal();
   if (iCompare(moduleType, "Univariate/Uniform")) module = new korali::distribution::univariate::Uniform();
   if (iCompare(moduleType, "Univariate/Weibull")) module = new korali::distribution::univariate::Weibull();
-  if (iCompare(moduleType, "Experiment")) module = new korali::Experiment();
+
+  // Problem types
   if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();
   if (iCompare(moduleType, "Bayesian/Reference")) module = new korali::problem::bayesian::Reference();
   if (iCompare(moduleType, "Hierarchical/Psi")) module = new korali::problem::hierarchical::Psi();
@@ -140,6 +146,9 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
   if (iCompare(moduleType, "ReinforcementLearning/Discrete")) module = new korali::problem::reinforcementLearning::Discrete();
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
+  if (iCompare(moduleType, "Reaction")) module = new korali::problem::Reaction();
+
+  // Solver modules
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();
   if (iCompare(moduleType, "DeepSupervisor")) module = new korali::solver::DeepSupervisor();
@@ -157,6 +166,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Sampler/MCMC")) module = new korali::solver::sampler::MCMC();
   if (iCompare(moduleType, "Sampler/HMC")) module = new korali::solver::sampler::HMC();
   if (iCompare(moduleType, "Sampler/TMCMC")) module = new korali::solver::sampler::TMCMC();
+
+  // Neural Network modules
   if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
   if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();
   if (iCompare(moduleType, "Layer/Convolution")) module = new korali::neuralNetwork::layer::Convolution();

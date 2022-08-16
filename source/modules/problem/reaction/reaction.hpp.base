@@ -1,0 +1,14 @@
+#pragma once
+
+#include "modules/problem/problem.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  private:
+  public:
+  void initialize() override;
+};
+
+__endNamespace__;

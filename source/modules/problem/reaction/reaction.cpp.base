@@ -1,0 +1,13 @@
+#include "modules/problem/sampling/sampling.hpp"
+#include "sample/sample.hpp"
+
+__startNamespace__;
+
+void __className__::initialize()
+{
+  if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Reaction problems require at least one variable.\n");
+}
+
+__moduleAutoCode__;
+
+__endNamespace__;

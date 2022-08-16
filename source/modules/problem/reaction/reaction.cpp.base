@@ -1,4 +1,4 @@
-#include "modules/problem/sampling/sampling.hpp"
+#include "modules/problem/reaction/reaction.hpp"
 #include "sample/sample.hpp"
 
 __startNamespace__;

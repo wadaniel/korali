@@ -1,0 +1,22 @@
+#pragma once
+
+#include "modules/solver/solver.hpp"
+#include "modules/distribution/univariate/exponential/exponential.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  /**
+   * @brief Simulates a trajectory for all reactants based on provided reactions.
+   */
+  virtual void simulateTrajectory() = 0;
+
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+
+};
+
+__endNamespace__;

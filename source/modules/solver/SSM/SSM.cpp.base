@@ -1,0 +1,24 @@
+#include "modules/solver/SSM/SSM.hpp"
+
+__startNamespace__;
+
+void simulateTrajectory() { return; }
+
+void __className__::runGeneration()
+{
+    // TODO
+}
+
+void __className__::printGenerationBefore() 
+{ 
+    // TODO
+}
+
+void __className__::printGenerationAfter()
+{
+    // TODO
+}
+
+__moduleAutoCode__;
+
+__endNamespace__;

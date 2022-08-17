@@ -1,0 +1,22 @@
+#include "modules/solver/SSM/SSA/SSA.hpp"
+
+__startNamespace__;
+
+void __className__::setInitialConfiguration()
+{
+    //TODO
+}
+
+void __className__::simulateTrajectory()
+{
+    //TODO
+}
+
+void __className__::finalize()
+{
+    //TODO
+}
+
+__moduleAutoCode__;
+
+__endNamespace__;

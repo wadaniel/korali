@@ -1,0 +1,18 @@
+#pragma once
+
+#include "modules/solver/SSM/SSM.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  
+  void setInitialConfiguration() override;
+  
+  void simulateTrajectory() override;
+  
+  void finalize() override;
+};
+
+__endNamespace__;

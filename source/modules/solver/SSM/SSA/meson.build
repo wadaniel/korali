@@ -1,4 +1,4 @@
-module_name = 'solver'
+module_name = 'SSA'
 
 r = run_command(korali_gen, [ '--input', module_name + '.hpp.base', module_name + '.cpp.base', '--config', module_name + '.config', '--output', module_name + '.hpp', module_name + '.cpp' ])
 if r.returncode() != 0
@@ -19,11 +19,3 @@ korali_include += include_directories('.')
 korali_source += module_header
 korali_source += module_source
 korali_config += module_config
-
-subdir('agent')
-subdir('deepSupervisor')
-subdir('executor')
-subdir('integrator')
-subdir('optimizer')
-subdir('sampler')
-subdir('SSM')

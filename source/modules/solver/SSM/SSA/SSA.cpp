@@ -11,6 +11,7 @@ namespace ssm
 void SSA::setInitialConfiguration()
 {
     //TODO
+    _variableCount = _k->_variables.size();
 }
 
 void SSA::simulateTrajectory()

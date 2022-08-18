@@ -6,6 +6,15 @@ __startNamespace__;
 void __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Reaction problems require at least one variable.\n");
+
+  // Parsing user-defined reactions
+  for (size_t i = 0; i < _reactions.size(); i++)
+  {
+    std::string eq = _reactions[i]["Equation"];
+    printf("Equation: %s\n", eq.c_str());
+  }
+
+
 }
 
 __moduleAutoCode__;

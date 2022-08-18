@@ -10,7 +10,8 @@ void simulateTrajectory() { return; }
 
 void SSM::runGeneration()
 {
-    // TODO
+  // TODO
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
 }
 
 void SSM::printGenerationBefore() 
@@ -36,15 +37,6 @@ void SSM::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Exponential Generator");
  }
 
- if (isDefined(js, "Num Simulations"))
- {
- try { _numSimulations = js["Num Simulations"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Num Simulations']\n%s", e.what()); } 
-   eraseValue(js, "Num Simulations");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Num Simulations'] required by SSM.\n"); 
-
  if (isDefined(js, "Num Bins"))
  {
  try { _numBins = js["Num Bins"].get<size_t>();
@@ -53,6 +45,15 @@ void SSM::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Num Bins");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Num Bins'] required by SSM.\n"); 
+
+ if (isDefined(js, "Termination Criteria", "Max Num Simulations"))
+ {
+ try { _maxNumSimulations = js["Termination Criteria"]["Max Num Simulations"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Termination Criteria']['Max Num Simulations']\n%s", e.what()); } 
+   eraseValue(js, "Termination Criteria", "Max Num Simulations");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Max Num Simulations'] required by SSM.\n"); 
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
@@ -67,8 +68,8 @@ void SSM::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Num Simulations"] = _numSimulations;
    js["Num Bins"] = _numBins;
+   js["Termination Criteria"]["Max Num Simulations"] = _maxNumSimulations;
  if(_exponentialGenerator != NULL) _exponentialGenerator->getConfiguration(js["Exponential Generator"]);
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
@@ -78,7 +79,7 @@ void SSM::getConfiguration(knlohmann::json& js)
 void SSM::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Num Simulatons\": 1, \"Num Bins\": 100, \"Termination Criteria\": {}}";
+ std::string defaultString = "{\"Num Bins\": 100, \"Termination Criteria\": {\"Max Num Simulations\": 1}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);
@@ -98,6 +99,12 @@ void SSM::applyVariableDefaults()
 bool SSM::checkTermination()
 {
  bool hasFinished = false;
+
+ if (_maxNumSimulations < _k->_currentGeneration)
+ {
+  _terminationCriteria.push_back("SSM['Max Num Simulations'] = " + std::to_string(_maxNumSimulations) + ".");
+  hasFinished = true;
+ }
 
  hasFinished = hasFinished || Solver::checkTermination();
  return hasFinished;

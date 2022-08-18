@@ -25,12 +25,15 @@ namespace problem
 */
 class Reaction : public Problem
 {
-  private:
   public: 
   /**
   * @brief Total duration of stochastic reaction simulation.
   */
    double _simulationLength;
+  /**
+  * @brief [Internal Use] Complete description of all reactions.
+  */
+   knlohmann::json _reactions;
   
  
   /**
@@ -54,7 +57,7 @@ class Reaction : public Problem
   void applyVariableDefaults() override;
   
 
-  void initialize() override;
+    void initialize() override;
 };
 
 } //problem

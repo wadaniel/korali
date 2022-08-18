@@ -49,6 +49,14 @@ class SSM : public Solver
   */
    korali::distribution::univariate::Uniform* _uniformGenerator;
   /**
+  * @brief [Internal Use] Stores the number of reactants per bin for each trajectory and reactant.
+  */
+   std::vector<std::vector<int>> _binCounter;
+  /**
+  * @brief [Internal Use] Stores the number of reactants per bin for each trajectory and reactant.
+  */
+   std::vector<std::vector<std::vector<int>>> _binnedTrajectories;
+  /**
   * @brief [Termination Criteria] Max number of trajectory simulations.
   */
    size_t _maxNumSimulations;
@@ -94,12 +102,17 @@ class SSM : public Solver
    * @brief Simulates a trajectory for all reactants based on provided reactions.
    */
   virtual void advance() = 0;
-  
+   
+  /**
+   * @brief Updates the values of the binned trajectories for each reactant.
+   */
+  void updateBins();
 
   void initialize() override;
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;
+  void finalize() override;
 
 };
 

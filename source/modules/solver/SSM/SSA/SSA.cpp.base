@@ -2,12 +2,6 @@
 
 __startNamespace__;
 
-void __className__::setInitialConfiguration()
-{
-    //TODO
-    _variableCount = _k->_variables.size();
-}
-
 void __className__::advance()
 {
     _cumPropensities.resize(_problem->_reactions.size());
@@ -47,11 +41,6 @@ void __className__::advance()
     // Update the reactants according to chosen reaction
     _problem->applyChanges(selection, _numReactants);
 
-}
-
-void __className__::finalize()
-{
-    //TODO
 }
 
 __moduleAutoCode__;

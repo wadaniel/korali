@@ -58,11 +58,8 @@ class SSA : public SSM
 
   std::vector<double> _cumPropensities;
   
-  void setInitialConfiguration() override;
-  
   void advance() override;
   
-  void finalize() override;
 };
 
 } //ssm

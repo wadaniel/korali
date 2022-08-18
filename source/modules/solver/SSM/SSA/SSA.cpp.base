@@ -8,9 +8,45 @@ void __className__::setInitialConfiguration()
     _variableCount = _k->_variables.size();
 }
 
-void __className__::simulateTrajectory()
+void __className__::advance()
 {
-    //TODO
+    _cumPropensities.resize(_problem->_reactions.size());
+    
+    double a0 = 0.0;
+
+    // Calculate propensities
+    for (size_t k = 0; k < _problem->_reactions.size(); ++k)
+    {
+        const double a = _problem->computePropensity(k, _numReactants);
+
+        a0 += a;
+        _cumPropensities[k] = a0;
+    }
+
+    // Sample time step from exponential distribution
+    const double r1 = _uniformGenerator->getRandomNumber();
+
+    double tau = -std::log(r1) / a0;
+    
+    // Advance time
+    _time += tau;
+    
+    if (_time > _simulationLength)
+        _time = _simulationLength;
+
+    if (a0 == 0)
+        return;
+
+    const double r2 = _cumPropensities.back() * _uniformGenerator->getRandomNumber();
+
+    // Sample a reaction
+    size_t selection = 0;
+    while(r2 > _cumPropensities[selection])
+        selection++;
+     
+    // Update the reactants according to chosen reaction
+    _problem->applyChanges(selection, _numReactants);
+
 }
 
 void __className__::finalize()

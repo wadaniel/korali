@@ -13,7 +13,8 @@
 #pragma once
 
 #include "modules/solver/solver.hpp"
-#include "modules/distribution/univariate/exponential/exponential.hpp"
+#include "modules/problem/reaction/reaction.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
 
 namespace korali
 {
@@ -28,13 +29,25 @@ class SSM : public Solver
 {
   public: 
   /**
+  * @brief Total duration of a stochastic reaction simulation.
+  */
+   double _simulationLength;
+  /**
   * @brief Number of bins to calculate the mean trajectory at termination.
   */
-   size_t _numBins;
+   size_t _diagnosticsNumBins;
   /**
-  * @brief [Internal Use] Exponential random number generator.
+  * @brief [Internal Use] The current time of the simulated trajectory.
   */
-   korali::distribution::univariate::Exponential* _exponentialGenerator;
+   double _time;
+  /**
+  * @brief [Internal Use] The current number of reactants in the simulated trajectory.
+  */
+   std::vector<int> _numReactants;
+  /**
+  * @brief [Internal Use] Uniform random number generator.
+  */
+   korali::distribution::univariate::Uniform* _uniformGenerator;
   /**
   * @brief [Termination Criteria] Max number of trajectory simulations.
   */
@@ -68,10 +81,22 @@ class SSM : public Solver
   
 
   /**
+   * @brief Storage for the pointer to the (continuous) learning problem
+   */
+  problem::Reaction *_problem;
+  
+  /**
+   * @brief Resets the initial conditions of a new trajectory simulation.
+   */
+  void reset(std::vector<int> numReactants, double time = 0.);
+  
+  /**
    * @brief Simulates a trajectory for all reactants based on provided reactions.
    */
-  virtual void simulateTrajectory() = 0;
+  virtual void advance() = 0;
+  
 
+  void initialize() override;
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;

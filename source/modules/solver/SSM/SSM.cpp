@@ -9,14 +9,26 @@ namespace solver
 
 void SSM::initialize()
 {
+    _variableCount = _k->_variables.size();
     _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
+    _binCounter = std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0));
+    _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0)));
 }
-
 
 void SSM::reset(std::vector<int> numReactants, double time)
 {
     _time = time;
     _numReactants = std::move(numReactants);
+}
+
+void SSM::updateBins()
+{
+    size_t binIndex = _time * _simulationLength / (double) _diagnosticsNumBins;
+    for(size_t k = 0; k < _variableCount; k++)
+    {
+        _binCounter[_k->_currentGeneration-1][binIndex] += 1;
+        _binnedTrajectories[k][_k->_currentGeneration-1][binIndex] += _numReactants[k];
+    }
 }
 
 
@@ -25,16 +37,15 @@ void SSM::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   reset(_problem->_initialReactantNumbers);
+  updateBins();
 
   while (_time < _simulationLength)
   {
     //for (auto& d : diagnostics_)
         //d->collect(i, solver_->getTime(), solver_->getState());
     advance();
+    updateBins();
   }
-
-    //for (size_t i = 0; i < diagnostics_.size(); ++i)
-    //diagnostics_[i]->dump(dumpFiles_[i]);
 
 }
 
@@ -47,6 +58,23 @@ void SSM::printGenerationAfter()
 {
     // TODO
 }
+
+void SSM::finalize()
+{
+    //TODO
+    std::vector<std::vector<double>> resultsMeanTrajectory(_variableCount, std::vector<double>(_diagnosticsNumBins, 0.));
+    for(size_t k = 0; k < _variableCount; k++)
+    {
+        for(size_t idx = 0; idx < _diagnosticsNumBins; ++idx)
+        {
+            for(size_t sim = 0; sim < _maxNumSimulations; ++sim) if (_binCounter[sim][idx] > 0)
+                resultsMeanTrajectory[k][idx] += _binnedTrajectories[k][sim][idx] / _binCounter[sim][idx];
+            resultsMeanTrajectory[k][idx] /= _maxNumSimulations;
+        }
+    }
+
+}
+
 
 void SSM::setConfiguration(knlohmann::json& js) 
 {
@@ -75,6 +103,22 @@ void SSM::setConfiguration(knlohmann::json& js)
  _uniformGenerator->applyModuleDefaults(js["Uniform Generator"]);
  _uniformGenerator->setConfiguration(js["Uniform Generator"]);
    eraseValue(js, "Uniform Generator");
+ }
+
+ if (isDefined(js, "Bin Counter"))
+ {
+ try { _binCounter = js["Bin Counter"].get<std::vector<std::vector<int>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Bin Counter']\n%s", e.what()); } 
+   eraseValue(js, "Bin Counter");
+ }
+
+ if (isDefined(js, "Binned Trajectories"))
+ {
+ try { _binnedTrajectories = js["Binned Trajectories"].get<std::vector<std::vector<std::vector<int>>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Binned Trajectories']\n%s", e.what()); } 
+   eraseValue(js, "Binned Trajectories");
  }
 
  if (isDefined(js, "Simulation Length"))
@@ -123,6 +167,8 @@ void SSM::getConfiguration(knlohmann::json& js)
    js["Time"] = _time;
    js["Num Reactants"] = _numReactants;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
+   js["Bin Counter"] = _binCounter;
+   js["Binned Trajectories"] = _binnedTrajectories;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Solver::getConfiguration(js);

@@ -9,11 +9,8 @@ class __className__ : public __parentClassName__
   public:
   std::vector<double> _cumPropensities;
   
-  void setInitialConfiguration() override;
-  
   void advance() override;
   
-  void finalize() override;
 };
 
 __endNamespace__;

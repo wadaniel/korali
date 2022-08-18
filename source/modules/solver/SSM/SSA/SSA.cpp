@@ -8,12 +8,6 @@ namespace ssm
 {
 ;
 
-void SSA::setInitialConfiguration()
-{
-    //TODO
-    _variableCount = _k->_variables.size();
-}
-
 void SSA::advance()
 {
     _cumPropensities.resize(_problem->_reactions.size());
@@ -53,11 +47,6 @@ void SSA::advance()
     // Update the reactants according to chosen reaction
     _problem->applyChanges(selection, _numReactants);
 
-}
-
-void SSA::finalize()
-{
-    //TODO
 }
 
 void SSA::setConfiguration(knlohmann::json& js) 

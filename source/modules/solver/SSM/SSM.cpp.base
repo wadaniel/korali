@@ -2,12 +2,36 @@
 
 __startNamespace__;
 
-void simulateTrajectory() { return; }
+
+void __className__::initialize()
+{
+    _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
+}
+
+
+void __className__::reset(std::vector<int> numReactants, double time)
+{
+    _time = time;
+    _numReactants = std::move(numReactants);
+}
+
 
 void __className__::runGeneration()
 {
-  // TODO
   if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  reset(_problem->_initialReactantNumbers);
+
+  while (_time < _simulationLength)
+  {
+    //for (auto& d : diagnostics_)
+        //d->collect(i, solver_->getTime(), solver_->getState());
+    advance();
+  }
+
+    //for (size_t i = 0; i < diagnostics_.size(); ++i)
+    //diagnostics_[i]->dump(dumpFiles_[i]);
+
 }
 
 void __className__::printGenerationBefore() 

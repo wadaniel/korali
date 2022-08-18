@@ -56,10 +56,11 @@ class SSA : public SSM
   void applyVariableDefaults() override;
   
 
+  std::vector<double> _cumPropensities;
   
   void setInitialConfiguration() override;
   
-  void simulateTrajectory() override;
+  void advance() override;
   
   void finalize() override;
 };

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "modules/solver/solver.hpp"
-#include "modules/distribution/univariate/exponential/exponential.hpp"
+#include "modules/problem/reaction/reaction.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
 
 __startNamespace__;
 
@@ -9,10 +10,22 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
+   * @brief Storage for the pointer to the (continuous) learning problem
+   */
+  problem::Reaction *_problem;
+  
+  /**
+   * @brief Resets the initial conditions of a new trajectory simulation.
+   */
+  void reset(std::vector<int> numReactants, double time = 0.);
+  
+  /**
    * @brief Simulates a trajectory for all reactants based on provided reactions.
    */
-  virtual void simulateTrajectory() = 0;
+  virtual void advance() = 0;
+  
 
+  void initialize() override;
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;

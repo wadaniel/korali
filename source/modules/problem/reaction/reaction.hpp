@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "auxiliar/reactionParser.hpp"
 #include "modules/problem/problem.hpp"
 
 namespace korali
@@ -21,19 +22,82 @@ namespace problem
 ;
 
 /**
+ * @brief Structure to store reaction information
+ */
+struct reaction_t
+{
+  /**
+   * @brief The rate of the reaction.
+   */
+   double rate;
+  
+  /**
+   * @brief TODO
+   */
+   std::vector<int> reactantIds;
+
+  /**
+   * @brief TODO
+   */
+   std::vector<int> reactantStoichiometries;
+  
+  /**
+   * @brief TODO
+   */
+   std::vector<int> productIds;
+
+  /**
+   * @brief TODO
+   */
+   std::vector<int> productStoichiometries;
+  
+  /**
+   * @brief TODO
+   */
+   std::vector<bool> isReactantReservoir = {};
+  
+  /**
+   * @brief Constructor for type reaction_t.
+   */
+   reaction_t(double rate,
+                std::vector<int> reactantIds,
+                std::vector<int> reactantSCs,
+                std::vector<int> productIds,
+                std::vector<int> productSCs,
+                std::vector<bool> isReactantReservoir)
+           : rate(rate)
+                 , reactantIds(std::move(reactantIds))
+                 , reactantStoichiometries(std::move(reactantSCs))
+                 , productIds(std::move(productIds))
+                 , productStoichiometries(std::move(productSCs))
+                 , isReactantReservoir(std::move(isReactantReservoir))
+            {
+                if (this->reactantIds.size() > 0 && this->isReactantReservoir.size() == 0)
+                {
+                    this->isReactantReservoir.resize(this->reactantIds.size());
+                    this->isReactantReservoir.assign(this->reactantIds.size(), false);
+                }
+            } 
+};
+
+/**
 * @brief Class declaration for module: Reaction.
 */
 class Reaction : public Problem
 {
   public: 
   /**
-  * @brief Total duration of stochastic reaction simulation.
-  */
-   double _simulationLength;
-  /**
   * @brief [Internal Use] Complete description of all reactions.
   */
    knlohmann::json _reactions;
+  /**
+  * @brief [Internal Use] Maps the reactants name to an internal index.
+  */
+   std::map<std::string, int> _reactantNameToIndexMap;
+  /**
+  * @brief [Internal Use] Maps the reactants name to an internal index.
+  */
+   std::vector<int> _initialReactantNumbers;
   
  
   /**
@@ -57,7 +121,13 @@ class Reaction : public Problem
   void applyVariableDefaults() override;
   
 
+    std::vector<reaction_t> _reactionVector;
+    
     void initialize() override;
+
+    double computePropensity(size_t reactionIndex, std::vector<int>& reactantNumbers) const;
+
+    void applyChanges(size_t reactionIndex, std::vector<int>& reactantNumbers, int numFirings = 1) const;
 };
 
 } //problem

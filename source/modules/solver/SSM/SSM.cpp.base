@@ -6,7 +6,8 @@ void simulateTrajectory() { return; }
 
 void __className__::runGeneration()
 {
-    // TODO
+  // TODO
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
 }
 
 void __className__::printGenerationBefore() 

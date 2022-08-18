@@ -10,11 +10,27 @@ namespace problem
 void Reaction::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Reaction problems require at least one variable.\n");
+
+  // Parsing user-defined reactions
+  for (size_t i = 0; i < _reactions.size(); i++)
+  {
+    std::string eq = _reactions[i]["Equation"];
+    printf("Equation: %s\n", eq.c_str());
+  }
+
+
 }
 
 void Reaction::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
+
+ if (isDefined(js, "Reactions"))
+ {
+ _reactions = js["Reactions"].get<knlohmann::json>();
+
+   eraseValue(js, "Reactions");
+ }
 
  if (isDefined(js, "Simulation Length"))
  {
@@ -57,6 +73,7 @@ void Reaction::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Simulation Length"] = _simulationLength;
+   js["Reactions"] = _reactions;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
    _k->_js["Variables"][i]["Initial Reactant Number"] = _k->_variables[i]->_initialReactantNumber;
  } 

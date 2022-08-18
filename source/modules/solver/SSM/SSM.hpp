@@ -28,10 +28,6 @@ class SSM : public Solver
 {
   public: 
   /**
-  * @brief Number of simulations.
-  */
-   size_t _numSimulations;
-  /**
   * @brief Number of bins to calculate the mean trajectory at termination.
   */
    size_t _numBins;
@@ -39,6 +35,10 @@ class SSM : public Solver
   * @brief [Internal Use] Exponential random number generator.
   */
    korali::distribution::univariate::Exponential* _exponentialGenerator;
+  /**
+  * @brief [Termination Criteria] Max number of trajectory simulations.
+  */
+   size_t _maxNumSimulations;
   
  
   /**

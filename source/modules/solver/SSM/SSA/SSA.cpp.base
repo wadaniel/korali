@@ -5,6 +5,7 @@ __startNamespace__;
 void __className__::setInitialConfiguration()
 {
     //TODO
+    _variableCount = _k->_variables.size();
 }
 
 void __className__::simulateTrajectory()

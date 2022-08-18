@@ -15,7 +15,12 @@ e = korali.Experiment()
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Reaction"
+e["Problem"]["Reactions"][0]["Equation"] = "S+I->2I"
+e["Problem"]["Reactions"][0]["Rate"] = 0.0005
+e["Problem"]["Reactions"][1]["Equation"] = "I->R"
+e["Problem"]["Reactions"][1]["Rate"] = 0.2
 e["Problem"]["Simulation Length"] = 10.
+
 
 e["Variables"][0]["Name"] = "S"
 e["Variables"][0]["Initial Reactant Number"] = 5000
@@ -26,13 +31,10 @@ e["Variables"][1]["Initial Reactant Number"] = 5
 e["Variables"][2]["Name"] = "R"
 e["Variables"][2]["Initial Reactant Number"] = 0
 
-
 # Configuring SSA parameters
-#e["Solver"]["Type"] = "Optimizer/CMAES"
-#e["Solver"]["Population Size"] = 8
-#e["Solver"]["Mu Value"] = 4
-#e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
-#e["Solver"]["Termination Criteria"]["Max Generations"] = 20
+e["Solver"]["Type"] = "SSM/SSA"
+e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 10
+e["Solver"]["Num Bins"] = 100
 
 # Configuring results path
 e["File Output"]["Enabled"] = True

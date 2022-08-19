@@ -10,11 +10,11 @@ namespace problem
 void Reaction::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Reaction problems require at least one variable.\n");
-    
+
   for (size_t idx = 0; idx < _k->_variables.size(); ++idx)
   {
-        _reactantNameToIndexMap[_k->_variables[idx]->_name] = idx;
-        _initialReactantNumbers.push_back(_k->_variables[idx]->_initialReactantNumber);
+    _reactantNameToIndexMap[_k->_variables[idx]->_name] = idx;
+    _initialReactantNumbers.push_back(_k->_variables[idx]->_initialReactantNumber);
   }
 
   // Parsing user-defined reactions
@@ -25,68 +25,66 @@ void Reaction::initialize()
 
     auto reaction = parseReactionString(eq);
     std::vector<int> reactantIds, productIds;
-    for (auto& name : reaction.reactantNames)
-        reactantIds.push_back(_reactantNameToIndexMap[name]);
-    for (auto& name : reaction.productNames)
-        productIds.push_back(_reactantNameToIndexMap[name]);
-    
-    _reactionVector.emplace_back(rate, 
-            std::move(reactantIds), std::move(reaction.reactantSCs),
-            std::move(productIds), std::move(reaction.productSCs),
-            std::move(reaction.isReactantReservoir));
+    for (auto &name : reaction.reactantNames)
+      reactantIds.push_back(_reactantNameToIndexMap[name]);
+    for (auto &name : reaction.productNames)
+      productIds.push_back(_reactantNameToIndexMap[name]);
+
+    _reactionVector.emplace_back(rate,
+                                 std::move(reactantIds),
+                                 std::move(reaction.reactantSCs),
+                                 std::move(productIds),
+                                 std::move(reaction.productSCs),
+                                 std::move(reaction.isReactantReservoir));
+  }
+}
+
+double Reaction::computePropensity(size_t reactionIndex, std::vector<int> &reactantNumbers) const
+{
+  const auto &reaction = _reactionVector[reactionIndex];
+
+  double propensity = reaction.rate;
+
+  for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+  {
+    const int nu = reaction.reactantStoichiometries[s];
+    const int x = reactantNumbers[reaction.reactantIds[s]];
+
+    int numerator = x;
+    int denominator = nu;
+
+    for (int k = 1; k < nu; ++k)
+    {
+      numerator *= x - k;
+      denominator *= k;
+    }
+
+    propensity *= (double)numerator / denominator;
   }
 
-
+  return propensity;
 }
 
-double Reaction::computePropensity(size_t reactionIndex, std::vector<int>& reactantNumbers) const
+void Reaction::applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings) const
 {
-    const auto& reaction = _reactionVector[reactionIndex];
-    
-    double propensity = reaction.rate;
+  const auto &reaction = _reactionVector[reactionIndex];
 
-    for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
-    {
-        const int nu = reaction.reactantStoichiometries[s];
-        const int x = reactantNumbers[reaction.reactantIds[s]];
+  for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+  {
+    if (!reaction.isReactantReservoir[s])
+      reactantNumbers[reaction.reactantIds[s]] -= numFirings * reaction.reactantStoichiometries[s];
+  }
 
-        int numerator   = x;
-        int denominator = nu;
+  for (size_t s = 0; s < reaction.productIds.size(); ++s)
+  {
+    reactantNumbers[reaction.productIds[s]] += numFirings * reaction.productStoichiometries[s];
+  }
 
-        for (int k = 1; k < nu; ++k)
-        {
-            numerator   *= x - k;
-            denominator *= k;
-        }
-
-        propensity *= (double) numerator / denominator;
-    }
-
-    return propensity;
-}
-
-
-void Reaction::applyChanges(size_t reactionIndex, std::vector<int>& reactantNumbers, int numFirings) const
-{
-    const auto& reaction = _reactionVector[reactionIndex];
-
-    for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
-    {
-        if (!reaction.isReactantReservoir[s])
-            reactantNumbers[reaction.reactantIds[s]] -= numFirings * reaction.reactantStoichiometries[s];
-    }
-
-
-    for (size_t s = 0; s < reaction.productIds.size(); ++s)
-    {
-        reactantNumbers[reaction.productIds[s]] += numFirings * reaction.productStoichiometries[s];
-    }
-    
-    int total = 0;
-    for (size_t s = 0; s < reactantNumbers.size(); ++s)
-    {
-        total += reactantNumbers[s];
-    }
+  int total = 0;
+  for (size_t s = 0; s < reactantNumbers.size(); ++s)
+  {
+    total += reactantNumbers[s];
+  }
 }
 
 void Reaction::setConfiguration(knlohmann::json& js) 

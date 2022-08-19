@@ -8,9 +8,8 @@ class __className__ : public __parentClassName__
 {
   public:
   std::vector<double> _cumPropensities;
-  
+
   void advance() override;
-  
 };
 
 __endNamespace__;

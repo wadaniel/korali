@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include "modules/solver/solver.hpp"
-#include "modules/problem/reaction/reaction.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/problem/reaction/reaction.hpp"
+#include "modules/solver/solver.hpp"
 
 namespace korali
 {
@@ -104,17 +104,17 @@ class SSM : public Solver
    * @brief Storage for the pointer to the (continuous) learning problem
    */
   problem::Reaction *_problem;
-  
+
   /**
    * @brief Resets the initial conditions of a new trajectory simulation.
    */
   void reset(std::vector<int> numReactants, double time = 0.);
-  
+
   /**
    * @brief Simulates a trajectory for all reactants based on provided reactions.
    */
   virtual void advance() = 0;
-   
+
   /**
    * @brief Updates the values of the binned trajectories for each reactant.
    */
@@ -125,7 +125,6 @@ class SSM : public Solver
   void printGenerationBefore() override;
   void printGenerationAfter() override;
   void finalize() override;
-
 };
 
 } //solver

@@ -34,7 +34,7 @@ e["Solver"]["Type"] = "SSM/SSA"
 e["Solver"]["Simulation Length"] = 20.
 e["Solver"]["Simulations Per Generation"] = 100
 e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1000
-e["Solver"]["Diagnostics"]["Num Bins"] = 100
+e["Solver"]["Diagnostics"]["Num Bins"] = 500
 
 # Configuring results path
 e["File Output"]["Enabled"] = True

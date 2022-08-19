@@ -10,43 +10,42 @@ namespace ssm
 
 void SSA::advance()
 {
-    _cumPropensities.resize(_problem->_reactions.size());
-    
-    double a0 = 0.0;
+  _cumPropensities.resize(_problem->_reactions.size());
 
-    // Calculate propensities
-    for (size_t k = 0; k < _problem->_reactions.size(); ++k)
-    {
-        const double a = _problem->computePropensity(k, _numReactants);
+  double a0 = 0.0;
 
-        a0 += a;
-        _cumPropensities[k] = a0;
-    }
+  // Calculate propensities
+  for (size_t k = 0; k < _problem->_reactions.size(); ++k)
+  {
+    const double a = _problem->computePropensity(k, _numReactants);
 
-    // Sample time step from exponential distribution
-    const double r1 = _uniformGenerator->getRandomNumber();
+    a0 += a;
+    _cumPropensities[k] = a0;
+  }
 
-    double tau = -std::log(r1) / a0;
-    
-    // Advance time
-    _time += tau;
-    
-    if (_time > _simulationLength)
-        _time = _simulationLength;
+  // Sample time step from exponential distribution
+  const double r1 = _uniformGenerator->getRandomNumber();
 
-    if (a0 == 0)
-        return;
+  double tau = -std::log(r1) / a0;
 
-    const double r2 = _cumPropensities.back() * _uniformGenerator->getRandomNumber();
+  // Advance time
+  _time += tau;
 
-    // Sample a reaction
-    size_t selection = 0;
-    while(r2 > _cumPropensities[selection])
-        selection++;
-     
-    // Update the reactants according to chosen reaction
-    _problem->applyChanges(selection, _numReactants);
+  if (_time > _simulationLength)
+    _time = _simulationLength;
 
+  if (a0 == 0)
+    return;
+
+  const double r2 = _cumPropensities.back() * _uniformGenerator->getRandomNumber();
+
+  // Sample a reaction
+  size_t selection = 0;
+  while (r2 > _cumPropensities[selection])
+    selection++;
+
+  // Update the reactants according to chosen reaction
+  _problem->applyChanges(selection, _numReactants);
 }
 
 void SSA::setConfiguration(knlohmann::json& js) 

@@ -6,90 +6,88 @@ namespace solver
 {
 ;
 
-
 void SSM::initialize()
 {
-    _variableCount = _k->_variables.size();
-    _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
+  _variableCount = _k->_variables.size();
+  _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
 
-    // Initialize bins
-    double dt = _simulationLength / (double) _diagnosticsNumBins;
-    _binTime.resize(_diagnosticsNumBins);
-    std::generate(_binTime.begin(), _binTime.end(), [idx = 0, dt]() mutable { return idx++ * dt; });
+  // Initialize bins
+  double dt = _simulationLength / (double)_diagnosticsNumBins;
+  _binTime.resize(_diagnosticsNumBins);
+  std::generate(_binTime.begin(), _binTime.end(), [idx = 0, dt]() mutable {
+    return idx++ * dt;
+  });
 
-    _binCounter = std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0));
-    _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0)));
+  _binCounter = std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0));
+  _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0)));
 }
 
 void SSM::reset(std::vector<int> numReactants, double time)
 {
-    _time = time;
-    _numReactants = std::move(numReactants);
+  _time = time;
+  _numReactants = std::move(numReactants);
 }
 
 void SSM::updateBins()
 {
-    size_t binIndex = _time / _simulationLength * _diagnosticsNumBins;
-    _binCounter[_completedSimulations][binIndex] += 1;
-    
-    for(size_t k = 0; k < _variableCount; k++)
-    {
-        _binnedTrajectories[k][_completedSimulations][binIndex] += _numReactants[k];
-    }
-}
+  size_t binIndex = _time / _simulationLength * _diagnosticsNumBins;
+  _binCounter[_completedSimulations][binIndex] += 1;
 
+  for (size_t k = 0; k < _variableCount; k++)
+  {
+    _binnedTrajectories[k][_completedSimulations][binIndex] += _numReactants[k];
+  }
+}
 
 void SSM::runGeneration()
 {
   if (_k->_currentGeneration == 0)
   {
-    _completedSimulations = 0;     
+    _completedSimulations = 0;
   }
 
-  for(size_t run = 0; run < _simulationsPerGeneration; ++run)
+  for (size_t run = 0; run < _simulationsPerGeneration; ++run)
   {
-
     reset(_problem->_initialReactantNumbers);
     updateBins();
 
     while (_time < _simulationLength)
     {
-        advance();
-        updateBins();
+      advance();
+      updateBins();
     }
 
     _completedSimulations++;
 
     if (_completedSimulations >= _maxNumSimulations) return;
   }
-
 }
 
 void SSM::printGenerationBefore() { return; }
 
 void SSM::printGenerationAfter()
 {
-    _k->_logger->logInfo("Normal", "Completed Simulations: %zu\n", _completedSimulations);
+  _k->_logger->logInfo("Normal", "Completed Simulations: %zu\n", _completedSimulations);
 }
 
 void SSM::finalize()
 {
-    //TODO
-    std::vector<std::vector<double>> resultsMeanTrajectory(_variableCount, std::vector<double>(_diagnosticsNumBins, 0.));
-    for(size_t k = 0; k < _variableCount; k++)
+  //TODO
+  std::vector<std::vector<double>> resultsMeanTrajectory(_variableCount, std::vector<double>(_diagnosticsNumBins, 0.));
+  for (size_t k = 0; k < _variableCount; k++)
+  {
+    for (size_t idx = 0; idx < _diagnosticsNumBins; ++idx)
     {
-        for(size_t idx = 0; idx < _diagnosticsNumBins; ++idx)
-        {
-            for(size_t sim = 0; sim < _maxNumSimulations; ++sim) if (_binCounter[sim][idx] > 0)
-                resultsMeanTrajectory[k][idx] += _binnedTrajectories[k][sim][idx] / _binCounter[sim][idx];
-            resultsMeanTrajectory[k][idx] /= _maxNumSimulations;
-        }
+      for (size_t sim = 0; sim < _maxNumSimulations; ++sim)
+        if (_binCounter[sim][idx] > 0)
+          resultsMeanTrajectory[k][idx] += _binnedTrajectories[k][sim][idx] / _binCounter[sim][idx];
+      resultsMeanTrajectory[k][idx] /= _maxNumSimulations;
     }
+  }
 
   (*_k)["Results"]["Time"] = _binTime;
   (*_k)["Results"]["Mean Trajectory"] = resultsMeanTrajectory;
 }
-
 
 void SSM::setConfiguration(knlohmann::json& js) 
 {

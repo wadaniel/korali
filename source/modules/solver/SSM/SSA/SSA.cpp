@@ -34,6 +34,7 @@ void SSA::advance()
   if (_time > _simulationLength)
     _time = _simulationLength;
 
+  // Exit if no reactions fire
   if (a0 == 0)
     return;
 

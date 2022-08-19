@@ -10,12 +10,14 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
-   * @brief Storage for the pointer to the (continuous) learning problem
+   * @brief Storage for the pointer to the reaction problem
    */
   problem::Reaction *_problem;
 
   /**
    * @brief Resets the initial conditions of a new trajectory simulation.
+   * @param numReactants initial reactants for new simulation
+   * @param time starting time of new simulation
    */
   void reset(std::vector<int> numReactants, double time = 0.);
 

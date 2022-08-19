@@ -108,7 +108,7 @@ class Agent : public Solver
   */
    size_t _concurrentWorkers;
   /**
-  * @brief Indicates how many episodes to complete in a generation (checkpoints are generated between generations).
+  * @brief Number of reinforcement learning episodes per Korali generation (checkpoints are generated between generations).
   */
    size_t _episodesPerGeneration;
   /**

@@ -37,6 +37,10 @@ class SSM : public Solver
   */
    size_t _diagnosticsNumBins;
   /**
+  * @brief Number of trajectory simulations per Korali generation (checkpoints are generated between generations).
+  */
+   size_t _simulationsPerGeneration;
+  /**
   * @brief [Internal Use] The current time of the simulated trajectory.
   */
    double _time;
@@ -49,6 +53,10 @@ class SSM : public Solver
   */
    korali::distribution::univariate::Uniform* _uniformGenerator;
   /**
+  * @brief [Internal Use] The simulation time associated to each bin.
+  */
+   std::vector<double> _binTime;
+  /**
   * @brief [Internal Use] Stores the number of reactants per bin for each trajectory and reactant.
   */
    std::vector<std::vector<int>> _binCounter;
@@ -56,6 +64,10 @@ class SSM : public Solver
   * @brief [Internal Use] Stores the number of reactants per bin for each trajectory and reactant.
   */
    std::vector<std::vector<std::vector<int>>> _binnedTrajectories;
+  /**
+  * @brief [Internal Use] Counter that keeps track of completed simulations.
+  */
+   size_t _completedSimulations;
   /**
   * @brief [Termination Criteria] Max number of trajectory simulations.
   */

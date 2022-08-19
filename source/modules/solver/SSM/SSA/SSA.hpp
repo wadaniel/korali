@@ -56,6 +56,9 @@ class SSA : public SSM
   void applyVariableDefaults() override;
   
 
+  /**
+   * @brief Storage for cumulative propensities during each step
+   */
   std::vector<double> _cumPropensities;
 
   void advance() override;

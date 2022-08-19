@@ -11,6 +11,12 @@ void SSM::initialize()
 {
     _variableCount = _k->_variables.size();
     _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
+
+    // Initialize bins
+    double dt = _simulationLength / (double) _diagnosticsNumBins;
+    _binTime.resize(_diagnosticsNumBins);
+    std::generate(_binTime.begin(), _binTime.end(), [idx = 0, dt]() mutable { return idx++ * dt; });
+
     _binCounter = std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0));
     _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0)));
 }
@@ -23,40 +29,47 @@ void SSM::reset(std::vector<int> numReactants, double time)
 
 void SSM::updateBins()
 {
-    size_t binIndex = _time * _simulationLength / (double) _diagnosticsNumBins;
+    size_t binIndex = _time / _simulationLength * _diagnosticsNumBins;
+    _binCounter[_completedSimulations][binIndex] += 1;
+    
     for(size_t k = 0; k < _variableCount; k++)
     {
-        _binCounter[_k->_currentGeneration-1][binIndex] += 1;
-        _binnedTrajectories[k][_k->_currentGeneration-1][binIndex] += _numReactants[k];
+        _binnedTrajectories[k][_completedSimulations][binIndex] += _numReactants[k];
     }
 }
 
 
 void SSM::runGeneration()
 {
-  if (_k->_currentGeneration == 1) setInitialConfiguration();
-
-  reset(_problem->_initialReactantNumbers);
-  updateBins();
-
-  while (_time < _simulationLength)
+  if (_k->_currentGeneration == 0)
   {
-    //for (auto& d : diagnostics_)
-        //d->collect(i, solver_->getTime(), solver_->getState());
-    advance();
+    _completedSimulations = 0;     
+  }
+
+  for(size_t run = 0; run < _simulationsPerGeneration; ++run)
+  {
+
+    reset(_problem->_initialReactantNumbers);
     updateBins();
+
+    while (_time < _simulationLength)
+    {
+        advance();
+        updateBins();
+    }
+
+    _completedSimulations++;
+
+    if (_completedSimulations >= _maxNumSimulations) return;
   }
 
 }
 
-void SSM::printGenerationBefore() 
-{ 
-    // TODO
-}
+void SSM::printGenerationBefore() { return; }
 
 void SSM::printGenerationAfter()
 {
-    // TODO
+    _k->_logger->logInfo("Normal", "Completed Simulations: %zu\n", _completedSimulations);
 }
 
 void SSM::finalize()
@@ -73,6 +86,8 @@ void SSM::finalize()
         }
     }
 
+  (*_k)["Results"]["Time"] = _binTime;
+  (*_k)["Results"]["Mean Trajectory"] = resultsMeanTrajectory;
 }
 
 
@@ -105,6 +120,14 @@ void SSM::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Uniform Generator");
  }
 
+ if (isDefined(js, "Bin Time"))
+ {
+ try { _binTime = js["Bin Time"].get<std::vector<double>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Bin Time']\n%s", e.what()); } 
+   eraseValue(js, "Bin Time");
+ }
+
  if (isDefined(js, "Bin Counter"))
  {
  try { _binCounter = js["Bin Counter"].get<std::vector<std::vector<int>>>();
@@ -119,6 +142,14 @@ void SSM::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Binned Trajectories']\n%s", e.what()); } 
    eraseValue(js, "Binned Trajectories");
+ }
+
+ if (isDefined(js, "Completed Simulations"))
+ {
+ try { _completedSimulations = js["Completed Simulations"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Completed Simulations']\n%s", e.what()); } 
+   eraseValue(js, "Completed Simulations");
  }
 
  if (isDefined(js, "Simulation Length"))
@@ -138,6 +169,15 @@ void SSM::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Diagnostics", "Num Bins");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Diagnostics']['Num Bins'] required by SSM.\n"); 
+
+ if (isDefined(js, "Simulations Per Generation"))
+ {
+ try { _simulationsPerGeneration = js["Simulations Per Generation"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Simulations Per Generation']\n%s", e.what()); } 
+   eraseValue(js, "Simulations Per Generation");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Simulations Per Generation'] required by SSM.\n"); 
 
  if (isDefined(js, "Termination Criteria", "Max Num Simulations"))
  {
@@ -163,12 +203,15 @@ void SSM::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Simulation Length"] = _simulationLength;
    js["Diagnostics"]["Num Bins"] = _diagnosticsNumBins;
+   js["Simulations Per Generation"] = _simulationsPerGeneration;
    js["Termination Criteria"]["Max Num Simulations"] = _maxNumSimulations;
    js["Time"] = _time;
    js["Num Reactants"] = _numReactants;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
+   js["Bin Time"] = _binTime;
    js["Bin Counter"] = _binCounter;
    js["Binned Trajectories"] = _binnedTrajectories;
+   js["Completed Simulations"] = _completedSimulations;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Solver::getConfiguration(js);
@@ -177,7 +220,7 @@ void SSM::getConfiguration(knlohmann::json& js)
 void SSM::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Diagnostics\": {\"Num Bins\": 100}, \"Termination Criteria\": {\"Max Num Simulations\": 1}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Simulations Per Generation\": 1, \"Diagnostics\": {\"Num Bins\": 100}, \"Termination Criteria\": {\"Max Num Simulations\": 1}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Solver::applyModuleDefaults(js);
@@ -198,7 +241,7 @@ bool SSM::checkTermination()
 {
  bool hasFinished = false;
 
- if (_maxNumSimulations < _k->_currentGeneration)
+ if (_maxNumSimulations <= _completedSimulations)
  {
   _terminationCriteria.push_back("SSM['Max Num Simulations'] = " + std::to_string(_maxNumSimulations) + ".");
   hasFinished = true;

@@ -7,6 +7,12 @@ void __className__::initialize()
 {
     _variableCount = _k->_variables.size();
     _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
+
+    // Initialize bins
+    double dt = _simulationLength / (double) _diagnosticsNumBins;
+    _binTime.resize(_diagnosticsNumBins);
+    std::generate(_binTime.begin(), _binTime.end(), [idx = 0, dt]() mutable { return idx++ * dt; });
+
     _binCounter = std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0));
     _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations,std::vector<int>(_diagnosticsNumBins, 0)));
 }
@@ -19,40 +25,47 @@ void __className__::reset(std::vector<int> numReactants, double time)
 
 void __className__::updateBins()
 {
-    size_t binIndex = _time * _simulationLength / (double) _diagnosticsNumBins;
+    size_t binIndex = _time / _simulationLength * _diagnosticsNumBins;
+    _binCounter[_completedSimulations][binIndex] += 1;
+    
     for(size_t k = 0; k < _variableCount; k++)
     {
-        _binCounter[_k->_currentGeneration-1][binIndex] += 1;
-        _binnedTrajectories[k][_k->_currentGeneration-1][binIndex] += _numReactants[k];
+        _binnedTrajectories[k][_completedSimulations][binIndex] += _numReactants[k];
     }
 }
 
 
 void __className__::runGeneration()
 {
-  if (_k->_currentGeneration == 1) setInitialConfiguration();
-
-  reset(_problem->_initialReactantNumbers);
-  updateBins();
-
-  while (_time < _simulationLength)
+  if (_k->_currentGeneration == 0)
   {
-    //for (auto& d : diagnostics_)
-        //d->collect(i, solver_->getTime(), solver_->getState());
-    advance();
+    _completedSimulations = 0;     
+  }
+
+  for(size_t run = 0; run < _simulationsPerGeneration; ++run)
+  {
+
+    reset(_problem->_initialReactantNumbers);
     updateBins();
+
+    while (_time < _simulationLength)
+    {
+        advance();
+        updateBins();
+    }
+
+    _completedSimulations++;
+
+    if (_completedSimulations >= _maxNumSimulations) return;
   }
 
 }
 
-void __className__::printGenerationBefore() 
-{ 
-    // TODO
-}
+void __className__::printGenerationBefore() { return; }
 
 void __className__::printGenerationAfter()
 {
-    // TODO
+    _k->_logger->logInfo("Normal", "Completed Simulations: %zu\n", _completedSimulations);
 }
 
 void __className__::finalize()
@@ -69,6 +82,8 @@ void __className__::finalize()
         }
     }
 
+  (*_k)["Results"]["Time"] = _binTime;
+  (*_k)["Results"]["Mean Trajectory"] = resultsMeanTrajectory;
 }
 
 

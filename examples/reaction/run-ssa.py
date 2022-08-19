@@ -13,7 +13,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem
-e["Random Seed"] = 0xC0FEE
+e["Random Seed"] = 0xC001
 e["Problem"]["Type"] = "Reaction"
 e["Problem"]["Reactions"][0]["Equation"] = "S+I->2I"
 e["Problem"]["Reactions"][0]["Rate"] = 0.0005
@@ -32,6 +32,7 @@ e["Variables"][2]["Initial Reactant Number"] = 0
 # Configuring SSA parameters
 e["Solver"]["Type"] = "SSM/SSA"
 e["Solver"]["Simulation Length"] = 20.
+e["Solver"]["Simulations Per Generation"] = 100
 e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1000
 e["Solver"]["Diagnostics"]["Num Bins"] = 100
 

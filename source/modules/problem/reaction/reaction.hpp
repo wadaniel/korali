@@ -120,7 +120,8 @@ class Reaction : public Problem
 
   void initialize() override;
 
-  double computePropensity(size_t reactionIndex, std::vector<int> &reactantNumbers) const;
+  double computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
+  double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
 
   void applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings = 1) const;
 };

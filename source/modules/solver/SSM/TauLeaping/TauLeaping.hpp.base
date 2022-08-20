@@ -8,9 +8,19 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
-   * @brief Storage for cumulative propensities during each step
+   * @brief Storage for propensities of reactions during each step
    */
-  std::vector<double> _cumPropensities;
+  std::vector<double> _propensities;
+ 
+  /**
+   * @brief Storage for critical reaction marker during each step
+   */
+  std::vector<double> _isCriticalReaction;
+
+  /**
+   * @brief Function to calculate largest Tau(???) TODO
+   */
+  double estimateLargestTau() const;
 
   void advance() override;
 };

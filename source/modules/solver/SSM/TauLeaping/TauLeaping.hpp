@@ -28,6 +28,22 @@ namespace ssm
 class TauLeaping : public SSM
 {
   public: 
+  /**
+  * @brief TODO.
+  */
+   int _nc;
+  /**
+  * @brief TODO.
+  */
+   double _eps;
+  /**
+  * @brief TODO.
+  */
+   double _acceptanceFactor;
+  /**
+  * @brief TODO.
+  */
+   int _numStepsSSA;
   
  
   /**
@@ -57,9 +73,19 @@ class TauLeaping : public SSM
   
 
   /**
-   * @brief Storage for cumulative propensities during each step
+   * @brief Storage for propensities of reactions during each step
    */
-  std::vector<double> _cumPropensities;
+  std::vector<double> _propensities;
+ 
+  /**
+   * @brief Storage for critical reaction marker during each step
+   */
+  std::vector<double> _isCriticalReaction;
+
+  /**
+   * @brief Function to calculate largest Tau(???) TODO
+   */
+  double estimateLargestTau() const;
 
   void advance() override;
 };

@@ -39,7 +39,7 @@ void Reaction::initialize()
   }
 }
 
-double Reaction::computePropensity(size_t reactionIndex, std::vector<int> &reactantNumbers) const
+double Reaction::computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const
 {
   const auto &reaction = _reactionVector[reactionIndex];
 
@@ -64,6 +64,15 @@ double Reaction::computePropensity(size_t reactionIndex, std::vector<int> &react
 
   return propensity;
 }
+
+double Reaction::calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const
+{
+
+ // TODO
+ return 0.;
+
+}
+
 
 void Reaction::applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings) const
 {

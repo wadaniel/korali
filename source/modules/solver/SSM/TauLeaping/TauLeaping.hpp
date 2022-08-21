@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "modules/distribution/univariate/poisson/poisson.hpp"
 #include "modules/solver/SSM/SSM.hpp"
 
 namespace korali
@@ -41,9 +42,13 @@ class TauLeaping : public SSM
   */
    double _acceptanceFactor;
   /**
-  * @brief TODO.
+  * @brief Number of intermediate SSA steps if leap step rejected.
   */
    int _numStepsSSA;
+  /**
+  * @brief [Internal Use] Poisson random number generator.
+  */
+   korali::distribution::univariate::Poisson* _poissonGenerator;
   
  
   /**
@@ -76,16 +81,33 @@ class TauLeaping : public SSM
    * @brief Storage for propensities of reactions during each step
    */
   std::vector<double> _propensities;
- 
+   
+  /**
+   * @brief Storage for cumulative propensities during each SSA step
+   */
+  std::vector<double> _cumPropensities;
+  
+  /**
+   * @brief Storage for number of firings per reaction per leap step
+   */
+  std::vector<double> _numFirings;
+
   /**
    * @brief Storage for critical reaction marker during each step
    */
   std::vector<double> _isCriticalReaction;
-
+  
+  /**
+   * @brief Storage for candidate reactants per leap step
+   */
+  std::vector<int> _candidateNumReactants;
+  
   /**
    * @brief Function to calculate largest Tau(???) TODO
    */
   double estimateLargestTau() const;
+
+  void ssaAdvance(); 
 
   void advance() override;
 };

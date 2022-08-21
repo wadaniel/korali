@@ -14,6 +14,9 @@ void __className__::initialize()
     return idx++ * dt;
   });
 
+  // Initialize number of reactions to simulate
+  _numReactions = _problem->_reactions.size();
+
   // Initialize bin related memory
   _binCounter = std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0));
   _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0)));

@@ -10,12 +10,12 @@ namespace ssm
 
 void SSA::advance()
 {
-  _cumPropensities.resize(_problem->_reactions.size());
+  _cumPropensities.resize(_numReactions);
 
   double a0 = 0.0;
 
   // Calculate propensities
-  for (size_t k = 0; k < _problem->_reactions.size(); ++k)
+  for (size_t k = 0; k < _numReactions; ++k)
   {
     const double a = _problem->computePropensity(k, _numReactants);
 

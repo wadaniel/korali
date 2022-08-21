@@ -3,11 +3,11 @@
 */
 
 /** \file
-* @brief Header file for module: Gamma.
+* @brief Header file for module: Poisson.
 */
 
-/** \dir distribution/univariate/gamma
-* @brief Contains code, documentation, and scripts for module: Gamma.
+/** \dir distribution/univariate/poisson
+* @brief Contains code, documentation, and scripts for module: Poisson.
 */
 
 #pragma once
@@ -23,28 +23,20 @@ namespace univariate
 ;
 
 /**
-* @brief Class declaration for module: Gamma.
+* @brief Class declaration for module: Poisson.
 */
-class Gamma : public Univariate
+class Poisson : public Univariate
 {
   private:
   public: 
   /**
-  * @brief [Conditional Variable Value] The shape parameter of the Gamma distribution, it controls the mean and skewness.
+  * @brief [Conditional Variable Value] The mean and variance of the distribution.
   */
-   double _shape;
+   double _mean;
   /**
-  * @brief [Conditional Variable Reference] The shape parameter of the Gamma distribution, it controls the mean and skewness.
+  * @brief [Conditional Variable Reference] The mean and variance of the distribution.
   */
-   std::string _shapeConditional;
-  /**
-  * @brief [Conditional Variable Value] The scale parameter of the Gamma distribution, it controls the mean.
-  */
-   double _scale;
-  /**
-  * @brief [Conditional Variable Reference] The scale parameter of the Gamma distribution, it controls the mean.
-  */
-   std::string _scaleConditional;
+   std::string _meanConditional;
   
  
   /**
@@ -75,7 +67,7 @@ class Gamma : public Univariate
   
 
   /*
-   * @brief Updates distribution with new parameter (here shape and scale).
+   * @brief Updates the mean of the distribution.
    */
   void updateDistribution() override;
 
@@ -91,7 +83,7 @@ class Gamma : public Univariate
    * @param x point to evaluate log(P(x))
    * @return Log of probability density.
    */
-  double getLogDensity(double x) const override;
+  double getLogDensity(const double x) const override;
 
   /**
    * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.

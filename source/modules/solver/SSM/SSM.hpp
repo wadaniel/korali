@@ -45,7 +45,11 @@ class SSM : public Solver
   */
    double _time;
   /**
-  * @brief [Internal Use] The current number of reactants in the simulated trajectory.
+  * @brief [Internal Use] The number of reactions to simulate.
+  */
+   size_t _numReactions;
+  /**
+  * @brief [Internal Use] The current number of each reactant in the simulated trajectory.
   */
    std::vector<int> _numReactants;
   /**

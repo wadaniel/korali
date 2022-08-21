@@ -16,6 +16,7 @@
 #include "distribution/univariate/laplace/laplace.hpp"
 #include "distribution/univariate/logNormal/logNormal.hpp"
 #include "distribution/univariate/normal/normal.hpp"
+#include "distribution/univariate/poisson/poisson.hpp"
 #include "distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
@@ -132,6 +133,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Univariate/Laplace")) module = new korali::distribution::univariate::Laplace();
   if (iCompare(moduleType, "Univariate/LogNormal")) module = new korali::distribution::univariate::LogNormal();
   if (iCompare(moduleType, "Univariate/Normal")) module = new korali::distribution::univariate::Normal();
+  if (iCompare(moduleType, "Univariate/Poisson")) module = new korali::distribution::univariate::Poisson();
   if (iCompare(moduleType, "Univariate/TruncatedNormal")) module = new korali::distribution::univariate::TruncatedNormal();
   if (iCompare(moduleType, "Univariate/Uniform")) module = new korali::distribution::univariate::Uniform();
   if (iCompare(moduleType, "Univariate/Weibull")) module = new korali::distribution::univariate::Weibull();

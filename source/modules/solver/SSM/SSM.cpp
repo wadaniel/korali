@@ -18,6 +18,9 @@ void SSM::initialize()
     return idx++ * dt;
   });
 
+  // Initialize number of reactions to simulate
+  _numReactions = _problem->_reactions.size();
+
   // Initialize bin related memory
   _binCounter = std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0));
   _binnedTrajectories = std::vector<std::vector<std::vector<int>>>(_variableCount, std::vector<std::vector<int>>(_maxNumSimulations, std::vector<int>(_diagnosticsNumBins, 0)));
@@ -110,6 +113,14 @@ void SSM::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Time']\n%s", e.what()); } 
    eraseValue(js, "Time");
+ }
+
+ if (isDefined(js, "Num Reactions"))
+ {
+ try { _numReactions = js["Num Reactions"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ SSM ] \n + Key:    ['Num Reactions']\n%s", e.what()); } 
+   eraseValue(js, "Num Reactions");
  }
 
  if (isDefined(js, "Num Reactants"))
@@ -215,6 +226,7 @@ void SSM::getConfiguration(knlohmann::json& js)
    js["Simulations Per Generation"] = _simulationsPerGeneration;
    js["Termination Criteria"]["Max Num Simulations"] = _maxNumSimulations;
    js["Time"] = _time;
+   js["Num Reactions"] = _numReactions;
    js["Num Reactants"] = _numReactants;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Bin Time"] = _binTime;

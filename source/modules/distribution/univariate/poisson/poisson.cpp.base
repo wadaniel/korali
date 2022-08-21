@@ -1,40 +1,40 @@
-#include "modules/distribution/univariate/exponential/exponential.hpp"
+#include "modules/distribution/univariate/poisson/poisson.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf.h>
 
 __startNamespace__;
 
 double __className__::getDensity(const double x) const
 {
-  return gsl_ran_exponential_pdf(x - _location, _mean);
+  return gsl_ran_poisson_pdf(x, _mean);
 }
 
 double __className__::getLogDensity(const double x) const
 {
-  if (x - _location < 0) return -INFINITY;
-  return -log(_mean) - (x - _location) / _mean;
+  return x*log(_mean) - log(gsl_sf_fact(x)) - _mean;
 }
 
 double __className__::getLogDensityGradient(const double x) const
 {
-  if (x - _location < 0) return 0.;
-  return -1.0 / _mean;
+  KORALI_LOG_ERROR("Gradient of discrete pdf %s not defined.\n", _name);
+  return 0.;
 }
 
 double __className__::getLogDensityHessian(const double x) const
 {
+  KORALI_LOG_ERROR("Hessian of discrete pdf %s not defined.\n", _name);
   return 0.;
 }
 
 double __className__::getRandomNumber()
 {
-  return _location + gsl_ran_exponential(_range, _mean);
+  return gsl_ran_poisson(_range, _mean);
 }
 
 void __className__::updateDistribution()
 {
-  _aux = 0.0;
-  if (_mean <= 0.0) KORALI_LOG_ERROR("Incorrect mean parameter of exponential distribution: %f.\n", _mean);
+  if (_mean <= 0.0) KORALI_LOG_ERROR("Incorrect mean parameter of poisson distribution: %f.\n", _mean);
 }
 
 __moduleAutoCode__;

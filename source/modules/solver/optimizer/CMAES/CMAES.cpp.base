@@ -584,19 +584,15 @@ void __className__::updateDistribution()
   if (_muType == "Proportional")
   {
     double valueSum = 0.;
-    double valueSquaredSum = 0.;
     for (size_t i = 0; i < _currentMuValue; ++i)
     {
       const double value = _valueVector[_sortingIndex[i]];
       _muWeights[i] = value;
       valueSum += value;
-      valueSquaredSum += value * value;
     }
 
     for (size_t i = 0; i < _currentMuValue; ++i)
       _muWeights[i] /= valueSum;
-
-    //_effectiveMu = valueSum * valueSum / valueSquaredSum;
   }
 
   /* update mean */

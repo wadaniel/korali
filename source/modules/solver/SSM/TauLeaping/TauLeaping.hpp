@@ -111,10 +111,14 @@ class TauLeaping : public SSM
   std::vector<int> _candidateNumReactants;
 
   /**
-   * @brief Function to calculate largest Tau(???) TODO
+   * @brief Estimate time step such that that many reaction events occur, but small enough that no propensity functin changes significantly
+   * @return tau time step duration
    */
   double estimateLargestTau();
 
+  /**
+   * @brief SSA advance step if leap step rejected.
+   */
   void ssaAdvance();
 
   void advance() override;

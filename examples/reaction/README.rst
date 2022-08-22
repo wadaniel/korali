@@ -60,7 +60,7 @@ The solver method, the simulation length, the number of simulated trajectories a
 Plotting
 --------
 
-You can see the averaged trajectories of the SSM by running the command 
+You can see the averaged trajectories of the SSM by running the command (trajectories are averaged in bins that have been previously defined)
 
 .. code-block:: console
     

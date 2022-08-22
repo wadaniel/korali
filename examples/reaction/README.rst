@@ -60,4 +60,7 @@ The solver method, the simulation length, the number of simulated trajectories a
 Plotting
 --------
 
-You can see the averaged trajectories of the SSM by running the command `python3 -m korali.plot --dir _korali_result_sir_ssa`
+You can see the averaged trajectories of the SSM by running the command 
+
+.. code-block:: console
+    python3 -m korali.plot --dir _korali_result_sir_ssa

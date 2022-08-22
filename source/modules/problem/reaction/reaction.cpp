@@ -17,6 +17,8 @@ void Reaction::initialize()
     _initialReactantNumbers.push_back(_k->_variables[idx]->_initialReactantNumber);
   }
 
+  std::vector<bool> used(_k->_variables.size(), false);
+
   // Parsing user-defined reactions
   for (size_t i = 0; i < _reactions.size(); i++)
   {
@@ -26,10 +28,32 @@ void Reaction::initialize()
     auto reaction = parseReactionString(eq);
     std::vector<int> reactantIds, productIds;
     for (auto &name : reaction.reactantNames)
-      reactantIds.push_back(_reactantNameToIndexMap[name]);
-    for (auto &name : reaction.productNames)
-      productIds.push_back(_reactantNameToIndexMap[name]);
+    {
+      if (_reactantNameToIndexMap.find(name) != _reactantNameToIndexMap.end())
+      {
+        reactantIds.push_back(_reactantNameToIndexMap[name]);
+        used[_reactantNameToIndexMap[name]] = true;
+      }
+      else
+      {
+        KORALI_LOG_ERROR("Variable with name '%s' not defined.\n", name.c_str());
+      }
 
+    }
+    for (auto &name : reaction.productNames)
+    {
+      if (_reactantNameToIndexMap.find(name) != _reactantNameToIndexMap.end())
+      {
+        productIds.push_back(_reactantNameToIndexMap[name]);
+        used[_reactantNameToIndexMap[name]] = true;
+      }
+      else
+      {
+        KORALI_LOG_ERROR("Variable with name '%s' not defined.\n", name.c_str());
+      }
+    }
+
+   
     _reactionVector.emplace_back(rate,
                                  std::move(reactantIds),
                                  std::move(reaction.reactantSCs),
@@ -37,6 +61,10 @@ void Reaction::initialize()
                                  std::move(reaction.productSCs),
                                  std::move(reaction.isReactantReservoir));
   }
+
+  for(size_t idx = 0; idx < _k->_variables.size(); ++idx) if (used[idx] == false)
+    _k->_logger->logWarning("Normal", "Variable with name '%s' initiailized but not used.\n",_k->_variables[idx]->_name.c_str());
+ 
 }
 
 double Reaction::computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const

@@ -91,6 +91,7 @@ void TauLeaping::advance()
       ssaAdvance();
       if (_time >= _simulationLength)
         break;
+      updateBins();
     }
   }
   else

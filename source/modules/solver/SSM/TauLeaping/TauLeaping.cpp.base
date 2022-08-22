@@ -85,6 +85,7 @@ void __className__::advance()
       ssaAdvance();
       if (_time >= _simulationLength)
         break;
+      updateBins();
     }
   }
   else

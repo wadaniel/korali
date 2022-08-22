@@ -18,7 +18,7 @@ double Poisson::getDensity(const double x) const
 
 double Poisson::getLogDensity(const double x) const
 {
-  return x*log(_mean) - log(gsl_sf_fact(x)) - _mean;
+  return x * log(_mean) - log(gsl_sf_fact(x)) - _mean;
 }
 
 double Poisson::getLogDensityGradient(const double x) const

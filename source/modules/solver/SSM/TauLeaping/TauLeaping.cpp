@@ -8,7 +8,6 @@ namespace ssm
 {
 ;
 
-
 void TauLeaping::ssaAdvance()
 {
   _cumPropensities.resize(_numReactions);
@@ -83,137 +82,135 @@ void TauLeaping::advance()
   // Estimate maximum tau
   double tauP = allReactionsAreCritical ? std::numeric_limits<double>::infinity() : estimateLargestTau();
 
-
   // Accept or reject step
-  if (tauP <  _acceptanceFactor / a0)
+  if (tauP < _acceptanceFactor / a0)
   {
-        // reject, execute SSA steps
-        for (int i = 0; i < _numSSASteps; ++i)
-        {
-            ssaAdvance();
-            if (_time >= _simulationLength)
-                break;
-        }
-    }
-    else
+    // reject, execute SSA steps
+    for (int i = 0; i < _numSSASteps; ++i)
     {
-        // accept, perform tau leap
-         
-        // calibrate taupp
-        double a0c = 0;
-        for (size_t k = 0; k < _numReactions; ++k)
+      ssaAdvance();
+      if (_time >= _simulationLength)
+        break;
+    }
+  }
+  else
+  {
+    // accept, perform tau leap
+
+    // calibrate taupp
+    double a0c = 0;
+    for (size_t k = 0; k < _numReactions; ++k)
+    {
+      if (_isCriticalReaction[k])
+        a0c += _propensities[k];
+    }
+
+    const double tauPP = -std::log(_uniformGenerator->getRandomNumber()) / a0c;
+
+    double tau;
+    bool anySpeciesNegative = false;
+
+    do
+    {
+      tau = tauP < tauPP ? tauP : tauPP;
+      if (_time + tau > _simulationLength)
+        tau = _simulationLength - _time;
+
+      _numFirings.resize(_numReactions, 0);
+
+      for (size_t i = 0; i < _numReactions; ++i)
+      {
+        if (_isCriticalReaction[i])
         {
-            if (_isCriticalReaction[k])
-                a0c += _propensities[k];
+          _numFirings[i] = 0;
+        }
+        else
+        {
+          _poissonGenerator->_mean = _propensities[i] * tau;
+          _numFirings[i] = _poissonGenerator->getRandomNumber();
+        }
+      }
+
+      if (tauPP <= tauP)
+      {
+        _cumPropensities.resize(_numReactions);
+        double cumulative = 0;
+        for (size_t i = 0; i < _numReactions; ++i)
+        {
+          if (_isCriticalReaction[i])
+            cumulative += _propensities[i];
+          _cumPropensities[i] = cumulative;
         }
 
-        const double tauPP = - std::log(_uniformGenerator->getRandomNumber()) / a0c;
+        const double u = a0c * _uniformGenerator->getRandomNumber();
+        size_t jc = 0;
+        while (jc < _numReactions && (!_isCriticalReaction[jc] || u > _cumPropensities[jc]))
+        {
+          ++jc;
+        }
 
-        double tau;
-        bool anySpeciesNegative = false;
-    
-        do {
-            
-            tau = tauP < tauPP ? tauP : tauPP;
-            if ( _time + tau > _simulationLength)
-                tau = _simulationLength - _time;
+        _numFirings[jc] = 1;
+      }
 
-            _numFirings.resize(_numReactions, 0);
+      _candidateNumReactants = _numReactants;
 
-            for (size_t i = 0; i < _numReactions; ++i)
-            {
-                if (_isCriticalReaction[i])
-                {
-                    _numFirings[i] = 0;
-                }
-                else
-                {
-                    _poissonGenerator->_mean = _propensities[i] * tau;
-                    _numFirings[i] = _poissonGenerator->getRandomNumber();
-                }
-            }
+      for (size_t i = 0; i < _numReactions; ++i)
+      {
+        const int ki = _numFirings[i];
+        if (ki > 0)
+          _problem->applyChanges(i, _candidateNumReactants, ki);
+      }
 
-            if (tauPP <= tauP)
-            {
-                _cumPropensities.resize(_numReactions);
-                double cumulative = 0;
-                for (size_t i = 0; i < _numReactions; ++i)
-                {
-                    if (_isCriticalReaction[i])
-                        cumulative += _propensities[i];
-                    _cumPropensities[i] = cumulative;
-                }
+      anySpeciesNegative = false;
+      for (auto candidate : _candidateNumReactants)
+      {
+        if (candidate < 0)
+        {
+          anySpeciesNegative = true;
+          tauP /= 2.;
+          break;
+        }
+      }
+    } while (anySpeciesNegative);
 
-                const double u = a0c * _uniformGenerator->getRandomNumber();
-                size_t jc = 0;
-                while (jc < _numReactions && (!_isCriticalReaction[jc] || u > _cumPropensities[jc]))
-                {
-                    ++jc;
-                }
-
-                _numFirings[jc] = 1;
-            }
-
-            _candidateNumReactants = _numReactants;
-
-            for (size_t i = 0; i < _numReactions; ++i)
-            {
-                const int ki = _numFirings[i];
-                if (ki > 0)
-                    _problem->applyChanges(i, _candidateNumReactants, ki);
-            }
-
-            anySpeciesNegative = false;
-            for (auto candidate : _candidateNumReactants)
-            {
-                if (candidate < 0)
-                {
-                    anySpeciesNegative = true;
-                    tauP /= 2.;
-                    break;
-                }
-            }
-        } while (anySpeciesNegative);
-
-        _time += tau;
-        std::swap(_numReactants, _candidateNumReactants);
-    }
+    _time += tau;
+    std::swap(_numReactants, _candidateNumReactants);
+  }
 }
 
 double TauLeaping::estimateLargestTau()
 {
-    _mu.resize(_numReactions, 0.);
-    _sigmaSquare.resize(_numReactions, 0.);
+  _mu.resize(_numReactions, 0.);
+  _sigmaSquare.resize(_numReactions, 0.);
 
-    double a0 = 0.;
-    for (size_t j = 0; j < _numReactions; ++j)
+  double a0 = 0.;
+  for (size_t j = 0; j < _numReactions; ++j)
+  {
+    for (size_t jp = 0; jp < _numReactions; ++jp)
     {
-        for (size_t jp = 0; jp < _numReactions; ++jp)
-        {
-            if (_isCriticalReaction[jp])
-                continue;
+      if (_isCriticalReaction[jp])
+        continue;
 
-            const double fjjp = _problem->computeF(j, jp, _numReactants);
+      const double fjjp = _problem->computeF(j, jp, _numReactants);
 
-            _mu[j] += fjjp * _propensities[jp];
-            _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
-        }
-
-        a0 += _propensities[j];
+      _mu[j] += fjjp * _propensities[jp];
+      _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
     }
 
+    a0 += _propensities[j];
+  }
 
-    double tau = std::numeric_limits<double>::max();
+  double tau = std::numeric_limits<double>::max();
 
-    for (size_t i = 0; i < _numReactions; ++i)
-    {
-        const double muTerm    = _eps * a0 / std::abs(_mu[i]);
-        const double sigmaTerm =  _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
+  for (size_t i = 0; i < _numReactions; ++i)
+  {
+    const double muTerm = _eps * a0 / std::abs(_mu[i]);
+    const double sigmaTerm = _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
 
-        tau = std::min(tau, std::min(muTerm, sigmaTerm));
-    }
+    tau = std::min(tau, std::min(muTerm, sigmaTerm));
+  }
 
-    return tau;
+  return tau;
 }
 
 void TauLeaping::setConfiguration(knlohmann::json& js) 

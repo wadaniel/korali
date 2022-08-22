@@ -147,12 +147,12 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Integration")) module = new korali::problem::Integration();
   if (iCompare(moduleType, "Optimization")) module = new korali::problem::Optimization();
   if (iCompare(moduleType, "Propagation")) module = new korali::problem::Propagation();
-  if (iCompare(moduleType, "Sampling")) module = new korali::problem::Sampling();
+  if (iCompare(moduleType, "Reaction")) module = new korali::problem::Reaction();
   if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
   if (iCompare(moduleType, "ReinforcementLearning/Discrete")) module = new korali::problem::reinforcementLearning::Discrete();
+  if (iCompare(moduleType, "Sampling")) module = new korali::problem::Sampling();
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
-  if (iCompare(moduleType, "Reaction")) module = new korali::problem::Reaction();
-
+  
   // Solver modules
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();

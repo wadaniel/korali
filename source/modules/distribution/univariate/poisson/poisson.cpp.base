@@ -12,7 +12,7 @@ double __className__::getDensity(const double x) const
 
 double __className__::getLogDensity(const double x) const
 {
-  return x*log(_mean) - log(gsl_sf_fact(x)) - _mean;
+  return x * log(_mean) - log(gsl_sf_fact(x)) - _mean;
 }
 
 double __className__::getLogDensityGradient(const double x) const

@@ -188,12 +188,6 @@ void Reaction::applyChanges(size_t reactionIndex, std::vector<int> &reactantNumb
   {
     reactantNumbers[reaction.productIds[s]] += numFirings * reaction.productStoichiometries[s];
   }
-
-  int total = 0;
-  for (size_t s = 0; s < reactantNumbers.size(); ++s)
-  {
-    total += reactantNumbers[s];
-  }
 }
 
 void Reaction::setStateChange(size_t numReactants)

@@ -11,9 +11,9 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
+e["Random Seed"] = 0xC001
 
 # Configuring Problem
-e["Random Seed"] = 0xC001
 e["Problem"]["Type"] = "Reaction"
 e["Problem"]["Reactions"][0]["Equation"] = "PLac+RNAP->PLacRNAP"
 e["Problem"]["Reactions"][0]["Rate"] = 0.17
@@ -81,6 +81,7 @@ e["Problem"]["Reactions"][20]["Rate"] = 431.
 e["Problem"]["Reactions"][21]["Equation"] = "LacY->lactose+LacY"
 e["Problem"]["Reactions"][21]["Rate"] = 14.
 
+# Configuring Reactants
 e["Variables"][0]["Name"] = "PLac"
 e["Variables"][0]["Initial Reactant Number"] = 1
 
@@ -147,7 +148,7 @@ e["Variables"][20]["Initial Reactant Number"] = 0
 e["Variables"][21]["Name"] = "product"
 e["Variables"][21]["Initial Reactant Number"] = 0
 
-# Configuring SSA parameters
+# Configuring TauLeaping parameters
 e["Solver"]["Type"] = "SSM/TauLeaping"
 e["Solver"]["Simulation Length"] = 2000.
 e["Solver"]["Simulations Per Generation"] = 10

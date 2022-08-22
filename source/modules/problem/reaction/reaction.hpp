@@ -93,6 +93,10 @@ class Reaction : public Problem
   * @brief [Internal Use] Maps the reactants name to an internal index.
   */
    std::vector<int> _initialReactantNumbers;
+  /**
+  * @brief [Internal Use] TODO
+  */
+   std::vector<std::vector<int>> _stateChange;
   
  
   /**
@@ -125,6 +129,7 @@ class Reaction : public Problem
   double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
   double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
 
+  void setStateChange(size_t numReactants);
   void applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings = 1) const;
 };
 

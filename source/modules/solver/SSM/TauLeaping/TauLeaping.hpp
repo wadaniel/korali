@@ -89,12 +89,12 @@ class TauLeaping : public SSM
    * @brief Storage for propensities of reactions during each step
    */
   std::vector<double> _propensities;
-   
+
   /**
    * @brief Storage for cumulative propensities during each SSA step
    */
   std::vector<double> _cumPropensities;
-  
+
   /**
    * @brief Storage for number of firings per reaction per leap step
    */
@@ -104,18 +104,18 @@ class TauLeaping : public SSM
    * @brief Storage for critical reaction marker during each step
    */
   std::vector<double> _isCriticalReaction;
-  
+
   /**
    * @brief Storage for candidate reactants per leap step
    */
   std::vector<int> _candidateNumReactants;
-  
+
   /**
    * @brief Function to calculate largest Tau(???) TODO
    */
   double estimateLargestTau();
 
-  void ssaAdvance(); 
+  void ssaAdvance();
 
   void advance() override;
 };

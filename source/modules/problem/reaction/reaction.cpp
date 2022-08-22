@@ -66,74 +66,87 @@ double Reaction::computePropensity(size_t reactionIndex, const std::vector<int> 
   return propensity;
 }
 
-double Reaction::computeGradPropensity(size_t reactionIndex, const std::vector<int>& reactantNumbers, size_t dI) const
+double Reaction::computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const
 {
-    // Get reaction
-    const auto &reaction = _reactionVector[reactionIndex];
-   
-    // Init gradient of propensity 
-    double dadxi = reaction.rate;
+  // Get reaction
+  const auto &reaction = _reactionVector[reactionIndex];
 
-    for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+  // Init gradient of propensity
+  double dadxi = reaction.rate;
+
+  for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+  {
+    const size_t is = reaction.reactantIds[s];
+    const int nu = reaction.reactantStoichiometries[s];
+    const int x = reactantNumbers[is];
+
+    double numerator = 0.;
+    double denominator = 0.;
+
+    if (dI == is)
     {
-        const size_t is = reaction.reactantIds[s];
-        const int nu = reaction.reactantStoichiometries[s];
-        const int x = reactantNumbers[is];
+      // Gradient of reactant wrt itself
+      denominator = nu;
 
-        double numerator = 0.;
-        double denominator = 0.;
-        
-        if (dI == is)
+      for (int k = 0; k < nu; ++k)
+      {
+        int partialNumerator = 1;
+        for (int j = 0; j < nu; ++j)
         {
-            // Gradient of reactant wrt itself
-            denominator = nu;
-
-            for (int k = 0; k < nu; ++k)
-            {
-                int partialNumerator = 1;
-                for (int j = 0; j < nu; ++j)
-                {
-                    if (j != k)
-                        partialNumerator *= x - j;
-                }
-                denominator *= std::max(1, k);
-                numerator += partialNumerator;
-            }
+          if (j != k)
+            partialNumerator *= x - j;
         }
-        else
-        {
-            // Gradient of reactant wrt other
-            numerator   = x;
-            denominator = nu;
-
-            for (int k = 1; k < nu; ++k)
-            {
-                numerator   *= x - k;
-                denominator *= k;
-            }
-        }
-        
-        // update gradient
-        dadxi *= numerator / denominator;
+        denominator *= std::max(1, k);
+        numerator += partialNumerator;
+      }
     }
-    
-    return dadxi;
-}
+    else
+    {
+      // Gradient of reactant wrt other
+      numerator = x;
+      denominator = nu;
 
+      for (int k = 1; k < nu; ++k)
+      {
+        numerator *= x - k;
+        denominator *= k;
+      }
+    }
+
+    // update gradient
+    dadxi *= numerator / denominator;
+  }
+
+  return dadxi;
+}
 
 double Reaction::computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const
 {
-  // TODO
-  return 0.;
-}
+  const auto &reaction = _reactionVector[reactionIndex];
 
+  double f = 0.;
+  for (int id : reaction.reactantIds)
+    f += computeGradPropensity(reactionIndex, reactantNumbers, id) * _stateChange[otherReactionIndex][id];
+
+  return f;
+}
 
 double Reaction::calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const
 {
- // TODO
- return 0.;
-}
+  const auto &reaction = _reactionVector[reactionIndex];
 
+  int L = std::numeric_limits<int>::max();
+
+  for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+  {
+    const int x = reactantNumbers[reaction.reactantIds[s]];
+    const int nu = reaction.reactantStoichiometries[s];
+    if (nu > 0)
+      L = std::min(L, x / nu);
+  }
+
+  return L;
+}
 
 void Reaction::applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings) const
 {
@@ -154,6 +167,16 @@ void Reaction::applyChanges(size_t reactionIndex, std::vector<int> &reactantNumb
   for (size_t s = 0; s < reactantNumbers.size(); ++s)
   {
     total += reactantNumbers[s];
+  }
+}
+
+void Reaction::setStateChange(size_t numReactants)
+{
+  _stateChange.resize(_reactionVector.size());
+  for (size_t k = 0; k < _reactionVector.size(); ++k)
+  {
+    _stateChange[k].resize(numReactants);
+    applyChanges(k, _stateChange[k]);
   }
 }
 
@@ -182,6 +205,14 @@ void Reaction::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ reaction ] \n + Key:    ['Initial Reactant Numbers']\n%s", e.what()); } 
    eraseValue(js, "Initial Reactant Numbers");
+ }
+
+ if (isDefined(js, "State Change"))
+ {
+ try { _stateChange = js["State Change"].get<std::vector<std::vector<int>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ reaction ] \n + Key:    ['State Change']\n%s", e.what()); } 
+   eraseValue(js, "State Change");
  }
 
  if (isDefined(_k->_js.getJson(), "Variables"))
@@ -218,6 +249,7 @@ void Reaction::getConfiguration(knlohmann::json& js)
    js["Reactions"] = _reactions;
    js["Reactant Name To Index Map"] = _reactantNameToIndexMap;
    js["Initial Reactant Numbers"] = _initialReactantNumbers;
+   js["State Change"] = _stateChange;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
    _k->_js["Variables"][i]["Initial Reactant Number"] = _k->_variables[i]->_initialReactantNumber;
  } 

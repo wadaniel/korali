@@ -48,9 +48,10 @@ void SSM::updateBins()
 
 void SSM::runGeneration()
 {
-  if (_k->_currentGeneration == 0)
+  if (_k->_currentGeneration == 1)
   {
     _completedSimulations = 0;
+    _problem->setStateChange(_variableCount);
   }
 
   for (size_t run = 0; run < _simulationsPerGeneration; ++run)
@@ -90,11 +91,11 @@ void SSM::finalize()
       size_t binCount = 0;
       for (size_t sim = 0; sim < _maxNumSimulations; ++sim)
       {
-          resultsMeanTrajectory[k][idx] += _binnedTrajectories[k][sim][idx];
-          binCount += _binCounter[sim][idx];
+        resultsMeanTrajectory[k][idx] += _binnedTrajectories[k][sim][idx];
+        binCount += _binCounter[sim][idx];
       }
-      if(binCount > 0)
-        resultsMeanTrajectory[k][idx] /= (double) binCount;
+      if (binCount > 0)
+        resultsMeanTrajectory[k][idx] /= (double)binCount;
     }
   }
 

@@ -30,15 +30,19 @@ e["Variables"][2]["Name"] = "R"
 e["Variables"][2]["Initial Reactant Number"] = 0
 
 # Configuring SSA parameters
-e["Solver"]["Type"] = "SSM/SSA"
+e["Solver"]["Type"] = "SSM/TauLeaping"
 e["Solver"]["Simulation Length"] = 20.
 e["Solver"]["Simulations Per Generation"] = 100
+e["Solver"]["Nc"] = 100
+e["Solver"]["Epsilon"] = 0.03
+e["Solver"]["Num SSA Steps"] = 100
+e["Solver"]["Acceptance Factor"] = 10
 e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1000
 e["Solver"]["Diagnostics"]["Num Bins"] = 500
 
 # Configuring results path
 e["File Output"]["Enabled"] = True
-e["File Output"]["Path"] = '_korali_result_ssa'
+e["File Output"]["Path"] = '_korali_result_sir_tau_leaping'
 e["File Output"]["Frequency"] = 1
 
 # Running Korali

@@ -111,6 +111,7 @@ void TauLeaping::advance()
     double tau;
     bool anySpeciesNegative = false;
 
+    // Sample candidates while avoiding negative reactants
     do
     {
       tau = tauP < tauPP ? tauP : tauPP;

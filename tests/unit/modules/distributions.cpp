@@ -1298,7 +1298,7 @@ namespace
 
   // Testing extreme case for log density
   ASSERT_NO_THROW(d->getLogDensity(1));
-  ASSERT_NO_THROW(d->getLogDensityGradient(1));
+  ASSERT_THROW(d->getLogDensityGradient(1));
 
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++)
@@ -1308,8 +1308,8 @@ namespace
   }
 
   // Testing extreme for log density gradient and hessian
-  ASSERT_NO_THROW(d->getLogDensityGradient(1));
-  ASSERT_NO_THROW(d->getLogDensityHessian(1));
+  ASSERT_THROW(d->getLogDensityGradient(1));
+  ASSERT_THROW(d->getLogDensityHessian(1));
  }
 
  TEST(Distrtibutions, iGammaDistribution)

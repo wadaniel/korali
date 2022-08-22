@@ -56,6 +56,8 @@ The solver method, the simulation length, the number of simulated trajectories a
     e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1000
     e["Solver"]["Diagnostics"]["Num Bins"] = 500
 
+For a detailed description of available solver settings see the `SSA <https://korali.readthedocs.io/en/master/modules/solver/SSM/SSA/SSA.html>`_ or `TauLeaping <https://korali.readthedocs.io/en/master/modules/solver/optimizer/SSM/TauLeaping/TauLeaping.html>`_ documentation.
+
 
 Plotting
 --------

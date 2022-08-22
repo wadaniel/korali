@@ -44,11 +44,19 @@ class TauLeaping : public SSM
   /**
   * @brief Number of intermediate SSA steps if leap step rejected.
   */
-   int _numStepsSSA;
+   int _numSSASteps;
   /**
   * @brief [Internal Use] Poisson random number generator.
   */
    korali::distribution::univariate::Poisson* _poissonGenerator;
+  /**
+  * @brief [Internal Use] TODO.
+  */
+   std::vector<double> _mu;
+  /**
+  * @brief [Internal Use] TODO.
+  */
+   std::vector<double> _sigmaSquare;
   
  
   /**
@@ -105,7 +113,7 @@ class TauLeaping : public SSM
   /**
    * @brief Function to calculate largest Tau(???) TODO
    */
-  double estimateLargestTau() const;
+  double estimateLargestTau();
 
   void ssaAdvance(); 
 

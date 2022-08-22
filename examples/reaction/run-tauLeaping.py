@@ -33,6 +33,10 @@ e["Variables"][2]["Initial Reactant Number"] = 0
 e["Solver"]["Type"] = "SSM/TauLeaping"
 e["Solver"]["Simulation Length"] = 20.
 e["Solver"]["Simulations Per Generation"] = 100
+e["Solver"]["Nc"] = 100
+e["Solver"]["Eps"] = 0.03
+e["Solver"]["Num SSA Steps"] = 100
+e["Solver"]["Acceptance Factor"] = 10
 e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1000
 e["Solver"]["Diagnostics"]["Num Bins"] = 500
 

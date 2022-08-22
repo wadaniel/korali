@@ -121,6 +121,8 @@ class Reaction : public Problem
   void initialize() override;
 
   double computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
+  double computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const;
+  double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
   double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
 
   void applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings = 1) const;

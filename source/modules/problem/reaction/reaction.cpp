@@ -41,6 +41,7 @@ void Reaction::initialize()
 
 double Reaction::computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const
 {
+  // Get reaction
   const auto &reaction = _reactionVector[reactionIndex];
 
   double propensity = reaction.rate;
@@ -65,12 +66,72 @@ double Reaction::computePropensity(size_t reactionIndex, const std::vector<int> 
   return propensity;
 }
 
+double Reaction::computeGradPropensity(size_t reactionIndex, const std::vector<int>& reactantNumbers, size_t dI) const
+{
+    // Get reaction
+    const auto &reaction = _reactionVector[reactionIndex];
+   
+    // Init gradient of propensity 
+    double dadxi = reaction.rate;
+
+    for (size_t s = 0; s < reaction.reactantIds.size(); ++s)
+    {
+        const size_t is = reaction.reactantIds[s];
+        const int nu = reaction.reactantStoichiometries[s];
+        const int x = reactantNumbers[is];
+
+        double numerator = 0.;
+        double denominator = 0.;
+        
+        if (dI == is)
+        {
+            // Gradient of reactant wrt itself
+            denominator = nu;
+
+            for (int k = 0; k < nu; ++k)
+            {
+                int partialNumerator = 1;
+                for (int j = 0; j < nu; ++j)
+                {
+                    if (j != k)
+                        partialNumerator *= x - j;
+                }
+                denominator *= std::max(1, k);
+                numerator += partialNumerator;
+            }
+        }
+        else
+        {
+            // Gradient of reactant wrt other
+            numerator   = x;
+            denominator = nu;
+
+            for (int k = 1; k < nu; ++k)
+            {
+                numerator   *= x - k;
+                denominator *= k;
+            }
+        }
+        
+        // update gradient
+        dadxi *= numerator / denominator;
+    }
+    
+    return dadxi;
+}
+
+
+double Reaction::computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const
+{
+  // TODO
+  return 0.;
+}
+
+
 double Reaction::calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const
 {
-
  // TODO
  return 0.;
-
 }
 
 

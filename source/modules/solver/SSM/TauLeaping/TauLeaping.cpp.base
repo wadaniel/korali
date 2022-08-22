@@ -82,7 +82,7 @@ void __className__::advance()
   if (tauP <  _acceptanceFactor / a0)
   {
         // reject, execute SSA steps
-        for (int i = 0; i < _numStepsSSA; ++i)
+        for (int i = 0; i < _numSSASteps; ++i)
         {
             ssaAdvance();
             if (_time >= _simulationLength)
@@ -174,10 +174,40 @@ void __className__::advance()
     }
 }
 
-double __className__::estimateLargestTau() const
+double __className__::estimateLargestTau()
 {
-    // TODO
-    return 0.;
+    _mu.resize(_numReactions, 0.);
+    _sigmaSquare.resize(_numReactions, 0.);
+
+    double a0 = 0.;
+    for (size_t j = 0; j < _numReactions; ++j)
+    {
+        for (size_t jp = 0; jp < _numReactions; ++jp)
+        {
+            if (_isCriticalReaction[jp])
+                continue;
+
+            const double fjjp = _problem->computeF(j, jp, _numReactants);
+
+            _mu[j] += fjjp * _propensities[jp];
+            _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
+        }
+
+        a0 += _propensities[j];
+    }
+
+
+    double tau = std::numeric_limits<double>::max();
+
+    for (size_t i = 0; i < _numReactions; ++i)
+    {
+        const double muTerm    = _eps * a0 / std::abs(_mu[i]);
+        const double sigmaTerm =  _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
+
+        tau = std::min(tau, std::min(muTerm, sigmaTerm));
+    }
+
+    return tau;
 }
 
 __moduleAutoCode__;

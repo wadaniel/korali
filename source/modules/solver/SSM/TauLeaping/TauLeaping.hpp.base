@@ -36,7 +36,7 @@ class __className__ : public __parentClassName__
   /**
    * @brief Function to calculate largest Tau(???) TODO
    */
-  double estimateLargestTau() const;
+  double estimateLargestTau();
 
   void ssaAdvance(); 
 

@@ -88,7 +88,7 @@ void TauLeaping::advance()
   if (tauP <  _acceptanceFactor / a0)
   {
         // reject, execute SSA steps
-        for (int i = 0; i < _numStepsSSA; ++i)
+        for (int i = 0; i < _numSSASteps; ++i)
         {
             ssaAdvance();
             if (_time >= _simulationLength)
@@ -180,10 +180,40 @@ void TauLeaping::advance()
     }
 }
 
-double TauLeaping::estimateLargestTau() const
+double TauLeaping::estimateLargestTau()
 {
-    // TODO
-    return 0.;
+    _mu.resize(_numReactions, 0.);
+    _sigmaSquare.resize(_numReactions, 0.);
+
+    double a0 = 0.;
+    for (size_t j = 0; j < _numReactions; ++j)
+    {
+        for (size_t jp = 0; jp < _numReactions; ++jp)
+        {
+            if (_isCriticalReaction[jp])
+                continue;
+
+            const double fjjp = _problem->computeF(j, jp, _numReactants);
+
+            _mu[j] += fjjp * _propensities[jp];
+            _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
+        }
+
+        a0 += _propensities[j];
+    }
+
+
+    double tau = std::numeric_limits<double>::max();
+
+    for (size_t i = 0; i < _numReactions; ++i)
+    {
+        const double muTerm    = _eps * a0 / std::abs(_mu[i]);
+        const double sigmaTerm =  _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
+
+        tau = std::min(tau, std::min(muTerm, sigmaTerm));
+    }
+
+    return tau;
 }
 
 void TauLeaping::setConfiguration(knlohmann::json& js) 
@@ -197,6 +227,22 @@ void TauLeaping::setConfiguration(knlohmann::json& js)
  _poissonGenerator->applyModuleDefaults(js["Poisson Generator"]);
  _poissonGenerator->setConfiguration(js["Poisson Generator"]);
    eraseValue(js, "Poisson Generator");
+ }
+
+ if (isDefined(js, "Mu"))
+ {
+ try { _mu = js["Mu"].get<std::vector<double>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Mu']\n%s", e.what()); } 
+   eraseValue(js, "Mu");
+ }
+
+ if (isDefined(js, "Sigma Square"))
+ {
+ try { _sigmaSquare = js["Sigma Square"].get<std::vector<double>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Sigma Square']\n%s", e.what()); } 
+   eraseValue(js, "Sigma Square");
  }
 
  if (isDefined(js, "Nc"))
@@ -226,14 +272,14 @@ void TauLeaping::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Acceptance Factor'] required by TauLeaping.\n"); 
 
- if (isDefined(js, "Num Steps SSA"))
+ if (isDefined(js, "Num SSA Steps"))
  {
- try { _numStepsSSA = js["Num Steps SSA"].get<int>();
+ try { _numSSASteps = js["Num SSA Steps"].get<int>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Num Steps SSA']\n%s", e.what()); } 
-   eraseValue(js, "Num Steps SSA");
+ { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Num SSA Steps']\n%s", e.what()); } 
+   eraseValue(js, "Num SSA Steps");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Num Steps SSA'] required by TauLeaping.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Num SSA Steps'] required by TauLeaping.\n"); 
 
  if (isDefined(_k->_js.getJson(), "Variables"))
  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
@@ -251,8 +297,10 @@ void TauLeaping::getConfiguration(knlohmann::json& js)
    js["Nc"] = _nc;
    js["Eps"] = _eps;
    js["Acceptance Factor"] = _acceptanceFactor;
-   js["Num Steps SSA"] = _numStepsSSA;
+   js["Num SSA Steps"] = _numSSASteps;
  if(_poissonGenerator != NULL) _poissonGenerator->getConfiguration(js["Poisson Generator"]);
+   js["Mu"] = _mu;
+   js["Sigma Square"] = _sigmaSquare;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  SSM::getConfiguration(js);

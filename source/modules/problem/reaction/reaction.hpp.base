@@ -16,27 +16,27 @@ struct reaction_t
   double rate;
 
   /**
-   * @brief TODO
+   * @brief Ids of the reactants.
    */
   std::vector<int> reactantIds;
 
   /**
-   * @brief TODO
+   * @brief Stoichiometries of the reactants.
    */
   std::vector<int> reactantStoichiometries;
 
   /**
-   * @brief TODO
+   * @brief Ids of the products of the reaction.
    */
   std::vector<int> productIds;
 
   /**
-   * @brief TODO
+   * @brief Stoichiometries of the products.
    */
   std::vector<int> productStoichiometries;
 
   /**
-   * @brief TODO
+   * @brief Flag to declare reactants as reservois (remain unchanged).
    */
   std::vector<bool> isReactantReservoir = {};
 

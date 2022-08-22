@@ -67,7 +67,7 @@ void __className__::advance()
     const double a = _propensities[k];
     const double L = _problem->calculateMaximumAllowedFirings(k, _numReactants);
 
-    const bool isCritical = !((a > 0) && (L <= _nc));
+    const bool isCritical = (a > 0) && (L <= _nc);
     _isCriticalReaction[k] = isCritical;
 
     allReactionsAreCritical = allReactionsAreCritical && isCritical;
@@ -79,7 +79,7 @@ void __className__::advance()
   // Accept or reject step
   if (tauP < _acceptanceFactor / a0)
   {
-    // reject, execute SSA steps
+    // reject (tau leap step is short), execute SSA steps
     for (int i = 0; i < _numSSASteps; ++i)
     {
       ssaAdvance();
@@ -90,7 +90,7 @@ void __className__::advance()
   }
   else
   {
-    // accept, perform tau leap
+    // accept, perform tau leap step
 
     // calibrate taupp
     double a0c = 0;
@@ -176,7 +176,7 @@ void __className__::advance()
 double __className__::estimateLargestTau()
 {
   _mu.resize(_numReactions, 0.);
-  _sigmaSquare.resize(_numReactions, 0.);
+  _variance.resize(_numReactions, 0.);
 
   double a0 = 0.;
   for (size_t j = 0; j < _numReactions; ++j)
@@ -189,7 +189,7 @@ double __className__::estimateLargestTau()
       const double fjjp = _problem->computeF(j, jp, _numReactants);
 
       _mu[j] += fjjp * _propensities[jp];
-      _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
+      _variance[j] += fjjp * fjjp * _propensities[jp];
     }
 
     a0 += _propensities[j];
@@ -199,10 +199,10 @@ double __className__::estimateLargestTau()
 
   for (size_t i = 0; i < _numReactions; ++i)
   {
-    const double muTerm = _eps * a0 / std::abs(_mu[i]);
-    const double sigmaTerm = _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
+    const double muTerm = _epsilon * a0 / std::abs(_mu[i]);
+    const double varTerm = _epsilon * _epsilon * a0 * a0 / _variance[i];
 
-    tau = std::min(tau, std::min(muTerm, sigmaTerm));
+    tau = std::min(tau, std::min(muTerm, varTerm));
   }
 
   return tau;

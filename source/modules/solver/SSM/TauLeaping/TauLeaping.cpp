@@ -73,7 +73,7 @@ void TauLeaping::advance()
     const double a = _propensities[k];
     const double L = _problem->calculateMaximumAllowedFirings(k, _numReactants);
 
-    const bool isCritical = !((a > 0) && (L <= _nc));
+    const bool isCritical = (a > 0) && (L <= _nc);
     _isCriticalReaction[k] = isCritical;
 
     allReactionsAreCritical = allReactionsAreCritical && isCritical;
@@ -85,7 +85,7 @@ void TauLeaping::advance()
   // Accept or reject step
   if (tauP < _acceptanceFactor / a0)
   {
-    // reject, execute SSA steps
+    // reject (tau leap step is short), execute SSA steps
     for (int i = 0; i < _numSSASteps; ++i)
     {
       ssaAdvance();
@@ -96,7 +96,7 @@ void TauLeaping::advance()
   }
   else
   {
-    // accept, perform tau leap
+    // accept, perform tau leap step
 
     // calibrate taupp
     double a0c = 0;
@@ -182,7 +182,7 @@ void TauLeaping::advance()
 double TauLeaping::estimateLargestTau()
 {
   _mu.resize(_numReactions, 0.);
-  _sigmaSquare.resize(_numReactions, 0.);
+  _variance.resize(_numReactions, 0.);
 
   double a0 = 0.;
   for (size_t j = 0; j < _numReactions; ++j)
@@ -195,7 +195,7 @@ double TauLeaping::estimateLargestTau()
       const double fjjp = _problem->computeF(j, jp, _numReactants);
 
       _mu[j] += fjjp * _propensities[jp];
-      _sigmaSquare[j] += fjjp * fjjp * _propensities[jp];
+      _variance[j] += fjjp * fjjp * _propensities[jp];
     }
 
     a0 += _propensities[j];
@@ -205,10 +205,10 @@ double TauLeaping::estimateLargestTau()
 
   for (size_t i = 0; i < _numReactions; ++i)
   {
-    const double muTerm = _eps * a0 / std::abs(_mu[i]);
-    const double sigmaTerm = _eps * _eps * a0 * a0 / (_sigmaSquare[i] * _sigmaSquare[i]);
+    const double muTerm = _epsilon * a0 / std::abs(_mu[i]);
+    const double varTerm = _epsilon * _epsilon * a0 * a0 / _variance[i];
 
-    tau = std::min(tau, std::min(muTerm, sigmaTerm));
+    tau = std::min(tau, std::min(muTerm, varTerm));
   }
 
   return tau;
@@ -235,12 +235,12 @@ void TauLeaping::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Mu");
  }
 
- if (isDefined(js, "Sigma Square"))
+ if (isDefined(js, "Variance"))
  {
- try { _sigmaSquare = js["Sigma Square"].get<std::vector<double>>();
+ try { _variance = js["Variance"].get<std::vector<double>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Sigma Square']\n%s", e.what()); } 
-   eraseValue(js, "Sigma Square");
+ { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Variance']\n%s", e.what()); } 
+   eraseValue(js, "Variance");
  }
 
  if (isDefined(js, "Nc"))
@@ -252,14 +252,14 @@ void TauLeaping::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Nc'] required by TauLeaping.\n"); 
 
- if (isDefined(js, "Eps"))
+ if (isDefined(js, "Epsilon"))
  {
- try { _eps = js["Eps"].get<double>();
+ try { _epsilon = js["Epsilon"].get<double>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Eps']\n%s", e.what()); } 
-   eraseValue(js, "Eps");
+ { KORALI_LOG_ERROR(" + Object: [ TauLeaping ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
+   eraseValue(js, "Epsilon");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Eps'] required by TauLeaping.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by TauLeaping.\n"); 
 
  if (isDefined(js, "Acceptance Factor"))
  {
@@ -293,12 +293,12 @@ void TauLeaping::getConfiguration(knlohmann::json& js)
 
  js["Type"] = _type;
    js["Nc"] = _nc;
-   js["Eps"] = _eps;
+   js["Epsilon"] = _epsilon;
    js["Acceptance Factor"] = _acceptanceFactor;
    js["Num SSA Steps"] = _numSSASteps;
  if(_poissonGenerator != NULL) _poissonGenerator->getConfiguration(js["Poisson Generator"]);
    js["Mu"] = _mu;
-   js["Sigma Square"] = _sigmaSquare;
+   js["Variance"] = _variance;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  SSM::getConfiguration(js);
@@ -307,7 +307,7 @@ void TauLeaping::getConfiguration(knlohmann::json& js)
 void TauLeaping::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{}";
+ std::string defaultString = "{\"Poisson Generator\": {\"Type\": \"Univariate/Poisson\", \"Mean\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  SSM::applyModuleDefaults(js);

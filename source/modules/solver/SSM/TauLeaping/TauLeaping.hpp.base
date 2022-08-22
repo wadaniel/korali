@@ -19,9 +19,9 @@ class __className__ : public __parentClassName__
   std::vector<double> _cumPropensities;
 
   /**
-   * @brief Storage for number of firings per reaction per leap step
+   * @brief Storage for number of firings per reaction per tau leap step
    */
-  std::vector<double> _numFirings;
+  std::vector<int> _numFirings;
 
   /**
    * @brief Storage for critical reaction marker during each step

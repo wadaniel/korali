@@ -34,9 +34,9 @@ class TauLeaping : public SSM
   */
    int _nc;
   /**
-  * @brief TODO.
+  * @brief Error control parameter, larger epsilon leads to larger tau steps and errors.
   */
-   double _eps;
+   double _epsilon;
   /**
   * @brief TODO.
   */
@@ -50,13 +50,13 @@ class TauLeaping : public SSM
   */
    korali::distribution::univariate::Poisson* _poissonGenerator;
   /**
-  * @brief [Internal Use] TODO.
+  * @brief [Internal Use] Estimated means of the expected change of reactants.
   */
    std::vector<double> _mu;
   /**
-  * @brief [Internal Use] TODO.
+  * @brief [Internal Use] Estimated variance of the expected change of reactants.
   */
-   std::vector<double> _sigmaSquare;
+   std::vector<double> _variance;
   
  
   /**
@@ -96,9 +96,9 @@ class TauLeaping : public SSM
   std::vector<double> _cumPropensities;
 
   /**
-   * @brief Storage for number of firings per reaction per leap step
+   * @brief Storage for number of firings per reaction per tau leap step
    */
-  std::vector<double> _numFirings;
+  std::vector<int> _numFirings;
 
   /**
    * @brief Storage for critical reaction marker during each step

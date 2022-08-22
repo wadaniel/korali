@@ -23,13 +23,13 @@ double Geometric::getLogDensity(const double x) const
 
 double Geometric::getLogDensityGradient(const double x) const
 {
-  KORALI_LOG_ERROR("Gradient of discrete pdf %s not defined.\n", _name);
+  KORALI_LOG_ERROR("Gradient of discrete pdf %s not defined.\n", _name.c_str());
   return 0.;
 }
 
 double Geometric::getLogDensityHessian(const double x) const
 {
-  KORALI_LOG_ERROR("Hessian of discrete pdf %s not defined.\n", _name);
+  KORALI_LOG_ERROR("Hessian of discrete pdf %s not defined.\n", _name.c_str());
   return 0.;
 }
 

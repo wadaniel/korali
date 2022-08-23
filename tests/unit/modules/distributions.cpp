@@ -2385,7 +2385,7 @@ namespace
   distributionJs["Type"] = "Univariate/Uniform";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Poisson*>(Module::getModule(distributionJs, &e)));
 
-  return 0;
+  return;
   //////////////////////////////////////////////////
 
   // Getting module defaults

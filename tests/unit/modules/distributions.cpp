@@ -2393,22 +2393,22 @@ namespace
   ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct shape
+  // Testing incorrect mean
+  d->_mean = -16.0;
+  ASSERT_ANY_THROW(d->updateDistribution());
+  
+  // Testing meaningful mean
   distributionJs["Mean"] = 2.0;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
 
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Mean") != NULL);
+  
   // Testing get configuration method
   d->getConfiguration(distributionJs);
   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/poisson");
   ASSERT_EQ(distributionJs["Mean"].get<double>(), 2.0);
-
-  // Testing get property pointer
-  ASSERT_TRUE(d->getPropertyPointer("Mean") != NULL);
-
-  // Testing incorrect mean
-  d->_mean = -16.0;
-  ASSERT_ANY_THROW(d->updateDistribution());
 
   /////////////////////////////////////////////////
 

@@ -33,7 +33,7 @@ e["Problem"]["Reactions"][4]["Rate"] = 0.015
 e["Problem"]["Reactions"][5]["Equation"] = "TrLacY1->RbsLacY+TrLacY2"
 e["Problem"]["Reactions"][5]["Rate"] = 1.
 
-e["Problem"]["Reactions"][6]["Equation"] = "TrLacY1->RNAP"
+e["Problem"]["Reactions"][6]["Equation"] = "TrLacY2->RNAP"
 e["Problem"]["Reactions"][6]["Rate"] = 0.36
 
 e["Problem"]["Reactions"][7]["Equation"] = "Ribosome+RbsLacZ->RbsRibosomeLacZ"
@@ -42,40 +42,40 @@ e["Problem"]["Reactions"][7]["Rate"] = 0.17
 e["Problem"]["Reactions"][8]["Equation"] = "Ribosome+RbsLacY->RbsRibosomeLacY"
 e["Problem"]["Reactions"][8]["Rate"] = 0.17
 
-e["Problem"]["Reactions"][9]["Equation"] = "RbsRibosomeLacY->Ribosome+RbsRibosomeLacY"
+e["Problem"]["Reactions"][9]["Equation"] = "RbsRibosomeLacZ->Ribosome+RbsRibosomeLacZ"
 e["Problem"]["Reactions"][9]["Rate"] = 0.45
 
-e["Problem"]["Reactions"][10]["Equation"] = "RbsRibosomeLacZ->Ribosome+RbsRibosomeLacZ"
+e["Problem"]["Reactions"][10]["Equation"] = "RbsRibosomeLacY->Ribosome+RbsRibosomeLacY"
 e["Problem"]["Reactions"][10]["Rate"] = 0.45
 
-e["Problem"]["Reactions"][11]["Equation"] = "RbsRibosomeLacY->TrRbsLacY+RbsLacY"
+e["Problem"]["Reactions"][11]["Equation"] = "RbsRibosomeLacZ->TrRbsLacZ+RbsLacZ"
 e["Problem"]["Reactions"][11]["Rate"] = 0.4
 
-e["Problem"]["Reactions"][12]["Equation"] = "RbsRibosomeLacZ->TrRbsLacZ+RbsLacZ"
+e["Problem"]["Reactions"][12]["Equation"] = "RbsRibosomeLacY->TrRbsLacY+RbsLacY"
 e["Problem"]["Reactions"][12]["Rate"] = 0.4
 
-e["Problem"]["Reactions"][13]["Equation"] = "TrRbsLacY->LacY"
-e["Problem"]["Reactions"][13]["Rate"] = 0.036
+e["Problem"]["Reactions"][13]["Equation"] = "TrRbsLacZ->LacZ"
+e["Problem"]["Reactions"][13]["Rate"] = 0.015
 
-e["Problem"]["Reactions"][14]["Equation"] = "TrRbsLacZ->LacZ"
-e["Problem"]["Reactions"][14]["Rate"] = 0.015
+e["Problem"]["Reactions"][14]["Equation"] = "TrRbsLacY->LacY"
+e["Problem"]["Reactions"][14]["Rate"] = 0.036
 
-e["Problem"]["Reactions"][15]["Equation"] = "LacY->dgrLacY"
+e["Problem"]["Reactions"][15]["Equation"] = "LacZ->dgrLacZ"
 e["Problem"]["Reactions"][15]["Rate"] = 6.42e-5
 
-e["Problem"]["Reactions"][16]["Equation"] = "LacZ->dgrLacZ"
+e["Problem"]["Reactions"][16]["Equation"] = "LacY->dgrLacY"
 e["Problem"]["Reactions"][16]["Rate"] = 6.42e-5
 
-e["Problem"]["Reactions"][17]["Equation"] = "RbsLacY->dgrRbsLacY"
+e["Problem"]["Reactions"][17]["Equation"] = "RbsLacZ->dgrRbsLacZ"
 e["Problem"]["Reactions"][17]["Rate"] = 0.3
 
-e["Problem"]["Reactions"][18]["Equation"] = "RbsLacZ->dgrRbsLacZ"
+e["Problem"]["Reactions"][18]["Equation"] = "RbsLacY->dgrRbsLacY"
 e["Problem"]["Reactions"][18]["Rate"] = 0.3
 
-e["Problem"]["Reactions"][19]["Equation"] = "LacZ+lactose->LacZLactose"
+e["Problem"]["Reactions"][19]["Equation"] = "LacZ+lactose->LacZlactose"
 e["Problem"]["Reactions"][19]["Rate"] = 9.52e-5
 
-e["Problem"]["Reactions"][20]["Equation"] = "LacZLactose->product+LacZ"
+e["Problem"]["Reactions"][20]["Equation"] = "LacZlactose->product+LacZ"
 e["Problem"]["Reactions"][20]["Rate"] = 431.
 
 e["Problem"]["Reactions"][21]["Equation"] = "LacY->lactose+LacY"
@@ -145,7 +145,7 @@ e["Variables"][19]["Initial Reactant Number"] = 0
 e["Variables"][20]["Name"] = "lactose"
 e["Variables"][20]["Initial Reactant Number"] = 0
 
-e["Variables"][21]["Name"] = "LacZLactose"
+e["Variables"][21]["Name"] = "LacZlactose"
 e["Variables"][21]["Initial Reactant Number"] = 0
 
 e["Variables"][22]["Name"] = "product"

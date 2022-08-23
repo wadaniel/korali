@@ -58,6 +58,7 @@ struct reaction_t
 
   /**
    * @brief Constructor for type reaction_t.
+   * @param rate the rate of the reaction
    * @param reactantIds ids of reactants
    * @param reactantSCs stoichiometry coefficients of reactants
    * @param productIds ids of products

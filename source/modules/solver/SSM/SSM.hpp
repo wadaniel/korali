@@ -126,7 +126,7 @@ class SSM : public Solver
    */
   void updateBins();
 
-  void initialize() override;
+  void setInitialConfiguration();
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;

@@ -2385,7 +2385,6 @@ namespace
   distributionJs["Type"] = "Univariate/Poisson";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Poisson*>(Module::getModule(distributionJs, &e)));
 
-  return;
   //////////////////////////////////////////////////
 
   // Getting module defaults
@@ -2407,7 +2406,7 @@ namespace
   // Testing get property pointer
   ASSERT_TRUE(d->getPropertyPointer("Mean") != NULL);
 
-  // Testing incorrect minimum/maximum
+  // Testing incorrect mean
   d->_mean = -16.0;
   ASSERT_ANY_THROW(d->updateDistribution());
 
@@ -2432,7 +2431,7 @@ namespace
    EXPECT_TRUE((y >= 0.) && (y <= 1e6));
   }
 
-  // Normal case for log density gradient and hessian
+  // Check that gradient and Hessian not exist
   ASSERT_ANY_THROW(d->getLogDensityGradient( 1.0 ));
   ASSERT_ANY_THROW(d->getLogDensityHessian( 1.0 ));
  }

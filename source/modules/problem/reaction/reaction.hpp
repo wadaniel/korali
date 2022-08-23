@@ -155,9 +155,9 @@ class Reaction : public Problem
   double computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const;
 
   /**
-   * @brief Compute F (? TODO) of a reaction.
+   * @brief Computes F value, the sum of weighted differentials of two reactions.
    * @param reactionIndex The index of the reaction
-   * @param otherReactionIndex TODO
+   * @param otherReactionIndex the index of the second reaction, to access the state change values
    * @param reactantNumbers Current number of reactants in simulation
    * @return value F
    */

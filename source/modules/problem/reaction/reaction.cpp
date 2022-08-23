@@ -15,6 +15,8 @@ void Reaction::initialize()
   {
     _reactantNameToIndexMap[_k->_variables[idx]->_name] = idx;
     _initialReactantNumbers.push_back(_k->_variables[idx]->_initialReactantNumber);
+    if (_k->_variables[idx]->_initialReactantNumber < 0)
+      KORALI_LOG_ERROR("Initial Reactant numer of variable '%s' smaller 0 (is %d)\n", _k->_variables[idx]->_name.c_str(), _k->_variables[idx]->_initialReactantNumber);
   }
 
   std::vector<bool> used(_k->_variables.size(), false);
@@ -23,6 +25,9 @@ void Reaction::initialize()
   for (size_t i = 0; i < _reactions.size(); i++)
   {
     double rate = _reactions[i]["Rate"].get<double>();
+    if (rate <= 0.)
+      KORALI_LOG_ERROR("Rate of reaction %zu smaller or equal 0 (is %lf)\n", i, rate);
+
     std::string eq = _reactions[i]["Equation"];
 
     auto reaction = parseReactionString(eq);

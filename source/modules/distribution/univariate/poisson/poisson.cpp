@@ -18,6 +18,7 @@ double Poisson::getDensity(const double x) const
 
 double Poisson::getLogDensity(const double x) const
 {
+  if (x < 0.) return -INFINITY;
   return x * log(_mean) - log(gsl_sf_fact(x)) - _mean;
 }
 

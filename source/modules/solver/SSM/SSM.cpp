@@ -14,9 +14,11 @@ void SSM::initialize()
   // Initialize time of bins
   double dt = _simulationLength / (double)_diagnosticsNumBins;
   _binTime.resize(_diagnosticsNumBins);
+  // clang-format off
   std::generate(_binTime.begin(), _binTime.end(), [idx = 0, dt]() mutable {
     return idx++ * dt;
   });
+  // clang-format on
 
   // Initialize number of reactions to simulate
   _numReactions = _problem->_reactions.size();

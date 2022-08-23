@@ -6,7 +6,7 @@ namespace solver
 {
 ;
 
-void SSM::initialize()
+void SSM::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
   _problem = dynamic_cast<problem::Reaction *>(_k->_problem);
@@ -19,6 +19,9 @@ void SSM::initialize()
     return idx++ * dt;
   });
   // clang-format on
+ 
+  // Init simulation counter
+  _completedSimulations = 0;
 
   // Initialize number of reactions to simulate
   _numReactions = _problem->_reactions.size();
@@ -52,8 +55,7 @@ void SSM::runGeneration()
 {
   if (_k->_currentGeneration == 1)
   {
-    _completedSimulations = 0;
-    _problem->setStateChange(_variableCount);
+      setInitialConfiguration();
   }
 
   for (size_t run = 0; run < _simulationsPerGeneration; ++run)

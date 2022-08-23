@@ -38,7 +38,7 @@ class TauLeaping : public SSM
   */
    double _epsilon;
   /**
-  * @brief TODO.
+  * @brief Multiplicator of inverse total propensity, to calculate acceptance criterion of tau step.
   */
    double _acceptanceFactor;
   /**
@@ -120,6 +120,8 @@ class TauLeaping : public SSM
    * @brief SSA advance step if leap step rejected.
    */
   void ssaAdvance();
+  
+  void setInitialConfiguration() override;
 
   void advance() override;
 };

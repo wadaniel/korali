@@ -58,6 +58,11 @@ struct reaction_t
 
   /**
    * @brief Constructor for type reaction_t.
+   * @param reactantIDs ids of reactants
+   * @param reactantSCs stoichiometry coefficients of reactants
+   * @param productIDs ids of products
+   * @param productSCs stoichiometry coefficients of products
+   * @param isReactantReservoir indicators if reactant is reservoir
    */
   reaction_t(double rate,
              std::vector<int> reactantIds,
@@ -167,6 +172,7 @@ class Reaction : public Problem
 
   /**
    * @brief Initializes the state change matrix.
+   * @param numReactants number of reactants in reaction experiment
    */
   void setStateChange(size_t numReactants);
 

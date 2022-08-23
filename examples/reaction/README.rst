@@ -1,5 +1,5 @@
 Reaction: Simulating the evolution of reactants
-==========================================
+===============================================
 
 In this tutorial we show how to **simulate** reactions using a stochastic simulator method (SSM).
 

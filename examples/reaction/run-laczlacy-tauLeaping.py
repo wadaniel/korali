@@ -27,7 +27,7 @@ e["Problem"]["Reactions"][2]["Rate"] = 1.
 e["Problem"]["Reactions"][3]["Equation"] = "TrLacZ1->RbsLacZ + PLac + TrLacZ2"
 e["Problem"]["Reactions"][3]["Rate"] = 1.
 
-e["Problem"]["Reactions"][4]["Equation"] = "TrLacZ1->TrLacY1"
+e["Problem"]["Reactions"][4]["Equation"] = "TrLacZ2->TrLacY1"
 e["Problem"]["Reactions"][4]["Rate"] = 0.015
 
 e["Problem"]["Reactions"][5]["Equation"] = "TrLacY1->RbsLacY+TrLacY2"
@@ -57,7 +57,7 @@ e["Problem"]["Reactions"][12]["Rate"] = 0.4
 e["Problem"]["Reactions"][13]["Equation"] = "TrRbsLacY->LacY"
 e["Problem"]["Reactions"][13]["Rate"] = 0.036
 
-e["Problem"]["Reactions"][14]["Equation"] = "TrRbsLacY->LacZ"
+e["Problem"]["Reactions"][14]["Equation"] = "TrRbsLacZ->LacZ"
 e["Problem"]["Reactions"][14]["Rate"] = 0.015
 
 e["Problem"]["Reactions"][15]["Equation"] = "LacY->dgrLacY"

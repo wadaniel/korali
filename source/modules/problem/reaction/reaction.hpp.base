@@ -61,17 +61,60 @@ struct reaction_t
 
 class __className__ : public __parentClassName__
 {
+ /** 
+ * Class for the reaction problem type based on the implementation by Luca Amoudruz https://github.com/amlucas/SSM
+ */
+
   public:
+
+  /**
+   * @brief Container for all reactions.
+   */
   std::vector<reaction_t> _reactionVector;
 
   void initialize() override;
-
+  
+  /**
+   * @brief Compute the propensity of a reaction.
+   * @param reactionIndex The index of the reaction
+   * @param reactantNumbers Current number of reactants in simulation
+   */
   double computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
-  double computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const;
-  double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
-  double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
 
+  /**
+   * @brief Compute the gradient of the propensity of a reaction wrt reactants.
+   * @param reactionIndex The index of the reaction
+   * @param reactantNumbers Current number of reactants in simulation
+   * @param dI reactantindex for gradient computation
+   */
+  double computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const;
+
+  /**
+   * @brief Compute F (? TODO) of a reaction.
+   * @param reactionIndex The index of the reaction
+   * @param otherReactionIndex TODO
+   * @param reactantNumbers Current number of reactants in simulation
+   */
+  double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
+
+  /**
+   * @brief Calculate the maximum allowed firings of a reactant in a reaction.
+   * @param reactionIndex The index of the reaction
+   * @param reactantNumbers Current number of reactants in simulation
+   */
+  double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
+  
+  /**
+   * @brief Initializes the state change matrix.
+   */
   void setStateChange(size_t numReactants);
+  
+  /**
+   * @brief Apply changes to reactants based on reaction.
+   * @param reactionIndex The index of the reaction
+   * @param reactantNumbers Current number of reactants in simulation
+   * @param numFirings Number of repeated firings of reaction
+   */
   void applyChanges(size_t reactionIndex, std::vector<int> &reactantNumbers, int numFirings = 1) const;
 };
 

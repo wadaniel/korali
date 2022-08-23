@@ -2382,7 +2382,7 @@ namespace
   ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Poisson*>(Module::getModule(distributionJs, &e)));
 
   // Creating distribution correctly now
-  distributionJs["Type"] = "Univariate/Uniform";
+  distributionJs["Type"] = "Univariate/Poisson";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Poisson*>(Module::getModule(distributionJs, &e)));
 
   return;
@@ -2401,7 +2401,7 @@ namespace
 
   // Testing get configuration method
   d->getConfiguration(distributionJs);
-  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniform");
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/poisson");
   ASSERT_EQ(distributionJs["Mean"].get<double>(), 2.0);
 
   // Testing get property pointer
@@ -2433,8 +2433,8 @@ namespace
   }
 
   // Normal case for log density gradient and hessian
-  ASSERT_ANY_THROW(d->getLogDensityGradient( 5.0 ));
-  ASSERT_ANY_THROW(d->getLogDensityHessian( 5.0 ));
+  ASSERT_ANY_THROW(d->getLogDensityGradient( 1.0 ));
+  ASSERT_ANY_THROW(d->getLogDensityHessian( 1.0 ));
  }
 
 

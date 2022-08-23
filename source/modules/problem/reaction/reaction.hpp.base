@@ -42,9 +42,9 @@ struct reaction_t
 
   /**
    * @brief Constructor for type reaction_t.
-   * @param reactantIDs ids of reactants
+   * @param reactantIds ids of reactants
    * @param reactantSCs stoichiometry coefficients of reactants
-   * @param productIDs ids of products
+   * @param productIds ids of products
    * @param productSCs stoichiometry coefficients of products
    * @param isReactantReservoir indicators if reactant is reservoir
    */

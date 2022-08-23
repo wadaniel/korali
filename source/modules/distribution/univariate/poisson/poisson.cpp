@@ -13,6 +13,7 @@ namespace univariate
 
 double Poisson::getDensity(const double x) const
 {
+  if (x < 0.) return 0;
   return gsl_ran_poisson_pdf(x, _mean);
 }
 

@@ -6,6 +6,12 @@
 namespace korali
 {
 
+/**
+* @brief Helper method to split strings
+* @param s the string to split
+* @param delim the delimiter
+* @return splitted strings
+*/
 static inline std::vector<std::string> splitStr(std::string s, std::string delim)
 {
     std::vector<std::string> ret;
@@ -21,6 +27,11 @@ static inline std::vector<std::string> splitStr(std::string s, std::string delim
     return ret;
 }
 
+/**
+* @brief Helper method to remove spaces let and right
+* @param s the string to trim
+* @return trimed string
+*/
 static inline std::string trimSpaces(std::string s)
 {
     // trim left spaces
@@ -41,6 +52,11 @@ static inline std::string trimSpaces(std::string s)
     return s;
 }
 
+/**
+* @brief Helper method to parse species and stoichiometry coefficients
+* @param s the string to parse
+* @return tuple of species names and stoichiometry coefficients
+*/
 static std::tuple<std::vector<std::string>,
                   std::vector<int>>
 parseSpeciesAndStoichiometricCoeffs(std::string s)
@@ -74,6 +90,11 @@ parseSpeciesAndStoichiometricCoeffs(std::string s)
             std::move(SCs)};
 }
 
+/**
+* @brief Helper method to check if a variable name is a reservoir
+* @param name variable name
+* @return true if reservoir, else false
+*/
 static inline bool isReservoir(std::string name)
 {
     name = trimSpaces(name);
@@ -83,6 +104,11 @@ static inline bool isReservoir(std::string name)
         *(name.end()-1) == ']';
 }
 
+/**
+* @brief Helper method to check if a variable name contains spaces
+* @param name variable name
+* @return true if spaces exist, else false
+*/
 static inline bool containsSpaces(std::string name)
 {
     for (auto c : name)

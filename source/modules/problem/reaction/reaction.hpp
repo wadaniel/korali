@@ -80,7 +80,7 @@ struct reaction_t
 */
 class Reaction : public Problem
 {
- /** 
+  /** 
  * Class for the reaction problem type based on the implementation by Luca Amoudruz https://github.com/amlucas/SSM
  */
 
@@ -124,18 +124,18 @@ class Reaction : public Problem
   void applyVariableDefaults() override;
   
 
-
   /**
    * @brief Container for all reactions.
    */
   std::vector<reaction_t> _reactionVector;
 
   void initialize() override;
-  
+
   /**
    * @brief Compute the propensity of a reaction.
    * @param reactionIndex The index of the reaction
    * @param reactantNumbers Current number of reactants in simulation
+   * @return the propensity of reaction
    */
   double computePropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
 
@@ -144,6 +144,7 @@ class Reaction : public Problem
    * @param reactionIndex The index of the reaction
    * @param reactantNumbers Current number of reactants in simulation
    * @param dI reactantindex for gradient computation
+   * @return the gradient of the propensity of reaction
    */
   double computeGradPropensity(size_t reactionIndex, const std::vector<int> &reactantNumbers, size_t dI) const;
 
@@ -152,6 +153,7 @@ class Reaction : public Problem
    * @param reactionIndex The index of the reaction
    * @param otherReactionIndex TODO
    * @param reactantNumbers Current number of reactants in simulation
+   * @return value F
    */
   double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
 
@@ -159,14 +161,15 @@ class Reaction : public Problem
    * @brief Calculate the maximum allowed firings of a reactant in a reaction.
    * @param reactionIndex The index of the reaction
    * @param reactantNumbers Current number of reactants in simulation
+   * @return maximum allowed firings of reaction
    */
   double calculateMaximumAllowedFirings(size_t reactionIndex, const std::vector<int> &reactantNumbers) const;
-  
+
   /**
    * @brief Initializes the state change matrix.
    */
   void setStateChange(size_t numReactants);
-  
+
   /**
    * @brief Apply changes to reactants based on reaction.
    * @param reactionIndex The index of the reaction

@@ -19,7 +19,7 @@ void SSM::setInitialConfiguration()
     return idx++ * dt;
   });
   // clang-format on
- 
+
   // Init simulation counter
   _completedSimulations = 0;
 
@@ -55,7 +55,7 @@ void SSM::runGeneration()
 {
   if (_k->_currentGeneration == 1)
   {
-      setInitialConfiguration();
+    setInitialConfiguration();
   }
 
   for (size_t run = 0; run < _simulationsPerGeneration; ++run)

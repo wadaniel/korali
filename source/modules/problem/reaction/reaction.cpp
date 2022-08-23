@@ -146,8 +146,11 @@ double Reaction::computeGradPropensity(size_t reactionIndex, const std::vector<i
   return dadxi;
 }
 
-double Reaction::computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const
+double Reaction::computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers)
 {
+  // Init state change matrix
+  if (_stateChange.size() == 0) setStateChange(reactantNumbers.size());
+
   const auto &reaction = _reactionVector[reactionIndex];
 
   double f = 0.;
@@ -195,7 +198,7 @@ void Reaction::setStateChange(size_t numReactants)
   _stateChange.resize(_reactionVector.size());
   for (size_t k = 0; k < _reactionVector.size(); ++k)
   {
-    _stateChange[k].resize(numReactants);
+    _stateChange[k].resize(numReactants, 0);
     applyChanges(k, _stateChange[k]);
   }
 }

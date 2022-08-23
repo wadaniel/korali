@@ -43,7 +43,7 @@ class __className__ : public __parentClassName__
    * @brief SSA advance step if leap step rejected.
    */
   void ssaAdvance();
-  
+
   void setInitialConfiguration() override;
 
   void advance() override;

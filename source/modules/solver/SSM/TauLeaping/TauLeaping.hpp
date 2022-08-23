@@ -120,7 +120,7 @@ class TauLeaping : public SSM
    * @brief SSA advance step if leap step rejected.
    */
   void ssaAdvance();
-  
+
   void setInitialConfiguration() override;
 
   void advance() override;

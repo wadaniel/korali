@@ -161,7 +161,7 @@ class Reaction : public Problem
    * @param reactantNumbers Current number of reactants in simulation
    * @return value F
    */
-  double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers) const;
+  double computeF(size_t reactionIndex, size_t otherReactionIndex, const std::vector<int> &reactantNumbers);
 
   /**
    * @brief Calculate the maximum allowed firings of a reactant in a reaction.

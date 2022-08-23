@@ -10,22 +10,19 @@ namespace ssm
 
 void TauLeaping::setInitialConfiguration()
 {
-    SSM::setInitialConfiguration();
+  // Initialize SSM parameter
+  SSM::setInitialConfiguration();
 
-    // TauLeaping parameter checks
-    if(_epsilon <= 0. || _epsilon >= 1.)
-        KORALI_LOG_ERROR("Epsilon must be in range (0,1), is: %lf\n", _epsilon);
-    
-    if(_nc <=0 )
-        KORALI_LOG_ERROR("Nc must be larger 0, is: %d\n", _nc);
+  // TauLeaping parameter checks
+  if (_epsilon <= 0. || _epsilon >= 1.)
+    KORALI_LOG_ERROR("Epsilon must be in range (0,1), is: %lf\n", _epsilon);
 
-    if(_acceptanceFactor <= 0. )
-        KORALI_LOG_ERROR("Acceptance Factor must be larger 0., is: %lf\n", _acceptanceFactor);
-  
-    // Init state change matrix
-    _problem->setStateChange(_variableCount);
+  if (_nc <= 0)
+    KORALI_LOG_ERROR("Nc must be larger 0, is: %d\n", _nc);
+
+  if (_acceptanceFactor <= 0.)
+    KORALI_LOG_ERROR("Acceptance Factor must be larger 0., is: %lf\n", _acceptanceFactor);
 }
-
 
 void TauLeaping::ssaAdvance()
 {

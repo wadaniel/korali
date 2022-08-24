@@ -37,7 +37,7 @@ Variables declared with enclosing square brackets, e.g. [X1], are considered res
 The Variables
 -------------
 
-Each reactant name must be declared as a variable with and initial number of reactants.
+Each reactant name must be declared as a variable with its initial number of reactants.
 
 .. code-block:: python
 
@@ -81,6 +81,7 @@ Output
 The output directory and the number of output files can be configured as
 
 .. code-block:: python
+
     e["File Output"]["Enabled"] = True
     e["File Output"]["Path"] = '_korali_results'
     e["File Output"]["Frequency"] = 1

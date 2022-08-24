@@ -42,10 +42,10 @@ e["Problem"]["Reactions"][7]["Rate"] = 0.17
 e["Problem"]["Reactions"][8]["Equation"] = "Ribosome+RbsLacY->RbsRibosomeLacY"
 e["Problem"]["Reactions"][8]["Rate"] = 0.17
 
-e["Problem"]["Reactions"][9]["Equation"] = "RbsRibosomeLacZ->Ribosome+RbsRibosomeLacZ"
+e["Problem"]["Reactions"][9]["Equation"] = "RbsRibosomeLacZ->Ribosome+RbsLacZ"
 e["Problem"]["Reactions"][9]["Rate"] = 0.45
 
-e["Problem"]["Reactions"][10]["Equation"] = "RbsRibosomeLacY->Ribosome+RbsRibosomeLacY"
+e["Problem"]["Reactions"][10]["Equation"] = "RbsRibosomeLacY->Ribosome+RbsLacY"
 e["Problem"]["Reactions"][10]["Rate"] = 0.45
 
 e["Problem"]["Reactions"][11]["Equation"] = "RbsRibosomeLacZ->TrRbsLacZ+RbsLacZ"
@@ -154,12 +154,12 @@ e["Variables"][22]["Initial Reactant Number"] = 0
 # Configuring TauLeaping parameters
 e["Solver"]["Type"] = "SSM/TauLeaping"
 e["Solver"]["Simulation Length"] = 2000.
-e["Solver"]["Simulations Per Generation"] = 10
+e["Solver"]["Simulations Per Generation"] = 1
 e["Solver"]["Nc"] = 10
 e["Solver"]["Epsilon"] = 0.03
 e["Solver"]["Num SSA Steps"] = 100
 e["Solver"]["Acceptance Factor"] = 10
-e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 100
+e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1.
 e["Solver"]["Diagnostics"]["Num Bins"] = 5000
 
 # Configuring results path

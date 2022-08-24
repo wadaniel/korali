@@ -48,6 +48,7 @@ e["Variables"][5]["Initial Reactant Number"] = 0
 
 # Configuring SSA parameters
 e["Solver"]["Type"] = "SSM/SSA"
+e["Solver"]["Simulations Per Generation"] = 1
 e["Solver"]["Simulation Length"] = 14
 e["Solver"]["Termination Criteria"]["Max Num Simulations"] = 1
 e["Solver"]["Diagnostics"]["Num Bins"] = 500

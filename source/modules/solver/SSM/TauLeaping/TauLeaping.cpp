@@ -62,7 +62,7 @@ void TauLeaping::ssaAdvance()
     selection++;
 
   // Update the reactants according to chosen reaction
-  _problem->applyChanges(selection, _numReactants);
+  _problem->applyChanges(selection, _numReactants, 1);
 }
 
 void TauLeaping::advance()
@@ -98,6 +98,9 @@ void TauLeaping::advance()
   // Estimate maximum tau
   double tauP = allReactionsAreCritical ? std::numeric_limits<double>::infinity() : estimateLargestTau();
 
+  if (_time + tauP > _simulationLength)
+    tauP = _simulationLength - _time;
+
   // Accept or reject step
   if (tauP < _acceptanceFactor / a0)
   {
@@ -107,14 +110,17 @@ void TauLeaping::advance()
       ssaAdvance();
       if (_time >= _simulationLength)
         break;
-      updateBins();
+
+      // last update happens in ssm base class
+      if (i < _numSSASteps - 1)
+        updateBins();
     }
   }
   else
   {
     // accept, perform tau leap step
 
-    // calibrate taupp
+    // accumulate propensities of critical reactions
     double a0c = 0;
     for (size_t k = 0; k < _numReactions; ++k)
     {
@@ -122,15 +128,17 @@ void TauLeaping::advance()
         a0c += _propensities[k];
     }
 
+    // sample tauPP from exponential
     const double tauPP = -std::log(_uniformGenerator->getRandomNumber()) / a0c;
 
     double tau;
-    bool anySpeciesNegative = false;
+    bool anyReactantNegative = false;
 
     // Sample candidates while avoiding negative reactants
     do
     {
-      tau = tauP < tauPP ? tauP : tauPP;
+      tau = std::min(tauP, tauPP);
+
       if (_time + tau > _simulationLength)
         tau = _simulationLength - _time;
 
@@ -149,6 +157,7 @@ void TauLeaping::advance()
         }
       }
 
+      // A critical reaction fires
       if (tauPP <= tauP)
       {
         _cumPropensities.resize(_numReactions);
@@ -172,6 +181,7 @@ void TauLeaping::advance()
 
       _candidateNumReactants = _numReactants;
 
+      // Fire reactions and produce candidates
       for (size_t i = 0; i < _numReactions; ++i)
       {
         const int ki = _numFirings[i];
@@ -179,20 +189,21 @@ void TauLeaping::advance()
           _problem->applyChanges(i, _candidateNumReactants, ki);
       }
 
-      anySpeciesNegative = false;
+      // Check if any candidate is negative, if yes half time of tauP and repeat
+      anyReactantNegative = false;
       for (auto candidate : _candidateNumReactants)
       {
         if (candidate < 0)
         {
-          anySpeciesNegative = true;
+          anyReactantNegative = true;
           tauP /= 2.;
           break;
         }
       }
-    } while (anySpeciesNegative);
+    } while (anyReactantNegative);
 
     _time += tau;
-    std::swap(_numReactants, _candidateNumReactants);
+    std::copy(_candidateNumReactants.begin(), _candidateNumReactants.end(), _numReactants.begin());
   }
 }
 

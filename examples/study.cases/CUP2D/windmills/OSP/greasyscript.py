@@ -26,6 +26,11 @@ nu=0.000243
 top=2
 freq1=0.5
 
+# range of the ratios
+
+# r_a : bot / top => [-1, 1]
+# r_f : freq2 / freq1 => [0,4]
+
 
 tests = ['test1/', 'test2/']
 prefix = '[@ ' + folder

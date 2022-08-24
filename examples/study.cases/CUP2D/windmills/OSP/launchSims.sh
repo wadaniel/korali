@@ -20,4 +20,6 @@ export GPU_DEVICE_ORDINAL=0
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export GREASY_NWORKERS_PER_NODE=$SLURM_NTASKS_PER_NODE
 
-greasy task.txt
+# greasy task.txt
+
+greasy convert.txt

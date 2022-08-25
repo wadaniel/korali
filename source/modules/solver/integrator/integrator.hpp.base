@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sample/sample.hpp"
 #include "modules/solver/solver.hpp"
 
 __startNamespace__;
@@ -7,7 +8,9 @@ __startNamespace__;
 class __className__ : public __parentClassName__
 {
   public:
-  void setInitialConfiguration() override;
+  std::vector<Sample> _samples;
+  virtual void launchSample(size_t sampleIndex) = 0;
+  virtual void setInitialConfiguration() override;
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;

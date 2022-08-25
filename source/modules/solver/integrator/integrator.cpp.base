@@ -3,11 +3,10 @@
 
 __startNamespace__;
 
-
 void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
-  
+
   for (size_t i = 0; i < _variableCount; ++i)
   {
     if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("'Upper Bound' is not strictly bigger then 'Lower Bound' for variable %s.\n", _k->_variables[i]->_name.c_str());
@@ -15,7 +14,6 @@ void __className__::setInitialConfiguration()
 
   _accumulatedIntegral = 0.;
 }
-
 
 void __className__::runGeneration()
 {
@@ -40,7 +38,6 @@ void __className__::runGeneration()
   }
 
   (*_k)["Results"]["Integral"] = _accumulatedIntegral;
-
 }
 
 void __className__::printGenerationBefore()

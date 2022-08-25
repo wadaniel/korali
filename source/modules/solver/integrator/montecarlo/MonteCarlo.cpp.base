@@ -8,7 +8,7 @@ void __className__::setInitialConfiguration()
   Integrator::setInitialConfiguration();
 
   // Calculate weight
-  _weight = 1./ (double) _numberOfSamples;
+  _weight = 1. / (double)_numberOfSamples;
   for (size_t d = 0; d < _variableCount; ++d)
     _weight *= (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound);
 
@@ -18,21 +18,21 @@ void __className__::setInitialConfiguration()
 
 void __className__::launchSample(size_t sampleIndex)
 {
-    std::vector<float> params(_variableCount);
+  std::vector<float> params(_variableCount);
 
-    /// Uniformly sample parameter
-    for (size_t d = 0; d < _variableCount; ++d)
-    {
-      params[d] = (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound) * _uniformGenerator->getRandomNumber();
-    }
+  /// Uniformly sample parameter
+  for (size_t d = 0; d < _variableCount; ++d)
+  {
+    params[d] = (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound) * _uniformGenerator->getRandomNumber();
+  }
 
-    _samples[sampleIndex]["Sample Id"] = sampleIndex;
-    _samples[sampleIndex]["Module"] = "Problem";
-    _samples[sampleIndex]["Operation"] = "Execute";
-    _samples[sampleIndex]["Parameters"] = params;
-    _samples[sampleIndex]["Weight"] = _weight;
+  _samples[sampleIndex]["Sample Id"] = sampleIndex;
+  _samples[sampleIndex]["Module"] = "Problem";
+  _samples[sampleIndex]["Operation"] = "Execute";
+  _samples[sampleIndex]["Parameters"] = params;
+  _samples[sampleIndex]["Weight"] = _weight;
 
-    KORALI_START(_samples[sampleIndex]);
+  KORALI_START(_samples[sampleIndex]);
 }
 
 __moduleAutoCode__;

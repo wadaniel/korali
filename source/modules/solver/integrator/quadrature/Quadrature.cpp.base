@@ -32,52 +32,53 @@ void __className__::setInitialConfiguration()
     }
 
     // Initialize indices helper
-    if(i == 0)
-        _indicesHelper[i] = 1;
+    if (i == 0)
+      _indicesHelper[i] = 1;
     else
-        _indicesHelper[i] = _k->_variables[i-1]->_numberOfGridpoints*_indicesHelper[i-1];
+      _indicesHelper[i] = _k->_variables[i - 1]->_numberOfGridpoints * _indicesHelper[i - 1];
 
     numEval *= _k->_variables[i]->_numberOfGridpoints;
   }
 
   // Init max model evaluations
   _maxModelEvaluations = std::min(_maxModelEvaluations, numEval);
-
 }
 
 void __className__::launchSample(size_t sampleIndex)
 {
-    std::vector<float> params(_variableCount);
+  std::vector<float> params(_variableCount);
 
-    float weight = _weight;
-    for (size_t d = 0; d < _variableCount; ++d)
+  float weight = _weight;
+  for (size_t d = 0; d < _variableCount; ++d)
+  {
+    const size_t dimIdx = (size_t)(sampleIndex / _indicesHelper[d]) % _k->_variables[d]->_numberOfGridpoints;
+
+    params[d] = dimIdx * (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound);
+
+    if (_method == "Trapezoidal")
     {
-      const size_t dimIdx =  (size_t) ( sampleIndex / _indicesHelper[d] )  % _k->_variables[d]->_numberOfGridpoints;
-
-      params[d] = dimIdx * (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound);
-
-      if (_method == "Trapezoidal")
-      {
-        if( (dimIdx == 0) || (dimIdx == _k->_variables[d]->_numberOfGridpoints-1) ) weight *= 0.5;
-      }
-      else if (_method == "Simpson")
-      {
-        if( (dimIdx == 0) || (dimIdx == _k->_variables[d]->_numberOfGridpoints-1) ) weight *= 1.;
-        else if(dimIdx % 2 == 0) weight *= 2.;
-        else weight *= 4.;
-      }
-
+      if ((dimIdx == 0) || (dimIdx == _k->_variables[d]->_numberOfGridpoints - 1)) weight *= 0.5;
     }
+    else if (_method == "Simpson")
+    {
+      if ((dimIdx == 0) || (dimIdx == _k->_variables[d]->_numberOfGridpoints - 1))
+        weight *= 1.;
+      else if (dimIdx % 2 == 0)
+        weight *= 2.;
+      else
+        weight *= 4.;
+    }
+  }
 
-    _gridPoints.push_back(params);
- 
-    _samples[sampleIndex]["Sample Id"] = sampleIndex;
-    _samples[sampleIndex]["Module"] = "Problem";
-    _samples[sampleIndex]["Operation"] = "Execute";
-    _samples[sampleIndex]["Parameters"] = params;
-    _samples[sampleIndex]["Weight"] = weight;
+  _gridPoints.push_back(params);
 
-    KORALI_START(_samples[sampleIndex]);
+  _samples[sampleIndex]["Sample Id"] = sampleIndex;
+  _samples[sampleIndex]["Module"] = "Problem";
+  _samples[sampleIndex]["Operation"] = "Execute";
+  _samples[sampleIndex]["Parameters"] = params;
+  _samples[sampleIndex]["Weight"] = weight;
+
+  KORALI_START(_samples[sampleIndex]);
 }
 
 __moduleAutoCode__;

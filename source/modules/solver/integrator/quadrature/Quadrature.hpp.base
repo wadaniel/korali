@@ -1,7 +1,7 @@
 #pragma once
 
-#include "modules/solver/solver.hpp"
 #include "modules/solver/integrator/integrator.hpp"
+#include "modules/solver/solver.hpp"
 
 __startNamespace__;
 

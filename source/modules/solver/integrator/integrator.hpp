@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "sample/sample.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

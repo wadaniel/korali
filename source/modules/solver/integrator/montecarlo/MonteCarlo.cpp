@@ -37,7 +37,7 @@ void MonteCarlo::launchSample(size_t sampleIndex)
   _samples[sampleIndex]["Operation"] = "Execute";
   _samples[sampleIndex]["Parameters"] = params;
   _samples[sampleIndex]["Weight"] = _weight;
-  
+
   // Store parameter
   _gridPoints.push_back(params);
 

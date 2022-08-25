@@ -30,7 +30,7 @@ namespace
    // Creating optimizer configuration Json
    knlohmann::json integratorJs;
    integratorJs["Type"] = "Integrator/Quadrature";
-   integratorJs["Method"] = "Simpson"
+   integratorJs["Method"] = "Simpson";
 
    // Creating module
    korali::solver::Integrator* itr;

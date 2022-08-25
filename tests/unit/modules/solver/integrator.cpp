@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
 #include "modules/solver/integrator/integrator.hpp"
+#include "modules/problem/integration/integration.hpp"
 #include "modules/solver/integrator/montecarlo/MonteCarlo.hpp"
 #include "modules/solver/integrator/quadrature/Quadrature.hpp"
-#include "modules/problem/integration/integration.hpp"
 
 namespace
 {
@@ -18,10 +18,19 @@ namespace
    // Creating base experiment
    Experiment e;
    auto& experimentJs = e._js.getJson();
+   
+   // Creating initial variable
+   Variable v;
+   e._variables.push_back(&v);
+   e["Variables"][0]["Name"] = "Var 1";
+   e["Variables"][0]["Lower Bound"] = 0.0;
+   e["Variables"][0]["Upper Bound"] = 1.0;
+   e["Variables"][0]["Number Of Gridpoints"] = 100;
 
    // Creating optimizer configuration Json
    knlohmann::json integratorJs;
    integratorJs["Type"] = "Integrator/Quadrature";
+   integratorJs["Method"] = "Simpson"
 
    // Creating module
    korali::solver::Integrator* itr;

@@ -14,7 +14,7 @@ void MonteCarlo::setInitialConfiguration()
   Integrator::setInitialConfiguration();
 
   // Calculate weight
-  _weight = 1./ (double) _numberOfSamples;
+  _weight = 1. / (double)_numberOfSamples;
   for (size_t d = 0; d < _variableCount; ++d)
     _weight *= (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound);
 
@@ -24,19 +24,24 @@ void MonteCarlo::setInitialConfiguration()
 
 void MonteCarlo::launchSample(size_t sampleIndex)
 {
-    std::vector<float> params(_variableCount);
-    for (size_t d = 0; d < _variableCount; ++d)
-    {
-      params[d] = (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound) * _uniformGenerator->getRandomNumber();
-    }
+  std::vector<float> params(_variableCount);
 
-    _samples[sampleIndex]["Sample Id"] = sampleIndex;
-    _samples[sampleIndex]["Module"] = "Problem";
-    _samples[sampleIndex]["Operation"] = "Execute";
-    _samples[sampleIndex]["Parameters"] = params;
-    _samples[sampleIndex]["Weight"] = _weight;
+  /// Uniformly sample parameter
+  for (size_t d = 0; d < _variableCount; ++d)
+  {
+    params[d] = (_k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound) * _uniformGenerator->getRandomNumber();
+  }
 
-    KORALI_START(_samples[sampleIndex]);
+  _samples[sampleIndex]["Sample Id"] = sampleIndex;
+  _samples[sampleIndex]["Module"] = "Problem";
+  _samples[sampleIndex]["Operation"] = "Execute";
+  _samples[sampleIndex]["Parameters"] = params;
+  _samples[sampleIndex]["Weight"] = _weight;
+  
+  // Store parameter
+  _gridPoints.push_back(params);
+
+  KORALI_START(_samples[sampleIndex]);
 }
 
 void MonteCarlo::setConfiguration(knlohmann::json& js) 

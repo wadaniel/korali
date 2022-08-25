@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include "modules/solver/solver.hpp"
-#include "modules/solver/integrator/integrator.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/solver/integrator/integrator.hpp"
+#include "modules/solver/solver.hpp"
 
 namespace korali
 {

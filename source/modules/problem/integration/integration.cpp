@@ -10,7 +10,6 @@ namespace problem
 void Integration::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Integration problems require at least one variable.\n");
-
 }
 
 void Integration::execute(Sample &sample)

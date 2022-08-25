@@ -7,11 +7,10 @@ namespace solver
 {
 ;
 
-
 void Integrator::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
-  
+
   for (size_t i = 0; i < _variableCount; ++i)
   {
     if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("'Upper Bound' is not strictly bigger then 'Lower Bound' for variable %s.\n", _k->_variables[i]->_name.c_str());
@@ -19,7 +18,6 @@ void Integrator::setInitialConfiguration()
 
   _accumulatedIntegral = 0.;
 }
-
 
 void Integrator::runGeneration()
 {
@@ -44,7 +42,6 @@ void Integrator::runGeneration()
   }
 
   (*_k)["Results"]["Integral"] = _accumulatedIntegral;
-
 }
 
 void Integrator::printGenerationBefore()

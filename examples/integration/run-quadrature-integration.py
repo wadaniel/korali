@@ -26,7 +26,7 @@ e["Variables"][2]["Upper Bound"] = 1.0
 e["Variables"][2]["Number Of Gridpoints"] = 10
 
 e["Solver"]["Type"] = "Integrator/Quadrature"
-e["Solver"]["Method"] = "Trapezoidal"
+e["Solver"]["Method"] = "Simpson"
 e["Solver"]["Executions Per Generation"] = 100
 
 # Starting Korali's Engine and running experiment

@@ -1,12 +1,14 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
 #include "modules/solver/integrator/integrator.hpp"
+#include "modules/solver/integrator/montecarlo/MonteCarlo.hpp"
+#include "modules/solver/integrator/quadrature/Quadrature.hpp"
 #include "modules/problem/integration/integration.hpp"
 
 namespace
 {
  using namespace korali;
- using namespace korali::solver;
+ using namespace korali::solver::integrator;
  using namespace korali::problem;
 
  //////////////// Integrator CLASS ////////////////////////
@@ -19,11 +21,11 @@ namespace
 
    // Creating optimizer configuration Json
    knlohmann::json integratorJs;
-   integratorJs["Type"] = "Integrator";
+   integratorJs["Type"] = "Integrator/Quadrature";
 
    // Creating module
-   Integrator* itr;
-   ASSERT_NO_THROW(itr = dynamic_cast<Integrator *>(Module::getModule(integratorJs, &e)));
+   korali::solver::Integrator* itr;
+   ASSERT_NO_THROW(itr = dynamic_cast<Quadrature*>(Module::getModule(integratorJs, &e)));
 
    // Defaults should be applied without a problem
    ASSERT_NO_THROW(itr->applyModuleDefaults(integratorJs));
@@ -39,36 +41,6 @@ namespace
    ASSERT_NO_THROW(itr->setConfiguration(integratorJs));
 
    // Testing optional parameters
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Sample Count"] = "Not a Number";
-   ASSERT_ANY_THROW(itr->setConfiguration(integratorJs));
-
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Sample Count"] = 1;
-   ASSERT_NO_THROW(itr->setConfiguration(integratorJs));
-
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Integral"] = "Not a Number";
-   ASSERT_ANY_THROW(itr->setConfiguration(integratorJs));
-
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Integral"] = 1.0;
-   ASSERT_NO_THROW(itr->setConfiguration(integratorJs));
-
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Indices Helper"] = "Not a Number";
-   ASSERT_ANY_THROW(itr->setConfiguration(integratorJs));
-
-   integratorJs = baseOptJs;
-   experimentJs = baseExpJs;
-   integratorJs["Indices Helper"] = std::vector<double>({1.0});
-   ASSERT_NO_THROW(itr->setConfiguration(integratorJs));
-
    integratorJs = baseOptJs;
    experimentJs = baseExpJs;
    integratorJs.erase("Executions Per Generation");

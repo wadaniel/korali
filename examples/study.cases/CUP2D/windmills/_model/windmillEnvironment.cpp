@@ -597,6 +597,7 @@ void runEnvironmentCMAES(korali::Sample& s)
   // load the data with rank 0
   if (rank == 0)
   {
+    // average
     std::ifstream myfile;
     myfile.open("../../x_profile.dat", ios::in);
 
@@ -651,7 +652,8 @@ void runEnvironmentCMAES(korali::Sample& s)
   // broadcast the target_profile to everyone
   MPI_Bcast(&target_profile_x.front(), numberRegions, MPI_DOUBLE, 0, comm);
   MPI_Bcast(&target_profile_y.front(), numberRegions, MPI_DOUBLE, 0, comm);
-  std::cerr<<"After first broadcast"<<std::endl;
+
+
 
   std::vector<double> profile_t_x = vector<double>(numberRegions, 0.0);
   std::vector<double> sum_profile_t_x = vector<double>(numberRegions, 0.0);
@@ -720,8 +722,6 @@ void runEnvironmentCMAES(korali::Sample& s)
 
       reward -= (target_profile_x[i] - avg_profile_t_x[i]) * (target_profile_x[i] - avg_profile_t_x[i]);
       reward -= (target_profile_y[i] - avg_profile_t_y[i]) * (target_profile_y[i] - avg_profile_t_y[i]);
-      
-       //(avg_profile_t_[i] - target_profile[i]) * (avg_profile_t_[i] - target_profile[i]);
     }
   }
 

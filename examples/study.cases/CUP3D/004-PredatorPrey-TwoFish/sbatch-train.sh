@@ -36,7 +36,7 @@ if [ $TRAIN == 1 ]
 then
 EXECUTABLE=train-swimmer-"${DIMENSION}"D
 BATCH_FILE=daint_sbatch_training-"${DIMENSION}"D
-CLOCK=${CLOCK:-24:00:00}
+CLOCK=${CLOCK:-12:00:00}
 PARTITION=${PARTITION:-normal}
 else
 EXECUTABLE=test-swimmer-"${DIMENSION}"D
@@ -61,7 +61,7 @@ cat <<EOF >${BATCH_FILE}
 #SBATCH --time=${CLOCK}
 #SBATCH --partition=${PARTITION}
 #SBATCH --nodes=$(($NODES + 1))
-##SBATCH --dependency=afterany:38305561
+##SBATCH --dependency=afterany:38194842
 
 srun --nodes=$NODES --ntasks-per-node=$RANKS --cpus-per-task=$THREADS --threads-per-core=1 ./$EXECUTABLE -nRanks $RANKS_PER_SAMPLE : --nodes=1 --ntasks-per-node=1 --cpus-per-task=12 --threads-per-core=1 ./$EXECUTABLE -nRanks $RANKS_PER_SAMPLE
 

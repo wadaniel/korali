@@ -16,7 +16,23 @@ void runEnvironment(korali::Sample &s)
   // 3) Create results directory and redirect all output to log file
   char resDir[64];
   FILE * logFile = nullptr;
-  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+
+  static int total_samples = 0;
+  int current_samples      = 0;
+  int myindex              = 0;
+  int Isample              = (s["Mode"] == "Training") ? 0:1;
+  MPI_Exscan   (&Isample,&myindex        ,1,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(&Isample,&current_samples,1,MPI_INT,MPI_SUM,comm);
+  if (s["Mode"] == "Training")
+  {
+	  sprintf(resDir, "%s/sample%03u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), rankGlobal/size);
+  }
+  else
+  {
+	  sprintf(resDir, "%s/testing%05u", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), total_samples + myindex);
+  }
+  total_samples += current_samples;
+
   if( rank == 0 )
   {
     if( not std::filesystem::exists(resDir) )
@@ -203,8 +219,7 @@ int main(int argc, char *argv[])
     // Creating Korali experiment
     auto e = korali::Experiment();
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-
-#if 1
+  
     #if modelDIM == 2 
   
       //2D simply resumes execution if previous 2D results are available
@@ -263,31 +278,7 @@ int main(int argc, char *argv[])
     e["Solver"]["Mode"] = "Training";
     e["Solver"]["Episodes Per Generation"] = 1;
     e["Solver"]["Concurrent Environments"] = N;
-#else
-  // Loading existing results and transplant best training policy
-  auto eOld = korali::Experiment();
-  auto found = eOld.loadState(trainingResultsPath + "/latest");
-  if( found )
-  {
-    printf("[Korali] Continuing execution with policy learned in previous run...\n");
-    e["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"] = eOld["Solver"]["Training"]["Current Policies"]["Policy Hyperparameters"];
-  }
-  else
-  {
-    printf("[Korali] Did not find the policy learned in previous run, training from scratch...\n");
-  }
-  e["Problem"]["Environment Function"] = &runEnvironment;
-  //Results path and dumping frequency in CUP
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
-  //Agent Configuration
-  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
-  e["Solver"]["Mode"] = "Testing";
-  e["Solver"]["Episodes Per Generation"] = 1;
-  e["Solver"]["Concurrent Environments"] = N;
-  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = 1+i;
-#endif
-
+  
     setupRL(e);//define state, action and neural network
    
     //Policy distribution and scaling parameters

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.signal import savgol_filter
@@ -56,6 +57,49 @@ def plotTrajectory( root, obstacleId, output ):
     else:
         plt.show()
 
+initialPositions = [
+  [ 0.60, 0.90 ],
+  [ 0.60, 1.10 ],
+  [ 0.90, 0.80 ],
+  [ 0.90, 1.00 ],
+  [ 0.90, 1.20 ],
+  [ 1.20, 0.90 ],
+  [ 1.20, 1.10 ],
+  [ 1.50, 0.80 ],
+  [ 1.50, 1.00 ],
+  [ 1.50, 1.20 ],
+  [ 1.80, 0.90 ],
+  [ 1.80, 1.10 ],
+  [ 2.10, 0.80 ],
+  [ 2.10, 1.00 ],
+  [ 2.10, 1.20 ],
+  [ 2.40, 0.90 ],
+  [ 2.40, 1.10 ],
+  [ 2.70, 0.80 ],
+  [ 2.70, 1.00 ],
+  [ 2.70, 1.20 ]
+]
+
+def plotTrajectories( root, nAgents, output ):
+    roots = [ root, "/scratch/snx3000/pweber/CUP2D/20swimmers"]
+    fig, ax = plt.subplots(1, 1,sharex=True,figsize=(12,3), dpi=100)
+    for i, r in enumerate(roots):
+        for obstacleId in range(nAgents):
+            data = np.loadtxt(r+"/velocity_{}.dat".format(obstacleId), skiprows=1)
+            if i == 0:
+                ax.plot(data[:,2], data[:,3], "-k", zorder=5)
+            else:
+                ax.plot(data[:,2], data[:,3], "--", alpha=0.5)
+            ax.set_xlabel("x-coordinate")
+            ax.set_ylabel("y-coordinate")
+
+    plt.ylim([0.7,1.3])
+    plt.tight_layout()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
+
 def plotForces( root, obstacleId, output ):
     data = np.loadtxt(root+"/forceValues_{}.dat".format(obstacleId), skiprows=1)
 
@@ -65,22 +109,60 @@ def plotForces( root, obstacleId, output ):
     nonDimFactor = 0.15**2/2*0.2
 
     smoothnedThrust = savgol_filter(data[:,10], 101, 3)
-    smoothnedDrag = savgol_filter(data[:,11], 101, 3)
-    smoothnedForce = savgol_filter(data[:,1], 101, 3)
+    smoothnedDrag   = savgol_filter(data[:,11], 101, 3)
+    smoothnedForce  = savgol_filter(data[:,1 ], 101, 3)
 
-    ax[0].plot(data[:,0], smoothnedThrust/nonDimFactor, label='thrust', color="C0")
+    ax[0].plot(data[:,0], smoothnedThrust/nonDimFactor, color="C0")
     ax[0].set_xlabel("time $t$")
     ax[0].set_ylabel("thrust $T$")
-    ax[1].plot(data[:,0], -smoothnedDrag/nonDimFactor, label='drag', color="C1")
+    ax[1].plot(data[:,0], -smoothnedDrag/nonDimFactor, color="C1")
     ax[1].set_xlabel("time $t$")
     ax[1].set_ylabel("drag $D$")
-    ax[2].plot(data[:,0], -smoothnedForce/nonDimFactor, label='drag', color="C2")
+    ax[2].plot(data[:,0], -smoothnedForce/nonDimFactor, color="C2")
     ax[2].set_xlabel("time $t$")
     ax[2].set_ylabel("Force $F$")
     # twinAx.plot(data[:,0], data[:,7], label='torque', color="C2")
 
     # plt.legend()
     ax[1].set_title(root)
+    plt.tight_layout()
+    if output != "":
+        plt.savefig(output)
+    else:
+        plt.show()
+
+def compareForces( root, output ):
+    cases = ["/inPhase_", "/offPhase_"]
+    fig, ax = plt.subplots(1, 1,sharex=True,figsize=(6,4), dpi=100)
+    cmaps = [ matplotlib.cm.get_cmap('Blues'), matplotlib.cm.get_cmap('Greens') ]
+    for c, case in enumerate(cases):
+        cmap = cmaps[c]
+        colCurrIndex = 0.0
+        for j in range(1,10):
+            averageForces = []
+            lateralDisplacement = []
+            for i in range(2,21):
+                colorIndx = j/10
+                print("Reading"+root+case+"{}_{}".format(j,i)+"...")
+                data0 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_0.dat".format(0), skiprows=1)
+                data1 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_1.dat".format(1), skiprows=1)
+
+                velData0 = np.loadtxt(root+case+"{}_{}".format(j,i)+"/forceValues_0.dat".format(0), skiprows=1)
+
+                # 1/2 * (fish length / swimmin period)^2 * fish length
+                speed = 0.02*j
+                nonDimFactor = 0.2*speed**2/2
+                index0 = data0[:,0] > 5
+                index1 = data1[:,0] > 5
+                averageForce = (np.mean(data0[index0,1]) + np.mean(data1[index1,1])) / (2*nonDimFactor)
+                averageForces.append(averageForce)
+                lateralDisplacement.append(2*i/10.0)
+            
+            colorIndx = j/10
+            ax.plot( lateralDisplacement, averageForces, color=cmap(colorIndx) )
+
+    ax.set_xlabel("lateral displacement $\Delta y/L$")
+    ax.set_ylabel("force coeffiecient")
     plt.tight_layout()
     if output != "":
         plt.savefig(output)
@@ -95,9 +177,9 @@ def plotEnergy( root, obstacleId, output ):
     # 1/2 * speed of obstacle^2 * fish length^2
     nonDimFactor = 0.15**2/2*0.2**2
 
-    smoothnedThrustPower = savgol_filter(data[:,1], 51, 3)
-    smoothnedDragPower = savgol_filter(data[:,2], 51, 3)
-    smoothnedDeformationPower = savgol_filter(data[:,7], 51, 3)
+    smoothnedThrustPower      = savgol_filter(data[:,1], 101, 3)
+    smoothnedDragPower        = savgol_filter(data[:,2], 101, 3)
+    smoothnedDeformationPower = savgol_filter(data[:,7], 101, 3)
 
     ax[0].plot(data[:,0], smoothnedThrustPower/nonDimFactor, color="C0")
     ax[0].set_xlabel("time $t$")
@@ -155,26 +237,26 @@ def compareDisplacement():
     else:
         plt.show()
 
-def compareForces():
-    output = "forces.png"
-    dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0001", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0001"]
+# def compareForces():
+#     output = "forces.png"
+#     dirs = ["/scratch/snx3000/pweber/korali/MAcolumnFish_efficiency/_testingResults/sample0001", "/scratch/snx3000/pweber/korali/MAcolumnFish_yDisplacementMinimization/_testingResults/sample0001"]
 
-    fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
+#     fig, ax = plt.subplots(1, 1, sharex=True,figsize=(6,3), dpi=100)
 
-    # 1/2 * speed of obstacle^2 * fish length
-    nonDimFactor = 0.15**2/2*0.2
+#     # 1/2 * speed of obstacle^2 * fish length
+#     nonDimFactor = 0.15**2/2*0.2
 
-    for j, root in enumerate(dirs):
-        for obstacleId in range(0,4):
-            data = np.loadtxt(root+"/forceValues_{}.dat".format(obstacleId), skiprows=1)
-            ax.plot(data[:,0], -data[:,11]/nonDimFactor, color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
-    ax.set_xlabel("time $t$")
-    ax.set_ylabel("lateral displacement $\Delta y$")
-    plt.tight_layout()
-    if output != "":
-        plt.savefig(output)
-    else:
-        plt.show()
+#     for j, root in enumerate(dirs):
+#         for obstacleId in range(0,4):
+#             data = np.loadtxt(root+"/forceValues_{}.dat".format(obstacleId), skiprows=1)
+#             ax.plot(data[:,0], -data[:,11]/nonDimFactor, color=lighten_color("C{}".format(j*2),obstacleId*0.5), linewidth=2) #or -1
+#     ax.set_xlabel("time $t$")
+#     ax.set_ylabel("lateral displacement $\Delta y$")
+#     plt.tight_layout()
+#     if output != "":
+#         plt.savefig(output)
+#     else:
+#         plt.show()
 
 def compareEfficiency():
     output = "efficiency.png"
@@ -315,10 +397,11 @@ if __name__ == '__main__':
 
 
     # plotTrajectory(args.dir, args.obstacleId, args.output)
-    plotForces(args.dir, args.obstacleId, args.output)
+    # plotTrajectories(args.dir, args.obstacleId, args.output)
+    # plotForces(args.dir, args.obstacleId, args.output)
     # plotEnergy(args.dir, args.obstacleId, args.output)
     # compareDisplacement()
-    # compareForces()
+    compareForces(args.dir, args.output)
     # compareEfficiency()
     # animateCoM()
     # plotEfficiency()

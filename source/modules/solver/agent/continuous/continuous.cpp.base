@@ -110,7 +110,7 @@ void __className__::getAction(korali::Sample &sample)
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
     // in case of multiple polices it runs the i-th policy otherwise standard
-    std::vector<policy_t> policy(_problem->_policiesPerEnvironment);
+    std::vector<policy_t> policy;
     if (_problem->_policiesPerEnvironment == 1)
       runPolicy({_stateTimeSequence[i].getVector()}, policy);
     else
@@ -135,8 +135,8 @@ void __className__::getAction(korali::Sample &sample)
      ****************************************************************************/
 
     // Check action
-    for (size_t a = 0; a < _problem->_actionVectorSize; a++)
-      if (std::isfinite(action[i]) == false) KORALI_LOG_ERROR("Agent %lu action %lu returned an invalid value: %f\n", i, action[i]);
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      if (std::isfinite(action[j]) == false) KORALI_LOG_ERROR("Agent %lu action %lu returned an invalid value: %f\n", i, j, action[j]);
 
     // Write action to sample
     sample["Action"][i] = action;

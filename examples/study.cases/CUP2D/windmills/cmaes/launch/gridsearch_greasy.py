@@ -61,9 +61,9 @@ with open('task.txt', 'w') as f:
             f.write(prefix + output + suffix + './simulation ' + OPTIONS + ' -shapes ' + OBJECTS + '\n')
 
             # create all the folders
-            # os.mkdir(folder + output)
-            # # cp all the ./simulation executables to the folders
-            # os.system("cp ~/korali/examples/study.cases/CUP2D/_deps/CUP-2D/makefiles/simulation " + folder + output)
+            os.mkdir(folder + output)
+            # cp all the ./simulation executables to the folders
+            os.system("cp ~/korali/examples/study.cases/CUP2D/_deps/CUP-2D/makefiles/simulation " + folder + output)
         
         counter += 1
         print(counter)

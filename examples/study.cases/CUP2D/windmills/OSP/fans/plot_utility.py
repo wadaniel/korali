@@ -40,8 +40,11 @@ def createDomain(ax):
 
     ax.set_aspect('equal')
 
-
 utility = np.load('results_61.npy') # size 61 x 4 x 32 x 12
+# utility = np.load('results_61_separate.npy') # size 61 x 4 x 32 x 12
+# utility = np.load('results_61_separate_errorless.npy') # size 61 x 4 x 32 x 12
+
+name = 'sep_err'
 
 vorticity = np.sum(utility[:, 0, :, :], axis = 0)
 pressure = np.sum(utility[:, 1, :, :], axis = 0)
@@ -60,7 +63,7 @@ plt.title('Utility : vorticity')
 plt.xlabel('x')
 plt.ylabel('y')
 
-plt.savefig(output_folder + 'vorticity.png')
+plt.savefig(output_folder + 'vorticity' + '_' + name + '.png')
 
 # pressure
 fig2, ax2 = plt.subplots()
@@ -73,7 +76,7 @@ plt.title('Utility : pressure')
 plt.xlabel('x')
 plt.ylabel('y')
 
-plt.savefig(output_folder + 'pressure.png')
+plt.savefig(output_folder + 'pressure' + '_' + name + '.png')
 
 # pressure
 fig3, ax3 = plt.subplots()
@@ -86,7 +89,7 @@ plt.title('Utility : velx')
 plt.xlabel('x')
 plt.ylabel('y')
 
-plt.savefig(output_folder + 'velx.png')
+plt.savefig(output_folder + 'velx' + '_' + name + '.png')
 
 # pressure
 fig4, ax4 = plt.subplots()
@@ -99,4 +102,24 @@ plt.title('Utility : vely')
 plt.xlabel('x')
 plt.ylabel('y')
 
-plt.savefig(output_folder + 'vely.png')
+plt.savefig(output_folder + 'vely' + '_' + name + '.png')
+
+
+# # doing the computation of the utility using the combined data
+# utility_combined = np.load('results_61_combined.npy') # size 61 x 32 x 12
+
+# all = np.sum(utility_combined, axis=0)
+
+# output_folder = 'plots/'
+# # vorticities
+# fig, ax = plt.subplots()
+
+# createDomain(ax)
+
+# plt.contourf(np.linspace(0.2625, 0.525, 12), np.linspace(0, 0.7, 32), all)
+# plt.colorbar()
+# plt.title('Utility : vorticity, pressure, velx, vely')
+# plt.xlabel('x')
+# plt.ylabel('y')
+
+# plt.savefig(output_folder + 'all.png')

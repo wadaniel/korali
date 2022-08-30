@@ -35,7 +35,7 @@ The objective function is the MSE between the velocity profiles of these simulat
 Grid Search Experiment Files
 -----------------------------
 
-- `greasy_script.py` : creates the folders for the simulation in scratch, copies the CUP2D `./simulation` executable in the folder, creates task file for greasy launcher. 
+- `launch/gridsearch_greasy.py` : creates the folders for the simulation in scratch, copies the CUP2D `./simulation` executable in the folder, creates task file for greasy launcher. 
 - `launch/launchGridSearch.sh` : greasy launcher, uses the task.txt file to schedule the jobs. 
 
 Grid Search running

@@ -137,10 +137,6 @@ class DEA : public Optimizer
   */
    std::vector<double> _maxDistances;
   /**
-  * @brief [Internal Use] Keeps count of infeasible samples so far.
-  */
-   size_t _infeasibleSampleCount;
-  /**
   * @brief [Internal Use] Minimum step size of any variable in the current generation.
   */
    double _currentMinimumStepSize;

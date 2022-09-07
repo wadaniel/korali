@@ -10,9 +10,21 @@ bool Optimizer::isSampleFeasible(const std::vector<double> &sample)
 {
   for (size_t i = 0; i < sample.size(); i++)
   {
-    if (std::isfinite(sample[i]) == false) { _infeasibleSampleCount++; return false; }
-    if (sample[i] < _k->_variables[i]->_lowerBound) { _infeasibleSampleCount++; return false; }
-    if (sample[i] > _k->_variables[i]->_upperBound) { _infeasibleSampleCount++; return false; }
+    if (std::isfinite(sample[i]) == false)
+    {
+      _infeasibleSampleCount++;
+      return false;
+    }
+    if (sample[i] < _k->_variables[i]->_lowerBound)
+    {
+      _infeasibleSampleCount++;
+      return false;
+    }
+    if (sample[i] > _k->_variables[i]->_upperBound)
+    {
+      _infeasibleSampleCount++;
+      return false;
+    }
   }
   return true;
 }

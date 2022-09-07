@@ -449,7 +449,6 @@ void CMAES::prepareGeneration()
   if (_mirroredSampling == false)
     for (size_t i = 0; i < _currentPopulationSize; ++i)
     {
-      bool isFeasible;
       do
       {
         std::vector<double> rands(_variableCount);
@@ -458,9 +457,7 @@ void CMAES::prepareGeneration()
 
         if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-        isFeasible = isSampleFeasible(_samplePopulation[i]);
-
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isSampleFeasible(_samplePopulation[i]) == false);
     }
   else
     for (size_t i = 0; i < _currentPopulationSize; i += 2)
@@ -485,11 +482,10 @@ void CMAES::prepareGeneration()
           discretize(_samplePopulation[i + 1]);
         }
 
-        bool isFeasibleOne = isSampleFeasible(_samplePopulation[i]);
-        bool isFeasibleTwo = isSampleFeasible(_samplePopulation[i + 1]);
-        isFeasible = (isFeasibleOne || isFeasibleTwo);
+        isFeasible = isSampleFeasible(_samplePopulation[i]);
+        isFeasible = isFeasible && isSampleFeasible(_samplePopulation[i + 1]);
 
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isFeasible == false);
     }
 }
 

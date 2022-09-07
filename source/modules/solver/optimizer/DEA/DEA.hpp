@@ -145,10 +145,6 @@ class DEA : public Optimizer
   */
    double _currentMinimumStepSize;
   /**
-  * @brief [Termination Criteria] Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False).
-  */
-   size_t _maxInfeasibleResamplings;
-  /**
   * @brief [Termination Criteria] Specifies the target fitness to stop minimization.
   */
    double _minValue;

@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:hirsute
+FROM docker.io/ubuntu:22.04
 
 # update aptitude
 ENV TZ=Europe/Zurich

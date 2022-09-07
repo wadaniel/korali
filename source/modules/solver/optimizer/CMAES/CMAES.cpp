@@ -460,8 +460,6 @@ void CMAES::prepareGeneration()
 
         isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-        _infeasibleSampleCount += isFeasible ? 0 : 1;
-
       } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
     }
   else
@@ -488,9 +486,7 @@ void CMAES::prepareGeneration()
         }
 
         bool isFeasibleOne = isSampleFeasible(_samplePopulation[i]);
-        if (isFeasibleOne == false) _infeasibleSampleCount++;
         bool isFeasibleTwo = isSampleFeasible(_samplePopulation[i + 1]);
-        if (isFeasibleTwo == false) _infeasibleSampleCount++;
         isFeasible = (isFeasibleOne || isFeasibleTwo);
 
       } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
@@ -1299,14 +1295,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Conjugate Evolution Path L2 Norm");
  }
 
- if (isDefined(js, "Infeasible Sample Count"))
- {
- try { _infeasibleSampleCount = js["Infeasible Sample Count"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Infeasible Sample Count']\n%s", e.what()); } 
-   eraseValue(js, "Infeasible Sample Count");
- }
-
  if (isDefined(js, "Maximum Diagonal Covariance Matrix Element"))
  {
  try { _maximumDiagonalCovarianceMatrixElement = js["Maximum Diagonal Covariance Matrix Element"].get<double>();
@@ -1717,15 +1705,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Global Success Learning Rate'] required by CMAES.\n"); 
 
- if (isDefined(js, "Termination Criteria", "Max Infeasible Resamplings"))
- {
- try { _maxInfeasibleResamplings = js["Termination Criteria"]["Max Infeasible Resamplings"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Termination Criteria']['Max Infeasible Resamplings']\n%s", e.what()); } 
-   eraseValue(js, "Termination Criteria", "Max Infeasible Resamplings");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Max Infeasible Resamplings'] required by CMAES.\n"); 
-
  if (isDefined(js, "Termination Criteria", "Max Condition Covariance Matrix"))
  {
  try { _maxConditionCovarianceMatrix = js["Termination Criteria"]["Max Condition Covariance Matrix"].get<double>();
@@ -1793,7 +1772,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Covariance Matrix Adaption Strength"] = _covarianceMatrixAdaptionStrength;
    js["Normal Vector Learning Rate"] = _normalVectorLearningRate;
    js["Global Success Learning Rate"] = _globalSuccessLearningRate;
-   js["Termination Criteria"]["Max Infeasible Resamplings"] = _maxInfeasibleResamplings;
    js["Termination Criteria"]["Max Condition Covariance Matrix"] = _maxConditionCovarianceMatrix;
    js["Termination Criteria"]["Min Standard Deviation"] = _minStandardDeviation;
    js["Termination Criteria"]["Max Standard Deviation"] = _maxStandardDeviation;
@@ -1832,7 +1810,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Evolution Path"] = _evolutionPath;
    js["Conjugate Evolution Path"] = _conjugateEvolutionPath;
    js["Conjugate Evolution Path L2 Norm"] = _conjugateEvolutionPathL2Norm;
-   js["Infeasible Sample Count"] = _infeasibleSampleCount;
    js["Maximum Diagonal Covariance Matrix Element"] = _maximumDiagonalCovarianceMatrixElement;
    js["Minimum Diagonal Covariance Matrix Element"] = _minimumDiagonalCovarianceMatrixElement;
    js["Maximum Covariance Eigenvalue"] = _maximumCovarianceEigenvalue;
@@ -1872,7 +1849,7 @@ void CMAES::getConfiguration(knlohmann::json& js)
 void CMAES::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Population Size\": 0, \"Mu Value\": 0, \"Mu Type\": \"Logarithmic\", \"Initial Sigma Cumulation Factor\": -1.0, \"Initial Damp Factor\": -1.0, \"Is Sigma Bounded\": false, \"Initial Cumulative Covariance\": -1.0, \"Use Gradient Information\": false, \"Gradient Step Size\": 0.01, \"Diagonal Covariance\": false, \"Mirrored Sampling\": false, \"Viability Population Size\": 2, \"Viability Mu Value\": 0, \"Max Covariance Matrix Corrections\": 1000000, \"Target Success Rate\": 0.1818, \"Covariance Matrix Adaption Strength\": 0.1, \"Normal Vector Learning Rate\": -1.0, \"Global Success Learning Rate\": 0.2, \"Termination Criteria\": {\"Max Infeasible Resamplings\": Infinity, \"Max Condition Covariance Matrix\": Infinity, \"Min Standard Deviation\": -Infinity, \"Max Standard Deviation\": Infinity}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Best Ever Value\": -Infinity, \"Current Min Standard Deviation\": Infinity, \"Current Max Standard Deviation\": -Infinity, \"Minimum Covariance Eigenvalue\": Infinity, \"Maximum Covariance Eigenvalue\": -Infinity}";
+ std::string defaultString = "{\"Population Size\": 0, \"Mu Value\": 0, \"Mu Type\": \"Logarithmic\", \"Initial Sigma Cumulation Factor\": -1.0, \"Initial Damp Factor\": -1.0, \"Is Sigma Bounded\": false, \"Initial Cumulative Covariance\": -1.0, \"Use Gradient Information\": false, \"Gradient Step Size\": 0.01, \"Diagonal Covariance\": false, \"Mirrored Sampling\": false, \"Viability Population Size\": 2, \"Viability Mu Value\": 0, \"Max Covariance Matrix Corrections\": 1000000, \"Target Success Rate\": 0.1818, \"Covariance Matrix Adaption Strength\": 0.1, \"Normal Vector Learning Rate\": -1.0, \"Global Success Learning Rate\": 0.2, \"Termination Criteria\": {\"Max Condition Covariance Matrix\": Infinity, \"Min Standard Deviation\": -Infinity, \"Max Standard Deviation\": Infinity}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Best Ever Value\": -Infinity, \"Current Min Standard Deviation\": Infinity, \"Current Max Standard Deviation\": -Infinity, \"Minimum Covariance Eigenvalue\": Infinity, \"Maximum Covariance Eigenvalue\": -Infinity}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Optimizer::applyModuleDefaults(js);
@@ -1892,12 +1869,6 @@ void CMAES::applyVariableDefaults()
 bool CMAES::checkTermination()
 {
  bool hasFinished = false;
-
- if (_k->_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings)))
- {
-  _terminationCriteria.push_back("CMAES['Max Infeasible Resamplings'] = " + std::to_string(_maxInfeasibleResamplings) + ".");
-  hasFinished = true;
- }
 
  if (_k->_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue))
  {

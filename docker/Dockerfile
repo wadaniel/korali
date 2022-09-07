@@ -36,4 +36,4 @@ RUN git clone https://github.com/cselab/korali.git
 RUN cd korali; CC=gcc CXX=g++ meson setup build --prefix=/usr/local --buildtype=release -Donednn=true -Dmpi=true
 RUN cd korali; ninja -C build
 RUN cd korali; meson install -C build
-ENV PYTHONPATH=/usr/local/lib/python3.9/site-packages/:$PYTHONPATH
+ENV PYTHONPATH=/usr/local/lib/python3/site-packages/:$PYTHONPATH

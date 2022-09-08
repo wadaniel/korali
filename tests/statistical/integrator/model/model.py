@@ -3,6 +3,20 @@ import os
 import sys
 import numpy as np
 
-def model_integration(s):
-  x = s["Parameters"][0]
-  s["Evaluation"] = x**2
+def pconstant(sample):
+  x = sample["Parameters"][0]
+  sample["Evaluation"] = 1.
+
+def plinear(sample):
+  x = sample["Parameters"][0]
+  sample["Evaluation"] = x
+
+def pquadratic(sample):
+  x = sample["Parameters"][0]
+  sample["Evaluation"] = x**2
+
+def pcubic(sample):
+  x = sample["Parameters"][0]
+  sample["Evaluation"] = x**3
+
+

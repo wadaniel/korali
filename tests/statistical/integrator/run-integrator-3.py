@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import os
 import sys
+import math
 sys.path.append('./model/')
-from model import model_integration
+from model import *
 import numpy as np
 
 ### With Predetermined values
@@ -12,12 +13,12 @@ import korali
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Integration"
-e["Problem"]["Integrand"] = model_integration
+e["Problem"]["Integrand"] = pcubic
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = 1.0
-e["Variables"][0]["Number Of Gridpoints"] = 100
+e["Variables"][0]["Number Of Gridpoints"] = 101
 
 e["Solver"]["Type"] = "Integrator/Quadrature"
 e["Solver"]["Method"] = "Simpson"
@@ -29,3 +30,6 @@ e["File Output"]["Enabled"] = False
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)
+
+# Verify result
+assert (math.isclose(e["Results"]["Integral"], 0.25, rel_tol=0., abs_tol=1e-6))

@@ -2,7 +2,9 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
-#include <omp.h>
+#ifdef _OPENMP
+  #include <omp.h>
+#endif
 
 namespace korali
 {

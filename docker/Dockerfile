@@ -25,6 +25,7 @@ RUN apt-get -y install python3-xlrd
 RUN apt-get -y install python3-pandas
 RUN apt-get -y install libdnnl-dev
 RUN apt-get -y install libopenmpi-dev
+RUN apt-get -y install python-is-python3
 
 RUN python3 -m pip install meson
 RUN python3 -m pip install ninja

@@ -656,9 +656,9 @@ void __className__::processEpisode(knlohmann::json &episode)
       // Forward tuncated state. Take policy d if there is multiple policies, otherwise policy 0
       std::vector<policy_t> truncatedPolicy;
       if (_problem->_policiesPerEnvironment == 1)
-        retV[d] += calculateStateValue(expTruncatedStateSequence);
+        retV[d] = calculateStateValue(expTruncatedStateSequence);
       else
-        retV[d] += calculateStateValue(expTruncatedStateSequence, d);
+        retV[d] = calculateStateValue(expTruncatedStateSequence, d);
 
       // Get value of trucated state
       if (std::isfinite(retV[d]) == false)

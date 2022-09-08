@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import sys
 sys.path.append('./_model/')
-from integrand import *
+from integrands import *
 
 # Creating new experiment
 import korali
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Integration"
-e["Problem"]["Integrand"] = lambda modelData: integrand(modelData)
+e["Problem"]["Integrand"] = lambda s: integrand(s)
 
 e["Variables"][0]["Name"] = "x"
 e["Variables"][0]["Lower Bound"] = 0.0

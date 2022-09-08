@@ -244,10 +244,6 @@ class CMAES : public Optimizer
   */
    double _conjugateEvolutionPathL2Norm;
   /**
-  * @brief [Internal Use] Keeps count of the number of infeasible samples.
-  */
-   size_t _infeasibleSampleCount;
-  /**
   * @brief [Internal Use] Maximum diagonal element of the Covariance Matrix.
   */
    double _maximumDiagonalCovarianceMatrixElement;
@@ -367,10 +363,6 @@ class CMAES : public Optimizer
   * @brief [Internal Use] Number of Constraint Evaluations.
   */
    size_t _constraintEvaluationCount;
-  /**
-  * @brief [Termination Criteria] Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound.
-  */
-   size_t _maxInfeasibleResamplings;
   /**
   * @brief [Termination Criteria] Specifies the maximum condition of the covariance matrix.
   */

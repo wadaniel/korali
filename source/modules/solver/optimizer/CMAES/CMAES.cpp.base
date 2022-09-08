@@ -443,7 +443,6 @@ void __className__::prepareGeneration()
   if (_mirroredSampling == false)
     for (size_t i = 0; i < _currentPopulationSize; ++i)
     {
-      bool isFeasible;
       do
       {
         std::vector<double> rands(_variableCount);
@@ -452,11 +451,7 @@ void __className__::prepareGeneration()
 
         if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-        isFeasible = isSampleFeasible(_samplePopulation[i]);
-
-        _infeasibleSampleCount += isFeasible ? 0 : 1;
-
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isSampleFeasible(_samplePopulation[i]) == false);
     }
   else
     for (size_t i = 0; i < _currentPopulationSize; i += 2)
@@ -481,13 +476,10 @@ void __className__::prepareGeneration()
           discretize(_samplePopulation[i + 1]);
         }
 
-        bool isFeasibleOne = isSampleFeasible(_samplePopulation[i]);
-        if (isFeasibleOne == false) _infeasibleSampleCount++;
-        bool isFeasibleTwo = isSampleFeasible(_samplePopulation[i + 1]);
-        if (isFeasibleTwo == false) _infeasibleSampleCount++;
-        isFeasible = (isFeasibleOne || isFeasibleTwo);
+        isFeasible = isSampleFeasible(_samplePopulation[i]);
+        isFeasible = isFeasible && isSampleFeasible(_samplePopulation[i + 1]);
 
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isFeasible == false);
     }
 }
 

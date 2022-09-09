@@ -1,6 +1,8 @@
 #include "engine.hpp"
 #include "modules/solver/agent/discrete/dVRACER/dVRACER.hpp"
-#include "omp.h"
+#ifdef _OPENMP
+  #include "omp.h"
+#endif
 #include "sample/sample.hpp"
 
 namespace korali

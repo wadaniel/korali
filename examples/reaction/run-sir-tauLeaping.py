@@ -2,9 +2,6 @@
 
 ## In this example, we demonstrate how Korali simulates a reaction.
 
-# Importing computational model
-import sys
-
 # Starting Korali's Engine
 import korali
 k = korali.Engine()

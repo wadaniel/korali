@@ -1,6 +1,8 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
-#include "omp.h"
+#ifdef _OPENMP
+  #include "omp.h"
+#endif
 #include "sample/sample.hpp"
 
 #include <gsl/gsl_sf_psi.h>

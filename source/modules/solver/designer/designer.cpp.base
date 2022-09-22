@@ -175,7 +175,7 @@ void __className__::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   /*** Step 1: Sample Prior and Evaluate Model ***/
-  _k->_logger->logInfo("Minimal", "Sampling and evaluating the prior...\n");
+  _k->_logger->logInfo("Minimal", "Sampling the prior and evaluating...\n");
 
   // Compute how many samples still have to be evaluated
   size_t numEvaluations = _numberOfPriorSamples;
@@ -309,33 +309,8 @@ void __className__::evaluateDesign(Sample &sample)
 
       // /* Compute second part using log-sum-trick (https://en.wikipedia.org/wiki/LogSumExp) */
 
-      // // First compute exponents
-      // std::vector<double> exponents(_numberOfPriorSamples);
-      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-      // {
-      //   const auto & meanInner = _modelEvaluations[k][e];
-      //   double MSEinner = 0.0;
-      //   for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-      //     MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
-      //   MSEinner *= negInvTwoSigmaSq;
-      //   exponents[k] = MSEinner;
-      // }
-
-      // // Compute max and perform reduced sum
-      // const double max = *std::max_element(exponents.begin(), exponents.end());
-      // double sumExp = 0.0;
-      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-      //   sumExp += std::exp( exponents[k] - max );
-      // sumExp /= (double)_numberOfPriorSamples;
-
-      // // Finalize computation of second part
-      // const double marginal = max + std::log( sumExp );
-      
-      // // Sum Utility
-      // _utility[e] += ( MSE - marginal );
-
-      // Vanilla version of second term (note 1/sqrt(2 pi sigma^2) cancels with second term)
-      double second = 0.0;
+      // First compute exponents
+      std::vector<double> exponents(_numberOfPriorSamples);
       for( size_t k = 0; k<_numberOfPriorSamples; k++ )
       {
         const auto & meanInner = evaluations[k];
@@ -343,12 +318,37 @@ void __className__::evaluateDesign(Sample &sample)
         for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
           MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
         MSEinner *= negInvTwoSigmaSq;
-        second += std::exp( MSEinner );
+        exponents[k] = MSEinner;
       }
-      second /= _numberOfPriorSamples;
 
+      // Compute max and perform reduced sum
+      const double max = *std::max_element(exponents.begin(), exponents.end());
+      double sumExp = 0.0;
+      for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+        sumExp += std::exp( exponents[k] - max );
+      sumExp /= (double)_numberOfPriorSamples;
+
+      // Finalize computation of second part
+      const double marginal = max + std::log( sumExp );
+      
       // Sum Utility
-      utility += ( MSE - std::log(second) );
+      utility += ( MSE - marginal );
+
+      // Vanilla version of second term (note 1/sqrt(2 pi sigma^2) cancels with second term)
+      // double second = 0.0;
+      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+      // {
+      //   const auto & meanInner = evaluations[k];
+      //   double MSEinner = 0.0;
+      //   for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+      //     MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
+      //   MSEinner *= negInvTwoSigmaSq;
+      //   second += std::exp( MSEinner );
+      // }
+      // second /= _numberOfPriorSamples;
+
+      // // Sum Utility
+      // utility += ( MSE - std::log(second) );
     }
   }
   utility /= (float)( _numberOfPriorSamples * _numberOfLikelihoodSamples );

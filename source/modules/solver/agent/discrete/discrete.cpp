@@ -172,7 +172,7 @@ float Discrete::evaluateTrajectoryLogProbability(const std::vector<std::vector<f
 {
   knlohmann::json policy;
   policy["Policy"] = policyHyperparameter;
-  setAgentPolicy(policy);
+  setPolicy(policy);
 
   float trajectoryLogProbability = 0.0;
   // Evaluate all states within a single trajectory and calculate probability of trajectory

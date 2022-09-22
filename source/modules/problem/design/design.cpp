@@ -35,12 +35,6 @@ void Design::runModel(Sample &sample)
   sample.run(_model);
 }
 
-
-void Design::evaluateDesign(Sample &sample)
-{
-  // TODO: Function that evaluates utility and is passed to optimizer
-}
-
 void Design::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");

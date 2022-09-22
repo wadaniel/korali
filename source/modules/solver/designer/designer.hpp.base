@@ -11,14 +11,19 @@ class __className__ : public __parentClassName__
 {
   public:
   /**
- * @brief Container for samples to be evaluated per generation
- */
+   * @brief Container for samples to be evaluated per generation
+   */
   std::vector<Sample> _samples;
 
   /**
- * @brief Problem pointer
- */
+   * @brief Problem pointer
+   */
   problem::Design *_problem;
+
+  /**
+   * @brief Evaluates the utility function for a given design
+   */
+  void evaluateDesign(Sample &sample);
 
   virtual void setInitialConfiguration() override;
   void runGeneration() override;

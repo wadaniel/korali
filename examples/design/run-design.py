@@ -38,13 +38,13 @@ e["Variables"][indx]["Name"] = "theta"
 e["Variables"][indx]["Type"] = "Parameter"
 e["Variables"][indx]["Lower Bound"] = 0.0
 e["Variables"][indx]["Upper Bound"] = 1.0
-e["Variables"][indx]["Number Of Samples"] = 1e3
+e["Variables"][indx]["Number Of Samples"] = 1e2
 e["Variables"][indx]["Distribution"] = "Uniform"
 
 indx += 1
 e["Variables"][indx]["Name"] = "y1"
 e["Variables"][indx]["Type"] = "Measurement"
-e["Variables"][indx]["Number Of Samples"] = 1e3
+e["Variables"][indx]["Number Of Samples"] = 1e2
 
 # indx += 1
 # e["Variables"][indx]["Name"] = "y2"

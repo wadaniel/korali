@@ -44,7 +44,7 @@ void Designer::setInitialConfiguration()
     if( i == 0 )
       _parameterHelperIndices[i] = 1;
     else
-      _parameterHelperIndices[i] = _numberOfParameterSamples[i-1] * _parameterHelperIndices[i - 1];
+      _parameterHelperIndices[i] = _numberOfParameterSamples[i-1] * _parameterHelperIndices[i-1];
 
 
     // Check validity of parameter distribution
@@ -94,8 +94,6 @@ void Designer::setInitialConfiguration()
     // Set integrator
     _parameterIntegrator = "Integrator/MonteCarlo";
   }
-
-  _maxModelEvaluations = _numberOfPriorSamples;
 
   // Check design configuration
   _designLowerBounds.resize(_problem->_designVectorSize);
@@ -166,8 +164,14 @@ void Designer::setInitialConfiguration()
   // Set number of likelihood samples
   _numberOfLikelihoodSamples = _numberOfMeasurementSamples[0];
 
-    // Resize utility vector
+  // Resize measurment vector
+  _modelEvaluations.resize(_numberOfDesigns);
+
+  // Resize utility vector
   _utility.resize(_numberOfDesigns, 0.0);
+
+  // Set termination criterium
+  _maxModelEvaluations = _numberOfPriorSamples + _numberOfDesigns;
 }
 
 void Designer::runGeneration()
@@ -180,7 +184,7 @@ void Designer::runGeneration()
   // Compute how many samples still have to be evaluated
   size_t numEvaluations = _numberOfPriorSamples;
   if( _executionsPerGeneration > 0 )
-    numEvaluations = std::min(_executionsPerGeneration, _numberOfPriorSamples - _modelEvaluations.size());
+    numEvaluations = std::min(_executionsPerGeneration, _numberOfPriorSamples - _modelEvaluations[0].size());
   
   // Create and start samples
   _samples.resize(numEvaluations);
@@ -231,85 +235,46 @@ void Designer::runGeneration()
 
     // Check whether the dimension of the measurement is correct
     for( size_t e = 0; e < _numberOfDesigns; e++ )
+    {
     if( evaluation[e].size() != _problem->_measurementVectorSize )
       KORALI_LOG_ERROR("Evaluation %ld returned vector returned with the wrong size: %lu, expected: %lu.\n", e, evaluation[e].size(), _problem->_measurementVectorSize);
 
-    // Save evaluation
-    _modelEvaluations.push_back(evaluation);
+      // Save evaluation
+      _modelEvaluations[e].push_back(evaluation[e]);
+    }
   }
 
-  if( _modelEvaluations.size() < _numberOfPriorSamples )
+  if( _modelEvaluations[0].size() < _numberOfPriorSamples )
     return;
 
+  /*** Step 2: Compute Utility  ***/
   _k->_logger->logInfo("Minimal", "Computing the utility...\n");
 
-  /*** Step 3: Optimize Design ***/
-  double maxUtility = -std::numeric_limits<double>::infinity();
-  const double negInvTwoSigmaSq = - 1 / ( 2 * _sigma * _sigma );
-  #pragma omp parallel for
+  _samples.clear();
+  _samples.resize(_numberOfDesigns);
   for( size_t e = 0; e<_numberOfDesigns; e++ )
   {
-    for( size_t i = 0; i<_numberOfPriorSamples; i++ )
-    {
-      const auto & mean = _modelEvaluations[i][e];
-      for( size_t j = 0; j<_numberOfLikelihoodSamples; j++ )
-      {
-        // Sample likelihood
-        std::vector<double> eps(_problem->_measurementVectorSize);
-        for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-          eps[d] = _sigma*_normalGenerator->getRandomNumber();
+    // Configure Sample
+    _samples[e]["Sample Id"] = e;
+    _samples[e]["Module"] = "Solver";
+    _samples[e]["Operation"] = "Evaluate Design";
+    _samples[e]["Evaluations"] = _modelEvaluations[e];
 
-        // Compute first part of utility (note 1/sqrt(2 pi sigma^2) cancels with second term)
-        double MSE = 0.0;
-        for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-          MSE += eps[d] * eps[d];
-        MSE *= negInvTwoSigmaSq;
+    // Start Sample
+    KORALI_START(_samples[e]);
 
-        // /* Compute second part using log-sum-trick (https://en.wikipedia.org/wiki/LogSumExp) */
+    // Increase counter
+    _modelEvaluationCount++;
+  }
 
-        // // First compute exponents
-        // std::vector<double> exponents(_numberOfPriorSamples);
-        // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-        // {
-        //   const auto & meanInner = _modelEvaluations[k][e];
-        //   double MSEinner = 0.0;
-        //   for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-        //     MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
-        //   MSEinner *= negInvTwoSigmaSq;
-        //   exponents[k] = MSEinner;
-        // }
+  KORALI_WAITALL(_samples);
 
-        // // Compute max and perform reduced sum
-        // const double max = *std::max_element(exponents.begin(), exponents.end());
-        // double sumExp = 0.0;
-        // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-        //   sumExp += std::exp( exponents[k] - max );
-        // sumExp /= (double)_numberOfPriorSamples;
-
-        // // Finalize computation of second part
-        // const double marginal = max + std::log( sumExp );
-        
-        // // Sum Utility
-        // _utility[e] += ( MSE - marginal );
-
-        // Vanilla version of second term (note 1/sqrt(2 pi sigma^2) cancels with second term)
-        double second = 0.0;
-        for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-        {
-          const auto & meanInner = _modelEvaluations[k][e];
-          double MSEinner = 0.0;
-          for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-            MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
-          MSEinner *= negInvTwoSigmaSq;
-          second += std::exp( MSEinner );
-        }
-        second /= _numberOfPriorSamples;
-
-        // Sum Utility
-        _utility[e] += ( MSE - std::log(second) );
-      }
-    }
-    _utility[e] /= (float)( _numberOfPriorSamples * _numberOfLikelihoodSamples );
+  // Get utility and determine maximum
+  double maxUtility = -std::numeric_limits<double>::infinity();
+  for( size_t e = 0; e<_numberOfDesigns; e++)
+  {
+    // Gather result
+    _utility[e] = KORALI_GET(double, _samples[e], "Utility");
 
     // Update maximum
     #pragma omp critical
@@ -321,6 +286,78 @@ void Designer::runGeneration()
       }
     }
   }
+}
+
+void Designer::evaluateDesign(Sample &sample)
+{
+  auto evaluations = KORALI_GET(std::vector<std::vector<double>>, sample, "Evaluations");
+
+  double utility = 0.0;
+  const double negInvTwoSigmaSq = - 1 / ( 2 * _sigma * _sigma );
+  #pragma omp parallel for reduction(+: utility)
+  for( size_t i = 0; i<_numberOfPriorSamples; i++ )
+  {
+    const auto & mean = evaluations[i];
+    for( size_t j = 0; j<_numberOfLikelihoodSamples; j++ )
+    {
+      // Sample likelihood
+      std::vector<double> eps(_problem->_measurementVectorSize);
+      for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+        eps[d] = _sigma*_normalGenerator->getRandomNumber();
+
+      // Compute first part of utility (note 1/sqrt(2 pi sigma^2) cancels with second term)
+      double MSE = 0.0;
+      for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+        MSE += eps[d] * eps[d];
+      MSE *= negInvTwoSigmaSq;
+
+      // /* Compute second part using log-sum-trick (https://en.wikipedia.org/wiki/LogSumExp) */
+
+      // // First compute exponents
+      // std::vector<double> exponents(_numberOfPriorSamples);
+      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+      // {
+      //   const auto & meanInner = _modelEvaluations[k][e];
+      //   double MSEinner = 0.0;
+      //   for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+      //     MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
+      //   MSEinner *= negInvTwoSigmaSq;
+      //   exponents[k] = MSEinner;
+      // }
+
+      // // Compute max and perform reduced sum
+      // const double max = *std::max_element(exponents.begin(), exponents.end());
+      // double sumExp = 0.0;
+      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+      //   sumExp += std::exp( exponents[k] - max );
+      // sumExp /= (double)_numberOfPriorSamples;
+
+      // // Finalize computation of second part
+      // const double marginal = max + std::log( sumExp );
+      
+      // // Sum Utility
+      // _utility[e] += ( MSE - marginal );
+
+      // Vanilla version of second term (note 1/sqrt(2 pi sigma^2) cancels with second term)
+      double second = 0.0;
+      for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+      {
+        const auto & meanInner = evaluations[k];
+        double MSEinner = 0.0;
+        for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+          MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
+        MSEinner *= negInvTwoSigmaSq;
+        second += std::exp( MSEinner );
+      }
+      second /= _numberOfPriorSamples;
+
+      // Sum Utility
+      utility += ( MSE - std::log(second) );
+    }
+  }
+  utility /= (float)( _numberOfPriorSamples * _numberOfLikelihoodSamples );
+
+  sample["Utility"] = utility;
 }
 
 void Designer::printGenerationBefore()
@@ -617,6 +654,21 @@ void Designer::applyVariableDefaults()
 
  Solver::applyVariableDefaults();
 } 
+
+bool Designer::runOperation(std::string operation, korali::Sample& sample)
+{
+ bool operationDetected = false;
+
+ if (operation == "Evaluate Design")
+ {
+  evaluateDesign(sample);
+  return true;
+ }
+
+ operationDetected = operationDetected || Solver::runOperation(operation, sample);
+ if (operationDetected == false) KORALI_LOG_ERROR(" + Operation %s not recognized for problem Designer.\n", operation.c_str());
+ return operationDetected;
+}
 
 ;
 

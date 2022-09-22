@@ -154,17 +154,29 @@ class Designer : public Solver
   * @brief Applies the module's default variable configuration to each variable in the Experiment upon creation.
   */
   void applyVariableDefaults() override;
+  /**
+  * @brief Runs the operation specified on the given sample. It checks recursively whether the function was found by the current module or its parents.
+  * @param sample Sample to operate on. Should contain in the 'Operation' field an operation accepted by this module or its parents.
+  * @param operation Should specify an operation type accepted by this module or its parents.
+  * @return True, if operation found and executed; false, otherwise.
+  */
+  bool runOperation(std::string operation, korali::Sample& sample) override;
   
 
   /**
- * @brief Container for samples to be evaluated per generation
- */
+   * @brief Container for samples to be evaluated per generation
+   */
   std::vector<Sample> _samples;
 
   /**
- * @brief Problem pointer
- */
+   * @brief Problem pointer
+   */
   problem::Design *_problem;
+
+  /**
+   * @brief Evaluates the utility function for a given design
+   */
+  void evaluateDesign(Sample &sample);
 
   virtual void setInitialConfiguration() override;
   void runGeneration() override;

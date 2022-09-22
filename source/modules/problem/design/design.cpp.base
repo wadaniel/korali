@@ -31,12 +31,6 @@ void __className__::runModel(Sample &sample)
   sample.run(_model);
 }
 
-
-void __className__::evaluateDesign(Sample &sample)
-{
-  // TODO: Function that evaluates utility and is passed to optimizer
-}
-
 __moduleAutoCode__;
 
 __endNamespace__;

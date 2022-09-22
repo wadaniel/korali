@@ -90,11 +90,6 @@ class Design : public Problem
    * @brief Evaluates the model for a given sample from the prior distribution
    */
   void runModel(Sample &sample);
-
-  /**
-   * @brief Evaluates the utility function for a given design
-   */
-  void evaluateDesign(Sample &sample);
 };
 
 } //problem

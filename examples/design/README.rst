@@ -1,5 +1,5 @@
-Integration
-===========
+Design
+======
 
 In this tutorial we show how to determine an optimal **design** for a given function. The example is based on section 5.1. of https://arxiv.org/abs/1108.4146.
 

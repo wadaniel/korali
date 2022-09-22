@@ -374,16 +374,16 @@ void Designer::finalize()
   for( size_t d = 0; d < _problem->_designVectorSize; d++ )
   {
     const size_t dimIdx = (size_t)(_optimalDesign / _designHelperIndices[d]) % _numberOfDesignSamples[d];
-    printf(" %f ", _designLowerBounds[d] + dimIdx * _parameterGridSpacing[d]);
+    _k->_logger->logData("Minimal"," %f ", _designLowerBounds[d] + dimIdx * _designGridSpacing[d]);
   }
-  printf("]\n");
+  _k->_logger->logData("Minimal","]\n");
 
-  _k->_logger->logInfo("Minimal", "Utility: [");
+  _k->_logger->logInfo("Detailed", "Utility: [");
   for( size_t i = 0; i < _numberOfDesigns-1; i++ )
   {
-    printf(" %f, ", _utility[i]);
+    _k->_logger->logData("Detailed"," %f, ", _utility[i]);
   }
-  printf(" %f ]\n", _utility[_numberOfDesigns-1]);
+  _k->_logger->logData("Detailed"," %f ]\n", _utility[_numberOfDesigns-1]);
 }
 
 void Designer::setConfiguration(knlohmann::json& js) 

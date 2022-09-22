@@ -20,7 +20,7 @@ e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = 1.0
 
 e["Solver"]["Type"] = "Integrator/MonteCarlo"
-e["Solver"]["Number Of Samples"] = 100
+e["Solver"]["Number Of Samples"] = 1000
 e["Solver"]["Executions Per Generation"] = 10
 
 e["Console Output"]["Verbosity"] = "Detailed"

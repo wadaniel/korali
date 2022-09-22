@@ -38,6 +38,7 @@
 #include "problem/hierarchical/theta/theta.hpp"
 #include "problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "problem/integration/integration.hpp"
+#include "problem/design/design.hpp"
 #include "problem/optimization/optimization.hpp"
 #include "problem/problem.hpp"
 #include "problem/propagation/propagation.hpp"
@@ -51,6 +52,7 @@
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
+#include "solver/designer/designer.hpp"
 #include "solver/integrator/integrator.hpp"
 #include "solver/integrator/montecarlo/MonteCarlo.hpp"
 #include "solver/integrator/quadrature/Quadrature.hpp"
@@ -147,6 +149,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Hierarchical/Theta")) module = new korali::problem::hierarchical::Theta();
   if (iCompare(moduleType, "Hierarchical/ThetaNew")) module = new korali::problem::hierarchical::ThetaNew();
   if (iCompare(moduleType, "Integration")) module = new korali::problem::Integration();
+  if (iCompare(moduleType, "Design")) module = new korali::problem::Design();
   if (iCompare(moduleType, "Optimization")) module = new korali::problem::Optimization();
   if (iCompare(moduleType, "Propagation")) module = new korali::problem::Propagation();
   if (iCompare(moduleType, "Reaction")) module = new korali::problem::Reaction();
@@ -157,6 +160,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   
   // Solver modules
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
+  if (iCompare(moduleType, "Designer")) module = new korali::solver::Designer();
   if (iCompare(moduleType, "Integrator/MonteCarlo")) module = new korali::solver::integrator::MonteCarlo();
   if (iCompare(moduleType, "Integrator/Quadrature")) module = new korali::solver::integrator::Quadrature();
   if (iCompare(moduleType, "DeepSupervisor")) module = new korali::solver::DeepSupervisor();

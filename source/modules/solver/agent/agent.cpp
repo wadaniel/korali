@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <chrono>
 
-#define COSREWARD
+//#define COSREWARD
 //#define COSREWARDSCALED
 
 namespace korali

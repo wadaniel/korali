@@ -307,7 +307,7 @@ void __className__::evaluateDesign(Sample &sample)
         MSE += eps[d] * eps[d];
       MSE *= negInvTwoSigmaSq;
 
-      // /* Compute second part using log-sum-trick (https://en.wikipedia.org/wiki/LogSumExp) */
+      /* Compute second part using log-sum-trick (https://en.wikipedia.org/wiki/LogSumExp) */
 
       // First compute exponents
       std::vector<double> exponents(_numberOfPriorSamples);
@@ -333,22 +333,6 @@ void __className__::evaluateDesign(Sample &sample)
       
       // Sum Utility
       utility += ( MSE - marginal );
-
-      // Vanilla version of second term (note 1/sqrt(2 pi sigma^2) cancels with second term)
-      // double second = 0.0;
-      // for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-      // {
-      //   const auto & meanInner = evaluations[k];
-      //   double MSEinner = 0.0;
-      //   for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-      //     MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
-      //   MSEinner *= negInvTwoSigmaSq;
-      //   second += std::exp( MSEinner );
-      // }
-      // second /= _numberOfPriorSamples;
-
-      // // Sum Utility
-      // utility += ( MSE - std::log(second) );
     }
   }
   utility /= (float)( _numberOfPriorSamples * _numberOfLikelihoodSamples );

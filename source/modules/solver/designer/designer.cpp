@@ -29,51 +29,56 @@ void Designer::setInitialConfiguration()
     _parameterUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
     _parameterExtent[i] = _parameterUpperBounds[i] - _parameterLowerBounds[i];
 
-    if ( _parameterExtent[i] <= 0.0 ) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of parameter variable %lu invalid.\n", _parameterLowerBounds[i], _parameterUpperBounds[i], i);
+    if (_parameterExtent[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of parameter variable %lu invalid.\n", _parameterLowerBounds[i], _parameterUpperBounds[i], i);
 
     // Check number of samples
     _numberOfParameterSamples[i] = _k->_variables[varIdx]->_numberOfSamples;
 
-    if( _numberOfParameterSamples[i] <= 0 ) 
+    if (_numberOfParameterSamples[i] <= 0)
       KORALI_LOG_ERROR("Number Of Samples for variable %lu is not given .\n", varIdx);
 
     // Set gridspacing
     _parameterGridSpacing[i] = _parameterExtent[i] / (_numberOfParameterSamples[i] - 1);
 
     // Set helpers to transform linear to cartesian index
-    if( i == 0 )
+    if (i == 0)
       _parameterHelperIndices[i] = 1;
     else
-      _parameterHelperIndices[i] = _numberOfParameterSamples[i-1] * _parameterHelperIndices[i-1];
-
+      _parameterHelperIndices[i] = _numberOfParameterSamples[i - 1] * _parameterHelperIndices[i - 1];
 
     // Check validity of parameter distribution
     const auto priorName = _k->_variables[varIdx]->_distribution;
     bool foundDistribution = false;
 
-    if( priorName == "Grid" )
+    if (priorName == "Grid")
     {
       _parameterDistributionIndex[i] = -1;
       foundDistribution = true;
-      if( (isfinite(_parameterLowerBounds[i]) == false) || (isfinite(_parameterUpperBounds[i]) == false) )
+      if ((isfinite(_parameterLowerBounds[i]) == false) || (isfinite(_parameterUpperBounds[i]) == false))
         KORALI_LOG_ERROR("Provided bounds (%f,%f) for parameter variable %lu is non-finite, but grid evaluation requires bound domain.\n", _parameterLowerBounds[i], _parameterUpperBounds[i], i);
     }
 
     for (size_t j = 0; (j < _k->_distributions.size()) && (foundDistribution == false); j++)
-    if (priorName == _k->_distributions[j]->_name)
-    {
-      _parameterDistributionIndex[i] = j;
-      foundDistribution = true;
-    }
+      if (priorName == _k->_distributions[j]->_name)
+      {
+        _parameterDistributionIndex[i] = j;
+        foundDistribution = true;
+      }
 
-    if ( foundDistribution == false ) 
+    if (foundDistribution == false)
       KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[varIdx]->_distribution.c_str(), _k->_variables[i]->_name.c_str());
   }
 
-  if( std::any_of( _parameterDistributionIndex.begin(), _parameterDistributionIndex.end(), [](int x){ return x == -1; } ) )
+  if (std::any_of(_parameterDistributionIndex.begin(), _parameterDistributionIndex.end(), [](int x)
+                  {
+                    return x == -1;
+                  }))
   {
     // Check consistency of parameter distribution
-    if( std::all_of( _parameterDistributionIndex.begin(), _parameterDistributionIndex.end(), [](int x){ return x == -1; } ) == false )
+    if (std::all_of(_parameterDistributionIndex.begin(), _parameterDistributionIndex.end(), [](int x)
+                    {
+                      return x == -1;
+                    }) == false)
       KORALI_LOG_ERROR("Parameter distributions are inconsistent. You have to specify a valid distribution or Grid for all of them.\n");
 
     // Set number of parameter samples
@@ -85,7 +90,10 @@ void Designer::setInitialConfiguration()
   else
   {
     // Check consistency of number of parameter samples
-    if( std::all_of( _numberOfParameterSamples.begin(), _numberOfParameterSamples.end(), [&](size_t x){ return x == _numberOfParameterSamples[0]; }) == false  )
+    if (std::all_of(_numberOfParameterSamples.begin(), _numberOfParameterSamples.end(), [&](size_t x)
+                    {
+                      return x == _numberOfParameterSamples[0];
+                    }) == false)
       KORALI_LOG_ERROR("Parameter distributions are inconsistent. You have to specify the same number of samples for every dimension.\n");
 
     // Set number of parameter samples
@@ -116,27 +124,27 @@ void Designer::setInitialConfiguration()
     // Check number of samples
     _numberOfDesignSamples[i] = _k->_variables[varIdx]->_numberOfSamples;
 
-    if( _numberOfDesignSamples[i] <= 0 ) 
+    if (_numberOfDesignSamples[i] <= 0)
       KORALI_LOG_ERROR("Number Of Samples for variable %lu is not given .\n", varIdx);
 
     // Set grid spacing
     _designGridSpacing[i] = _designExtent[i] / (_numberOfDesignSamples[i] - 1);
 
     // Set helpers to transform linear to cartesian index
-    if( i == 0 )
+    if (i == 0)
       _designHelperIndices[i] = 1;
     else
-      _designHelperIndices[i] = _numberOfDesignSamples[i-1] * _designHelperIndices[i - 1];
+      _designHelperIndices[i] = _numberOfDesignSamples[i - 1] * _designHelperIndices[i - 1];
   }
 
   // Compute number of designs
   _numberOfDesigns = std::accumulate(_numberOfDesignSamples.begin(), _numberOfDesignSamples.end(), 1, std::multiplies<size_t>());
 
   // Compute candidate designs
-  for( size_t candidate = 0; candidate < _numberOfDesigns; candidate++ )
+  for (size_t candidate = 0; candidate < _numberOfDesigns; candidate++)
   {
     std::vector<double> design(_problem->_designVectorSize);
-    for( size_t d = 0; d < _problem->_designVectorSize; d++ )
+    for (size_t d = 0; d < _problem->_designVectorSize; d++)
     {
       const size_t dimIdx = (size_t)(candidate / _designHelperIndices[d]) % _numberOfDesignSamples[d];
       design[d] = _designLowerBounds[d] + dimIdx * _designGridSpacing[d];
@@ -153,12 +161,15 @@ void Designer::setInitialConfiguration()
     // Check number of samples
     _numberOfMeasurementSamples[i] = _k->_variables[varIdx]->_numberOfSamples;
 
-    if( _numberOfMeasurementSamples[i] <= 0 ) 
+    if (_numberOfMeasurementSamples[i] <= 0)
       KORALI_LOG_ERROR("Number Of Samples for variable %lu is not given .\n", varIdx);
   }
 
   // Check consistency of number of likelihood samples
-  if( std::all_of( _numberOfMeasurementSamples.begin(), _numberOfMeasurementSamples.end(), [&](size_t x){ return x == _numberOfMeasurementSamples[0]; } ) == false )
+  if (std::all_of(_numberOfMeasurementSamples.begin(), _numberOfMeasurementSamples.end(), [&](size_t x)
+                  {
+                    return x == _numberOfMeasurementSamples[0];
+                  }) == false)
     KORALI_LOG_ERROR("Number of measurement samples are inconsistent. You have to specify the same number of samples for every dimension.\n");
 
   // Set number of likelihood samples
@@ -183,9 +194,9 @@ void Designer::runGeneration()
 
   // Compute how many samples still have to be evaluated
   size_t numEvaluations = _numberOfPriorSamples;
-  if( _executionsPerGeneration > 0 )
+  if (_executionsPerGeneration > 0)
     numEvaluations = std::min(_executionsPerGeneration, _numberOfPriorSamples - _modelEvaluations[0].size());
-  
+
   // Create and start samples
   _samples.resize(numEvaluations);
   for (size_t i = 0; i < numEvaluations; i++)
@@ -193,16 +204,17 @@ void Designer::runGeneration()
     std::vector<double> params(_problem->_parameterVectorSize);
 
     // Set parameter values
-    if ( _parameterIntegrator ==  "Integrator/Quadrature" )
+    if (_parameterIntegrator == "Integrator/Quadrature")
     {
-      for( size_t d = 0; d < _problem->_parameterVectorSize; d++ )
+      for (size_t d = 0; d < _problem->_parameterVectorSize; d++)
       {
         const size_t dimIdx = (size_t)(_priorSamples.size() / _parameterHelperIndices[d]) % _numberOfParameterSamples[d];
         params[d] = _parameterLowerBounds[d] + dimIdx * _parameterGridSpacing[d];
       }
     }
-    else { // Sample parameters
-      for( size_t d = 0; d < _problem->_parameterVectorSize; d++ )
+    else
+    { // Sample parameters
+      for (size_t d = 0; d < _problem->_parameterVectorSize; d++)
         params[d] = _k->_distributions[_parameterDistributionIndex[d]]->getRandomNumber();
     }
 
@@ -228,23 +240,23 @@ void Designer::runGeneration()
   for (size_t i = 0; i < numEvaluations; i++)
   {
     auto evaluation = KORALI_GET(std::vector<std::vector<double>>, _samples[i], "Model Evaluation");
-    
+
     // Check whether one value per design was returned
-    if( evaluation.size() != _numberOfDesigns )
+    if (evaluation.size() != _numberOfDesigns)
       KORALI_LOG_ERROR("Evaluation returned vector returned with the wrong size: %lu, expected: %lu.\n", evaluation.size(), _numberOfDesigns);
 
     // Check whether the dimension of the measurement is correct
-    for( size_t e = 0; e < _numberOfDesigns; e++ )
+    for (size_t e = 0; e < _numberOfDesigns; e++)
     {
-    if( evaluation[e].size() != _problem->_measurementVectorSize )
-      KORALI_LOG_ERROR("Evaluation %ld returned vector returned with the wrong size: %lu, expected: %lu.\n", e, evaluation[e].size(), _problem->_measurementVectorSize);
+      if (evaluation[e].size() != _problem->_measurementVectorSize)
+        KORALI_LOG_ERROR("Evaluation %ld returned vector returned with the wrong size: %lu, expected: %lu.\n", e, evaluation[e].size(), _problem->_measurementVectorSize);
 
       // Save evaluation
       _modelEvaluations[e].push_back(evaluation[e]);
     }
   }
 
-  if( _modelEvaluations[0].size() < _numberOfPriorSamples )
+  if (_modelEvaluations[0].size() < _numberOfPriorSamples)
     return;
 
   /*** Step 2: Compute Utility  ***/
@@ -252,7 +264,7 @@ void Designer::runGeneration()
 
   _samples.clear();
   _samples.resize(_numberOfDesigns);
-  for( size_t e = 0; e<_numberOfDesigns; e++ )
+  for (size_t e = 0; e < _numberOfDesigns; e++)
   {
     // Configure Sample
     _samples[e]["Sample Id"] = e;
@@ -271,15 +283,15 @@ void Designer::runGeneration()
 
   // Get utility and determine maximum
   double maxUtility = -std::numeric_limits<double>::infinity();
-  for( size_t e = 0; e<_numberOfDesigns; e++)
+  for (size_t e = 0; e < _numberOfDesigns; e++)
   {
     // Gather result
     _utility[e] = KORALI_GET(double, _samples[e], "Utility");
 
-    // Update maximum
-    #pragma omp critical
+// Update maximum
+#pragma omp critical
     {
-      if( _utility[e] > maxUtility )
+      if (_utility[e] > maxUtility)
       {
         maxUtility = _utility[e];
         _optimalDesign = e;
@@ -293,21 +305,22 @@ void Designer::evaluateDesign(Sample &sample)
   auto evaluations = KORALI_GET(std::vector<std::vector<double>>, sample, "Evaluations");
 
   double utility = 0.0;
-  const double negInvTwoSigmaSq = - 1 / ( 2 * _sigma * _sigma );
-  #pragma omp parallel for reduction(+: utility)
-  for( size_t i = 0; i<_numberOfPriorSamples; i++ )
+  const double negInvTwoSigmaSq = -1 / (2 * _sigma * _sigma);
+#pragma omp parallel for reduction(+ \
+                                   : utility)
+  for (size_t i = 0; i < _numberOfPriorSamples; i++)
   {
-    const auto & mean = evaluations[i];
-    for( size_t j = 0; j<_numberOfLikelihoodSamples; j++ )
+    const auto &mean = evaluations[i];
+    for (size_t j = 0; j < _numberOfLikelihoodSamples; j++)
     {
       // Sample likelihood
       std::vector<double> eps(_problem->_measurementVectorSize);
-      for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-        eps[d] = _sigma*_normalGenerator->getRandomNumber();
+      for (size_t d = 0; d < _problem->_measurementVectorSize; d++)
+        eps[d] = _sigma * _normalGenerator->getRandomNumber();
 
       // Compute first part of utility (note 1/sqrt(2 pi sigma^2) cancels with second term)
       double MSE = 0.0;
-      for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
+      for (size_t d = 0; d < _problem->_measurementVectorSize; d++)
         MSE += eps[d] * eps[d];
       MSE *= negInvTwoSigmaSq;
 
@@ -315,12 +328,12 @@ void Designer::evaluateDesign(Sample &sample)
 
       // First compute exponents
       std::vector<double> exponents(_numberOfPriorSamples);
-      for( size_t k = 0; k<_numberOfPriorSamples; k++ )
+      for (size_t k = 0; k < _numberOfPriorSamples; k++)
       {
-        const auto & meanInner = evaluations[k];
+        const auto &meanInner = evaluations[k];
         double MSEinner = 0.0;
-        for( size_t d = 0; d<_problem->_measurementVectorSize; d++ )
-          MSEinner += ( mean[d] + eps[d] - meanInner[d] )*( mean[d] + eps[d] - meanInner[d] );
+        for (size_t d = 0; d < _problem->_measurementVectorSize; d++)
+          MSEinner += (mean[d] + eps[d] - meanInner[d]) * (mean[d] + eps[d] - meanInner[d]);
         MSEinner *= negInvTwoSigmaSq;
         exponents[k] = MSEinner;
       }
@@ -328,18 +341,18 @@ void Designer::evaluateDesign(Sample &sample)
       // Compute max and perform reduced sum
       const double max = *std::max_element(exponents.begin(), exponents.end());
       double sumExp = 0.0;
-      for( size_t k = 0; k<_numberOfPriorSamples; k++ )
-        sumExp += std::exp( exponents[k] - max );
+      for (size_t k = 0; k < _numberOfPriorSamples; k++)
+        sumExp += std::exp(exponents[k] - max);
       sumExp /= (double)_numberOfPriorSamples;
 
       // Finalize computation of second part
-      const double marginal = max + std::log( sumExp );
-      
+      const double marginal = max + std::log(sumExp);
+
       // Sum Utility
-      utility += ( MSE - marginal );
+      utility += (MSE - marginal);
     }
   }
-  utility /= (float)( _numberOfPriorSamples * _numberOfLikelihoodSamples );
+  utility /= (float)(_numberOfPriorSamples * _numberOfLikelihoodSamples);
 
   sample["Utility"] = utility;
 }
@@ -355,19 +368,19 @@ void Designer::printGenerationAfter()
 void Designer::finalize()
 {
   _k->_logger->logInfo("Minimal", "Optimal Design (indx=%ld): [", _optimalDesign);
-  for( size_t d = 0; d < _problem->_designVectorSize; d++ )
+  for (size_t d = 0; d < _problem->_designVectorSize; d++)
   {
     const size_t dimIdx = (size_t)(_optimalDesign / _designHelperIndices[d]) % _numberOfDesignSamples[d];
-    _k->_logger->logData("Minimal"," %f ", _designLowerBounds[d] + dimIdx * _designGridSpacing[d]);
+    _k->_logger->logData("Minimal", " %f ", _designLowerBounds[d] + dimIdx * _designGridSpacing[d]);
   }
-  _k->_logger->logData("Minimal","]\n");
+  _k->_logger->logData("Minimal", "]\n");
 
   _k->_logger->logInfo("Detailed", "Utility: [");
-  for( size_t i = 0; i < _numberOfDesigns-1; i++ )
+  for (size_t i = 0; i < _numberOfDesigns - 1; i++)
   {
-    _k->_logger->logData("Detailed"," %f, ", _utility[i]);
+    _k->_logger->logData("Detailed", " %f, ", _utility[i]);
   }
-  _k->_logger->logData("Detailed"," %f ]\n", _utility[_numberOfDesigns-1]);
+  _k->_logger->logData("Detailed", " %f ]\n", _utility[_numberOfDesigns - 1]);
 }
 
 void Designer::setConfiguration(knlohmann::json& js) 

@@ -88,6 +88,7 @@ class Design : public Problem
 
   /**
    * @brief Evaluates the model for a given sample from the prior distribution
+   * @param sample A Korali Sample
    */
   void runModel(Sample &sample);
 };

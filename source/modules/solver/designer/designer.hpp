@@ -12,10 +12,10 @@
 
 #pragma once
 
-#include "modules/solver/solver.hpp"
-#include "sample/sample.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/design/design.hpp"
+#include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -175,6 +175,7 @@ class Designer : public Solver
 
   /**
    * @brief Evaluates the utility function for a given design
+   * @param sample A Korali Sample
    */
   void evaluateDesign(Sample &sample);
 

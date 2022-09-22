@@ -756,7 +756,7 @@ void CMAES::updateSigma()
 
 void CMAES::numericalErrorTreatment()
 {
-  //treat minimal standard deviations
+  // treat minimal standard deviations
   for (size_t d = 0; d < _variableCount; ++d)
     if (_sigma * sqrt(_covarianceMatrix[d * _variableCount + d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
     {
@@ -800,7 +800,7 @@ void CMAES::handleConstraints()
 
     updateEigensystem(_auxiliarCovarianceMatrix);
 
-    //resample invalid points
+    // resample invalid points
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {

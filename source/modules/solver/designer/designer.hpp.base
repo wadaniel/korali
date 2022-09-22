@@ -22,6 +22,7 @@ class __className__ : public __parentClassName__
 
   /**
    * @brief Evaluates the utility function for a given design
+   * @param sample A Korali Sample
    */
   void evaluateDesign(Sample &sample);
 

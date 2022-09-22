@@ -21,13 +21,13 @@ Create a folder named `model`. Inside, create a file with name `model.py` which 
 
 .. code-block:: python
 
-        def model1D(s):
-            theta = s["Parameters"]
-            d = s["Designs"]
-            res = theta * theta * theta * d * d + thetas * np.exp(-np.abs(0.2 - d))
-            return res
+        def model(s):
+            theta = np.array(s["Parameters"])
+            d = np.array(s["Designs"])
+            res = theta * theta * theta * d * d + theta * np.exp(-np.abs(0.2 - d))
+            s["Model Evaluation"] = res.tolist()
 
-Not, that this implements :math:`g(\vartheta,d)` and we do not include the stochastic error.
+This implements :math:`g(\vartheta,d)` and we do not include the stochastic error.
 
 
 The Problem Type
@@ -38,7 +38,7 @@ Then, we set the type of the problem to `Design` and set the measurement model
 .. code-block:: python
 
         e["Problem"]["Type"] = "Design"
-        e["Problem"]["Model"] = model1D
+        e["Problem"]["Model"] = model
 
 The Variables
 -------------
@@ -52,20 +52,27 @@ In this problem there is three variables: :math:`\vartheta`,  :math:`d`, and :ma
         e["Distributions"][0]["Minimum"] = 0.0
         e["Distributions"][0]["Maximum"] = 1.0
 
-        e["Variables"][0]["Name"] = "design"
-        e["Variables"][0]["Number Of Samples"] = 101
-        e["Variables"][0]["Lower Bound"] = 0.0
-        e["Variables"][0]["Upper Bound"] = 1.0
-        e["Variables"][0]["Distribution"] = "Grid"
-        
-        e["Variables"][1]["Name"] = "theta"
-        e["Variables"][1]["Lower Bound"] = 0.0
-        e["Variables"][1]["Upper Bound"] = 1.0
-        e["Variables"][1]["Number Of Samples"] = 1e5
-        e["Variables"][1]["Distribution"] = "Uniform"
-        
-        e["Variables"][2]["Name"] = "measurement"
-        e["Variables"][2]["Number Of Samples"] = 1e5
+        indx = 0
+        e["Variables"][indx]["Name"] = "d1"
+        e["Variables"][indx]["Type"] = "Design"
+        e["Variables"][indx]["Number Of Samples"] = 101
+        e["Variables"][indx]["Lower Bound"] = 0.0
+        e["Variables"][indx]["Upper Bound"] = 1.0
+        e["Variables"][indx]["Distribution"] = "Grid"
+        indx += 1
+
+        e["Variables"][indx]["Name"] = "theta"
+        e["Variables"][indx]["Type"] = "Parameter"
+        e["Variables"][indx]["Lower Bound"] = 0.0
+        e["Variables"][indx]["Upper Bound"] = 1.0
+        e["Variables"][indx]["Number Of Samples"] = 1e2
+        e["Variables"][indx]["Distribution"] = "Uniform"
+        indx += 1
+
+        e["Variables"][indx]["Name"] = "y1"
+        e["Variables"][indx]["Type"] = "Measurement"
+        e["Variables"][indx]["Number Of Samples"] = 1e2
+        indx += 1
 
 The Solver
 ----------
@@ -74,7 +81,7 @@ We choose the solver `Designer`, don't set the execution per generation, to have
 .. code-block:: python
 
         e["Solver"]["Type"] = "Designer"
-        e["Solver"]["Measurement Sigma"] = 1e-4
+        e["Solver"]["Sigma"] = 1e-2
 
 Running
 -------

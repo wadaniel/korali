@@ -86,6 +86,9 @@ void Designer::setInitialConfiguration()
 
     // Set integrator
     _parameterIntegrator = "Integrator/Quadrature";
+
+    // Fail here, as this is currently not supported
+    KORALI_LOG_ERROR("Currently the quadrature evaluation of the integral is not supported. Choose a prior distribution, not Grid.\n");
   }
   else
   {

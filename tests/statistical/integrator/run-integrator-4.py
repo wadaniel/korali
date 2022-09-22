@@ -12,6 +12,7 @@ import numpy as np
 import korali
 e = korali.Experiment()
 
+e["Random Seed"] = 0xC0FF33
 e["Problem"]["Type"] = "Integration"
 e["Problem"]["Integrand"] = pcubic
 
@@ -31,4 +32,5 @@ k = korali.Engine()
 k.run(e)
 
 # Verify result
-assert (math.isclose(e["Results"]["Integral"], 0.25, rel_tol=0., abs_tol=0.05))
+assert math.isclose(e["Results"]["Integral"], 0.25, rel_tol=0., abs_tol=0.05), f'Expected 0.25 is {e["Results"]["Integral"]}'
+

@@ -15,7 +15,7 @@
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
@@ -106,19 +106,15 @@ class Agent : public Solver
   /**
   * @brief Indicates the number of concurrent environments to use to collect experiences.
   */
-   size_t _concurrentEnvironments;
+   size_t _concurrentWorkers;
   /**
-  * @brief Indicates how many episodes to complete in a generation (checkpoints are generated between generations).
+  * @brief Number of reinforcement learning episodes per Korali generation (checkpoints are generated between generations).
   */
    size_t _episodesPerGeneration;
   /**
   * @brief The number of experiences to randomly select to train the neural network(s) with.
   */
    size_t _miniBatchSize;
-  /**
-  * @brief Determines how to select experiences from the replay memory for mini batch creation.
-  */
-   std::string _miniBatchStrategy;
   /**
   * @brief Indicates the number of contiguous experiences to pass to the NN for learning. This is only useful when using recurrent NNs.
   */
@@ -280,9 +276,41 @@ class Agent : public Solver
   */
    knlohmann::json _trainingBestPolicy;
   /**
+  * @brief [Internal Use] Keeps a history of all training episode rewards.
+  */
+   std::vector<float> _testingAverageRewardHistory;
+  /**
   * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
    std::vector<float> _testingReward;
+  /**
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingBestReward;
+  /**
+  * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingWorstReward;
+  /**
+  * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
+  */
+   size_t _testingBestEpisodeId;
+  /**
+  * @brief [Internal Use] Remembers the number of candidate policies tested so far.
+  */
+   size_t _testingCandidateCount;
+  /**
+  * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
+  */
+   float _testingAverageReward;
+  /**
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
+  */
+   float _testingBestAverageReward;
+  /**
+  * @brief [Internal Use] Stores the best testing policy configuration found so far.
+  */
+   knlohmann::json _testingBestPolicy;
   /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
@@ -420,14 +448,14 @@ class Agent : public Solver
   
 
   /**
-   * @brief Array of agents collecting new experiences
+   * @brief Array of workers collecting new experiences
    */
-  std::vector<Sample> _agents;
+  std::vector<Sample> _workers;
 
   /**
-   * @brief Keeps track of the age
+   * @brief Keeps track of the workers
    */
-  std::vector<bool> _isAgentRunning;
+  std::vector<bool> _isWorkerRunning;
 
   /**
    * @brief Features given by the environment to calculate the reward
@@ -467,12 +495,12 @@ class Agent : public Solver
   /**
    * @brief Stores the state of the experience
    */
-  cBuffer<std::vector<float>> _stateVector;
+  cBuffer<std::vector<float>> _stateBuffer;
 
   /**
-   * @brief Stores the action taken by the agent at the given state
+   * @brief Stores the action taken by the agent
    */
-  cBuffer<std::vector<float>> _actionVector;
+  cBuffer<std::vector<float>> _actionBuffer;
 
   /**
    * @brief Stores the observed features at the given state
@@ -492,87 +520,72 @@ class Agent : public Solver
   /**
    * @brief Episode that experience belongs to
    */
-  cBuffer<size_t> _episodeIdVector;
+  cBuffer<size_t> _episodeIdBuffer;
 
   /**
    * @brief Position within the episode of this experience
    */
-  cBuffer<size_t> _episodePosVector;
+  cBuffer<size_t> _episodePosBuffer;
 
   /**
    * @brief Contains the latest calculation of the experience's importance weight
    */
-  cBuffer<float> _importanceWeightVector;
+  cBuffer<float> _importanceWeightBuffer;
 
   /**
    * @brief Contains the latest calculation of the experience's truncated importance weight
    */
-  cBuffer<float> _truncatedImportanceWeightVector;
-
-  /**
-   * @brief For prioritized experience replay, this stores the experience's priority
-   */
-  cBuffer<float> _priorityVector;
-
-  /**
-   * @brief For prioritized experience replay, this stores the experience's probability
-   */
-  cBuffer<float> _probabilityVector;
+  cBuffer<float> _truncatedImportanceWeightBuffer;
 
   /**
    * @brief Contains the most current policy information given the experience state
    */
-  cBuffer<policy_t> _curPolicyVector;
+  cBuffer<policy_t> _curPolicyBuffer;
 
   /**
    * @brief Contains the policy information produced at the moment of the action was taken
    */
-  cBuffer<policy_t> _expPolicyVector;
+  cBuffer<policy_t> _expPolicyBuffer;
 
   /**
    * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
    */
-  cBuffer<bool> _isOnPolicyVector;
+  cBuffer<bool> _isOnPolicyBuffer;
 
   /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.
    */
-  cBuffer<termination_t> _terminationVector;
+  cBuffer<termination_t> _terminationBuffer;
 
   /**
    * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
    */
-  cBuffer<float> _retraceValueVector;
+  cBuffer<float> _retraceValueBuffer;
 
   /**
    * @brief If this is a truncated terminal experience, this contains the state value for that state
    */
-  cBuffer<float> _truncatedStateValueVector;
+  cBuffer<float> _truncatedStateValueBuffer;
 
   /**
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
    */
-  cBuffer<std::vector<float>> _truncatedStateVector;
+  cBuffer<std::vector<float>> _truncatedStateBuffer;
 
   /**
    * @brief Contains the environment id of every experience
    */
-  cBuffer<size_t> _environmentIdVector;
+  cBuffer<size_t> _environmentIdBuffer;
 
   /**
    * @brief Contains the rewards of every experience
    */
-  cBuffer<float> _rewardVector;
+  cBuffer<float> _rewardBuffer;
 
   /**
    * @brief Contains the state value evaluation for every experience
    */
-  cBuffer<float> _stateValueVector;
-
-  /**
-   * @brief Stores the priority annealing rate.
-   */
-  float _priorityAnnealingRate;
+  cBuffer<float> _stateValueBuffer;
 
   /**
    * @brief Stores the importance weight annealing factor.
@@ -608,7 +621,7 @@ class Agent : public Solver
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  double _sessionAgentTrajectoryLogProbilityUpdateTime;
+  double _sessionWorkerTrajectoryLogProbilityUpdateTime;
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -625,19 +638,19 @@ class Agent : public Solver
   double _sessionSerializationTime;
 
   /**
-   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   * @brief [Profiling] Stores the computation time per episode taken by Workers
    */
-  double _sessionAgentComputationTime;
+  double _sessionWorkerComputationTime;
 
   /**
-   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   * @brief [Profiling] Measures the average communication time per episode taken by Workers
    */
-  double _sessionAgentCommunicationTime;
+  double _sessionWorkerCommunicationTime;
 
   /**
-   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Workers
    */
-  double _sessionAgentPolicyEvaluationTime;
+  double _sessionPolicyEvaluationTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
@@ -647,7 +660,7 @@ class Agent : public Solver
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
-  double _sessionAgentAttendingTime;
+  double _sessionWorkerAttendingTime;
 
   /****************************************************************************************************
    * Generation-wise Profiling Timers
@@ -664,19 +677,19 @@ class Agent : public Solver
   double _generationSerializationTime;
 
   /**
-   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   * @brief [Profiling] Stores the computation time per episode taken by worker
    */
-  double _generationAgentComputationTime;
+  double _generationWorkerComputationTime;
 
   /**
-   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   * @brief [Profiling] Measures the average communication time per episode taken by Workers
    */
-  double _generationAgentCommunicationTime;
+  double _generationWorkerCommunicationTime;
 
   /**
-   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Workers
    */
-  double _generationAgentPolicyEvaluationTime;
+  double _generationPolicyEvaluationTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
@@ -686,10 +699,10 @@ class Agent : public Solver
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
-  double _generationAgentAttendingTime;
+  double _generationWorkerAttendingTime;
 
   /****************************************************************************************************
-   * Common Agent functions
+   * Common functions
    ***************************************************************************************************/
 
   /**
@@ -773,9 +786,9 @@ class Agent : public Solver
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
-   * @param agentId The Agent's ID
+   * @param workerId The worker's ID
    */
-  void attendAgent(const size_t agentId);
+  void attendWorker(const size_t workerId);
 
   /**
    * @brief Serializes the experience replay into a JSON compatible format
@@ -878,7 +891,7 @@ class Agent : public Solver
    ***************************************************************************************************/
 
   /**
-   * @brief Trains the Agent's policy, based on the new experiences
+   * @brief Trains the policy, based on the new experiences
    */
   virtual void trainPolicy() = 0;
 
@@ -886,13 +899,13 @@ class Agent : public Solver
    * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
    * @return The current policy hyperparameters
    */
-  virtual knlohmann::json getAgentPolicy() = 0;
+  virtual knlohmann::json getPolicy() = 0;
 
   /**
    * @brief Updates the agent's hyperparameters
    * @param hyperparameters The hyperparameters to update the agent.
    */
-  virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+  virtual void setPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
    * @brief Initializes the internal state of the policy
@@ -902,7 +915,7 @@ class Agent : public Solver
   /**
    * @brief Prints information about the training policy
    */
-  virtual void printAgentInformation() = 0;
+  virtual void printInformation() = 0;
 
   /**
    * @brief Gathers the next action either from the policy or randomly

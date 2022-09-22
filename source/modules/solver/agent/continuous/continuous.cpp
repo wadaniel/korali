@@ -1001,7 +1001,7 @@ float Continuous::evaluateTrajectoryLogProbability(const std::vector<std::vector
 {
   knlohmann::json policy;
   policy["Policy"] = policyHyperparameter;
-  setAgentPolicy(policy);
+  setPolicy(policy);
 
   float trajectoryLogProbability = 0.0;
   // Evaluate all states within a single trajectory and calculate probability of trajectory

@@ -53,11 +53,12 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
     for r in results:
         # Load Returns
         returns = np.array(r["Solver"]["Training"]["Reward History"])
-        returns = np.reshape(returns, (numResults,-1))
 
         if (r["Problem"]["Agents Per Environment"] > 1) and not showAgents:
             returns = np.mean(returns, axis=0)
             returns = np.reshape(returns, (1,-1))
+
+        returns = np.reshape(returns, (numResults,-1))
 
         for _return in returns:
             # Load and save cumulative sum of observations

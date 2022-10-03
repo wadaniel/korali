@@ -243,6 +243,25 @@ class __className__ : public __parentClassName__
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _sessionWorkerTrajectoryLogProbilityUpdateTime;
+  
+  /****************************************************************************************************
+   * Variables for reward function learning
+   ***************************************************************************************************/
+
+  /**
+   * @brief Pointer to training the reward function network
+   */
+  solver::DeepSupervisor *_rewardFunctionLearner;
+
+  /**
+   * @brief Korali experiment for reward function
+   */
+  korali::Experiment _rewardFunctionExperiment;
+
+  /**
+   * @brief Pointer to experiment problem
+   */
+  problem::SupervisedLearning *_rewardFunctionProblem;
 
   /****************************************************************************************************
    * Session-wise Profiling Timers

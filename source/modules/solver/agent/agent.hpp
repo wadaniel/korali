@@ -152,6 +152,14 @@ class Agent : public Solver
   */
    float _importanceWeightTruncationLevel;
   /**
+  * @brief Determines whether to normalize the states, such that they have mean 0 and standard deviation 1 (done only once after the initial exploration phase).
+  */
+   int _stateRescalingEnabled;
+  /**
+  * @brief Determines whether to normalize the rewards, such that they have mean 0 and standard deviation 1
+  */
+   int _rewardRescalingEnabled;
+  /**
   * @brief Indicates whether to serialize and store the experience replay after each generation. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
   */
    int _experienceReplaySerialize;
@@ -192,10 +200,6 @@ class Agent : public Solver
   */
    float _experiencesBetweenPartitionFunctionStatistics;
   /**
-  * @brief The learning rate to update the feature weights of the reward function.
-  */
-   float _rewardfunctionLearningRate;
-  /**
   * @brief Calculate importance weights using the fusion distribution assumption.
   */
    int _useFusionDistribution;
@@ -208,21 +212,17 @@ class Agent : public Solver
   */
    size_t _backgroundBatchSize;
   /**
-  * @brief Determines whether to normalize the states, such that they have mean 0 and standard deviation 1 (done only once after the initial exploration phase).
+  * @brief TODO
   */
-   int _stateRescalingEnabled;
+   knlohmann::json _rewardFunctionNeuralNetworkHiddenLayers;
   /**
-  * @brief Determines whether to normalize the rewards, such that they have mean 0 and standard deviation 1
+  * @brief The learning rate to update the neural network of the reward function.
   */
-   int _rewardRescalingEnabled;
+   float _rewardFunctionLearningRate;
   /**
-  * @brief If enabled, it penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
+  * @brief TODO.
   */
-   int _rewardOutboundPenalizationEnabled;
-  /**
-  * @brief The factor (f) by which te reward is scaled down. R = f * R
-  */
-   float _rewardOutboundPenalizationFactor;
+   std::vector<float> _maxEntropyGradient;
   /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
@@ -359,18 +359,6 @@ class Agent : public Solver
   * @brief [Internal Use] Indicates the maximum priority of any experience in the experience replay.
   */
    size_t _rewardOutboundPenalizationCount;
-  /**
-  * @brief [Internal Use] The weights of the features required to calculate the reward.
-  */
-   std::vector<float> _featureWeights;
-  /**
-  * @brief [Internal Use] The softmax of the feature weights.
-  */
-   std::vector<float> _softMaxFeatureWeights;
-  /**
-  * @brief [Internal Use] The gradient of the feature weights.
-  */
-   std::vector<float> _featureWeightGradient;
   /**
   * @brief [Internal Use] The logarithm of the estimated partition function
   */
@@ -622,6 +610,25 @@ class Agent : public Solver
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _sessionWorkerTrajectoryLogProbilityUpdateTime;
+  
+  /****************************************************************************************************
+   * Variables for reward function learning
+   ***************************************************************************************************/
+
+  /**
+   * @brief Pointer to training the reward function network
+   */
+  solver::DeepSupervisor *_rewardFunctionLearner;
+
+  /**
+   * @brief Korali experiment for reward function
+   */
+  korali::Experiment _rewardFunctionExperiment;
+
+  /**
+   * @brief Pointer to experiment problem
+   */
+  problem::SupervisedLearning *_rewardFunctionProblem;
 
   /****************************************************************************************************
    * Session-wise Profiling Timers

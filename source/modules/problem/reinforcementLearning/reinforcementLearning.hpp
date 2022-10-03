@@ -13,7 +13,6 @@
 #pragma once
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
 namespace korali
@@ -193,6 +192,7 @@ class ReinforcementLearning : public Problem
    * @brief [Profiling] Stores communication time per episode
    */
   double _agentCommunicationTime;
+
 };
 
 } //problem

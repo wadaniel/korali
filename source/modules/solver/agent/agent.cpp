@@ -177,10 +177,48 @@ void Agent::initialize()
     _testingReward.resize(_testingSampleIds.size());
   }
 
-  _featureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
-  _featureWeightGradient.resize(_problem->_featureVectorSize, 0.0);
-  _softMaxFeatureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
   if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
+
+  // IRL
+  _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
+  _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
+  _rewardFunctionExperiment["Problem"]["Training Batch Size"] = 1; //_demonstrationBatchSize + _backgroundBatchSize;
+  _rewardFunctionExperiment["Problem"]["Inference Batch Size"] = 1;
+  _rewardFunctionExperiment["Problem"]["Input"]["Size"] = _problem->_featureVectorSize;
+  _rewardFunctionExperiment["Problem"]["Solution"]["Size"] = 1;
+
+  _rewardFunctionExperiment["Solver"]["Type"] = "DeepSupervisor";
+  _rewardFunctionExperiment["Solver"]["L2 Regularization"]["Enabled"] = false;
+  _rewardFunctionExperiment["Solver"]["L2 Regularization"]["Importance"] = 0.;
+  _rewardFunctionExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _rewardFunctionExperiment["Solver"]["Learning Rate"] = _rewardFunctionLearningRate;
+  _rewardFunctionExperiment["Solver"]["Steps Per Generation"] = 1;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _rewardFunctionNeuralNetworkHiddenLayers;
+  _rewardFunctionExperiment["Solver"]["Output Weights Scaling"] = 0.001;
+
+  // No transformations for the state value output
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
+
+  // Setting transformations for the selected policy distribution output
+  for (size_t i = 0; i < 32; i++)
+  {
+    _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.; 
+    _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = 0.; 
+    _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = "Tanh"; 
+  }
+
+  // Running initialization to verify that the configuration is correct
+  _rewardFunctionExperiment.initialize();
+  _rewardFunctionProblem = dynamic_cast<problem::SupervisedLearning *>(_rewardFunctionExperiment._problem);
+  _rewardFunctionLearner = dynamic_cast<solver::DeepSupervisor *>(_rewardFunctionExperiment._solver);
+  
+  // Init gradient
+  _maxEntropyGradient.resize(_rewardFunctionLearner->_hyperparameters.size(), 0.0);
+
 }
 
 void Agent::runGeneration()
@@ -329,43 +367,6 @@ void Agent::testingGeneration()
 
   for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
     _testingReward[workerId] = testingAgents[workerId]["Testing Reward"].get<float>();
-}
-
-float Agent::calculateReward(const std::vector<float> &features)
-{
-  float reward = 0.0;
-#ifdef COSREWARD
-  reward = std::cos(features[0] - _featureWeights[0]);
-#else
-  #ifdef COSREWARDSCALED
-  reward = std::cos(features[0] - _featureWeights[0]) / 500.0;
-  #else
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
-  #endif
-#endif
-  return reward;
-}
-
-std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &features)
-{
-  std::vector<float> rewardGrad(features.size(), 0.0);
-#ifdef COSREWARD
-  rewardGrad[0] = std::sin(features[0] - _featureWeights[0]);
-#else
-  #ifdef COSREWARDSCALED
-  rewardGrad[0] = std::sin(features[0] - _featureWeights[0]) / 500.0;
-  #else
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
-    for (size_t j = 0; j < _problem->_featureVectorSize; ++j)
-    {
-      if (i == j)
-        rewardGrad[i] += _softMaxFeatureWeights[i] * (1. - _softMaxFeatureWeights[i]) * features[i];
-      else
-        rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
-    }
-  #endif
-#endif
-  return rewardGrad;
 }
 
 void Agent::updateBackgroundBatch()
@@ -695,7 +696,11 @@ void Agent::partitionFunctionStat()
   _statisticCumulativeRewards.push_back(cumulativeRewardsBackgroundBatch);
   _statisticLogPartitionFunction.push_back(logpf);
   _statisticFusionLogPartitionFunction.push_back(fusionLogpf);
-  _statisticFeatureWeights.push_back(_featureWeights);
+}
+
+float Agent::calculateReward(const std::vector<float>& features)
+{
+    return _rewardFunctionLearner->getEvaluation({ { features } })[0][0];
 }
 
 void Agent::updateRewardFunction()
@@ -715,19 +720,35 @@ void Agent::updateRewardFunction()
     std::vector<size_t> randomBackgroundIndexes(_backgroundSampleSize);
     std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
-
+    
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
     std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
+    std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
     std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(_backgroundBatchSize + 1));
-#pragma omp parallel for schedule(dynamic, 1)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       size_t demIdx = randomDemonstrationIndexes[n];
       size_t observedTrajectoryLength = _problem->_observationsFeatures[demIdx].size();
 
       float cumReward = 0.0;
-      for (size_t t = 0; t < observedTrajectoryLength; ++t)
-        cumReward += calculateReward(_problem->_observationsFeatures[demIdx][t]);
+      size_t t = 0;
+      while(t < observedTrajectoryLength)
+      {
+        // Forward the neural network for this feautres
+        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t++]);
+
+        // Accumulate gradients from demonstrations
+        const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
+#pragma omp parallel for
+        for (size_t i = 0; i < rewardGradients.size(); ++i)
+        {
+            gradientCumulativeRewardFunctionDemonstrationBatch[n][i] += rewardGradients[i];
+        }
+
+        // Accumulate cumulative reward
+        cumReward += reward;
+      }
+      
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
@@ -740,17 +761,34 @@ void Agent::updateRewardFunction()
 
     // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
     std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
+    std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(_backgroundBatchSize + 1));
-#pragma omp parallel for schedule(dynamic, 1)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       size_t bckIdx = randomBackgroundIndexes[m];
       size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
+      
+      float cumReward = 0.0;
+      size_t t = 0;
+      while(t < backgroundTrajectoryLength)
+      {
+        // Forward the neural network for this features
+        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t++]);
 
-      float cumReward = 0.;
-      for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
-        cumReward += calculateReward(_backgroundTrajectoryFeatures[bckIdx][t]);
+        // Store gradients from demonstrations
+        const auto rewardGradient = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
+#pragma omp parallel for
+        for (size_t i = 0; i < rewardGradient.size(); ++i)
+        {
+            gradientCumulativeRewardFunctionBackgroundBatch[m][i] += rewardGradient[i];
+        }
+
+        // Accumulate cumulative reward
+        cumReward += reward;
+      }
+      
       cumulativeRewardsBackgroundBatch[m] = cumReward;
+
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from linear policy
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
@@ -825,101 +863,41 @@ void Agent::updateRewardFunction()
     //printf("lpf %f\n", _logPartitionFunction);
 
     // Reset gradient
-    std::fill(_featureWeightGradient.begin(), _featureWeightGradient.end(), 0);
+    std::fill(_maxEntropyGradient.begin(), _maxEntropyGradient.end(), 0.);
 
-    // Calculate gradient of background batch trajectory returns
-    std::vector<std::vector<float>> gradBackgroundTrajReturn(_backgroundBatchSize, std::vector<float>(_problem->_featureVectorSize, 0.0));
-#pragma omp parallel for
-    for (size_t m = 0; m < _backgroundBatchSize; ++m)
-    {
-      size_t bckIdx = randomBackgroundIndexes[m];
-      size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
-      for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
-      {
-        auto gradReward = calculateRewardGradient(_backgroundTrajectoryFeatures[bckIdx][t]);
-        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-          gradBackgroundTrajReturn[m][k] += gradReward[k];
-      }
-    }
-
-    // Calculate gradient of demonstration batch trajectory returns
-    std::vector<std::vector<float>> gradDemoTrajReturn(_backgroundBatchSize, std::vector<float>(_problem->_featureVectorSize, 0.0));
-#pragma omp parallel for
-    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-    {
-      size_t obsIdx = randomDemonstrationIndexes[n];
-      size_t demonstrationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
-      for (size_t t = 0; t < demonstrationTrajectoryLength; ++t)
-      {
-        auto gradReward = calculateRewardGradient(_problem->_observationsFeatures[obsIdx][t]);
-        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-          gradDemoTrajReturn[n][k] += gradReward[k];
-      }
-    }
-
-    // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function & background batch)
+    // Calculate gradient of loglikelihood (contribution from partition function & background batch)
     float invTotalBatchSize = 1. / totalBatchSize;
-#pragma omp parallel for
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+#pragma omp parallel for
+      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
-        _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradBackgroundTrajReturn[m][k] * invTotalBatchSize;
+         _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
         //printf("grad bb %f %f\n", gradBackgroundTrajReturn[m][k], _featureWeightGradient[k]);
       }
     }
 
     float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
-#pragma omp parallel for
-    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    for(size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+#pragma omp parallel for
+      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
-        _featureWeightGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradDemoTrajReturn[n][k] * invTotalBatchSize;
+        _maxEntropyGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k] * invTotalBatchSize;
         //printf("grad db %f %f\n", gradDemoTrajReturn[n][k], _featureWeightGradient[k]);
 
         // Contribution from demonstration return
-        _featureWeightGradient[k] += invDemoBatchSize * gradDemoTrajReturn[n][k];
+        _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
       }
     }
 
-    //for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-    //printf("fwg[%zu] %f \n", k, _featureWeightGradient[k]);
+    // Passing hyperparameter gradients through an ADAM update
+    _rewardFunctionLearner->_optimizer->processResult(0.0f,_maxEntropyGradient);
 
-    // L1 penalization
-    /*
-  float lambda = 1e-2;
-  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-  {
-      if(_featureWeights[k] > 0.0)
-        featureWeightGradient[k] -= lambda*_featureWeights[k];
-      else
-        featureWeightGradient[k] += lambda*_featureWeights[k];
-  }
-  */
-
-    for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-    {
-      _featureWeights[k] += _rewardfunctionLearningRate * _featureWeightGradient[k];
-      //printf("fw [%zu] %f (%f)\n", k, _featureWeights[k], _featureWeightGradient[k]);
-    }
-  }
-
-  // Calculate softmax of feature weights
-  float normalization = 0.;
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
-  {
-    float expFeature = std::exp(_featureWeights[i]);
-    _softMaxFeatureWeights[i] = expFeature;
-    normalization += expFeature;
-  }
-
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
-  {
-    _softMaxFeatureWeights[i] /= normalization;
-    //printf("smfw[%zu] %f %f %f \n", i, _featureWeights[i], _featureWeightGradient[i], _softMaxFeatureWeights[i]);
+    // Getting new set of hyperparameters from Adam
+    _rewardFunctionLearner->_neuralNetwork->setHyperparameters(_rewardFunctionLearner->_optimizer->_currentValue);
   }
 }
 
@@ -1057,9 +1035,6 @@ void Agent::processEpisode(knlohmann::json &episode)
   // Getting environment id
   auto environmentId = episode["Environment Id"].get<size_t>();
 
-  // Storage for the episode's cumulative reward
-  float cumulativeReward = 0.0f;
-
   for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
     // Getting state
@@ -1102,9 +1077,6 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Storing in the experience replay the reward of the new experience
     _rewardBuffer.add(reward);
-
-    // Keeping global statistics on reward
-    cumulativeReward += reward;
 
     // Checking experience termination status and truncated state
     termination_t termination;
@@ -1658,9 +1630,6 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
-    if (_rewardOutboundPenalizationEnabled == true)
-      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f * (float)_rewardOutboundPenalizationEnabled / (float)_experienceCount);
-
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
     _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount, _stateBuffer.size(), _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
     _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
@@ -1708,12 +1677,6 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", "Number Background Samples %zu\n", _backgroundSampleSize);
   _k->_logger->logInfo("Normal", "Log Partition Function %f (%f)\n", _logPartitionFunction, _logSdevPartitionFunction);
-  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-  {
-    _k->_logger->logInfo("Normal", "fw [%zu] %f \n", k, _featureWeights[k]);
-    _k->_logger->logInfo("Normal", "fw softmax [%zu] %f \n", k, _softMaxFeatureWeights[k]);
-    _k->_logger->logInfo("Normal", "fw gradient [%zu] %f\n", k, _featureWeightGradient[k]);
-  }
 
   if (_mode == "Testing")
   {
@@ -2000,30 +1963,6 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Reward", "Outbound Penalization", "Count");
  }
 
- if (isDefined(js, "Feature Weights"))
- {
- try { _featureWeights = js["Feature Weights"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Feature Weights']\n%s", e.what()); } 
-   eraseValue(js, "Feature Weights");
- }
-
- if (isDefined(js, "SoftMax Feature Weights"))
- {
- try { _softMaxFeatureWeights = js["SoftMax Feature Weights"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['SoftMax Feature Weights']\n%s", e.what()); } 
-   eraseValue(js, "SoftMax Feature Weights");
- }
-
- if (isDefined(js, "Feature Weight Gradient"))
- {
- try { _featureWeightGradient = js["Feature Weight Gradient"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Feature Weight Gradient']\n%s", e.what()); } 
-   eraseValue(js, "Feature Weight Gradient");
- }
-
  if (isDefined(js, "Log Partition Function"))
  {
  try { _logPartitionFunction = js["Log Partition Function"].get<float>();
@@ -2244,6 +2183,24 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Importance Weight Truncation Level'] required by agent.\n"); 
 
+ if (isDefined(js, "State Rescaling", "Enabled"))
+ {
+ try { _stateRescalingEnabled = js["State Rescaling"]["Enabled"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['State Rescaling']['Enabled']\n%s", e.what()); } 
+   eraseValue(js, "State Rescaling", "Enabled");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['State Rescaling']['Enabled'] required by agent.\n"); 
+
+ if (isDefined(js, "Reward", "Rescaling", "Enabled"))
+ {
+ try { _rewardRescalingEnabled = js["Reward"]["Rescaling"]["Enabled"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Enabled']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Enabled");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Rescaling']['Enabled'] required by agent.\n"); 
+
  if (isDefined(js, "Experience Replay", "Serialize"))
  {
  try { _experienceReplaySerialize = js["Experience Replay"]["Serialize"].get<int>();
@@ -2334,15 +2291,6 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Experiences Between Partition Function Statistics'] required by agent.\n"); 
 
- if (isDefined(js, "Rewardfunction Learning Rate"))
- {
- try { _rewardfunctionLearningRate = js["Rewardfunction Learning Rate"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Rewardfunction Learning Rate']\n%s", e.what()); } 
-   eraseValue(js, "Rewardfunction Learning Rate");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Rewardfunction Learning Rate'] required by agent.\n"); 
-
  if (isDefined(js, "Use Fusion Distribution"))
  {
  try { _useFusionDistribution = js["Use Fusion Distribution"].get<int>();
@@ -2370,41 +2318,31 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Background Batch Size'] required by agent.\n"); 
 
- if (isDefined(js, "State Rescaling", "Enabled"))
+ if (isDefined(js, "Reward Function", "Neural Network", "Hidden Layers"))
  {
- try { _stateRescalingEnabled = js["State Rescaling"]["Enabled"].get<int>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['State Rescaling']['Enabled']\n%s", e.what()); } 
-   eraseValue(js, "State Rescaling", "Enabled");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['State Rescaling']['Enabled'] required by agent.\n"); 
+ _rewardFunctionNeuralNetworkHiddenLayers = js["Reward Function"]["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
 
- if (isDefined(js, "Reward", "Rescaling", "Enabled"))
- {
- try { _rewardRescalingEnabled = js["Reward"]["Rescaling"]["Enabled"].get<int>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Enabled']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Rescaling", "Enabled");
+   eraseValue(js, "Reward Function", "Neural Network", "Hidden Layers");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Rescaling']['Enabled'] required by agent.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward Function']['Neural Network']['Hidden Layers'] required by agent.\n"); 
 
- if (isDefined(js, "Reward", "Outbound Penalization", "Enabled"))
+ if (isDefined(js, "Reward Function", "Learning Rate"))
  {
- try { _rewardOutboundPenalizationEnabled = js["Reward"]["Outbound Penalization"]["Enabled"].get<int>();
+ try { _rewardFunctionLearningRate = js["Reward Function"]["Learning Rate"].get<float>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Outbound Penalization']['Enabled']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Outbound Penalization", "Enabled");
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward Function']['Learning Rate']\n%s", e.what()); } 
+   eraseValue(js, "Reward Function", "Learning Rate");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Outbound Penalization']['Enabled'] required by agent.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward Function']['Learning Rate'] required by agent.\n"); 
 
- if (isDefined(js, "Reward", "Outbound Penalization", "Factor"))
+ if (isDefined(js, "Max Entropy Gradient"))
  {
- try { _rewardOutboundPenalizationFactor = js["Reward"]["Outbound Penalization"]["Factor"].get<float>();
+ try { _maxEntropyGradient = js["Max Entropy Gradient"].get<std::vector<float>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Outbound Penalization']['Factor']\n%s", e.what()); } 
-   eraseValue(js, "Reward", "Outbound Penalization", "Factor");
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Max Entropy Gradient']\n%s", e.what()); } 
+   eraseValue(js, "Max Entropy Gradient");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Reward']['Outbound Penalization']['Factor'] required by agent.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Max Entropy Gradient'] required by agent.\n"); 
 
  if (isDefined(js, "Termination Criteria", "Max Episodes"))
  {
@@ -2462,6 +2400,8 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Neural Network"]["Engine"] = _neuralNetworkEngine;
    js["Discount Factor"] = _discountFactor;
    js["Importance Weight Truncation Level"] = _importanceWeightTruncationLevel;
+   js["State Rescaling"]["Enabled"] = _stateRescalingEnabled;
+   js["Reward"]["Rescaling"]["Enabled"] = _rewardRescalingEnabled;
    js["Experience Replay"]["Serialize"] = _experienceReplaySerialize;
    js["Experience Replay"]["Start Size"] = _experienceReplayStartSize;
    js["Experience Replay"]["Maximum Size"] = _experienceReplayMaximumSize;
@@ -2472,14 +2412,12 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experiences Between Policy Updates"] = _experiencesBetweenPolicyUpdates;
    js["Experiences Between Reward Updates"] = _experiencesBetweenRewardUpdates;
    js["Experiences Between Partition Function Statistics"] = _experiencesBetweenPartitionFunctionStatistics;
-   js["Rewardfunction Learning Rate"] = _rewardfunctionLearningRate;
    js["Use Fusion Distribution"] = _useFusionDistribution;
    js["Demonstration Batch Size"] = _demonstrationBatchSize;
    js["Background Batch Size"] = _backgroundBatchSize;
-   js["State Rescaling"]["Enabled"] = _stateRescalingEnabled;
-   js["Reward"]["Rescaling"]["Enabled"] = _rewardRescalingEnabled;
-   js["Reward"]["Outbound Penalization"]["Enabled"] = _rewardOutboundPenalizationEnabled;
-   js["Reward"]["Outbound Penalization"]["Factor"] = _rewardOutboundPenalizationFactor;
+   js["Reward Function"]["Neural Network"]["Hidden Layers"] = _rewardFunctionNeuralNetworkHiddenLayers;
+   js["Reward Function"]["Learning Rate"] = _rewardFunctionLearningRate;
+   js["Max Entropy Gradient"] = _maxEntropyGradient;
    js["Termination Criteria"]["Max Episodes"] = _maxEpisodes;
    js["Termination Criteria"]["Max Experiences"] = _maxExperiences;
    js["Termination Criteria"]["Max Policy Updates"] = _maxPolicyUpdates;
@@ -2517,9 +2455,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Reward"]["Outbound Penalization"]["Count"] = _rewardOutboundPenalizationCount;
-   js["Feature Weights"] = _featureWeights;
-   js["SoftMax Feature Weights"] = _softMaxFeatureWeights;
-   js["Feature Weight Gradient"] = _featureWeightGradient;
    js["Log Partition Function"] = _logPartitionFunction;
    js["Log Sdev Partition Function"] = _logSdevPartitionFunction;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;

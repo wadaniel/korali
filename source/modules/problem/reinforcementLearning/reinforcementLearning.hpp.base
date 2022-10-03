@@ -1,7 +1,6 @@
 #pragma once
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
 __startNamespace__;
@@ -76,6 +75,7 @@ class __className__ : public __parentClassName__
    * @brief [Profiling] Stores communication time per episode
    */
   double _agentCommunicationTime;
+
 };
 
 __endNamespace__;

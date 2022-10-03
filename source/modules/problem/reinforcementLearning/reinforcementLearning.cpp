@@ -50,8 +50,8 @@ void ReinforcementLearning::initialize()
     if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
   }
 
-  _actionVectorSize = _actionVectorIndexes.size();
   _stateVectorSize = _stateVectorIndexes.size();
+  _actionVectorSize = _actionVectorIndexes.size();
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
@@ -107,6 +107,7 @@ void ReinforcementLearning::initialize()
 
   // Setting initial launch id (0)
   _launchId = 0;
+
 }
 
 /**

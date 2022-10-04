@@ -1,7 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #ifdef _OPENMP
-  #include "omp.h"
+#include "omp.h"
 #endif
 #include "sample/sample.hpp"
 
@@ -136,7 +136,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     if (_isOnPolicyBuffer[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = calculateReward(_featureVector[expId]);
+      float Qret = calculateReward(_featureBuffer[expId]);
 
       // If experience is non-terminal, add Vtbc
       if (_terminationBuffer[expId] == e_nonTerminal)

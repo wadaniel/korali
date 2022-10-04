@@ -126,7 +126,7 @@ class __className__ : public __parentClassName__
   /**
    * @brief Stores the observed features at the given state
    */
-  cBuffer<std::vector<float>> _featureVector;
+  cBuffer<std::vector<float>> _featureBuffer;
 
   /**
    * @brief Stores the policyHyperparameters of the agent at the given state
@@ -262,6 +262,12 @@ class __className__ : public __parentClassName__
    * @brief Pointer to experiment problem
    */
   problem::SupervisedLearning *_rewardFunctionProblem;
+  
+  /**
+   * @brief Gradient of max entropy objective
+   */
+  std::vector<float> _maxEntropyGradient;
+
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -481,13 +487,7 @@ class __className__ : public __parentClassName__
    * @brief Calculates the reward given a vector of features.
    * @param features Features returned from the environment to calculate the reward.
    */
-  float calculateReward(const std::vector<float> &features);
-
-  /**
-   * @brief Calculates the gradient of the reward wrt. the feature weights.
-   * @param features Features returned from the environment to calculate the reward.
-   */
-  std::vector<float> calculateRewardGradient(const std::vector<float> &features);
+  float calculateReward(const std::vector<float> &features) const;
 
   /**
   * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.

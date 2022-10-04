@@ -16,9 +16,9 @@ def env(s):
   
  # Getting Features
  # Pole angle and cart velocity^2
- s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
+ #s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
  # Pole angle, cart velocity^2 and dummy
- #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
+ s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
  
  step = 0
  done = False
@@ -41,9 +41,9 @@ def env(s):
   
   # Getting Features
   # Pole angle and cart velocity^2
-  s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
+  #s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
   # Pole angle, cart velocity^2 and dummy
-  #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
+  s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
   
   # Advancing step counter
   step = step + 1

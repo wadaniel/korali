@@ -28,12 +28,12 @@ obsfeatures = []
 for trajectory in obsstates:
     features = []
     for state in trajectory:
-        # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
+        # state: Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
         feature1 = np.cos(state[2])
         feature2 = state[1]*state[1]
-        #feature3 = np.random.normal(0.0, 0.1) # dummy
-        features.append([feature1, feature2]) 
-        #features.append([feature1, feature2, feature3]) 
+        feature3 = np.random.normal(0.0, 0.1) # dummy
+        #features.append([feature1, feature2]) 
+        features.append([feature1, feature2, feature3]) 
         
         if(maxFeatures[0] < feature1):
             maxFeatures[0] = feature1
@@ -112,11 +112,14 @@ e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 8
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Linear"
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 8
+
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
@@ -132,13 +135,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 500
-e["File Output"]["Path"] = '_korali_results_continuous3'
+e["File Output"]["Path"] = '_korali_results_continuous'
 
 ### Running Experiment
 

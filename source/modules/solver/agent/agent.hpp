@@ -220,9 +220,13 @@ class Agent : public Solver
   */
    float _rewardFunctionLearningRate;
   /**
-  * @brief TODO.
+  * @brief TODO
   */
-   std::vector<float> _maxEntropyGradient;
+   int _rewardFunctionL2RegularizationEnabled;
+  /**
+  * @brief TODO
+  */
+   float _rewardFunctionL2RegularizationImportance;
   /**
   * @brief [Internal Use] Stores the number of parameters that determine the probability distribution for the current state sequence.
   */
@@ -355,10 +359,6 @@ class Agent : public Solver
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */
    std::vector<float> _rewardRescalingSumSquaredRewards;
-  /**
-  * @brief [Internal Use] Indicates the maximum priority of any experience in the experience replay.
-  */
-   size_t _rewardOutboundPenalizationCount;
   /**
   * @brief [Internal Use] The logarithm of the estimated partition function
   */
@@ -493,7 +493,7 @@ class Agent : public Solver
   /**
    * @brief Stores the observed features at the given state
    */
-  cBuffer<std::vector<float>> _featureVector;
+  cBuffer<std::vector<float>> _featureBuffer;
 
   /**
    * @brief Stores the policyHyperparameters of the agent at the given state
@@ -629,6 +629,12 @@ class Agent : public Solver
    * @brief Pointer to experiment problem
    */
   problem::SupervisedLearning *_rewardFunctionProblem;
+  
+  /**
+   * @brief Gradient of max entropy objective
+   */
+  std::vector<float> _maxEntropyGradient;
+
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -848,13 +854,7 @@ class Agent : public Solver
    * @brief Calculates the reward given a vector of features.
    * @param features Features returned from the environment to calculate the reward.
    */
-  float calculateReward(const std::vector<float> &features);
-
-  /**
-   * @brief Calculates the gradient of the reward wrt. the feature weights.
-   * @param features Features returned from the environment to calculate the reward.
-   */
-  std::vector<float> calculateRewardGradient(const std::vector<float> &features);
+  float calculateReward(const std::vector<float> &features) const;
 
   /**
   * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.

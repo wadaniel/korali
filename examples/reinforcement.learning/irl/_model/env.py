@@ -48,6 +48,7 @@ def env(s):
   # Advancing step counter
   step = step + 1
 
+ print(f"Steps {step}/{maxSteps}")
  # Setting finalization status
  if (cart.isOver()):
   s["Termination"] = "Terminal"

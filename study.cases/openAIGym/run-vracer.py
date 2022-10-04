@@ -9,7 +9,7 @@ from agent import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--dis', help='Sampling Distribution.', required=True)
+parser.add_argument('--dis', help='Sampling Distribution.', required=False, type=str, default="Clipped Normal")
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
@@ -31,6 +31,9 @@ e.loadState(resultFolder + '/latest');
 ### Initializing openAI Gym environment
 
 initEnvironment(e, args.env)
+
+e["Problem"]["Testing Frequency"] = 10
+e["Problem"]["Policy Testing Episodes"] = 20
 
 ### Defining Agent Configuration 
 
@@ -66,13 +69,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SoftReLU"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/SoftReLU"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Setting file output configuration
 

@@ -92,7 +92,7 @@ e["File Output"]["Path"] = resultFolder
 if args.test:
     e["Solver"]["Testing"]["Sample Ids"] = list(range(20))
     e["Problem"]["Custom Settings"]["Save State"] = "True"
-    e["Problem"]["Custom Settings"]["File Name"] = f"states_{args.env}.json"
+    e["Problem"]["Custom Settings"]["File Name"] = f"observations_{args.env}.json"
     #e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
  
 k.run(e)

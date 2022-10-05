@@ -129,6 +129,7 @@ void __className__::initialize()
   _sessionWorkerCommunicationTime = 0.0;
   _sessionPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
+  _sessionRewardUpdateTime = 0.0;
   _sessionWorkerAttendingTime = 0.0;
   _sessionWorkerTrajectoryLogProbilityUpdateTime = 0.0;
 
@@ -176,8 +177,8 @@ void __className__::initialize()
   // IRL
   _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
   _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
-  _rewardFunctionExperiment["Problem"]["Training Batch Size"] = 1; //_demonstrationBatchSize + _backgroundBatchSize;
   _rewardFunctionExperiment["Problem"]["Inference Batch Size"] = 1;
+  _rewardFunctionExperiment["Problem"]["Training Batch Size"] = _rewardFunctionBatchSize; 
   _rewardFunctionExperiment["Problem"]["Input"]["Size"] = _problem->_featureVectorSize;
   _rewardFunctionExperiment["Problem"]["Solution"]["Size"] = 1;
 
@@ -224,6 +225,7 @@ void __className__::trainingGeneration()
   _generationWorkerCommunicationTime = 0.0;
   _generationPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
+  _generationRewardUpdateTime = 0.0;
   _generationWorkerAttendingTime = 0.0;
 
   // Running until all _workers have finished
@@ -256,11 +258,19 @@ void __className__::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // Update the reward function based on guided cost learning
-      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
+      while (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
+        auto beginTime = std::chrono::steady_clock::now(); // Profiling
+        
         updateRewardFunction();
+       
+        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
+        _sessionRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+        _generationRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
         _rewardUpdateCount++;
         _sessionRewardUpdateCount++;
+ 
       }
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
@@ -546,7 +556,7 @@ void __className__::partitionFunctionStat()
 
     float cumReward = 0.;
     for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
-      cumReward += calculateReward(_backgroundTrajectoryFeatures[m][t]);
+      cumReward += calculateReward( { { _backgroundTrajectoryFeatures[m][t] } } )[0];
     cumulativeRewardsBackgroundBatch[m] = cumReward;
   }
 
@@ -568,7 +578,7 @@ void __className__::partitionFunctionStat()
 
     float cumReward = 0.;
     for (size_t t = 0; t < observationTrajectoryLength; ++t)
-      cumReward += calculateReward(_problem->_observationsFeatures[obsIdx][t]);
+      cumReward += calculateReward( { { _problem->_observationsFeatures[obsIdx][t] } } )[0];
     cumulativeRewardsDemonstrationBatch[n] = cumReward;
   }
 
@@ -681,18 +691,22 @@ void __className__::partitionFunctionStat()
   _statisticFusionLogPartitionFunction.push_back(fusionLogpf);
 }
 
-inline float __className__::calculateReward(const std::vector<float>& features) const
+std::vector<float> __className__::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const
 {
-    return _rewardFunctionLearner->getEvaluation({ { features } })[0][0];
+    auto output = _rewardFunctionLearner->getEvaluation( featuresBatch );
+    std::vector<float> rewards(output.size());
+    for(size_t b = 0; b < output.size(); ++b)
+        rewards[b] = output[b][0];
+    return rewards;
 }
 
 void __className__::updateRewardFunction()
 {
 
-  size_t stepsPerUpdate = 1;
+  const size_t stepsPerUpdate = 1;
   for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
   {
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::minstd_rand0 generator(seed);
 
     // Randomize demonstration batch
@@ -711,36 +725,56 @@ void __className__::updateRewardFunction()
     std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(_backgroundBatchSize + 1));
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      size_t demIdx = randomDemonstrationIndexes[n];
-      size_t observedTrajectoryLength = _problem->_observationsFeatures[demIdx].size();
+      const size_t demIdx = randomDemonstrationIndexes[n];
+      const size_t observedTrajectoryLength = _problem->_observationsFeatures[demIdx].size();
 
+      size_t t = 0;
       float cumReward = 0.0;
-      for(size_t t = 0; t < observedTrajectoryLength; ++t)
+      
+      while(t < observedTrajectoryLength)
       {
-        // Forward the neural network for this feautres
-        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t]);
-
+        printf("demo t %zu/%zu\n", t, observedTrajectoryLength);
+        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
+        std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
+      
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, observedTrajectoryLength-t);
+#pragma omp parallel for
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          featuresBatch[b] = { _problem->_observationsFeatures[demIdx][b] };
+          backwardMultiplier[b] = std::vector<float>(1, 1.);
+        }
+      
+        const auto rewards = calculateReward( featuresBatch );
+      
+        // Accumulate cumulative reward
+#pragma omp parallel for reduction(+ : cumReward)
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          cumReward += rewards[b];
+        }
+       
         // Backward dummy
-        _rewardFunctionLearner->_neuralNetwork->backward( { { 1. } } );
-
+        _rewardFunctionLearner->_neuralNetwork->backward( backwardMultiplier );
+       
         // Accumulate gradients from demonstrations
-        const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
+        const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(_rewardFunctionBatchSize);
+
 #pragma omp parallel for
         for (size_t i = 0; i < rewardGradients.size(); ++i)
         {
-            gradientCumulativeRewardFunctionDemonstrationBatch[n][i] += rewardGradients[i];
+          gradientCumulativeRewardFunctionDemonstrationBatch[n][i] += rewardGradients[i];
         }
 
-        // Accumulate cumulative reward
-        cumReward += reward;
+        t += batchSize;
       }
-      
+
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
-        size_t bckIdx = randomBackgroundIndexes[i];
+        const size_t bckIdx = randomBackgroundIndexes[i];
         demonstrationTrajectoryLogProbabilities[n][i + 1] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
       }
     }
@@ -749,35 +783,59 @@ void __className__::updateRewardFunction()
     std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(_backgroundBatchSize + 1));
+
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      size_t bckIdx = randomBackgroundIndexes[m];
-      size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
+      const size_t bckIdx = randomBackgroundIndexes[m];
+      const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
       
+      size_t t = 0;
       float cumReward = 0.0;
-      for(size_t t = 0; t < backgroundTrajectoryLength; ++t)
+      
+      while(t < backgroundTrajectoryLength)
       {
-        // Forward the neural network for this features
-        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t]);
-
-        // Store gradients from demonstrations
-        const auto rewardGradient = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
+        printf("back t %zu/%zu\n", t, backgroundTrajectoryLength);
+        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
+        std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
+      
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength-t);
 #pragma omp parallel for
-        for (size_t i = 0; i < rewardGradient.size(); ++i)
+        for(size_t b = 0; b < batchSize; ++b)
         {
-            gradientCumulativeRewardFunctionBackgroundBatch[m][i] += rewardGradient[i];
+          featuresBatch[b] = { _backgroundTrajectoryFeatures[bckIdx][b] };
+          backwardMultiplier[b] = std::vector<float>(1, 1.);
+        }
+      
+        const auto rewards = calculateReward( featuresBatch );
+      
+        // Accumulate cumulative reward
+#pragma omp parallel for reduction(+ : cumReward)
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          cumReward += rewards[b];
+        }
+       
+        // Backward dummy
+        _rewardFunctionLearner->_neuralNetwork->backward( backwardMultiplier );
+       
+        // Accumulate gradients from demonstrations
+        const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(_rewardFunctionBatchSize);
+
+#pragma omp parallel for
+        for (size_t i = 0; i < rewardGradients.size(); ++i)
+        {
+          gradientCumulativeRewardFunctionBackgroundBatch[m][i] += rewardGradients[i];
         }
 
-        // Accumulate cumulative reward
-        cumReward += reward;
+        t += batchSize;
       }
-      
+     
       cumulativeRewardsBackgroundBatch[m] = cumReward;
 
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from linear policy
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
-        size_t bckIdx2 = randomBackgroundIndexes[i];
+        const size_t bckIdx2 = randomBackgroundIndexes[i];
         backgroundTrajectoryLogProbabilities[m][i + 1] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
       }
     }
@@ -847,9 +905,7 @@ void __className__::updateRewardFunction()
     // Calculate log of partition function
     float totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
     _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log(totalBatchSize);
-    printf("lpf %f\n", _logPartitionFunction);
 
-    // Calculate importance weights of background batch
     // Reset gradient
     std::fill(_maxEntropyGradient.begin(), _maxEntropyGradient.end(), 0.);
 
@@ -1039,7 +1095,7 @@ void __className__::processEpisode(knlohmann::json &episode)
     _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
     // Getting reward
-    float reward = calculateReward(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
+    float reward = calculateReward( { { episode["Experiences"][expId]["Features"].get<std::vector<float>>() } } )[0];
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1166,9 +1222,7 @@ void __className__::processEpisode(knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    //printf("endId %zd startId %zd svs %zu e %zu\n", endId, startId, _stateVector.size(), episode.size());
-    //printf("expId %zd\n",expId);
-    retV = _discountFactor * retV + calculateReward(_featureBuffer[expId]);
+    retV = _discountFactor * retV + calculateReward( { { _featureBuffer[expId] } } )[0];
 
     // Setting initial retrace value in the experience's cache
     _retraceValueBuffer[expId] = retV;
@@ -1340,7 +1394,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
       
       //printf("endId %zd startId %zd\n", endId, startId);
       //printf("curId %zd\n", curId);
-      const float curReward = calculateReward(_featureBuffer[curId]);
+      const float curReward = calculateReward( { { _featureBuffer[curId] } } )[0];
 
       // Calculating state value function
       const float curV = _stateValueBuffer[curId];
@@ -1659,6 +1713,7 @@ void __className__::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Avg Worker Communication/Wait Time:    [%5.3fs] - [%3.3fs]\n", _generationWorkerCommunicationTime / 1.0e+9, _sessionWorkerCommunicationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Avg Policy Evaluation Time:            [%5.3fs] - [%3.3fs]\n", _generationPolicyEvaluationTime / 1.0e+9, _sessionPolicyEvaluationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Policy Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Reward Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationRewardUpdateTime / 1.0e+9, _sessionRewardUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:         [%5.3fs]\n", _k->_resultSavingTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Trajectory Log Probability Update Time: [%5.3fs] \n", _sessionWorkerTrajectoryLogProbilityUpdateTime / 1.0e+9);

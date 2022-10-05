@@ -220,6 +220,10 @@ class Agent : public Solver
   */
    float _rewardFunctionLearningRate;
   /**
+  * @brief The batch size used during reward function updates, ideally the length of an episode.
+  */
+   size_t _rewardFunctionBatchSize;
+  /**
   * @brief TODO
   */
    int _rewardFunctionL2RegularizationEnabled;
@@ -673,6 +677,11 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
   double _sessionPolicyUpdateTime;
+  
+  /**
+   * @brief [Profiling] Measures the time taken to update the reward function in the current generation
+   */
+  double _sessionRewardUpdateTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
@@ -712,6 +721,11 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
   double _generationPolicyUpdateTime;
+ 
+  /**
+   * @brief [Profiling] Measures the time taken to update the policy in the current generation
+   */
+  double _generationRewardUpdateTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
@@ -858,7 +872,7 @@ class Agent : public Solver
    * @brief Calculates the reward given a vector of features.
    * @param features Features returned from the environment to calculate the reward.
    */
-  float calculateReward(const std::vector<float> &features) const;
+  std::vector<float> calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const;
 
   /**
   * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.

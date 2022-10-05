@@ -62,8 +62,11 @@ def agent(s, env):
   printStep = True
  else:
   printStep = False
-  
- s["State"] = env.reset().tolist()
+ 
+ state = env.reset().tolist()
+ s["State"] = state
+ s["Features"] = state
+
  step = 0
  done = False
 
@@ -94,6 +97,7 @@ def agent(s, env):
    
   # Storing New State
   s["State"] = state.tolist()
+  s["Features"] = state.tolist()
    
   # Advancing step counter
   step = step + 1

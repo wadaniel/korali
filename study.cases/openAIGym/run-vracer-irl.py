@@ -4,7 +4,8 @@ import sys
 sys.path.append('./_model')
 import math
 import json
-from env import *
+import argparse
+from agent import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
@@ -14,12 +15,13 @@ print(args)
 
 ####### Load observations
 
-obsfile = "observations-Swimmer_v4.json"
+obsfile = "observations_Swimmer-v4.json"
 obsstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:
     obsjson = json.load(infile)
     obsstates = obsjson["States"]
+    obsactions = obsjson["Actions"]
 
 ### Compute Feauters from states
 
@@ -58,7 +60,6 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-dis_dir = args.dis.replace(" ","_")
 resultFolder = f'_result_vracer_irl_{args.env}'
 e.loadState(resultFolder + '/latest');
 
@@ -142,7 +143,7 @@ e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 200
-e["File Output"]["Use multiple Files"] = False
+e["File Output"]["Use Multiple Files"] = False
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

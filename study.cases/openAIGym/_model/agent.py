@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import gym
-#import pyBulletEnvironments
-import math
+import json
+import os.path
 from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper
 
@@ -29,8 +29,9 @@ def initEnvironment(e, envName, moviePath = ''):
  
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
- e["Problem"]["Environment Function"] = lambda x : agent(x, env)
+ e["Problem"]["Environment Function"] = lambda s : environment(s, env)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
+ e["Problem"]["Custom Settings"]["Save State"] = "False"
  
  # Getting environment variable counts
  stateVariableCount = env.observation_space.shape[0]
@@ -56,29 +57,46 @@ def initEnvironment(e, envName, moviePath = ''):
   e["Variables"][stateVariableCount + i]["Upper Bound"] = float(env.action_space.high[i])
   e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = 0.4472
 
-def agent(s, env):
-
+def environment(s, env):
+ 
  if (s["Custom Settings"]["Print Step Information"] == "Enabled"):
   printStep = True
  else:
   printStep = False
-  
+ 
+ if (s["Custom Settings"]["Save State"] == "True"):
+   fname = s["Custom Settings"]["File Name"]
+   saveState = True
+   if os.path.isfile(fname):
+     with open(fname, 'r') as infile:
+       obsjson = json.load(infile)
+       obsstates = obsjson["States"]
+   else:
+       obsjson = {}
+       obsstates = []
+ 
+ else:
+   saveState = False
+   obsjson = {}
+   obsstates = []
+   
  s["State"] = env.reset().tolist()
  step = 0
  done = False
-
+ 
  # Storage for cumulative reward
  cumulativeReward = 0.0
- 
  overSteps = 0
-  
+ 
+ states = []
+ 
  while not done and step < 1000:
-
+  
   # Getting new action
   s.update()
   
-  # Printing step information    
-  if (printStep):  print('[Korali] Frame ' + str(step), end = '')
+  # Printing step information
+  if (printStep):  print(f'[Korali] Frame {step}')
   
   # Performing the action
   action = s["Action"]
@@ -90,7 +108,8 @@ def agent(s, env):
   # Printing step information
   #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
   cumulativeReward = cumulativeReward + reward 
-  if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
+  if (printStep): print(f' - Reward: {reward}')
+  if (saveState): states.append(state.tolist())
    
   # Storing New State
   s["State"] = state.tolist()
@@ -98,9 +117,15 @@ def agent(s, env):
   # Advancing step counter
   step = step + 1
 
+ if (printStep):  print(f' - Cumulative Reward: {cumulativeReward}')
+ if (saveState): 
+   obsstates.append(states)
+   obsjson["States"] = obsstates
+   with open(fname, 'w') as f:
+     json.dump(obsjson, f)
+ 
  # Setting termination status
  if (done):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
-

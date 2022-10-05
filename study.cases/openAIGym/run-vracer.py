@@ -13,6 +13,7 @@ parser.add_argument('--dis', help='Sampling Distribution.', required=False, type
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--test', help='Run policy evaluation.', required=False, action='store_true')
 args = parser.parse_args()
 print(args)
 
@@ -25,8 +26,8 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
-e.loadState(resultFolder + '/latest');
+resultFolder = f'_result_vracer_{args.env}_{dis_dir}_{args.lr}_{args.opt}_{args.l2}/'
+e.loadState(resultFolder + '/latest')
 
 ### Initializing openAI Gym environment
 
@@ -38,7 +39,7 @@ e["Problem"]["Policy Testing Episodes"] = 20
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
-e["Solver"]["Mode"] = "Training"
+e["Solver"]["Mode"] = "Testing" if args.test else "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.lr
@@ -84,10 +85,14 @@ e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 100
-e["File Output"]["Frequency"] = 100
-e["File Output"]["Use Multiple Files"] = 100
+e["File Output"]["Use Multiple Files"] = False
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment
-
+if args.test:
+    e["Solver"]["Testing"]["Sample Ids"] = list(range(20))
+    e["Problem"]["Custom Settings"]["Save State"] = "True"
+    e["Problem"]["Custom Settings"]["File Name"] = f"states_{args.env}.json"
+    #e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
+ 
 k.run(e)

@@ -15,7 +15,7 @@ print(args)
 
 ####### Load observations
 
-obsfile = "observations_Swimmer-v4.json"
+obsfile = f"observations_{args.env}.json"
 obsstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:

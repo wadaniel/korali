@@ -553,18 +553,39 @@ void Agent::partitionFunctionStat()
 
   // Calculate cumulative rewards for background batch
   std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundSampleSize, 0.0);
-#pragma omp parallel for
   for (size_t m = 0; m < _backgroundSampleSize; ++m)
   {
-    size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
-
+    const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
+    
+    size_t t = 0;
     float cumReward = 0.;
-    for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
-      cumReward += calculateReward( { { _backgroundTrajectoryFeatures[m][t] } } )[0];
+    while(t < backgroundTrajectoryLength)
+    {
+        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
+      
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength-t);
+#pragma omp parallel for
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          featuresBatch[b] = { _backgroundTrajectoryFeatures[m][b] };
+        }
+      
+        const auto rewards = calculateReward( featuresBatch );
+      
+        // Accumulate cumulative reward
+#pragma omp parallel for reduction(+ : cumReward)
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          cumReward += rewards[b];
+        }
+
+        t += batchSize;
+    }
+ 
     cumulativeRewardsBackgroundBatch[m] = cumReward;
   }
 
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::minstd_rand0 generator(seed);
 
   // Randomize demonstration batch
@@ -574,15 +595,35 @@ void Agent::partitionFunctionStat()
 
   // Calculate cumulative rewards for demonstration batch
   std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
-#pragma omp parallel for
   for (size_t n = 0; n < _demonstrationBatchSize; ++n)
   {
-    size_t obsIdx = randomDemonstrationIndexes[n];
-    size_t observationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
+    const size_t obsIdx = randomDemonstrationIndexes[n];
+    const size_t observationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
 
+    size_t t = 0;
     float cumReward = 0.;
-    for (size_t t = 0; t < observationTrajectoryLength; ++t)
-      cumReward += calculateReward( { { _problem->_observationsFeatures[obsIdx][t] } } )[0];
+    while(t < observationTrajectoryLength)
+    {
+        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
+      
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, observationTrajectoryLength-t);
+#pragma omp parallel for
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          featuresBatch[b] = { _problem->_observationsFeatures[obsIdx][b] };
+        }
+      
+        const auto rewards = calculateReward( featuresBatch );
+      
+        // Accumulate cumulative reward
+#pragma omp parallel for reduction(+ : cumReward)
+        for(size_t b = 0; b < batchSize; ++b)
+        {
+          cumReward += rewards[b];
+        }
+        t += batchSize;
+    }
+    
     cumulativeRewardsDemonstrationBatch[n] = cumReward;
   }
 
@@ -737,7 +778,6 @@ void Agent::updateRewardFunction()
       
       while(t < observedTrajectoryLength)
       {
-        printf("demo t %zu/%zu\n", t, observedTrajectoryLength);
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
       
@@ -798,7 +838,6 @@ void Agent::updateRewardFunction()
       
       while(t < backgroundTrajectoryLength)
       {
-        printf("back t %zu/%zu\n", t, backgroundTrajectoryLength);
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
       

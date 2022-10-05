@@ -376,6 +376,10 @@ class Agent : public Solver
   */
    std::vector<float> _stateRescalingSigmas;
   /**
+  * @brief [Internal Use] Keeps track of the number of reward function updates that have been performed.
+  */
+   size_t _rewardUpdateCount;
+  /**
   * @brief [Internal Use] Number of samples collected from background distribution.
   */
    size_t _backgroundSampleSize;

@@ -5,9 +5,6 @@
 #include <algorithm>
 #include <chrono>
 
-//#define COSREWARD
-//#define COSREWARDSCALED
-
 namespace korali
 {
 namespace solver
@@ -722,11 +719,10 @@ void Agent::updateRewardFunction()
       size_t observedTrajectoryLength = _problem->_observationsFeatures[demIdx].size();
 
       float cumReward = 0.0;
-      size_t t = 0;
-      while(t < observedTrajectoryLength)
+      for(size_t t = 0; t < observedTrajectoryLength; ++t)
       {
         // Forward the neural network for this feautres
-        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t++]);
+        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t]);
 
         // Backward dummy
         _rewardFunctionLearner->_neuralNetwork->backward( { { 1. } } );
@@ -763,11 +759,10 @@ void Agent::updateRewardFunction()
       size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
       
       float cumReward = 0.0;
-      size_t t = 0;
-      while(t < backgroundTrajectoryLength)
+      for(size_t t = 0; t < backgroundTrajectoryLength; ++t)
       {
         // Forward the neural network for this features
-        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t++]);
+        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t]);
 
         // Store gradients from demonstrations
         const auto rewardGradient = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
@@ -870,7 +865,7 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
          _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
-         printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
+         //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
@@ -883,17 +878,11 @@ void Agent::updateRewardFunction()
       {
         // Contribution from partition function
         _maxEntropyGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k] * invTotalBatchSize;
-        printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
+        //printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
       }
-    }
-
-    for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
-    {
-        //_maxEntropyGradient[k] *= -1.;
-        //printf("mEG [%zu]: %f\n", k, _maxEntropyGradient[k]);
     }
 
     // Passing hyperparameter gradients through an ADAM update

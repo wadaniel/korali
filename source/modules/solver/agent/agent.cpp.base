@@ -755,7 +755,6 @@ void __className__::updateRewardFunction()
       size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
       
       float cumReward = 0.0;
-      size_t t = 0;
       for(size_t t = 0; t < backgroundTrajectoryLength; ++t)
       {
         // Forward the neural network for this features

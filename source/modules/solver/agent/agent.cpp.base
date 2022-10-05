@@ -5,9 +5,6 @@
 #include <algorithm>
 #include <chrono>
 
-//#define COSREWARD
-//#define COSREWARDSCALED
-
 __startNamespace__;
 
 void __className__::initialize()
@@ -77,6 +74,7 @@ void __className__::initialize()
   {
     _currentEpisode = 0;
     _policyUpdateCount = 0;
+    _rewardUpdateCount = 0;
     _currentSampleID = 0;
     _experienceCount = 0;
 
@@ -261,12 +259,12 @@ void __className__::trainingGeneration()
       if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
         updateRewardFunction();
+        _rewardUpdateCount++;
         _sessionRewardUpdateCount++;
       }
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
-        //printf("bss %zu, slpf %zu\n", _backgroundSampleSize, _statisticLogPartitionFunction.size());
         partitionFunctionStat();
       }
 
@@ -360,12 +358,11 @@ void __className__::testingGeneration()
 void __className__::updateBackgroundBatch()
 {
   auto startTime = std::chrono::steady_clock::now();
+  _k->_logger->logInfo("Detailed", "Updating background batch..");
 
   // Initialize background batch
   if (_backgroundSampleSize == 0)
   {
-    printf("Initializing log probabilities background batch ... ");
-
     // Getting index of last experience
     size_t expId = _terminationBuffer.size() - 1;
 
@@ -432,8 +429,6 @@ void __className__::updateBackgroundBatch()
   // Insert latest trajectory to background batch
   else
   {
-    printf("Updating log probabilities background batch ... ");
-
     size_t expId = _terminationBuffer.size() - 1;
     size_t episodeLength = _episodePosBuffer[expId];
     size_t episodeStartIdx = expId - episodeLength;
@@ -490,16 +485,16 @@ void __className__::updateBackgroundBatch()
   auto endTime = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  printf("Done (%3.3fs)!\n", duration / 1.0e9);
+  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void __className__::updateDemonstrationBatch()
 {
+  _k->_logger->logInfo("Detailed", "Updating demonstration batch..");
   auto startTime = std::chrono::steady_clock::now();
 
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
-    printf("Initializing log probabilities demonstration batch ... ");
     _demonstrationTrajectoryLogProbabilities.resize(_problem->_numberObservedTrajectories);
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
@@ -517,7 +512,6 @@ void __className__::updateDemonstrationBatch()
   else
   // Evaluate demonstrations with latest policy
   {
-    printf("Updating log probabilities demonstration batch ... ");
     if (_useFusionDistribution)
     {
       // For all previous demonstration trajectories evaluate log probability with newest policy
@@ -533,12 +527,12 @@ void __className__::updateDemonstrationBatch()
   auto endTime = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += duration;
-  printf("Done (%3.3fs)!\n", duration / 1.0e9);
+  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void __className__::partitionFunctionStat()
 {
-  printf("pfs\n");
+  _k->_logger->logInfo("Detailed", "Running partition function summary\n");
   std::vector<std::vector<float>> stats;
   std::vector<float> logpf(_backgroundSampleSize);
   std::vector<float> fusionLogpf(_backgroundSampleSize);
@@ -721,11 +715,10 @@ void __className__::updateRewardFunction()
       size_t observedTrajectoryLength = _problem->_observationsFeatures[demIdx].size();
 
       float cumReward = 0.0;
-      size_t t = 0;
-      while(t < observedTrajectoryLength)
+      for(size_t t = 0; t < observedTrajectoryLength; ++t)
       {
         // Forward the neural network for this feautres
-        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t++]);
+        const auto reward = calculateReward(_problem->_observationsFeatures[demIdx][t]);
 
         // Backward dummy
         _rewardFunctionLearner->_neuralNetwork->backward( { { 1. } } );
@@ -763,10 +756,10 @@ void __className__::updateRewardFunction()
       
       float cumReward = 0.0;
       size_t t = 0;
-      while(t < backgroundTrajectoryLength)
+      for(size_t t = 0; t < backgroundTrajectoryLength; ++t)
       {
         // Forward the neural network for this features
-        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t++]);
+        const float reward = calculateReward(_backgroundTrajectoryFeatures[bckIdx][t]);
 
         // Store gradients from demonstrations
         const auto rewardGradient = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(1);
@@ -869,7 +862,7 @@ void __className__::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
          _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
-        //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
+         //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
@@ -887,12 +880,6 @@ void __className__::updateRewardFunction()
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
       }
-    }
-
-    for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
-    {
-        //_maxEntropyGradient[k] *= -1.;
-        //printf("mEG [%zu]: %f\n", k, _maxEntropyGradient[k]);
     }
 
     // Passing hyperparameter gradients through an ADAM update
@@ -1639,6 +1626,7 @@ void __className__::printGenerationAfter()
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
+    _k->_logger->logInfo("Normal", " + Reward Update Count:         %lu\n", _rewardUpdateCount);
     if (_maxPolicyUpdates > 0)
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu/%lu\n", _policyUpdateCount, _maxPolicyUpdates);
     else

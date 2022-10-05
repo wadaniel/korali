@@ -81,6 +81,7 @@ void Agent::initialize()
   {
     _currentEpisode = 0;
     _policyUpdateCount = 0;
+    _rewardUpdateCount = 0;
     _currentSampleID = 0;
     _experienceCount = 0;
 
@@ -265,12 +266,12 @@ void Agent::trainingGeneration()
       if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
         updateRewardFunction();
+        _rewardUpdateCount++;
         _sessionRewardUpdateCount++;
       }
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
-        //printf("bss %zu, slpf %zu\n", _backgroundSampleSize, _statisticLogPartitionFunction.size());
         partitionFunctionStat();
       }
 
@@ -364,12 +365,11 @@ void Agent::testingGeneration()
 void Agent::updateBackgroundBatch()
 {
   auto startTime = std::chrono::steady_clock::now();
+  _k->_logger->logInfo("Detailed", "Updating background batch..");
 
   // Initialize background batch
   if (_backgroundSampleSize == 0)
   {
-    printf("Initializing log probabilities background batch ... ");
-
     // Getting index of last experience
     size_t expId = _terminationBuffer.size() - 1;
 
@@ -436,8 +436,6 @@ void Agent::updateBackgroundBatch()
   // Insert latest trajectory to background batch
   else
   {
-    printf("Updating log probabilities background batch ... ");
-
     size_t expId = _terminationBuffer.size() - 1;
     size_t episodeLength = _episodePosBuffer[expId];
     size_t episodeStartIdx = expId - episodeLength;
@@ -494,16 +492,16 @@ void Agent::updateBackgroundBatch()
   auto endTime = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  printf("Done (%3.3fs)!\n", duration / 1.0e9);
+  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void Agent::updateDemonstrationBatch()
 {
+  _k->_logger->logInfo("Detailed", "Updating demonstration batch..");
   auto startTime = std::chrono::steady_clock::now();
 
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
-    printf("Initializing log probabilities demonstration batch ... ");
     _demonstrationTrajectoryLogProbabilities.resize(_problem->_numberObservedTrajectories);
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
@@ -521,7 +519,6 @@ void Agent::updateDemonstrationBatch()
   else
   // Evaluate demonstrations with latest policy
   {
-    printf("Updating log probabilities demonstration batch ... ");
     if (_useFusionDistribution)
     {
       // For all previous demonstration trajectories evaluate log probability with newest policy
@@ -537,12 +534,12 @@ void Agent::updateDemonstrationBatch()
   auto endTime = std::chrono::steady_clock::now();
   double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += duration;
-  printf("Done (%3.3fs)!\n", duration / 1.0e9);
+  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void Agent::partitionFunctionStat()
 {
-  printf("pfs\n");
+  _k->_logger->logInfo("Detailed", "Running partition function summary\n");
   std::vector<std::vector<float>> stats;
   std::vector<float> logpf(_backgroundSampleSize);
   std::vector<float> fusionLogpf(_backgroundSampleSize);
@@ -873,7 +870,7 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
          _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
-        //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
+         printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
@@ -886,7 +883,7 @@ void Agent::updateRewardFunction()
       {
         // Contribution from partition function
         _maxEntropyGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k] * invTotalBatchSize;
-        //printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
+        printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
@@ -1643,6 +1640,7 @@ void Agent::printGenerationAfter()
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
+    _k->_logger->logInfo("Normal", " + Reward Update Count:         %lu\n", _rewardUpdateCount);
     if (_maxPolicyUpdates > 0)
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu/%lu\n", _policyUpdateCount, _maxPolicyUpdates);
     else
@@ -1991,6 +1989,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['State Rescaling']['Sigmas']\n%s", e.what()); } 
    eraseValue(js, "State Rescaling", "Sigmas");
+ }
+
+ if (isDefined(js, "Reward Update Count"))
+ {
+ try { _rewardUpdateCount = js["Reward Update Count"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward Update Count']\n%s", e.what()); } 
+   eraseValue(js, "Reward Update Count");
  }
 
  if (isDefined(js, "Background Sample Size"))
@@ -2466,6 +2472,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Log Sdev Partition Function"] = _logSdevPartitionFunction;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;
+   js["Reward Update Count"] = _rewardUpdateCount;
    js["Background Sample Size"] = _backgroundSampleSize;
    js["Statistic Log Partition Function"] = _statisticLogPartitionFunction;
    js["Statistic Fusion Log Partition Function"] = _statisticFusionLogPartitionFunction;

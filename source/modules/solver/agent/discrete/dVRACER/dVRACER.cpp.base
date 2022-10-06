@@ -65,12 +65,18 @@ void __className__::trainPolicy()
 
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
+  
+  // Gathering feature sequences for selected minibatch
+  const auto featureSequence = getMiniBatchFeatureSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
   const auto policyInfo = runPolicy(stateSequence);
+  
+  // Running reward NN on the Minibatch experiences
+  const auto rewards = calculateReward(featureSequence);
 
   // Using policy information to update experience's metadata
-  updateExperienceMetadata(miniBatch, policyInfo);
+  updateExperienceMetadata(miniBatch, policyInfo, rewards);
 
   // Now calculating policy gradients
   calculatePolicyGradients(miniBatch);

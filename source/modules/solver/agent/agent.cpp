@@ -134,6 +134,7 @@ void Agent::initialize()
   _sessionPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
   _sessionRewardUpdateTime = 0.0;
+  _sessionStatUpdateTime = 0.0;
   _sessionWorkerAttendingTime = 0.0;
   _sessionWorkerTrajectoryLogProbilityUpdateTime = 0.0;
 
@@ -230,6 +231,7 @@ void Agent::trainingGeneration()
   _generationPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationRewardUpdateTime = 0.0;
+  _generationStatUpdateTime = 0.0;
   _generationWorkerAttendingTime = 0.0;
 
   // Running until all _workers have finished
@@ -279,7 +281,13 @@ void Agent::trainingGeneration()
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
+        auto beginTime = std::chrono::steady_clock::now(); // Profiling
+        
         partitionFunctionStat();
+        
+        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
+        _sessionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+        _generationStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
 
       // If we accumulated enough experiences, we rescale the states (once)
@@ -372,7 +380,7 @@ void Agent::testingGeneration()
 void Agent::updateBackgroundBatch()
 {
   auto startTime = std::chrono::steady_clock::now();
-  _k->_logger->logInfo("Detailed", "Updating background batch..");
+  _k->_logger->logInfo("Detailed", "Updating background batch..\n");
 
   // Initialize background batch
   if (_backgroundSampleSize == 0)
@@ -504,7 +512,7 @@ void Agent::updateBackgroundBatch()
 
 void Agent::updateDemonstrationBatch()
 {
-  _k->_logger->logInfo("Detailed", "Updating demonstration batch..");
+  _k->_logger->logInfo("Detailed", "Updating demonstration batch..\n");
   auto startTime = std::chrono::steady_clock::now();
 
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
@@ -564,7 +572,6 @@ void Agent::partitionFunctionStat()
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
       
         const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength-t);
-#pragma omp parallel for
         for(size_t b = 0; b < batchSize; ++b)
         {
           featuresBatch[b] = { _backgroundTrajectoryFeatures[m][b] };
@@ -573,7 +580,6 @@ void Agent::partitionFunctionStat()
         const auto rewards = calculateReward( featuresBatch );
       
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ : cumReward)
         for(size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
@@ -607,7 +613,6 @@ void Agent::partitionFunctionStat()
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
       
         const size_t batchSize = std::min(_rewardFunctionBatchSize, observationTrajectoryLength-t);
-#pragma omp parallel for
         for(size_t b = 0; b < batchSize; ++b)
         {
           featuresBatch[b] = { _problem->_observationsFeatures[obsIdx][b] };
@@ -616,7 +621,6 @@ void Agent::partitionFunctionStat()
         const auto rewards = calculateReward( featuresBatch );
       
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ : cumReward)
         for(size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
@@ -734,6 +738,8 @@ void Agent::partitionFunctionStat()
   _statisticCumulativeRewards.push_back(cumulativeRewardsBackgroundBatch);
   _statisticLogPartitionFunction.push_back(logpf);
   _statisticFusionLogPartitionFunction.push_back(fusionLogpf);
+
+  _k->_logger->logInfo("Detailed", "DONE\n");
 }
 
 std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const
@@ -792,7 +798,7 @@ void Agent::updateRewardFunction()
         const auto rewards = calculateReward( featuresBatch );
       
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ : cumReward)
+#pragma omp parallel for reduction(+: cumReward)
         for(size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
@@ -885,7 +891,7 @@ void Agent::updateRewardFunction()
 
     // Calculate importance weights of background batch
     std::vector<float> backgroundBatchLogImportanceWeights(_backgroundBatchSize);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for 
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -899,7 +905,7 @@ void Agent::updateRewardFunction()
 
     // Calculate importance weights of demonstration batch
     std::vector<float> demonstrationBatchLogImportanceWeights(_demonstrationBatchSize);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for 
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -914,6 +920,7 @@ void Agent::updateRewardFunction()
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     float maxSquaredExp = -Inf;
+#pragma omp parallel for reduction (max: maxExp, maxSquaredExp)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -921,6 +928,7 @@ void Agent::updateRewardFunction()
       if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
 
+#pragma omp parallel for reduction (max: maxExp, maxSquaredExp)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -931,6 +939,7 @@ void Agent::updateRewardFunction()
     float sumExpNoMax = 0.0;
     float sumSquaredExpNoMax = 0.0;
 
+#pragma omp parallel for reduction (+: sumExpNoMax, sumSquaredExpNoMax)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -938,6 +947,7 @@ void Agent::updateRewardFunction()
       sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
+#pragma omp parallel for reduction (+: sumExpNoMax, sumSquaredExpNoMax)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -1314,7 +1324,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   return miniBatch;
 }
 
-void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
+void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData, const std::vector<float>& rewards)
 {
   const size_t miniBatchSize = miniBatch.size();
 
@@ -1372,6 +1382,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     _importanceWeightBuffer[expId] = importanceWeight;
     _isOnPolicyBuffer[expId] = isOnPolicy;
     _truncatedImportanceWeightBuffer[expId] = truncatedImportanceWeight;
+
+    _rewardBuffer[expId] = rewards[i];
   }
 
   // Calculating updated truncated policy state values
@@ -1434,10 +1446,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      
-      //printf("endId %zd startId %zd\n", endId, startId);
-      //printf("curId %zd\n", curId);
-      const float curReward = calculateReward( { { _featureBuffer[curId] } } )[0];
+      const float curReward = _rewardBuffer[curId]; 
 
       // Calculating state value function
       const float curV = _stateValueBuffer[curId];
@@ -1520,6 +1529,27 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
   }
 
   return stateSequence;
+}
+
+std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch)
+{
+  // Getting mini batch size
+  const size_t miniBatchSize = miniBatch.size();
+
+  // Allocating feature sequence vector
+  std::vector<std::vector<std::vector<float>>> featureSequence(miniBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+
+#pragma omp parallel for
+  for (size_t b = 0; b < miniBatch.size(); b++)
+  {
+    // Getting current expId
+    const size_t expId = miniBatch[b];
+
+    // Resizing state sequence vector to the correct time sequence length
+    featureSequence[b] = { _featureBuffer[expId] };
+  }
+
+  return featureSequence;
 }
 
 std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId)

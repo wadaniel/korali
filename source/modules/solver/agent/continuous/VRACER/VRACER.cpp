@@ -79,12 +79,18 @@ void VRACER::trainPolicy()
 
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
+  
+  // Gathering feature sequences for selected minibatch
+  const auto featureSequence = getMiniBatchFeatureSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
   const auto policyInfo = runPolicy(stateSequence);
 
+  // Running reward NN on the Minibatch experiences
+  const auto rewards = calculateReward(featureSequence);
+
   // Using policy information to update experience's metadata
-  updateExperienceMetadata(miniBatch, policyInfo);
+  updateExperienceMetadata(miniBatch, policyInfo, rewards);
 
   // Now calculating policy gradients
   calculatePolicyGradients(miniBatch);
@@ -111,11 +117,21 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     _minMiniBatchPolicyStdDev[i] = +Inf;
   }
 
+
+  std::vector<std::vector<std::vector<float>>> featureBatch(miniBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+  for (size_t b = 0; b < miniBatchSize; b++)
+  {
+      const size_t expId = miniBatch[b];
+      featureBatch[b] = { _featureBuffer[expId] } ;
+  }
+
+  const auto qRetBatch = calculateReward(featureBatch);
+
 #pragma omp parallel for
   for (size_t b = 0; b < miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t expId = miniBatch[b];
+    const size_t expId = miniBatch[b];
 
     // Get state, action and policy for this experience
     const auto &expPolicy = _expPolicyBuffer[expId];
@@ -136,7 +152,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     if (_isOnPolicyBuffer[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = calculateReward( { { _featureBuffer[expId] } } )[0];
+      float Qret = qRetBatch[b];
 
       // If experience is non-terminal, add Vtbc
       if (_terminationBuffer[expId] == e_nonTerminal)

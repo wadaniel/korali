@@ -106,7 +106,7 @@ e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ## Reward Function Specification
 
-e["Solver"]["Reward Function"]["Batch Size"] = 1000
+e["Solver"]["Reward Function"]["Batch Size"] = 256
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.

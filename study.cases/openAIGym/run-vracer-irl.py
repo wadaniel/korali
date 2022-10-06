@@ -72,6 +72,7 @@ initEnvironment(e, args.env)
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures
+e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
 
 ### Defining Agent Configuration 
 

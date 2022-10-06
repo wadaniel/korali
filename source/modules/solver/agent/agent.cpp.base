@@ -197,7 +197,7 @@ void __className__::initialize()
   // No transformations for the state value output
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Sigmoid";
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "SoftMax";
 
   // Running initialization to verify that the configuration is correct
   _rewardFunctionExperiment.initialize();

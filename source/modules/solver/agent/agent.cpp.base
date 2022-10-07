@@ -1148,7 +1148,7 @@ void __className__::processEpisode(knlohmann::json &episode)
     _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
     // Getting reward
-    float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
+    const float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1276,7 +1276,7 @@ void __className__::processEpisode(knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward({{_featureBuffer[expId]}})[0];
+    retV = _discountFactor * retV + _rewardBuffer[expId];
 
     // Setting initial retrace value in the experience's cache
     _retraceValueBuffer[expId] = retV;

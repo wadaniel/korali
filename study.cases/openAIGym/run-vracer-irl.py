@@ -27,7 +27,7 @@ with open(obsfile, 'r') as infile:
 
 ### Compute Feauters from states
 
-nf = 17
+nf = 8
 obsfeatures = []
 maxFeatures = [-np.inf] * nf
 for trajectory, actions in zip(obsstates, obsactions):
@@ -95,9 +95,9 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Experiences Between Reward Updates"] = 500
-e["Solver"]["Demonstration Batch Size"] = 10
-e["Solver"]["Background Batch Size"] = 30
-e["Solver"]["Use Fusion Distribution"] = False
+e["Solver"]["Demonstration Batch Size"] = 5
+e["Solver"]["Background Batch Size"] = 50
+e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ## Reward Function Specification

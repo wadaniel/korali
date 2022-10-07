@@ -75,7 +75,6 @@ class __className__ : public __parentClassName__
    * @brief [Profiling] Stores communication time per episode
    */
   double _agentCommunicationTime;
-
 };
 
 __endNamespace__;

@@ -192,7 +192,6 @@ class ReinforcementLearning : public Problem
    * @brief [Profiling] Stores communication time per episode
    */
   double _agentCommunicationTime;
-
 };
 
 } //problem

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import os
 import sys
 sys.path.append('./_model')
-import math
+
 import json
 import argparse
+
+import numpy as np
 from agent import *
 
 parser = argparse.ArgumentParser()
@@ -26,33 +27,26 @@ with open(obsfile, 'r') as infile:
 
 ### Compute Feauters from states
 
-obsfeatures = obsstates
-
-"""
+nf = 7
 obsfeatures = []
-nstate = len(obsstates[0][0])
-maxFeatures = [-math.inf] * nstate
-for trajectory in obsstates:
+maxFeatures = [-np.inf] * nf
+for trajectory, actions in zip(obsstates, obsactions):
     features = []
-    for state in trajectory:
-        # state: Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
-        feature1 = np.cos(state[2])
-        feature2 = state[1]*state[1]
-        feature3 = np.random.normal(0.0, 0.1) # dummy
-        #features.append([feature1, feature2]) 
-        features.append([feature1, feature2, feature3]) 
-        
-        if(maxFeatures[0] < feature1):
-            maxFeatures[0] = feature1
-        if(maxFeatures[1] < feature2):
-            maxFeatures[1] = feature2
-    obsfeatures.append(features)
+    distance = np.zeros(nf)
+    for idx in range(len(trajectory)):
+        # state: last two are velocities
+        f = list(trajectory[idx][-6:]) + [float(sum(np.array(actions[idx])**2))]
+        features.append(list(f))
+        distance += np.array(f)/0.04
+
+    print(f'distance covered: {distance}')
+    obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
 print("Max feature values found in observations:")
-print(maxFeatures)
-"""
-
+print(np.max(np.array(obsfeatures), axis=1))
+print("Min feature values found in observations:")
+print(np.min(np.array(obsfeatures), axis=1))
 ####### Defining Korali Problem
 
 import korali
@@ -100,7 +94,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 100
+e["Solver"]["Experiences Between Reward Updates"] = 500
 e["Solver"]["Demonstration Batch Size"] = 5
 e["Solver"]["Background Batch Size"] = 100
 e["Solver"]["Use Fusion Distribution"] = False
@@ -108,14 +102,14 @@ e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ## Reward Function Specification
 
-e["Solver"]["Reward Function"]["Batch Size"] = 256
+e["Solver"]["Reward Function"]["Batch Size"] = 512
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 8
 
 #e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 #e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SofReLU"

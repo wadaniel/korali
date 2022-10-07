@@ -482,7 +482,6 @@ class Agent : public Solver
    * @brief Session-specific reward update count. This is useful in case of restart: counters from the old session won't count
    */
   size_t _sessionRewardUpdateCount;
- 
 
   /**
    * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
@@ -580,6 +579,11 @@ class Agent : public Solver
   cBuffer<float> _rewardBuffer;
 
   /**
+   * @brief Contains the rewards of every experience
+   */
+  cBuffer<float> _rewardUpdateBuffer;
+
+  /**
    * @brief Contains the state value evaluation for every experience
    */
   cBuffer<float> _stateValueBuffer;
@@ -619,7 +623,7 @@ class Agent : public Solver
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _sessionWorkerTrajectoryLogProbilityUpdateTime;
-  
+
   /****************************************************************************************************
    * Variables for reward function learning
    ***************************************************************************************************/
@@ -638,12 +642,11 @@ class Agent : public Solver
    * @brief Pointer to experiment problem
    */
   problem::SupervisedLearning *_rewardFunctionProblem;
-  
+
   /**
    * @brief Gradient of max entropy objective
    */
   std::vector<float> _maxEntropyGradient;
-
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -678,12 +681,12 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
   double _sessionPolicyUpdateTime;
-  
+
   /**
    * @brief [Profiling] Measures the time taken to update the reward function in the current generation
    */
   double _sessionRewardUpdateTime;
-  
+
   /**
    * @brief TODO
    */
@@ -727,17 +730,16 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
   double _generationPolicyUpdateTime;
- 
+
   /**
    * @brief [Profiling] Measures the time taken to update the reward function in the current generation
    */
   double _generationRewardUpdateTime;
-  
+
   /**
    * @brief [Profiling] TODO
    */
   double _generationStatUpdateTime;
-
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
@@ -781,9 +783,8 @@ class Agent : public Solver
    * @brief Updates the state value, retrace, importance weight and other metadata for a given minibatch of experiences
    * @param miniBatch The mini batch of experience ids to update
    * @param policyData The policy to use to evaluate the experiences
-   * @param rewards The newly evaluated rewards
    */
-  void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData, const std::vector<float>& rewards);
+  void updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData);
 
   /**
    * @brief Resets time sequence within the agent, to forget past actions from other episodes
@@ -811,14 +812,13 @@ class Agent : public Solver
    * @return The time step vector of states
    */
   std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction = false);
-  
+
   /**
    * @brief Gets a vector of features 
    * @param miniBatch Indexes to the feature
    * @return The vector of features
    */
   std::vector<std::vector<std::vector<float>>> getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch);
-
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists

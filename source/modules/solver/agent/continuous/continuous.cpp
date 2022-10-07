@@ -123,7 +123,7 @@ void Continuous::initializeAgent()
     }
   }
 
-_k->_logger->logInfo("Normal", "Linear Approximator Expert Policy\n");
+  _k->_logger->logInfo("Normal", "Linear Approximator Expert Policy\n");
 
   // Do regression over actions
   for (size_t k = 0; k < _problem->_actionVectorSize; ++k)

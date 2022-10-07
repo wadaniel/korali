@@ -108,6 +108,7 @@ e["Solver"]["Experiences Between Partition Function Statistics"] = 2e5
 ### Reward Function Specification
 
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
+e["Solver"]["Reward Function"]["Batch Size"] = 32
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"

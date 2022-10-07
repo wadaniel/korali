@@ -73,18 +73,12 @@ void dVRACER::trainPolicy()
 
   // Gathering state sequences for selected minibatch
   const auto stateSequence = getMiniBatchStateSequence(miniBatch);
-  
-  // Gathering feature sequences for selected minibatch
-  const auto featureSequence = getMiniBatchFeatureSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
   const auto policyInfo = runPolicy(stateSequence);
-  
-  // Running reward NN on the Minibatch experiences
-  const auto rewards = calculateReward(featureSequence);
 
   // Using policy information to update experience's metadata
-  updateExperienceMetadata(miniBatch, policyInfo, rewards);
+  updateExperienceMetadata(miniBatch, policyInfo);
 
   // Now calculating policy gradients
   calculatePolicyGradients(miniBatch);
@@ -126,7 +120,7 @@ void dVRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     if (_isOnPolicyBuffer[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = calculateReward( { { _featureBuffer[expId] } } )[0];
+      float Qret = calculateReward({{_featureBuffer[expId]}})[0];
 
       // If experience is non-terminal, add Vtbc
       if (_terminationBuffer[expId] == e_nonTerminal)

@@ -107,7 +107,6 @@ void ReinforcementLearning::initialize()
 
   // Setting initial launch id (0)
   _launchId = 0;
-
 }
 
 /**
@@ -217,9 +216,12 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Sanity check for reward
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
-      episodes[i]["Experiences"][actionCount]["Reward"] = _agent->calculateReward( { { agent["Features"][i].get<std::vector<float>>() } } )[0];
+      episodes[i]["Experiences"][actionCount]["Reward"] = _agent->calculateReward({{agent["Features"][i].get<std::vector<float>>()}})[0];
       if (std::isfinite(episodes[i]["Experiences"][actionCount]["Reward"].get<float>()) == false)
         KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
+
+      // Adding to cumulative training rewards
+      trainingRewards[i] += episodes[i]["Experiences"][actionCount]["Reward"].get<float>();
     }
 
     // If single agent, put action into a single vector
@@ -237,14 +239,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     if (agent["Termination"] == "Truncated")
       for (size_t i = 0; i < _agentsPerEnvironment; i++)
         episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
- 
+
     // Store episode policy
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Policy Hyperparameters"] = _agent->getPolicy();
-
-    // Adding to cumulative training rewards
-    for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      trainingRewards[i] += _agent->calculateReward( { { agent["Features"][i].get<std::vector<float>>() } } )[0];
 
     // Increasing counter for generated actions
     actionCount++;
@@ -252,8 +250,11 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
     if ((_actionsBetweenPolicyUpdates > 0) &&
         (agent["Termination"] == "Non Terminal") &&
-        (actionCount % _actionsBetweenPolicyUpdates == 0)) { requestNewPolicy(agent); KORALI_LOG_ERROR("IRL cant handle inter episode policy hupdates."); }
-
+        (actionCount % _actionsBetweenPolicyUpdates == 0))
+    {
+      requestNewPolicy(agent);
+      KORALI_LOG_ERROR("IRL cant handle inter episode policy hupdates.");
+    }
   }
 
   // Setting cumulative reward

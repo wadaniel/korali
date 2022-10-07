@@ -44,6 +44,7 @@ void Agent::initialize()
   _actionBuffer.resize(_experienceReplayMaximumSize);
   _retraceValueBuffer.resize(_experienceReplayMaximumSize);
   _rewardBuffer.resize(_experienceReplayMaximumSize);
+  _rewardUpdateBuffer.resize(_experienceReplayMaximumSize);
   _environmentIdBuffer.resize(_experienceReplayMaximumSize);
   _stateValueBuffer.resize(_experienceReplayMaximumSize);
   _importanceWeightBuffer.resize(_experienceReplayMaximumSize);
@@ -183,7 +184,7 @@ void Agent::initialize()
   _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
   _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
   _rewardFunctionExperiment["Problem"]["Inference Batch Size"] = 1;
-  _rewardFunctionExperiment["Problem"]["Training Batch Size"] = _rewardFunctionBatchSize; 
+  _rewardFunctionExperiment["Problem"]["Training Batch Size"] = _rewardFunctionBatchSize;
   _rewardFunctionExperiment["Problem"]["Input"]["Size"] = _problem->_featureVectorSize;
   _rewardFunctionExperiment["Problem"]["Solution"]["Size"] = 1;
 
@@ -207,10 +208,9 @@ void Agent::initialize()
   _rewardFunctionExperiment.initialize();
   _rewardFunctionProblem = dynamic_cast<problem::SupervisedLearning *>(_rewardFunctionExperiment._problem);
   _rewardFunctionLearner = dynamic_cast<solver::DeepSupervisor *>(_rewardFunctionExperiment._solver);
-  
+
   // Init gradient
   _maxEntropyGradient.resize(_rewardFunctionLearner->_hyperparameters.size(), 0.0);
-
 }
 
 void Agent::runGeneration()
@@ -267,25 +267,24 @@ void Agent::trainingGeneration()
       while (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
-        
+
         updateRewardFunction();
-       
+
         auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
         _sessionRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
         _generationRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
         _rewardUpdateCount++;
         _sessionRewardUpdateCount++;
- 
       }
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
-        
+
         partitionFunctionStat();
-        
-        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
+
+        auto endTime = std::chrono::steady_clock::now();                                                                // Profiling
         _sessionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
         _generationStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
@@ -564,30 +563,30 @@ void Agent::partitionFunctionStat()
   for (size_t m = 0; m < _backgroundSampleSize; ++m)
   {
     const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
-    
+
     size_t t = 0;
     float cumReward = 0.;
-    while(t < backgroundTrajectoryLength)
+    while (t < backgroundTrajectoryLength)
     {
-        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
-      
-        const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength-t);
-        for(size_t b = 0; b < batchSize; ++b)
-        {
-          featuresBatch[b] = { _backgroundTrajectoryFeatures[m][b] };
-        }
-      
-        const auto rewards = calculateReward( featuresBatch );
-      
-        // Accumulate cumulative reward
-        for(size_t b = 0; b < batchSize; ++b)
-        {
-          cumReward += rewards[b];
-        }
+      std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
 
-        t += batchSize;
+      const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength - t);
+      for (size_t b = 0; b < batchSize; ++b)
+      {
+        featuresBatch[b] = {_backgroundTrajectoryFeatures[m][b]};
+      }
+
+      const auto rewards = calculateReward(featuresBatch);
+
+      // Accumulate cumulative reward
+      for (size_t b = 0; b < batchSize; ++b)
+      {
+        cumReward += rewards[b];
+      }
+
+      t += batchSize;
     }
- 
+
     cumulativeRewardsBackgroundBatch[m] = cumReward;
   }
 
@@ -608,26 +607,26 @@ void Agent::partitionFunctionStat()
 
     size_t t = 0;
     float cumReward = 0.;
-    while(t < observationTrajectoryLength)
+    while (t < observationTrajectoryLength)
     {
-        std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
-      
-        const size_t batchSize = std::min(_rewardFunctionBatchSize, observationTrajectoryLength-t);
-        for(size_t b = 0; b < batchSize; ++b)
-        {
-          featuresBatch[b] = { _problem->_observationsFeatures[obsIdx][b] };
-        }
-      
-        const auto rewards = calculateReward( featuresBatch );
-      
-        // Accumulate cumulative reward
-        for(size_t b = 0; b < batchSize; ++b)
-        {
-          cumReward += rewards[b];
-        }
-        t += batchSize;
+      std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
+
+      const size_t batchSize = std::min(_rewardFunctionBatchSize, observationTrajectoryLength - t);
+      for (size_t b = 0; b < batchSize; ++b)
+      {
+        featuresBatch[b] = {_problem->_observationsFeatures[obsIdx][b]};
+      }
+
+      const auto rewards = calculateReward(featuresBatch);
+
+      // Accumulate cumulative reward
+      for (size_t b = 0; b < batchSize; ++b)
+      {
+        cumReward += rewards[b];
+      }
+      t += batchSize;
     }
-    
+
     cumulativeRewardsDemonstrationBatch[n] = cumReward;
   }
 
@@ -744,16 +743,15 @@ void Agent::partitionFunctionStat()
 
 std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const
 {
-    auto output = _rewardFunctionLearner->getEvaluation( featuresBatch );
-    std::vector<float> rewards(output.size());
-    for(size_t b = 0; b < output.size(); ++b)
-        rewards[b] = output[b][0];
-    return rewards;
+  auto output = _rewardFunctionLearner->getEvaluation(featuresBatch);
+  std::vector<float> rewards(output.size());
+  for (size_t b = 0; b < output.size(); ++b)
+    rewards[b] = output[b][0];
+  return rewards;
 }
 
 void Agent::updateRewardFunction()
 {
-
   const size_t stepsPerUpdate = 1;
   for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
   {
@@ -769,7 +767,7 @@ void Agent::updateRewardFunction()
     std::vector<size_t> randomBackgroundIndexes(_backgroundSampleSize);
     std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
-    
+
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
     std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
@@ -781,32 +779,33 @@ void Agent::updateRewardFunction()
 
       size_t t = 0;
       float cumReward = 0.0;
-      
-      while(t < observedTrajectoryLength)
+
+      while (t < observedTrajectoryLength)
       {
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
-      
-        const size_t batchSize = std::min(_rewardFunctionBatchSize, observedTrajectoryLength-t);
+
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, observedTrajectoryLength - t);
 #pragma omp parallel for
-        for(size_t b = 0; b < batchSize; ++b)
+        for (size_t b = 0; b < batchSize; ++b)
         {
-          featuresBatch[b] = { _problem->_observationsFeatures[demIdx][b] };
+          featuresBatch[b] = {_problem->_observationsFeatures[demIdx][b]};
           backwardMultiplier[b] = std::vector<float>(1, 1.);
         }
-      
-        const auto rewards = calculateReward( featuresBatch );
-      
+
+        const auto rewards = calculateReward(featuresBatch);
+
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+: cumReward)
-        for(size_t b = 0; b < batchSize; ++b)
+#pragma omp parallel for reduction(+ \
+                                   : cumReward)
+        for (size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
         }
-       
+
         // Backward dummy
-        _rewardFunctionLearner->_neuralNetwork->backward( backwardMultiplier );
-       
+        _rewardFunctionLearner->_neuralNetwork->backward(backwardMultiplier);
+
         // Accumulate gradients from demonstrations
         const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(_rewardFunctionBatchSize);
 
@@ -838,35 +837,36 @@ void Agent::updateRewardFunction()
     {
       const size_t bckIdx = randomBackgroundIndexes[m];
       const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
-      
+
       size_t t = 0;
       float cumReward = 0.0;
-      
-      while(t < backgroundTrajectoryLength)
+
+      while (t < backgroundTrajectoryLength)
       {
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
-      
-        const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength-t);
+
+        const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength - t);
 #pragma omp parallel for
-        for(size_t b = 0; b < batchSize; ++b)
+        for (size_t b = 0; b < batchSize; ++b)
         {
-          featuresBatch[b] = { _backgroundTrajectoryFeatures[bckIdx][b] };
+          featuresBatch[b] = {_backgroundTrajectoryFeatures[bckIdx][b]};
           backwardMultiplier[b] = std::vector<float>(1, 1.);
         }
-      
-        const auto rewards = calculateReward( featuresBatch );
-      
+
+        const auto rewards = calculateReward(featuresBatch);
+
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ : cumReward)
-        for(size_t b = 0; b < batchSize; ++b)
+#pragma omp parallel for reduction(+ \
+                                   : cumReward)
+        for (size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
         }
-       
+
         // Backward dummy
-        _rewardFunctionLearner->_neuralNetwork->backward( backwardMultiplier );
-       
+        _rewardFunctionLearner->_neuralNetwork->backward(backwardMultiplier);
+
         // Accumulate gradients from demonstrations
         const auto rewardGradients = _rewardFunctionLearner->_neuralNetwork->getHyperparameterGradients(_rewardFunctionBatchSize);
 
@@ -878,7 +878,7 @@ void Agent::updateRewardFunction()
 
         t += batchSize;
       }
-     
+
       cumulativeRewardsBackgroundBatch[m] = cumReward;
 
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from linear policy
@@ -891,7 +891,7 @@ void Agent::updateRewardFunction()
 
     // Calculate importance weights of background batch
     std::vector<float> backgroundBatchLogImportanceWeights(_backgroundBatchSize);
-#pragma omp parallel for 
+#pragma omp parallel for
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -899,13 +899,13 @@ void Agent::updateRewardFunction()
         backgroundBatchLogImportanceWeights[m] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       else
         backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
-     
+
       //printf("BbIw %f cr %f (tot %f)\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
     }
 
     // Calculate importance weights of demonstration batch
     std::vector<float> demonstrationBatchLogImportanceWeights(_demonstrationBatchSize);
-#pragma omp parallel for 
+#pragma omp parallel for
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -913,14 +913,15 @@ void Agent::updateRewardFunction()
         demonstrationBatchLogImportanceWeights[n] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
       else
         demonstrationBatchLogImportanceWeights[n] = -demonstrationTrajectoryLogProbabilities[n][0];
-      
+
       //printf("DbIw %f cr %f (tot %f)\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n], demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n]);
     }
 
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     float maxSquaredExp = -Inf;
-#pragma omp parallel for reduction (max: maxExp, maxSquaredExp)
+#pragma omp parallel for reduction(max \
+                                   : maxExp, maxSquaredExp)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -928,7 +929,8 @@ void Agent::updateRewardFunction()
       if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
 
-#pragma omp parallel for reduction (max: maxExp, maxSquaredExp)
+#pragma omp parallel for reduction(max \
+                                   : maxExp, maxSquaredExp)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -939,7 +941,8 @@ void Agent::updateRewardFunction()
     float sumExpNoMax = 0.0;
     float sumSquaredExpNoMax = 0.0;
 
-#pragma omp parallel for reduction (+: sumExpNoMax, sumSquaredExpNoMax)
+#pragma omp parallel for reduction(+ \
+                                   : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -947,7 +950,8 @@ void Agent::updateRewardFunction()
       sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
-#pragma omp parallel for reduction (+: sumExpNoMax, sumSquaredExpNoMax)
+#pragma omp parallel for reduction(+ \
+                                   : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -969,14 +973,14 @@ void Agent::updateRewardFunction()
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
-         _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
-         //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
+        _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
+        //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
     float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
-    for(size_t n = 0; n < _demonstrationBatchSize; ++n)
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
@@ -991,7 +995,7 @@ void Agent::updateRewardFunction()
     }
 
     // Passing hyperparameter gradients through an ADAM update
-    _rewardFunctionLearner->_optimizer->processResult(0.0f,_maxEntropyGradient);
+    _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);
 
     // Getting new set of hyperparameters from Adam
     _rewardFunctionLearner->_neuralNetwork->setHyperparameters(_rewardFunctionLearner->_optimizer->_currentValue);
@@ -1148,7 +1152,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
     // Getting reward
-    float reward = calculateReward( { { episode["Experiences"][expId]["Features"].get<std::vector<float>>() } } )[0];
+    float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1174,6 +1178,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Storing in the experience replay the reward of the new experience
     _rewardBuffer.add(reward);
+    _rewardUpdateBuffer.add(_rewardUpdateCount);
 
     // Checking experience termination status and truncated state
     termination_t termination;
@@ -1275,7 +1280,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward( { { _featureBuffer[expId] } } )[0];
+    retV = _discountFactor * retV + calculateReward({{_featureBuffer[expId]}})[0];
 
     // Setting initial retrace value in the experience's cache
     _retraceValueBuffer[expId] = retV;
@@ -1324,7 +1329,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   return miniBatch;
 }
 
-void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData, const std::vector<float>& rewards)
+void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
 
@@ -1332,8 +1337,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   // Important: this assumes the minibatch ids are sorted.
   std::vector<size_t> updateBatch;
   updateBatch.push_back(0);
-  for (size_t i = 1; i < miniBatchSize; i++)
-    if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
+  for (size_t b = 1; b < miniBatchSize; ++b)
+  {
+    if (miniBatch[b] != miniBatch[b - 1]) updateBatch.push_back(b);
+  }
 
   // Calculate offpolicy count difference in minibatch
   int offPolicyCountDelta = 0;
@@ -1342,8 +1349,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
                                    : offPolicyCountDelta)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
-    auto batchId = updateBatch[i];
-    auto expId = miniBatch[batchId];
+    const auto batchId = updateBatch[i];
+    const auto expId = miniBatch[batchId];
 
     // Get state, action, mean, Sigma for this experience
     const auto &expAction = _actionBuffer[expId];
@@ -1351,7 +1358,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     const auto &curPolicy = policyData[batchId];
 
     // Grabbing state value from the latest policy
-    auto stateValue = curPolicy.stateValue;
+    const auto stateValue = curPolicy.stateValue;
 
     // Sanity checks for state value
     if (std::isfinite(stateValue) == false)
@@ -1382,8 +1389,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     _importanceWeightBuffer[expId] = importanceWeight;
     _isOnPolicyBuffer[expId] = isOnPolicy;
     _truncatedImportanceWeightBuffer[expId] = truncatedImportanceWeight;
-
-    _rewardBuffer[expId] = rewards[i];
   }
 
   // Calculating updated truncated policy state values
@@ -1422,6 +1427,60 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
+  size_t t = 0;
+  std::vector<ssize_t> featureMiniBatch(_rewardFunctionBatchSize);
+  std::vector<std::vector<std::vector<float>>> featureBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+
+  // Update rewards backward
+  for (size_t i = 0; i < retraceMiniBatch.size(); i++)
+  {
+    // Finding the earliest experience corresponding to the same episode as this experience
+    const ssize_t endId = retraceMiniBatch[i];
+
+    // If the starting experience has already been discarded, take the earliest one that still remains
+    const ssize_t startId = (ssize_t)_episodePosBuffer[endId] < endId ? endId - (ssize_t)_episodePosBuffer[endId] : 0;
+
+    // Now iterating backwards to find the beginning
+    for (ssize_t curId = endId; curId >= startId; curId--)
+    {
+      // Update reward if old
+      if (_rewardBuffer[curId] < _rewardUpdateCount)
+      {
+        // Add features and experience id
+        featureMiniBatch[t] = curId;
+        featureBatch[t++] = { _featureBuffer[curId] };
+        if (t == _rewardFunctionBatchSize)
+        {
+          // Feature batch is full, forward features
+          const auto rewards = calculateReward(featureBatch);
+
+          // Update rewards
+          for (size_t b = 0; b < _rewardFunctionBatchSize; ++b)
+          {
+            const ssize_t expId = featureMiniBatch[b];
+            _rewardBuffer[expId] = rewards[b];
+            _rewardUpdateBuffer[expId] = _rewardUpdateCount;
+          }
+
+          // Reset count
+          t = 0;
+        }
+      }
+    }
+  }
+
+  // Update the rest
+  if (t > 0)
+  {
+    const auto rewards = calculateReward(featureBatch);
+    for (size_t b = 0; b < t; ++b)
+    {
+      const ssize_t expId = featureMiniBatch[b];
+      _rewardBuffer[expId] = rewards[b];
+      _rewardUpdateBuffer[expId] = _rewardUpdateCount;
+    }
+  }
+
 // Calculating retrace value for the oldest experiences of unique episodes
 #pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < retraceMiniBatch.size(); i++)
@@ -1446,7 +1505,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      const float curReward = _rewardBuffer[curId]; 
+      const float curReward = _rewardBuffer[curId];
 
       // Calculating state value function
       const float curV = _stateValueBuffer[curId];
@@ -1533,11 +1592,8 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch)
 {
-  // Getting mini batch size
-  const size_t miniBatchSize = miniBatch.size();
-
   // Allocating feature sequence vector
-  std::vector<std::vector<std::vector<float>>> featureSequence(miniBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+  std::vector<std::vector<std::vector<float>>> featureSequence(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
 
 #pragma omp parallel for
   for (size_t b = 0; b < miniBatch.size(); b++)
@@ -1546,7 +1602,7 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchFeatureSequence(
     const size_t expId = miniBatch[b];
 
     // Resizing state sequence vector to the correct time sequence length
-    featureSequence[b] = { _featureBuffer[expId] };
+    featureSequence[b] = {_featureBuffer[expId]};
   }
 
   return featureSequence;
@@ -1672,6 +1728,7 @@ void Agent::deserializeExperienceReplay()
   _actionBuffer.clear();
   _retraceValueBuffer.clear();
   _rewardBuffer.clear();
+  _rewardUpdateBuffer.clear();
   _environmentIdBuffer.clear();
   _stateValueBuffer.clear();
   _importanceWeightBuffer.clear();
@@ -1693,6 +1750,7 @@ void Agent::deserializeExperienceReplay()
     _stateBuffer.add(stateJson["Experience Replay"][i]["State"].get<std::vector<float>>());
     _actionBuffer.add(stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>());
     _rewardBuffer.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
+    _rewardUpdateBuffer.add(stateJson["Experience Replay"][i]["Reward Update"].get<float>());
     _environmentIdBuffer.add(stateJson["Experience Replay"][i]["Environment Id"].get<float>());
     _stateValueBuffer.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueBuffer.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
@@ -1778,7 +1836,7 @@ void Agent::printGenerationAfter()
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
-    
+
     _k->_logger->logInfo("Detailed", "Profiling Information:                    [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:         [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Worker Attending Time:                 [%5.3fs] - [%3.3fs]\n", _generationWorkerAttendingTime / 1.0e+9, _sessionWorkerAttendingTime / 1.0e+9);

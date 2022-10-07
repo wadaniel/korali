@@ -10,7 +10,7 @@ def initEnvironment(e, envName, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName)
+ env = gym.make(envName, exclude_current_positions_from_observation=False)
  
  # Handling special cases
  

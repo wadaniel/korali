@@ -374,19 +374,24 @@ void __className__::testingGeneration()
 
 void __className__::updateBackgroundBatch()
 {
-  auto startTime = std::chrono::steady_clock::now();
-  _k->_logger->logInfo("Detailed", "Updating background batch..\n");
+  const auto startTime = std::chrono::steady_clock::now();
 
   // Initialize background batch
   if (_backgroundSampleSize == 0)
   {
+    _k->_logger->logInfo("Detailed", "Initializing background batch..\n");
+    
     // Getting index of last experience
     size_t expId = _terminationBuffer.size() - 1;
 
+    // Add trajectories from exploration phase to background batch
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      size_t episodeLength = _episodePosBuffer[expId];
-      size_t episodeStartIdx = expId - episodeLength;
+      const size_t episodeLength = _episodePosBuffer[expId];
+      const size_t episodeStartIdx = expId - episodeLength;
+      
+      if (episodeStartIdx == 0)
+        KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled");
 
       // Allocate container for trajectory information
       std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
@@ -411,9 +416,6 @@ void __className__::updateBackgroundBatch()
       // Increase background sample counter
       _backgroundSampleSize++;
 
-      if (episodeStartIdx == 0)
-        KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled");
-
       // Decrease counter to move to the next previous last experience of a trajectory
       expId = episodeStartIdx - 1;
 
@@ -429,7 +431,7 @@ void __className__::updateBackgroundBatch()
     for (size_t i = 0; i < _backgroundSampleSize; ++i)
     {
       _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize + 1);
-      float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
+      const float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
       if (_useFusionDistribution)
       {
         // Insert probability from linear policy first
@@ -446,9 +448,10 @@ void __className__::updateBackgroundBatch()
   // Insert latest trajectory to background batch
   else
   {
-    size_t expId = _terminationBuffer.size() - 1;
-    size_t episodeLength = _episodePosBuffer[expId];
-    size_t episodeStartIdx = expId - episodeLength;
+    _k->_logger->logInfo("Detailed", "Updating background batch..\n");
+    const size_t expId = _terminationBuffer.size() - 1;
+    const size_t episodeLength = _episodePosBuffer[expId];
+    const size_t episodeStartIdx = expId - episodeLength;
 
     // Allocate container for trajectory information
     std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
@@ -481,7 +484,7 @@ void __className__::updateBackgroundBatch()
       for (size_t i = 0; i < _backgroundSampleSize - 1; ++i)
         _backgroundTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]));
 
-    // For newest policy evaluate trajectory log probability with all previous policies and the current one
+    // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
     std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize + 1);
     if (_useFusionDistribution)
     {
@@ -494,24 +497,24 @@ void __className__::updateBackgroundBatch()
 
     _backgroundTrajectoryLogProbabilities.push_back(logProbabilitiesNewTrajectory);
 
-    auto endTime = std::chrono::steady_clock::now();
-    double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+    const auto endTime = std::chrono::steady_clock::now();
+    const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
     _sessionWorkerTrajectoryLogProbilityUpdateTime += duration;
   }
 
-  auto endTime = std::chrono::steady_clock::now();
-  double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+  const auto endTime = std::chrono::steady_clock::now();
+  const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void __className__::updateDemonstrationBatch()
 {
-  _k->_logger->logInfo("Detailed", "Updating demonstration batch..\n");
-  auto startTime = std::chrono::steady_clock::now();
+  const auto startTime = std::chrono::steady_clock::now();
 
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
+    _k->_logger->logInfo("Detailed", "Initializing demonstration batch..\n");
     _demonstrationTrajectoryLogProbabilities.resize(_problem->_numberObservedTrajectories);
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
@@ -521,7 +524,7 @@ void __className__::updateDemonstrationBatch()
       if (_useFusionDistribution)
         for (size_t i = 0; i < _backgroundSampleSize; ++i)
         {
-          float trajectoryLogP = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
+          const float trajectoryLogP = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
           _demonstrationTrajectoryLogProbabilities[m][i + 1] = trajectoryLogP;
         }
     }
@@ -529,6 +532,7 @@ void __className__::updateDemonstrationBatch()
   else
   // Evaluate demonstrations with latest policy
   {
+    _k->_logger->logInfo("Detailed", "Updating demonstration batch..\n");
     if (_useFusionDistribution)
     {
       // For all previous demonstration trajectories evaluate log probability with newest policy
@@ -541,8 +545,8 @@ void __className__::updateDemonstrationBatch()
     }
   }
 
-  auto endTime = std::chrono::steady_clock::now();
-  double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+  const auto endTime = std::chrono::steady_clock::now();
+  const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
   _sessionWorkerTrajectoryLogProbilityUpdateTime += duration;
   _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
@@ -920,7 +924,7 @@ void __className__::updateRewardFunction()
                                    : maxExp, maxSquaredExp)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
+      const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       if (exp > maxExp) maxExp = exp;
       if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
@@ -929,7 +933,7 @@ void __className__::updateRewardFunction()
                                    : maxExp, maxSquaredExp)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
       if (exp > maxExp) maxExp = exp;
       if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
@@ -941,7 +945,7 @@ void __className__::updateRewardFunction()
                                    : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
+      const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       sumExpNoMax += std::exp(exp - maxExp);
       sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
@@ -950,39 +954,41 @@ void __className__::updateRewardFunction()
                                    : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
       sumExpNoMax += std::exp(exp - maxExp);
       sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
     // Calculate log of partition function
-    float totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
+    const float totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
     _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log(totalBatchSize);
 
     // Reset gradient
     std::fill(_maxEntropyGradient.begin(), _maxEntropyGradient.end(), 0.);
 
     // Calculate gradient of loglikelihood (contribution from partition function & background batch)
-    float invTotalBatchSize = 1. / totalBatchSize;
+    const float invTotalBatchSize = 1. / totalBatchSize;
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
+      const float mult = std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
-        _maxEntropyGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradientCumulativeRewardFunctionBackgroundBatch[m][k] * invTotalBatchSize;
+        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
         //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
-    float invDemoBatchSize = 1. / _demonstrationBatchSize;
+    const float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
+      const float mult = std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
-        _maxEntropyGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k] * invTotalBatchSize;
+        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
         //printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
 
         // Contribution from demonstration return

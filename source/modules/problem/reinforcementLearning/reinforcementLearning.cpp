@@ -155,7 +155,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Reserving message storage for sending back the episodes
   knlohmann::json episodes;
 
-  // Storage to keep track of cumulative reward
+  // Storage to keep track of cumulative reward from environment
   std::vector<float> trainingRewards(_agentsPerEnvironment, 0.0);
 
   // Setting termination status of initial state (and the following ones) to non terminal.
@@ -216,12 +216,17 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Sanity check for reward
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
-      episodes[i]["Experiences"][actionCount]["Reward"] = _agent->calculateReward({{agent["Features"][i].get<std::vector<float>>()}})[0];
-      if (std::isfinite(episodes[i]["Experiences"][actionCount]["Reward"].get<float>()) == false)
-        KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
-
-      // Adding to cumulative training rewards
-      trainingRewards[i] += episodes[i]["Experiences"][actionCount]["Reward"].get<float>();
+      // Store Reward from environment if available
+      if (episodes[i]["Experiences"][actionCount].contains("Reward"))
+      {
+        if (std::isfinite(episodes[i]["Experiences"][actionCount]["Reward"].get<float>()) == false)
+            KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
+        
+        // Adding to cumulative training rewards
+        trainingRewards[i] += episodes[i]["Experiences"][actionCount]["Reward"].get<float>();
+        // Remove reward from experience
+        episodes[i]["Experiences"][actionCount].erase("Reward");
+      }
     }
 
     // If single agent, put action into a single vector
@@ -253,7 +258,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
         (actionCount % _actionsBetweenPolicyUpdates == 0))
     {
       requestNewPolicy(agent);
-      KORALI_LOG_ERROR("IRL cant handle inter episode policy hupdates.");
+      KORALI_LOG_ERROR("IRL cant handle inter episode policy updates.");
     }
   }
 
@@ -282,13 +287,20 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     {
       runTestingEpisode(agent);
 
-      // Getting current testing reward
-      auto currentTestingReward = agent["Testing Reward"].get<float>();
+      if(agent.contains("Testing Reward"))
+      {
+        // Getting current testing reward
+        auto currentTestingReward = agent["Testing Reward"].get<float>();
 
-      // Adding current testing reward to the average and keeping statistics
-      averageTestingReward += currentTestingReward;
-      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
-      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+        // Adding current testing reward to the average and keeping statistics
+        averageTestingReward += currentTestingReward;
+        if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+        if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+      }
+      else
+      {
+        _k->_logger->logWarning("Detailed", "Running testing episode but 'Testing Reward' not returned.\n");
+      }
     }
 
     // Normalizing average

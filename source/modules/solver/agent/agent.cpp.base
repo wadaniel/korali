@@ -197,7 +197,7 @@ void __className__::initialize()
 
   // No transformations for the state value output
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
-  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+  _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = -0.5f;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Sigmoid";
 
   // Running initialization to verify that the configuration is correct
@@ -1437,10 +1437,10 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
     const ssize_t startId = (ssize_t)_episodePosBuffer[endId] < endId ? endId - (ssize_t)_episodePosBuffer[endId] : 0;
 
     // Now iterating backwards to find the beginning
-    for (ssize_t curId = endId; curId >= startId; curId--)
+    for (ssize_t curId = endId;  curId >= startId; curId--)
     {
       // Update reward if old
-      if (_rewardBuffer[curId] < _rewardUpdateCount)
+      if (_rewardUpdateBuffer[curId] < _rewardUpdateCount)
       {
         // Add features and experience id
         featureMiniBatch[t] = curId;
@@ -1453,7 +1453,7 @@ void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatc
           // Update rewards
           for (size_t b = 0; b < _rewardFunctionBatchSize; ++b)
           {
-            const ssize_t expId = featureMiniBatch[b];
+            const size_t expId = featureMiniBatch[b];
             _rewardBuffer[expId] = rewards[b];
             _rewardUpdateBuffer[expId] = _rewardUpdateCount;
           }

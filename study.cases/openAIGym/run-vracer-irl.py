@@ -27,7 +27,7 @@ with open(obsfile, 'r') as infile:
 
 ### Compute Feauters from states
 
-nf = 7
+nf = 17
 obsfeatures = []
 maxFeatures = [-np.inf] * nf
 for trajectory, actions in zip(obsstates, obsactions):
@@ -35,7 +35,7 @@ for trajectory, actions in zip(obsstates, obsactions):
     distance = np.zeros(nf)
     for idx in range(len(trajectory)):
         # state: last two are velocities
-        f = list(trajectory[idx][-6:]) + [float(sum(np.array(actions[idx])**2))]
+        f = list(trajectory[idx][-nf:]) #+ [float(sum(np.array(actions[idx])**2))]
         features.append(list(f))
         distance += np.array(f)/0.04
 
@@ -95,8 +95,8 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Experiences Between Reward Updates"] = 500
-e["Solver"]["Demonstration Batch Size"] = 5
-e["Solver"]["Background Batch Size"] = 100
+e["Solver"]["Demonstration Batch Size"] = 10
+e["Solver"]["Background Batch Size"] = 30
 e["Solver"]["Use Fusion Distribution"] = False
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
@@ -111,8 +111,15 @@ e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 8
 
-#e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-#e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SofReLU"
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SoftReLU"
+
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 8
+
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/SoftReLU"
+
 
 ### Configuring the neural network and its hidden layers
 

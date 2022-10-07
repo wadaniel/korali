@@ -1138,6 +1138,9 @@ void __className__::processEpisode(knlohmann::json &episode)
   // Getting environment id
   auto environmentId = episode["Environment Id"].get<size_t>();
 
+  // Cumulative feature reward
+  float cumFeatureReward = 0;
+
   for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
     // Getting state
@@ -1153,8 +1156,11 @@ void __className__::processEpisode(knlohmann::json &episode)
     // Getting policy
     _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
-    // Getting reward
+    // Getting reward (TODO: batch forwarding)
     const float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
+
+    // Accumulate feature reward
+    cumFeatureReward += reward;
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1246,6 +1252,8 @@ void __className__::processEpisode(knlohmann::json &episode)
     _importanceWeightBuffer.add(1.0f);
     _truncatedImportanceWeightBuffer.add(1.0f);
   }
+
+  _trainingFeatureRewardHistory.push_back(cumFeatureReward);
 
   /*********************************************************************
    * Computing initial retrace value for the newly added experiences

@@ -213,15 +213,13 @@ void __className__::runTrainingEpisode(Sample &agent)
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
     {
       // Store Reward from environment if available
-      if (episodes[i]["Experiences"][actionCount].contains("Reward"))
+      if (agent.contains("Reward"))
       {
-        if (std::isfinite(episodes[i]["Experiences"][actionCount]["Reward"].get<float>()) == false)
-            KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", episodes[i]["Experiences"][actionCount]["Reward"].get<float>());
+        if (std::isfinite(agent["Reward"][i].get<float>()) == false)
+            KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"][i].get<float>());
         
         // Adding to cumulative training rewards
-        trainingRewards[i] += episodes[i]["Experiences"][actionCount]["Reward"].get<float>();
-        // Remove reward from experience
-        episodes[i]["Experiences"][actionCount].erase("Reward");
+        trainingRewards[i] += agent["Reward"][i].get<float>();
       }
     }
 

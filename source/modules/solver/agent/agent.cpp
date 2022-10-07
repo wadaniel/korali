@@ -1142,6 +1142,9 @@ void Agent::processEpisode(knlohmann::json &episode)
   // Getting environment id
   auto environmentId = episode["Environment Id"].get<size_t>();
 
+  // Cumulative feature reward
+  float cumFeatureReward = 0;
+
   for (size_t expId = 0; expId < curExperienceCount; expId++)
   {
     // Getting state
@@ -1159,6 +1162,8 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Getting reward
     const float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
+
+    cumFeatureReward += reward;
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
     // Adding the squared reward for the new experiences on its corresponding environment Id
@@ -1250,6 +1255,8 @@ void Agent::processEpisode(knlohmann::json &episode)
     _importanceWeightBuffer.add(1.0f);
     _truncatedImportanceWeightBuffer.add(1.0f);
   }
+
+  _trainingFeatureRewardHistory.push_back(cumFeatureReward);
 
   /*********************************************************************
    * Computing initial retrace value for the newly added experiences
@@ -1912,6 +1919,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Reward History']\n%s", e.what()); } 
    eraseValue(js, "Training", "Reward History");
+ }
+
+ if (isDefined(js, "Training", "Feature Reward History"))
+ {
+ try { _trainingFeatureRewardHistory = js["Training"]["Feature Reward History"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Feature Reward History']\n%s", e.what()); } 
+   eraseValue(js, "Training", "Feature Reward History");
  }
 
  if (isDefined(js, "Training", "Environment Id History"))
@@ -2627,6 +2642,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Action Upper Bounds"] = _actionUpperBounds;
    js["Current Episode"] = _currentEpisode;
    js["Training"]["Reward History"] = _trainingRewardHistory;
+   js["Training"]["Feature Reward History"] = _trainingFeatureRewardHistory;
    js["Training"]["Environment Id History"] = _trainingEnvironmentIdHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;

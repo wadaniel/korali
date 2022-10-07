@@ -10,7 +10,7 @@ def initEnvironment(e, envName, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName)
+ env = gym.make(envName, exclude_current_positions_from_observation=True)
  
  # Handling special cases
  
@@ -65,7 +65,7 @@ def agent(s, env):
  
  state = env.reset().tolist()
  s["State"] = state
- s["Features"] = list(state[-6:]) + [0.]
+ s["Features"] = state #list(state[-3:]) 
 
  step = 0
  done = False
@@ -86,7 +86,7 @@ def agent(s, env):
   # Performing the action
   action = s["Action"]
  
-  s["Features"] = list(state[-6:]) + [float(sum(np.array(action)**2))]
+  s["Features"] = list(state) #list(state[-3:]) 
   state, reward, done, _ = env.step(action)
  
   # Getting Reward

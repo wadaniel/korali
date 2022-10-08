@@ -177,10 +177,10 @@ void __className__::initialize()
   if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
 
   // IRL
-  _backgroundTrajectoryStates.resize(_backgroundSampleSize);
-  _backgroundTrajectoryActions.resize(_backgroundSampleSize);
-  _backgroundTrajectoryFeatures.resize(_backgroundSampleSize);
-  _backgroundPolicyHyperparameter.resize(_backgroundSampleSize);
+  //_backgroundTrajectoryStates.resize(_backgroundSampleSize);
+  //_backgroundTrajectoryActions.resize(_backgroundSampleSize);
+  //_backgroundTrajectoryFeatures.resize(_backgroundSampleSize);
+  //_backgroundPolicyHyperparameter.resize(_backgroundSampleSize);
 
   _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
   _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
@@ -406,12 +406,9 @@ void __className__::updateBackgroundBatch()
       // Store background trajectory
       for (size_t i = 0; i < episodeLength; ++i)
       {
-        for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
-          trajectoryStates[i][d] = _stateBuffer[episodeStartIdx + i][d];
-        for (size_t a = 0; a < _problem->_actionVectorSize; ++a)
-          trajectoryActions[i][a] = _actionBuffer[episodeStartIdx + i][a];
-        for (size_t f = 0; f < _problem->_featureVectorSize; ++f)
-          trajectoryFeatures[i][f] = _featureBuffer[episodeStartIdx + i][f];
+        trajectoryStates[i] = _stateBuffer[episodeStartIdx + i];
+        trajectoryActions[i] = _actionBuffer[episodeStartIdx + i];
+        trajectoryFeatures[i] = _featureBuffer[episodeStartIdx + i];
       }
       _backgroundTrajectoryStates.push_back(trajectoryStates);
       _backgroundTrajectoryActions.push_back(trajectoryActions);
@@ -466,12 +463,9 @@ void __className__::updateBackgroundBatch()
     // Store background trajectory
     for (size_t i = 0; i < episodeLength; ++i)
     {
-      for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
-        trajectoryStates[i][d] = _stateBuffer[episodeStartIdx + i][d];
-      for (size_t a = 0; a < _problem->_actionVectorSize; ++a)
-        trajectoryActions[i][a] = _actionBuffer[episodeStartIdx + i][a];
-      for (size_t f = 0; f < _problem->_featureVectorSize; ++f)
-        trajectoryFeatures[i][f] = _featureBuffer[episodeStartIdx + i][f];
+        trajectoryStates[i] = _stateBuffer[episodeStartIdx + i];
+        trajectoryActions[i] = _actionBuffer[episodeStartIdx + i];
+        trajectoryFeatures[i] = _featureBuffer[episodeStartIdx + i];
     }
     _backgroundTrajectoryStates.push_back(trajectoryStates);
     _backgroundTrajectoryActions.push_back(trajectoryActions);

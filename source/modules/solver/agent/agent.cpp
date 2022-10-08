@@ -62,7 +62,7 @@ void Agent::initialize()
   _policyVector.resize(_experienceReplayMaximumSize);
 
   // Initialize background samples
-  _backgroundSampleSize = 0;
+  _backgroundTrajectoryCount = 0;
   _statisticLogPartitionFunction.resize(0);
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
@@ -103,8 +103,8 @@ void Agent::initialize()
 
     _experienceReplayOffPolicyCount = 0;
     _experienceReplayOffPolicyRatio = 0.0f;
-    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
     _currentLearningRate = _learningRate;
+    _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
 
     // State Rescaling information
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
@@ -181,6 +181,11 @@ void Agent::initialize()
   if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
 
   // IRL
+  _backgroundTrajectoryStates.resize(_backgroundSampleSize);
+  _backgroundTrajectoryActions.resize(_backgroundSampleSize);
+  _backgroundTrajectoryFeatures.resize(_backgroundSampleSize);
+  _backgroundPolicyHyperparameter.resize(_backgroundSampleSize);
+
   _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
   _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
   _rewardFunctionExperiment["Problem"]["Inference Batch Size"] = 1;
@@ -381,7 +386,7 @@ void Agent::updateBackgroundBatch()
   const auto startTime = std::chrono::steady_clock::now();
 
   // Initialize background batch
-  if (_backgroundSampleSize == 0)
+  if (_backgroundTrajectoryCount == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing background batch..\n");
     
@@ -418,7 +423,7 @@ void Agent::updateBackgroundBatch()
       _backgroundPolicyHyperparameter.push_back(_policyVector[episodeStartIdx]);
 
       // Increase background sample counter
-      _backgroundSampleSize++;
+      _backgroundTrajectoryCount++;
 
       // Decrease counter to move to the next previous last experience of a trajectory
       expId = episodeStartIdx - 1;
@@ -427,20 +432,20 @@ void Agent::updateBackgroundBatch()
         KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
     }
 
-    if (_backgroundSampleSize != _backgroundBatchSize)
-      KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundSampleSize, _backgroundBatchSize);
+    if (_backgroundTrajectoryCount != _backgroundBatchSize)
+      KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
-    _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
-    for (size_t i = 0; i < _backgroundSampleSize; ++i)
+    _backgroundTrajectoryLogProbabilities.resize(_backgroundTrajectoryCount);
+    for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
     {
-      _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize + 1);
+      _backgroundTrajectoryLogProbabilities[i].resize(_backgroundTrajectoryCount + 1);
       const float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
       if (_useFusionDistribution)
       {
         // Insert probability from linear policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
-        for (size_t j = 0; j < _backgroundSampleSize; ++j)
+        for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
           _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
       }
       else
@@ -452,7 +457,7 @@ void Agent::updateBackgroundBatch()
   // Insert latest trajectory to background batch
   else
   {
-    _k->_logger->logInfo("Detailed", "Updating background batch..\n");
+    _k->_logger->logInfo("Detailed", "Updating background batch (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
     const size_t expId = _terminationBuffer.size() - 1;
     const size_t episodeLength = _episodePosBuffer[expId];
     const size_t episodeStartIdx = expId - episodeLength;
@@ -478,26 +483,26 @@ void Agent::updateBackgroundBatch()
     _backgroundPolicyHyperparameter.push_back(_policyVector[episodeStartIdx]);
 
     // Increase background sample counter
-    _backgroundSampleSize++;
-    if (_backgroundPolicyHyperparameter.size() != _backgroundSampleSize) KORALI_LOG_ERROR("Vector mismatch");
+    _backgroundTrajectoryCount++;
+    if (_backgroundPolicyHyperparameter.size() != _backgroundTrajectoryCount) KORALI_LOG_ERROR("Vector mismatch");
     if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
       KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
 
     // For all previous background trajectories evaluate log probability with newest policy
     if (_useFusionDistribution)
-      for (size_t i = 0; i < _backgroundSampleSize - 1; ++i)
-        _backgroundTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]));
+      for (size_t i = 0; i <_backgroundTrajectoryCount; ++i)
+        _backgroundTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]));
 
     // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
-    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize + 1);
+    std::vector<float> logProbabilitiesNewTrajectory(_backgroundTrajectoryCount + 1);
     if (_useFusionDistribution)
     {
-      logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1]);
-      for (size_t i = 0; i < _backgroundSampleSize; ++i)
-        logProbabilitiesNewTrajectory[i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1], _backgroundPolicyHyperparameter[i]);
+      logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
+      for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
+        logProbabilitiesNewTrajectory[i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
     }
     else
-      logProbabilitiesNewTrajectory[_backgroundSampleSize] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]);
+      logProbabilitiesNewTrajectory[_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
 
     _backgroundTrajectoryLogProbabilities.push_back(logProbabilitiesNewTrajectory);
 
@@ -522,11 +527,11 @@ void Agent::updateDemonstrationBatch()
     _demonstrationTrajectoryLogProbabilities.resize(_problem->_numberObservedTrajectories);
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
-      _demonstrationTrajectoryLogProbabilities[m].resize(_backgroundSampleSize + 1);
+      _demonstrationTrajectoryLogProbabilities[m].resize(_backgroundTrajectoryCount + 1);
       _demonstrationTrajectoryLogProbabilities[m][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_problem->_observationsStates[m], _problem->_observationsActions[m]);
 
       if (_useFusionDistribution)
-        for (size_t i = 0; i < _backgroundSampleSize; ++i)
+        for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
         {
           const float trajectoryLogP = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
           _demonstrationTrajectoryLogProbabilities[m][i + 1] = trajectoryLogP;
@@ -542,9 +547,9 @@ void Agent::updateDemonstrationBatch()
       // For all previous demonstration trajectories evaluate log probability with newest policy
       for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
       {
-        if (_demonstrationTrajectoryLogProbabilities[i].size() != _backgroundSampleSize)
-          KORALI_LOG_ERROR("Something strange, demo trans log probabilites vector (%zu) shall be of size background sample size (%zu)\n", _demonstrationTrajectoryLogProbabilities[i].size(), _backgroundSampleSize);
-        _demonstrationTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]));
+        if (_demonstrationTrajectoryLogProbabilities[i].size() != _backgroundTrajectoryCount)
+          KORALI_LOG_ERROR("Something strange, demo trans log probabilites vector (%zu) shall be of size background sample size (%zu)\n", _demonstrationTrajectoryLogProbabilities[i].size(), _backgroundTrajectoryCount);
+        _demonstrationTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]));
       }
     }
   }
@@ -559,12 +564,12 @@ void Agent::partitionFunctionStat()
 {
   _k->_logger->logInfo("Detailed", "Running partition function summary\n");
   std::vector<std::vector<float>> stats;
-  std::vector<float> logpf(_backgroundSampleSize);
-  std::vector<float> fusionLogpf(_backgroundSampleSize);
+  std::vector<float> logpf(_backgroundTrajectoryCount);
+  std::vector<float> fusionLogpf(_backgroundTrajectoryCount);
 
   // Calculate cumulative rewards for background batch
-  std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundSampleSize, 0.0);
-  for (size_t m = 0; m < _backgroundSampleSize; ++m)
+  std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundTrajectoryCount, 0.0);
+  for (size_t m = 0; m < _backgroundTrajectoryCount; ++m)
   {
     const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
 
@@ -635,7 +640,7 @@ void Agent::partitionFunctionStat()
   }
 
 #pragma omp parallel for schedule(dynamic)
-  for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
+  for (size_t batchSize = 1; batchSize <= _backgroundTrajectoryCount; ++batchSize)
   {
     // Get background trajectory log probabilities
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
@@ -768,7 +773,7 @@ void Agent::updateRewardFunction()
     std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator);
 
     // Randomize background batch
-    std::vector<size_t> randomBackgroundIndexes(_backgroundSampleSize);
+    std::vector<size_t> randomBackgroundIndexes(_backgroundTrajectoryCount);
     std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
 
@@ -1103,7 +1108,7 @@ void Agent::attendWorker(size_t workerId)
       }
 
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
-      if (_experienceCount >= _experienceReplayStartSize && ((_experienceCount - _experienceReplayStartSize) / _experiencesBetweenRewardUpdates >= _backgroundSampleSize))
+      if (_experienceCount >= _experienceReplayStartSize && ((_experienceCount - _experienceReplayStartSize) / _experiencesBetweenRewardUpdates >= _backgroundTrajectoryCount))
       {
         updateBackgroundBatch();
         updateDemonstrationBatch();
@@ -1160,9 +1165,10 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Getting policy
     _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
 
-    // Getting reward
+    // Getting reward (TODO: batch forwarding)
     const float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
 
+    // Accumulate feature reward
     cumFeatureReward += reward;
 
     // When adding a new experience, we need to keep per-environemnt rescaling sums updated
@@ -1863,7 +1869,8 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Trajectory Log Probability Update Time: [%5.3fs] \n", _sessionWorkerTrajectoryLogProbilityUpdateTime / 1.0e+9);
   }
 
-  _k->_logger->logInfo("Normal", "Number Background Samples %zu\n", _backgroundSampleSize);
+  _k->_logger->logInfo("Normal", "Background Trajectory Count:      %lu/%lu\n", _backgroundTrajectoryStates.size(), _backgroundSampleSize);
+  _k->_logger->logInfo("Normal", "Total Number Background Samples %zu\n", _backgroundTrajectoryCount);
   _k->_logger->logInfo("Normal", "Log Partition Function %f (%f)\n", _logPartitionFunction, _logSdevPartitionFunction);
 
   if (_mode == "Testing")
@@ -2191,12 +2198,12 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Reward Update Count");
  }
 
- if (isDefined(js, "Background Sample Size"))
+ if (isDefined(js, "Background Trajectory Count"))
  {
- try { _backgroundSampleSize = js["Background Sample Size"].get<size_t>();
+ try { _backgroundTrajectoryCount = js["Background Trajectory Count"].get<size_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Sample Size']\n%s", e.what()); } 
-   eraseValue(js, "Background Sample Size");
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Trajectory Count']\n%s", e.what()); } 
+   eraseValue(js, "Background Trajectory Count");
  }
 
  if (isDefined(js, "Statistic Log Partition Function"))
@@ -2514,6 +2521,15 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Background Batch Size'] required by agent.\n"); 
 
+ if (isDefined(js, "Background Sample Size"))
+ {
+ try { _backgroundSampleSize = js["Background Sample Size"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Sample Size']\n%s", e.what()); } 
+   eraseValue(js, "Background Sample Size");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Background Sample Size'] required by agent.\n"); 
+
  if (isDefined(js, "Reward Function", "Neural Network", "Hidden Layers"))
  {
  _rewardFunctionNeuralNetworkHiddenLayers = js["Reward Function"]["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
@@ -2629,6 +2645,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Use Fusion Distribution"] = _useFusionDistribution;
    js["Demonstration Batch Size"] = _demonstrationBatchSize;
    js["Background Batch Size"] = _backgroundBatchSize;
+   js["Background Sample Size"] = _backgroundSampleSize;
    js["Reward Function"]["Neural Network"]["Hidden Layers"] = _rewardFunctionNeuralNetworkHiddenLayers;
    js["Reward Function"]["Learning Rate"] = _rewardFunctionLearningRate;
    js["Reward Function"]["Batch Size"] = _rewardFunctionBatchSize;
@@ -2676,7 +2693,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;
    js["Reward Update Count"] = _rewardUpdateCount;
-   js["Background Sample Size"] = _backgroundSampleSize;
+   js["Background Trajectory Count"] = _backgroundTrajectoryCount;
    js["Statistic Log Partition Function"] = _statisticLogPartitionFunction;
    js["Statistic Fusion Log Partition Function"] = _statisticFusionLogPartitionFunction;
    js["Statistic Feature Weights"] = _statisticFeatureWeights;

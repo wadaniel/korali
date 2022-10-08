@@ -212,6 +212,10 @@ class Agent : public Solver
   */
    size_t _backgroundBatchSize;
   /**
+  * @brief Maximal number of stored background trajectories. If this number is exceeded, experiences are deleted.
+  */
+   size_t _backgroundSampleSize;
+  /**
   * @brief TODO
   */
    knlohmann::json _rewardFunctionNeuralNetworkHiddenLayers;
@@ -390,7 +394,7 @@ class Agent : public Solver
   /**
   * @brief [Internal Use] Number of samples collected from background distribution.
   */
-   size_t _backgroundSampleSize;
+   size_t _backgroundTrajectoryCount;
   /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */

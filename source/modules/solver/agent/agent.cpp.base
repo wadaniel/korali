@@ -395,8 +395,10 @@ void __className__::updateBackgroundBatch()
       const size_t episodeLength = _episodePosBuffer[expId];
       const size_t episodeStartIdx = expId - episodeLength;
       
-      if (episodeStartIdx == 0)
-        KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled");
+      if (_terminationBuffer[expId] == e_nonTerminal)
+        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
+      if (episodeStartIdx == 0 && m < _backgroundBatchSize-1)
+        KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled (%zu/%zu) to fill a single back ground batch.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
       // Allocate container for trajectory information
       std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
@@ -404,6 +406,7 @@ void __className__::updateBackgroundBatch()
       std::vector<std::vector<float>> trajectoryFeatures(episodeLength, std::vector<float>(_problem->_featureVectorSize));
 
       // Store background trajectory
+#pragma omp parallel for
       for (size_t i = 0; i < episodeLength; ++i)
       {
         trajectoryStates[i] = _stateBuffer[episodeStartIdx + i];
@@ -421,22 +424,20 @@ void __className__::updateBackgroundBatch()
       // Decrease counter to move to the next previous last experience of a trajectory
       expId = episodeStartIdx - 1;
 
-      if (_terminationBuffer[expId] == e_nonTerminal)
-        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
     }
 
     if (_backgroundTrajectoryCount != _backgroundBatchSize)
       KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
-    _backgroundTrajectoryLogProbabilities.resize(_backgroundTrajectoryCount);
+    _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
     for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
     {
-      _backgroundTrajectoryLogProbabilities[i].resize(_backgroundTrajectoryCount + 1);
+      _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize + 1);
       const float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
       if (_useFusionDistribution)
       {
-        // Insert probability from linear policy first
+        // Insert probability from quadratic policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
         for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
           _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
@@ -447,59 +448,121 @@ void __className__::updateBackgroundBatch()
       }
     }
   }
-  // Insert latest trajectory to background batch
-  else
+  // Insert latest trajectory to background batch until full
+  else if (_backgroundTrajectoryCount < _backgroundSampleSize)
   {
     _k->_logger->logInfo("Detailed", "Updating background batch (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
     const size_t expId = _terminationBuffer.size() - 1;
     const size_t episodeLength = _episodePosBuffer[expId];
     const size_t episodeStartIdx = expId - episodeLength;
+    
+    // Increase background sample counter
+    if (_backgroundPolicyHyperparameter.size() != _backgroundTrajectoryCount) 
+        KORALI_LOG_ERROR("Vector mismatch");
+    if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
+        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
 
     // Allocate container for trajectory information
     std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
     std::vector<std::vector<float>> trajectoryActions(episodeLength, std::vector<float>(_problem->_actionVectorSize));
     std::vector<std::vector<float>> trajectoryFeatures(episodeLength, std::vector<float>(_problem->_featureVectorSize));
 
-    // Store background trajectory
+#pragma omp parallel for
     for (size_t i = 0; i < episodeLength; ++i)
     {
         trajectoryStates[i] = _stateBuffer[episodeStartIdx + i];
         trajectoryActions[i] = _actionBuffer[episodeStartIdx + i];
         trajectoryFeatures[i] = _featureBuffer[episodeStartIdx + i];
     }
+    
+    // Store background trajectory
     _backgroundTrajectoryStates.push_back(trajectoryStates);
     _backgroundTrajectoryActions.push_back(trajectoryActions);
     _backgroundTrajectoryFeatures.push_back(trajectoryFeatures);
     _backgroundPolicyHyperparameter.push_back(_policyVector[episodeStartIdx]);
-
-    // Increase background sample counter
     _backgroundTrajectoryCount++;
-    if (_backgroundPolicyHyperparameter.size() != _backgroundTrajectoryCount) KORALI_LOG_ERROR("Vector mismatch");
-    if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
-      KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
 
-    // For all previous background trajectories evaluate log probability with newest policy
-    if (_useFusionDistribution)
-      for (size_t i = 0; i <_backgroundTrajectoryCount; ++i)
-        _backgroundTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]));
-
-    // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
-    std::vector<float> logProbabilitiesNewTrajectory(_backgroundTrajectoryCount + 1);
+    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize+1);
     if (_useFusionDistribution)
     {
+      // For all previous background trajectories evaluate log probability with newest policy
+      for (size_t i = 0; i <_backgroundTrajectoryCount-1; ++i)
+        _backgroundTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+
+      // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
       logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
       for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
         logProbabilitiesNewTrajectory[i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
     }
     else
+    {
+      // Evaluate trajectory log probability with own policy
       logProbabilitiesNewTrajectory[_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+    }
 
-    _backgroundTrajectoryLogProbabilities.push_back(logProbabilitiesNewTrajectory);
-
-    const auto endTime = std::chrono::steady_clock::now();
-    const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-    _sessionWorkerTrajectoryLogProbilityUpdateTime += duration;
+    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1] = logProbabilitiesNewTrajectory;
   }
+  // replace background trajectories
+  else
+  {
+    // Sample trajectory to replace
+    const float u = _uniformGenerator->getRandomNumber();
+    const size_t bckIdx = std::floor(u * (float)(_backgroundTrajectoryCount+1));
+    
+    if (bckIdx < _backgroundSampleSize)
+    {
+        _k->_logger->logInfo("Detailed", "Replacing background trajectories (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
+        const size_t expId = _terminationBuffer.size() - 1;
+        const size_t episodeLength = _episodePosBuffer[expId];
+        const size_t episodeStartIdx = expId - episodeLength;
+ 
+        // Safety checks
+        if (_backgroundPolicyHyperparameter.size() != _backgroundSampleSize) KORALI_LOG_ERROR("Vector mismatch");
+        if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
+          KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
+
+        // Allocate container for trajectory information
+        std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
+        std::vector<std::vector<float>> trajectoryActions(episodeLength, std::vector<float>(_problem->_actionVectorSize));
+        std::vector<std::vector<float>> trajectoryFeatures(episodeLength, std::vector<float>(_problem->_featureVectorSize));
+
+#pragma omp parallel for
+        for (size_t i = 0; i < episodeLength; ++i)
+        {
+            trajectoryStates[i] = _stateBuffer[episodeStartIdx + i];
+            trajectoryActions[i] = _actionBuffer[episodeStartIdx + i];
+            trajectoryFeatures[i] = _featureBuffer[episodeStartIdx + i];
+        }
+        
+        // Replace background trajectory
+        _backgroundTrajectoryStates[bckIdx] = trajectoryStates;
+        _backgroundTrajectoryActions[bckIdx] = trajectoryActions;
+        _backgroundTrajectoryFeatures[bckIdx] = trajectoryFeatures;
+        _backgroundPolicyHyperparameter[bckIdx] = _policyVector[episodeStartIdx];
+        _backgroundTrajectoryCount++;
+
+        if (_useFusionDistribution)
+        {
+          // For all previous background trajectories evaluate log probability with newest policy
+          for (size_t i = 0; i < _backgroundSampleSize; ++i) if (i != bckIdx)
+            _backgroundTrajectoryLogProbabilities[i][bckIdx+1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[bckIdx]);
+
+          // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
+          _backgroundTrajectoryLogProbabilities[bckIdx][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[bckIdx], _backgroundTrajectoryActions[bckIdx]);
+          for (size_t i = 0; i < _backgroundSampleSize; ++i)
+            _backgroundTrajectoryLogProbabilities[bckIdx][i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[bckIdx], _backgroundTrajectoryActions[bckIdx], _backgroundPolicyHyperparameter[i]);
+        }
+        else
+        {
+          _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx+1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[bckIdx], _backgroundTrajectoryActions[bckIdx], _backgroundPolicyHyperparameter[bckIdx]);
+        }
+    }
+    else
+    {
+      _k->_logger->logInfo("Detailed", "Skipping background trajectory update.");
+    }
+  }
+
 
   const auto endTime = std::chrono::steady_clock::now();
   const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();

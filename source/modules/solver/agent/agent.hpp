@@ -212,7 +212,7 @@ class Agent : public Solver
   */
    size_t _backgroundBatchSize;
   /**
-  * @brief Maximal number of stored background trajectories. If this number is exceeded, experiences are deleted.
+  * @brief Maximal number of stored background trajectories. If this number is exceeded, background trajectories are replaced.
   */
    size_t _backgroundSampleSize;
   /**

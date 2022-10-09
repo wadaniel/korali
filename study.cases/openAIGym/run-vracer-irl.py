@@ -97,10 +97,10 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["Experiences Between Reward Updates"] = 100
 e["Solver"]["Demonstration Batch Size"] = 5
 e["Solver"]["Background Batch Size"] = 50
+e["Solver"]["Background Sample Size"] = 100
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
-e["Solver"]["Background Sample Size"] = 1000 #NOT YET USED
 ## Reward Function Specification
 
 e["Solver"]["Reward Function"]["Batch Size"] = 512

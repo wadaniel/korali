@@ -177,7 +177,7 @@ class ReinforcementLearning : public Problem
    * @brief Contains the state rescaling sigmas
    */
   std::vector<float> _stateRescalingSdevs;
-  
+
   /**
    * @brief Contains the feature rescaling means
    */

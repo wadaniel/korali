@@ -643,12 +643,11 @@ class Agent : public Solver
   * @brief [Profiling] Measures the amount of time taken by the session
   */
   double _sessionTrajectoryLogProbabilityUpdateTime;
-  
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _generationTrajectoryLogProbabilityUpdateTime;
-
 
   /****************************************************************************************************
    * Variables for reward function learning
@@ -892,7 +891,7 @@ class Agent : public Solver
    * @brief Rescales states to have a zero mean and unit variance
    */
   void rescaleStates();
-  
+
   /**
    * @brief Rescales features to have a zero mean and unit variance
    */

@@ -220,8 +220,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
       if (agent.contains("Reward"))
       {
         if (std::isfinite(agent["Reward"][i].get<float>()) == false)
-            KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"][i].get<float>());
-        
+          KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"][i].get<float>());
+
         // Adding to cumulative training rewards
         trainingRewards[i] += agent["Reward"][i].get<float>();
       }
@@ -285,7 +285,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     {
       runTestingEpisode(agent);
 
-      if(agent.contains("Testing Reward"))
+      if (agent.contains("Testing Reward"))
       {
         // Getting current testing reward
         auto currentTestingReward = agent["Testing Reward"].get<float>();
@@ -395,7 +395,7 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   // Define state rescaling variables
   _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
   _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
-  
+
   // Define feature rescaling variables
   _featureRescalingMeans = agent["Feature Rescaling"]["Means"].get<std::vector<float>>();
   _featureRescalingSdevs = agent["Feature Rescaling"]["Standard Deviations"].get<std::vector<float>>();
@@ -508,7 +508,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
     // Re-storing state into agent
     agent["State"][i] = state;
   }
-  
+
   // Normalizing Feature
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {

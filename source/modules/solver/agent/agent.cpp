@@ -109,7 +109,7 @@ void Agent::initialize()
     // State Rescaling information
     _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
     _stateRescalingSigmas = std::vector<float>(_problem->_stateVectorSize, 1.0);
-    
+
     // State Rescaling information
     _featureRescalingMeans = std::vector<float>(_problem->_featureVectorSize, 0.0);
     _featureRescalingSigmas = std::vector<float>(_problem->_featureVectorSize, 1.0);
@@ -261,7 +261,6 @@ void Agent::trainingGeneration()
         _workers[workerId]["Feature Rescaling"]["Means"] = _featureRescalingMeans;
         _workers[workerId]["Feature Rescaling"]["Standard Deviations"] = _featureRescalingSigmas;
 
-
         KORALI_START(_workers[workerId]);
         _isWorkerRunning[workerId] = true;
       }
@@ -307,12 +306,11 @@ void Agent::trainingGeneration()
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
           rescaleStates();
-      
+
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
           rescaleFeatures();
-
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
@@ -406,7 +404,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
   if (_backgroundTrajectoryCount == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing background batch..\n");
-    
+
     // Getting index of last experience
     size_t expId = _terminationBuffer.size() - 1;
 
@@ -415,17 +413,17 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     {
       const size_t episodeLength = _episodePosBuffer[expId];
       const size_t episodeStartIdx = expId - episodeLength;
-      
+
       if (_terminationBuffer[expId] == e_nonTerminal)
         KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
-      if (episodeStartIdx == 0 && m < _backgroundBatchSize-1)
+      if (episodeStartIdx == 0 && m < _backgroundBatchSize - 1)
         KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled (%zu/%zu) to fill a single back ground batch.", _backgroundTrajectoryCount, _backgroundBatchSize);
-      
+
       // Allocate container for trajectory information
       _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
-      
+
       // Store background trajectory
       for (size_t i = 0; i < episodeLength; ++i)
       {
@@ -434,13 +432,12 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
         _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
         _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
       }
-      
+
       // Increase background sample counter
       _backgroundTrajectoryCount++;
 
       // Decrease counter to move to the next previous last experience of a trajectory
       expId = episodeStartIdx - 1;
-
     }
 
     if (_backgroundTrajectoryCount != _backgroundBatchSize)
@@ -472,11 +469,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     const size_t expId = _terminationBuffer.size() - 1;
     const size_t episodeLength = _episodePosBuffer[expId];
     const size_t episodeStartIdx = expId - episodeLength;
-    
+
     // Increase background sample counter
     if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
-        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
-   
+      KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
+
     // Allocate container for trajectory information
     _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
@@ -490,15 +487,15 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
     }
-    
+
     // Increase background sample counter
     _backgroundTrajectoryCount++;
- 
-    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize+1);
+
+    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize + 1);
     if (_useFusionDistribution)
     {
       // For all previous background trajectories evaluate log probability with newest policy
-      for (size_t i = 0; i <_backgroundTrajectoryCount-1; ++i)
+      for (size_t i = 0; i < _backgroundTrajectoryCount - 1; ++i)
         _backgroundTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
 
       // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
@@ -512,12 +509,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       logProbabilitiesNewTrajectory[_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
 
-    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1] = logProbabilitiesNewTrajectory;
+    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1] = logProbabilitiesNewTrajectory;
   }
   // replace background trajectories
-  else if(replacementIdx < _backgroundSampleSize)
+  else if (replacementIdx < _backgroundSampleSize)
   {
-   
     _k->_logger->logInfo("Detailed", "Replacing background trajectories (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
     const size_t expId = _terminationBuffer.size() - 1;
     const size_t episodeLength = _episodePosBuffer[expId];
@@ -527,23 +523,24 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
       KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
 
-    // Replace background trajectory
+      // Replace background trajectory
 #pragma omp parallel for
     for (size_t i = 0; i < episodeLength; ++i)
     {
-        _backgroundTrajectoryStates[replacementIdx][i] = _stateBuffer[episodeStartIdx + i];
-        _backgroundTrajectoryActions[replacementIdx][i] = _actionBuffer[episodeStartIdx + i];
-        _backgroundTrajectoryFeatures[replacementIdx][i] = _featureBuffer[episodeStartIdx + i];
+      _backgroundTrajectoryStates[replacementIdx][i] = _stateBuffer[episodeStartIdx + i];
+      _backgroundTrajectoryActions[replacementIdx][i] = _actionBuffer[episodeStartIdx + i];
+      _backgroundTrajectoryFeatures[replacementIdx][i] = _featureBuffer[episodeStartIdx + i];
     }
-    
+
     _backgroundPolicyHyperparameter[replacementIdx] = _policyVector[episodeStartIdx];
     _backgroundTrajectoryCount++;
 
     if (_useFusionDistribution)
     {
       // For all previous background trajectories evaluate log probability with newest policy
-      for (size_t i = 0; i < _backgroundSampleSize; ++i) if (i != replacementIdx)
-        _backgroundTrajectoryLogProbabilities[i][replacementIdx+1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
+      for (size_t i = 0; i < _backgroundSampleSize; ++i)
+        if (i != replacementIdx)
+          _backgroundTrajectoryLogProbabilities[i][replacementIdx + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
 
       // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
       _backgroundTrajectoryLogProbabilities[replacementIdx][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx]);
@@ -552,12 +549,12 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     }
     else
     {
-      _backgroundTrajectoryLogProbabilities[replacementIdx][replacementIdx+1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx], _backgroundPolicyHyperparameter[replacementIdx]);
+      _backgroundTrajectoryLogProbabilities[replacementIdx][replacementIdx + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
   else
   {
-      _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
+    _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
   }
 
   const auto endTime = std::chrono::steady_clock::now();
@@ -597,13 +594,13 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
       _demonstrationTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
   }
-  else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution) 
+  else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution)
   // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with replaced trajectory..\n");
-    for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i) 
+    for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
     {
-      _demonstrationTrajectoryLogProbabilities[i][replacementIdx+1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
+      _demonstrationTrajectoryLogProbabilities[i][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
   else
@@ -1065,7 +1062,7 @@ void Agent::updateRewardFunction()
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
-        if( std::isfinite(_maxEntropyGradient[k]) == false ) KORALI_LOG_ERROR("Reward gradient not finite!");
+        if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
     }
 
@@ -1142,7 +1139,6 @@ void Agent::rescaleFeatures()
       _featureBuffer[i][d] = (_featureBuffer[i][d] - _featureRescalingMeans[d]) / _featureRescalingSigmas[d];
 }
 
-
 void Agent::attendWorker(size_t workerId)
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -1209,7 +1205,7 @@ void Agent::attendWorker(size_t workerId)
       {
         // Sample trajectory to replace
         const float u = _uniformGenerator->getRandomNumber();
-        const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount+1)); // TODO: fix statistic
+        const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
         updateBackgroundBatch(bckIdx);
         updateDemonstrationBatch(bckIdx);
       }
@@ -1560,14 +1556,14 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     const ssize_t startId = (ssize_t)_episodePosBuffer[endId] < endId ? endId - (ssize_t)_episodePosBuffer[endId] : 0;
 
     // Now iterating backwards to find the beginning
-    for (ssize_t curId = endId;  curId >= startId; curId--)
+    for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Update reward if old
       if (_rewardUpdateBuffer[curId] < _rewardUpdateCount)
       {
         // Add features and experience id
         featureMiniBatch[t] = curId;
-        featureBatch[t++] = { _featureBuffer[curId] };
+        featureBatch[t++] = {_featureBuffer[curId]};
         if (t == _rewardFunctionBatchSize)
         {
           // Feature batch is full, forward features
@@ -1955,7 +1951,7 @@ void Agent::printGenerationAfter()
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
-  
+
     _k->_logger->logInfo("Normal", "Background Trajectory Count:      %lu/%lu\n", std::min(_backgroundTrajectoryCount, _backgroundSampleSize), _backgroundSampleSize);
     _k->_logger->logInfo("Normal", "Total Number Background Samples:  %zu\n", _backgroundTrajectoryCount);
     _k->_logger->logInfo("Normal", "Log Partition Function:           %f (%f)\n", _logPartitionFunction, _logSdevPartitionFunction);

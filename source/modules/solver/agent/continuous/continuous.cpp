@@ -136,7 +136,7 @@ void Continuous::initializeAgent()
     //gsl_vector *c = gsl_vector_alloc(2 * _problem->_stateVectorSize + 1);
     gsl_vector *c = gsl_vector_alloc(_problem->_stateVectorSize + 1);
     //gsl_matrix *cov = gsl_matrix_alloc(2 * _problem->_stateVectorSize + 1,2 * _problem->_stateVectorSize + 1);
-    gsl_matrix *cov = gsl_matrix_alloc(_problem->_stateVectorSize + 1,_problem->_stateVectorSize + 1);
+    gsl_matrix *cov = gsl_matrix_alloc(_problem->_stateVectorSize + 1, _problem->_stateVectorSize + 1);
     //gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs,2 * _problem->_stateVectorSize + 1);
     gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
 
@@ -168,7 +168,7 @@ void Continuous::initializeAgent()
         {
           //approx += _observationsApproximatorWeights[k][2*j+1] * _problem->_observationsStates[t][i][j];
           //approx += _observationsApproximatorWeights[k][2*j+2] * std::pow(_problem->_observationsStates[t][i][j], 2.);
-          approx += _observationsApproximatorWeights[k][j+1] * _problem->_observationsStates[t][i][j];
+          approx += _observationsApproximatorWeights[k][j + 1] * _problem->_observationsStates[t][i][j];
         }
         squaredErrors[k] += std::pow(_problem->_observationsActions[t][i][k] - approx, 2.);
       }
@@ -1038,7 +1038,7 @@ float Continuous::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::
       // Predict action with linear policy
       evaluation[d] = _observationsApproximatorWeights[d][0];
       //for (size_t j = 0; j < 2*_problem->_stateVectorSize; j+=2)
-      for (size_t j = 0; j < _problem->_stateVectorSize; j+=2)
+      for (size_t j = 0; j < _problem->_stateVectorSize; j += 2)
       {
         evaluation[d] += _observationsApproximatorWeights[d][j + 1] * states[t][j];
         //evaluation[d] += _observationsApproximatorWeights[d][j + 2] * std::pow(states[t][j], 2.);

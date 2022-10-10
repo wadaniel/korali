@@ -97,7 +97,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 10
+e["Solver"]["Experiences Between Reward Updates"] = 100
 e["Solver"]["Demonstration Batch Size"] = 5
 e["Solver"]["Background Batch Size"] = 50
 e["Solver"]["Background Sample Size"] = 500
@@ -109,7 +109,7 @@ e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 e["Solver"]["Reward Function"]["Batch Size"] = 256
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 
-e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = False
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"

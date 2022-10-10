@@ -303,8 +303,8 @@ void __className__::trainingGeneration()
         if (_policyUpdateCount == 0)
           rescaleStates();
 
-      // If we accumulated enough experiences, we rescale the states (once)
-      if (_stateRescalingEnabled == true)
+      // If we accumulated enough experiences, we rescale the features (once)
+      if (_featureRescalingEnabled == true)
         if (_policyUpdateCount == 0)
           rescaleFeatures();
 
@@ -1947,6 +1947,9 @@ void __className__::printGenerationAfter()
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
+    
+    if (_featureRescalingEnabled)
+      _k->_logger->logInfo("Normal", " + Using Feature Rescaling\n");
 
     _k->_logger->logInfo("Normal", "Background Trajectory Count:      %lu/%lu\n", std::min(_backgroundTrajectoryCount, _backgroundSampleSize), _backgroundSampleSize);
     _k->_logger->logInfo("Normal", "Total Number Background Samples:  %zu\n", _backgroundTrajectoryCount);

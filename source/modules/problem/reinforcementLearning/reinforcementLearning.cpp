@@ -395,6 +395,10 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   // Define state rescaling variables
   _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
   _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
+  
+  // Define feature rescaling variables
+  _featureRescalingMeans = agent["Feature Rescaling"]["Means"].get<std::vector<float>>();
+  _featureRescalingSdevs = agent["Feature Rescaling"]["Standard Deviations"].get<std::vector<float>>();
 
   // Appending any user-defined settings
   agent["Custom Settings"] = _customSettings;
@@ -503,6 +507,19 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
     // Re-storing state into agent
     agent["State"][i] = state;
+  }
+  
+  // Normalizing Feature
+  for (size_t i = 0; i < _agentsPerEnvironment; i++)
+  {
+    auto features = agent["Features"][i].get<std::vector<float>>();
+
+    // Scale the state
+    for (size_t d = 0; d < _featureVectorSize; ++d)
+      features[d] = (features[d] - _featureRescalingMeans[d]) / _featureRescalingSdevs[d];
+
+    // Re-storing state into agent
+    agent["Features"][i] = features;
   }
 
   // Parsing reward

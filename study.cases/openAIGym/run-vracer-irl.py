@@ -27,19 +27,21 @@ with open(obsfile, 'r') as infile:
 
 ### Compute Feauters from states
 
-nf = 8
+#nf = 8
+#nf = 17
 obsfeatures = []
-maxFeatures = [-np.inf] * nf
+#maxFeatures = [-np.inf] * nf
 for trajectory, actions in zip(obsstates, obsactions):
     features = []
-    distance = np.zeros(nf)
+    #distance = np.zeros(nf)
     for idx in range(len(trajectory)):
         # state: last two are velocities
-        f = list(trajectory[idx][-nf:]) #+ [float(sum(np.array(actions[idx])**2))]
-        features.append(list(f))
-        distance += np.array(f)/0.04
+        #f = list(trajectory[idx][-nf:]) #+ [float(sum(np.array(actions[idx])**2))]
+        #features.append(list(f))
+        features.append(list(trajectory[idx]))
+        #distance += np.array(f)/0.04
 
-    print(f'distance covered: {distance}')
+    #print(f'distance covered: {distance}')
     obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
@@ -94,16 +96,16 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 100
+e["Solver"]["Experiences Between Reward Updates"] = 10
 e["Solver"]["Demonstration Batch Size"] = 5
 e["Solver"]["Background Batch Size"] = 50
-e["Solver"]["Background Sample Size"] = 100
+e["Solver"]["Background Sample Size"] = 500
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ## Reward Function Specification
 
-e["Solver"]["Reward Function"]["Batch Size"] = 512
+e["Solver"]["Reward Function"]["Batch Size"] = 256
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True

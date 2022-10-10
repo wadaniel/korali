@@ -10,7 +10,8 @@ def initEnvironment(e, envName, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName, exclude_current_positions_from_observation=False)
+ #env = gym.make(envName, exclude_current_positions_from_observation=True)
+ env = gym.make(envName)
  
  # Handling special cases
  
@@ -93,6 +94,7 @@ def environment(s, env):
  
  states = []
  actions = []
+ rewards = []
  
  while not done and step < 1000:
   
@@ -105,7 +107,7 @@ def environment(s, env):
   # Performing the action
   action = s["Action"]
   state, reward, done, _ = env.step(action)
- 
+  
   # Getting Reward
   s["Reward"] = reward
   
@@ -116,19 +118,20 @@ def environment(s, env):
   if (saveState): 
       states.append(state.tolist())
       actions.append(action)
-   
+  
   # Storing New State
   s["State"] = state.tolist()
-   
+  
   # Advancing step counter
   step = step + 1
-
+ 
  if (printStep):  print(f' - Cumulative Reward: {cumulativeReward}')
  if (saveState): 
    obsstates.append(states)
    obsactions.append(actions)
    obsjson["States"] = obsstates
    obsjson["Actions"] = obsactions
+   obsjson["Rewards"] = rewards
    with open(fname, 'w') as f:
      json.dump(obsjson, f)
  

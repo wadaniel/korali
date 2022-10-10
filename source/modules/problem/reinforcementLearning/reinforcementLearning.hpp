@@ -179,6 +179,16 @@ class ReinforcementLearning : public Problem
   std::vector<float> _stateRescalingSdevs;
 
   /**
+   * @brief Contains the feature rescaling means
+   */
+  std::vector<float> _featureRescalingMeans;
+
+  /**
+   * @brief Contains the feature rescaling sigmas
+   */
+  std::vector<float> _featureRescalingSdevs;
+
+  /**
    * @brief [Profiling] Stores policy evaluation time per episode
    */
   double _agentPolicyEvaluationTime;

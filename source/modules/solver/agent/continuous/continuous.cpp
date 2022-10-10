@@ -98,13 +98,14 @@ void Continuous::initializeAgent()
   }
 
   // Allocate memory for quadratic controller
-  _observationsApproximatorWeights.resize(_problem->_actionVectorSize, std::vector<float>(2 * _problem->_stateVectorSize + 1));
+  //_observationsApproximatorWeights.resize(_problem->_actionVectorSize, std::vector<float>(2 * _problem->_stateVectorSize + 1));
+  _observationsApproximatorWeights.resize(_problem->_actionVectorSize, std::vector<float>(_problem->_stateVectorSize + 1));
   _observationsApproximatorSigmas.resize(_problem->_actionVectorSize);
 
   // Building quadratic controller for observed state action pairs
   gsl_matrix *Y = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, _problem->_actionVectorSize);
-  gsl_matrix *X = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, 2 * _problem->_stateVectorSize + 1);
-  //gsl_matrix *X = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
+  //gsl_matrix *X = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, 2 * _problem->_stateVectorSize + 1);
+  gsl_matrix *X = gsl_matrix_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
   size_t idx = 0;
   for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
   {
@@ -113,10 +114,10 @@ void Continuous::initializeAgent()
     {
       gsl_matrix_set(X, idx, 0, 1.0); // intercept
       for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      //for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       {
-        gsl_matrix_set(X, idx, 2*j + 1, (double)_problem->_observationsStates[i][t][j]);
-        gsl_matrix_set(X, idx, 2*j + 2, (double)std::pow(_problem->_observationsStates[i][t][j], 2.));
+        //gsl_matrix_set(X, idx, 2*j + 1, (double)_problem->_observationsStates[i][t][j]);
+        //gsl_matrix_set(X, idx, 2*j + 2, (double)std::pow(_problem->_observationsStates[i][t][j], 2.));
+        gsl_matrix_set(X, idx, j + 1, (double)_problem->_observationsStates[i][t][j]);
       }
       for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
       {
@@ -132,19 +133,19 @@ void Continuous::initializeAgent()
   for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
   {
     double chisq;
-    gsl_vector *c = gsl_vector_alloc(2 * _problem->_stateVectorSize + 1);
-    //gsl_vector *c = gsl_vector_alloc(_problem->_stateVectorSize + 1);
-    gsl_matrix *cov = gsl_matrix_alloc(2 * _problem->_stateVectorSize + 1,2 * _problem->_stateVectorSize + 1);
-    //gsl_matrix *cov = gsl_matrix_alloc(_problem->_stateVectorSize + 1,_problem->_stateVectorSize + 1);
-    gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs,2 * _problem->_stateVectorSize + 1);
-    //gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs,_problem->_stateVectorSize + 1);
+    //gsl_vector *c = gsl_vector_alloc(2 * _problem->_stateVectorSize + 1);
+    gsl_vector *c = gsl_vector_alloc(_problem->_stateVectorSize + 1);
+    //gsl_matrix *cov = gsl_matrix_alloc(2 * _problem->_stateVectorSize + 1,2 * _problem->_stateVectorSize + 1);
+    gsl_matrix *cov = gsl_matrix_alloc(_problem->_stateVectorSize + 1,_problem->_stateVectorSize + 1);
+    //gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs,2 * _problem->_stateVectorSize + 1);
+    gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(_problem->_totalObservedStateActionPairs, _problem->_stateVectorSize + 1);
 
     // predict action Y_k
     gsl_vector_view y = gsl_matrix_column(Y, k);
     gsl_multifit_linear(X, &y.vector, c, cov, &chisq, work);
 
-    for (size_t j = 0; j < 2*_problem->_stateVectorSize + 1; ++j)
-    //for (size_t j = 0; j < _problem->_stateVectorSize + 1; ++j)
+    //for (size_t j = 0; j < 2*_problem->_stateVectorSize + 1; ++j)
+    for (size_t j = 0; j < _problem->_stateVectorSize + 1; ++j)
     {
       _observationsApproximatorWeights[k][j] = gsl_vector_get(c, j);
       _k->_logger->logInfo("Normal", "    + Weights  [%zu, %zu] %f \n", k, j, _observationsApproximatorWeights[k][j]);
@@ -165,8 +166,9 @@ void Continuous::initializeAgent()
         float approx = _observationsApproximatorWeights[k][0]; // intercept
         for (size_t j = 0; j < _problem->_stateVectorSize; j++)
         {
-          approx += _observationsApproximatorWeights[k][2*j+1] * _problem->_observationsStates[t][i][j];
-          approx += _observationsApproximatorWeights[k][2*j+2] * std::pow(_problem->_observationsStates[t][i][j], 2.);
+          //approx += _observationsApproximatorWeights[k][2*j+1] * _problem->_observationsStates[t][i][j];
+          //approx += _observationsApproximatorWeights[k][2*j+2] * std::pow(_problem->_observationsStates[t][i][j], 2.);
+          approx += _observationsApproximatorWeights[k][j+1] * _problem->_observationsStates[t][i][j];
         }
         squaredErrors[k] += std::pow(_problem->_observationsActions[t][i][k] - approx, 2.);
       }
@@ -1020,6 +1022,7 @@ float Continuous::evaluateTrajectoryLogProbability(const std::vector<std::vector
       trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.distributionParameters[d], evaluation.distributionParameters[_problem->_actionVectorSize + d]);
   }
 
+  if (std::isfinite(trajectoryLogProbability) == false) KORALI_LOG_ERROR("Trajectory logprobability not finite!");
   return trajectoryLogProbability;
 }
 

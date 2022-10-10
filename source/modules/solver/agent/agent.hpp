@@ -160,6 +160,10 @@ class Agent : public Solver
   */
    int _rewardRescalingEnabled;
   /**
+  * @brief Determines whether to normalize the features such that they have mean 0 and standard deviation 1 (done only once after the initial exploration phase).
+  */
+   int _featureRescalingEnabled;
+  /**
   * @brief Indicates whether to serialize and store the experience replay after each generation. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
   */
    int _experienceReplaySerialize;
@@ -211,6 +215,10 @@ class Agent : public Solver
   * @brief The number of sampled trajectories from the experience replay to update the weights of the reward function.
   */
    size_t _backgroundBatchSize;
+  /**
+  * @brief Maximal number of stored background trajectories. If this number is exceeded, background trajectories are replaced.
+  */
+   size_t _backgroundSampleSize;
   /**
   * @brief TODO
   */
@@ -376,7 +384,7 @@ class Agent : public Solver
   */
    float _logSdevPartitionFunction;
   /**
-  * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
+  * @brief [Internal Use] Contains the mean of the states during exploration phase. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
    std::vector<float> _stateRescalingMeans;
   /**
@@ -384,13 +392,21 @@ class Agent : public Solver
   */
    std::vector<float> _stateRescalingSigmas;
   /**
+  * @brief [Internal Use] Contains the mean of the features during exploration phase. They will be shifted by this value in order to normalize the state distribution in the RM.
+  */
+   std::vector<float> _featureRescalingMeans;
+  /**
+  * @brief [Internal Use] Standard deviation of features during exploration phase.
+  */
+   std::vector<float> _featureRescalingSigmas;
+  /**
   * @brief [Internal Use] Keeps track of the number of reward function updates that have been performed.
   */
    size_t _rewardUpdateCount;
   /**
   * @brief [Internal Use] Number of samples collected from background distribution.
   */
-   size_t _backgroundSampleSize;
+   size_t _backgroundTrajectoryCount;
   /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */
@@ -624,9 +640,14 @@ class Agent : public Solver
   std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
 
   /**
+  * @brief [Profiling] Measures the amount of time taken by the session
+  */
+  double _sessionTrajectoryLogProbabilityUpdateTime;
+
+  /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  double _sessionWorkerTrajectoryLogProbilityUpdateTime;
+  double _generationTrajectoryLogProbabilityUpdateTime;
 
   /****************************************************************************************************
    * Variables for reward function learning
@@ -872,6 +893,11 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
+   * @brief Rescales features to have a zero mean and unit variance
+   */
+  void rescaleFeatures();
+
+  /**
    * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param environmentId The id of the environment to which this reward belongs
    * @param reward the input reward to rescale
@@ -901,13 +927,15 @@ class Agent : public Solver
 
   /**
   * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.
+  * @param replacementIdx Background trajectory to be replaced
   */
-  void updateBackgroundBatch();
+  void updateBackgroundBatch(const size_t replacementIdx);
 
   /**
   * @brief Updates probabilities of demonstration batch.
+  * @param replacementIdx Background trajectory to be replaced
   */
-  void updateDemonstrationBatch();
+  void updateDemonstrationBatch(const size_t replacementIdx);
 
   /**
   * @brief Update the weights of the reward function based on guided cost learning

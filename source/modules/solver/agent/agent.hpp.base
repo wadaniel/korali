@@ -245,9 +245,14 @@ class __className__ : public __parentClassName__
   std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
 
   /**
+  * @brief [Profiling] Measures the amount of time taken by the session
+  */
+  double _sessionTrajectoryLogProbabilityUpdateTime;
+
+  /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  double _sessionWorkerTrajectoryLogProbilityUpdateTime;
+  double _generationTrajectoryLogProbabilityUpdateTime;
 
   /****************************************************************************************************
    * Variables for reward function learning
@@ -493,6 +498,11 @@ class __className__ : public __parentClassName__
   void rescaleStates();
 
   /**
+   * @brief Rescales features to have a zero mean and unit variance
+   */
+  void rescaleFeatures();
+
+  /**
    * @brief Rescales a given reward by the square root of the sum of squarred rewards
    * @param environmentId The id of the environment to which this reward belongs
    * @param reward the input reward to rescale
@@ -522,13 +532,15 @@ class __className__ : public __parentClassName__
 
   /**
   * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.
+  * @param replacementIdx Background trajectory to be replaced
   */
-  void updateBackgroundBatch();
+  void updateBackgroundBatch(const size_t replacementIdx);
 
   /**
   * @brief Updates probabilities of demonstration batch.
+  * @param replacementIdx Background trajectory to be replaced
   */
-  void updateDemonstrationBatch();
+  void updateDemonstrationBatch(const size_t replacementIdx);
 
   /**
   * @brief Update the weights of the reward function based on guided cost learning

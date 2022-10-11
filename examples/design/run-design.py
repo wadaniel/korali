@@ -7,7 +7,6 @@ from model import *
 cases = [ "0-1", "0-theta", "theta-1" ]
 theta = np.sqrt( ( 1 - np.exp(-0.8) ) / 2.88 )
 
-
 for case in cases:
 	# Creating new experiment
 	import korali

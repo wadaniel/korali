@@ -2,7 +2,7 @@
 Design
 ******
 
-The design problem measures the wealth of a design :math:`s` using the information gain
+The design problem considers the expected information gain of measurements for the experimental design :math:`s`, given by
 
 .. math::
 

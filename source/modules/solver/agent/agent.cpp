@@ -894,11 +894,13 @@ void Agent::updateRewardFunction()
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
+      if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][0]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx = randomBackgroundIndexes[i];
         demonstrationTrajectoryLogProbabilities[n][i + 1] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
-        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("non finite");
+        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
       }
     }
 
@@ -955,12 +957,14 @@ void Agent::updateRewardFunction()
 
       cumulativeRewardsBackgroundBatch[m] = cumReward;
 
-      backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from linear policy
+      backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
+      if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+      
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx2 = randomBackgroundIndexes[i];
         backgroundTrajectoryLogProbabilities[m][i + 1] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
-        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("non finite");
+        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
       }
     }
 
@@ -974,8 +978,6 @@ void Agent::updateRewardFunction()
         backgroundBatchLogImportanceWeights[m] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       else
         backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
-
-      //printf("BbIw %f cr %f (tot %f)\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
     }
 
     // Calculate importance weights of demonstration batch
@@ -988,8 +990,6 @@ void Agent::updateRewardFunction()
         demonstrationBatchLogImportanceWeights[n] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
       else
         demonstrationBatchLogImportanceWeights[n] = -demonstrationTrajectoryLogProbabilities[n][0];
-
-      //printf("DbIw %f cr %f (tot %f)\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n], demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n]);
     }
 
     // Preparation for calculation of log partition function with log-sum-exp trick
@@ -1050,7 +1050,6 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
-        //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
@@ -1064,7 +1063,6 @@ void Agent::updateRewardFunction()
       {
         // Contribution from partition function
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
-        //printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];

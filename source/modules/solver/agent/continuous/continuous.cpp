@@ -1038,7 +1038,7 @@ float Continuous::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::
       // Predict action with linear policy
       evaluation[d] = _observationsApproximatorWeights[d][0];
       //for (size_t j = 0; j < 2*_problem->_stateVectorSize; j+=2)
-      for (size_t j = 0; j < _problem->_stateVectorSize; j += 2)
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       {
         evaluation[d] += _observationsApproximatorWeights[d][j + 1] * states[t][j];
         //evaluation[d] += _observationsApproximatorWeights[d][j + 2] * std::pow(states[t][j], 2.);

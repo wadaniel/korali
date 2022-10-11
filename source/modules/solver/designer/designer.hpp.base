@@ -1,5 +1,7 @@
 #pragma once
 
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/design/design.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
 
@@ -14,10 +16,16 @@ class __className__ : public __parentClassName__
   std::vector<Sample> _samples;
 
   /**
-   * @brief Prepares and launches a sample to be evaluated
-   * @param sampleIndex index of sample to be launched
+   * @brief Problem pointer
    */
-  virtual void launchSample(size_t sampleIndex) = 0;
+  problem::Design *_problem;
+
+  /**
+   * @brief Evaluates the utility function for a given design
+   * @param sample A Korali Sample
+   */
+  void evaluateDesign(Sample &sample);
+
   virtual void setInitialConfiguration() override;
   void runGeneration() override;
   void printGenerationBefore() override;

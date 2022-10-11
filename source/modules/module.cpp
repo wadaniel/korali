@@ -34,6 +34,7 @@
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
 #include "problem/bayesian/reference/reference.hpp"
+#include "problem/design/design.hpp"
 #include "problem/hierarchical/psi/psi.hpp"
 #include "problem/hierarchical/theta/theta.hpp"
 #include "problem/hierarchical/thetaNew/thetaNew.hpp"
@@ -50,6 +51,7 @@
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
+#include "solver/designer/designer.hpp"
 #include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
 #include "solver/integrator/montecarlo/MonteCarlo.hpp"
@@ -143,6 +145,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   // Problem types
   if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();
   if (iCompare(moduleType, "Bayesian/Reference")) module = new korali::problem::bayesian::Reference();
+  if (iCompare(moduleType, "Design")) module = new korali::problem::Design();
   if (iCompare(moduleType, "Hierarchical/Psi")) module = new korali::problem::hierarchical::Psi();
   if (iCompare(moduleType, "Hierarchical/Theta")) module = new korali::problem::hierarchical::Theta();
   if (iCompare(moduleType, "Hierarchical/ThetaNew")) module = new korali::problem::hierarchical::ThetaNew();
@@ -156,6 +159,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
   
   // Solver modules
+  if (iCompare(moduleType, "Designer")) module = new korali::solver::Designer();
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator/MonteCarlo")) module = new korali::solver::integrator::MonteCarlo();
   if (iCompare(moduleType, "Integrator/Quadrature")) module = new korali::solver::integrator::Quadrature();

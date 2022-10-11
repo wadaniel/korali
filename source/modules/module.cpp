@@ -144,8 +144,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
 
   // Problem types
   if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();
-  if (iCompare(moduleType, "Design")) module = new korali::problem::Design();
   if (iCompare(moduleType, "Bayesian/Reference")) module = new korali::problem::bayesian::Reference();
+  if (iCompare(moduleType, "Design")) module = new korali::problem::Design();
   if (iCompare(moduleType, "Hierarchical/Psi")) module = new korali::problem::hierarchical::Psi();
   if (iCompare(moduleType, "Hierarchical/Theta")) module = new korali::problem::hierarchical::Theta();
   if (iCompare(moduleType, "Hierarchical/ThetaNew")) module = new korali::problem::hierarchical::ThetaNew();

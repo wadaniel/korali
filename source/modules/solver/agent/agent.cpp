@@ -64,11 +64,11 @@ void Agent::initialize()
   //  Pre-allocating space for the experience replay memory
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
-  _retraceValueVectorContiguous.resize(_experienceReplayMaximumSize*numAgents);
-  _rewardVectorContiguous.resize(_experienceReplayMaximumSize*numAgents);
-  _stateValueVectorContiguous.resize(_experienceReplayMaximumSize*numAgents);
+  _retraceValueVectorContiguous.resize(_experienceReplayMaximumSize * numAgents);
+  _rewardVectorContiguous.resize(_experienceReplayMaximumSize * numAgents);
+  _stateValueVectorContiguous.resize(_experienceReplayMaximumSize * numAgents);
   _importanceWeightVector.resize(_experienceReplayMaximumSize);
-  _truncatedImportanceWeightVectorContiguous.resize(_experienceReplayMaximumSize*numAgents);
+  _truncatedImportanceWeightVectorContiguous.resize(_experienceReplayMaximumSize * numAgents);
   _productImportanceWeightVector.resize(_experienceReplayMaximumSize);
   _truncatedStateValueVector.resize(_experienceReplayMaximumSize);
   _truncatedStateVector.resize(_experienceReplayMaximumSize);
@@ -121,7 +121,7 @@ void Agent::initialize()
     _rewardRescalingSumSquaredRewards = 0.;
 
     // If not given, get agent's initial policy
-    if( not isDefined(_trainingCurrentPolicies, "Policy Hyperparameters") )
+    if (not isDefined(_trainingCurrentPolicies, "Policy Hyperparameters"))
       _trainingCurrentPolicies = getAgentPolicy();
   }
 
@@ -129,7 +129,7 @@ void Agent::initialize()
   setAgentPolicy(_trainingCurrentPolicies["Policy Hyperparameters"]);
 
   // If this continues a previous training run, deserialize previous input experience replay. Only for the root (engine) rank
-  if ( _k->_currentGeneration > 0 )
+  if (_k->_currentGeneration > 0)
     if (_mode == "Training")
       if (_k->_engine->_conduit != NULL)
         deserializeExperienceReplay();
@@ -500,7 +500,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Update reward rescaling moments
     if (_rewardRescalingEnabled)
     {
-      if (_rewardVectorContiguous.size() >= _experienceReplayMaximumSize*numAgents)
+      if (_rewardVectorContiguous.size() >= _experienceReplayMaximumSize * numAgents)
       {
         for (size_t a = 0; a < numAgents; a++)
           _rewardRescalingSumSquaredRewards -= _rewardVectorContiguous[a] * _rewardVectorContiguous[a];
@@ -512,8 +512,8 @@ void Agent::processEpisode(knlohmann::json &episode)
     }
 
     // Put reward to replay memory
-    for( size_t a=0; a<numAgents; a++ )
-    _rewardVectorContiguous.add(reward[a]);
+    for (size_t a = 0; a < numAgents; a++)
+      _rewardVectorContiguous.add(reward[a]);
 
     // Keeping statistics
     for (size_t a = 0; a < numAgents; a++)
@@ -552,7 +552,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     {
       KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
     }
-    for( size_t a = 0; a<numAgents; a++ )
+    for (size_t a = 0; a < numAgents; a++)
       _stateValueVectorContiguous.add(stateValue[a]);
 
     /* Story policy information for continuous action spaces */
@@ -605,7 +605,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     _episodePosVector.add(expId);
 
     // Adding placeholder for retrace value
-    for( size_t a = 0; a<numAgents; a++ )
+    for (size_t a = 0; a < numAgents; a++)
       _retraceValueVectorContiguous.add(0.0f);
 
     // If outgoing experience is off policy, subtract off policy counter
@@ -639,7 +639,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Initialize experience's importance weight (1.0 because its freshly produced)
     _importanceWeightVector.add(std::vector<float>(numAgents, 1.0f));
-    for( size_t a = 0; a<numAgents; a++ )
+    for (size_t a = 0; a < numAgents; a++)
       _truncatedImportanceWeightVectorContiguous.add(1.0f);
     _productImportanceWeightVector.add(1.0f);
   }
@@ -691,12 +691,12 @@ void Agent::processEpisode(knlohmann::json &episode)
 
   // Now going backwards, setting the retrace value of every experience
   for (ssize_t expId = endId; expId >= startId; expId--)
-  for (size_t a = 0; a < numAgents; a++)
-  {
-    // Calculating retrace value. Importance weight is 1.0f because the policy is current.
-    retV[a] = getScaledReward(_rewardVectorContiguous[expId*numAgents+a]) + _discountFactor * retV[a];
-    _retraceValueVectorContiguous[expId*numAgents+a] = retV[a];
-  }
+    for (size_t a = 0; a < numAgents; a++)
+    {
+      // Calculating retrace value. Importance weight is 1.0f because the policy is current.
+      retV[a] = getScaledReward(_rewardVectorContiguous[expId * numAgents + a]) + _discountFactor * retV[a];
+      _retraceValueVectorContiguous[expId * numAgents + a] = retV[a];
+    }
 
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
@@ -709,7 +709,7 @@ std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
   // Allocating storage for mini batch experiecne indexes
-  std::vector<std::pair<size_t, size_t>> miniBatch(_miniBatchSize*numAgents);
+  std::vector<std::pair<size_t, size_t>> miniBatch(_miniBatchSize * numAgents);
 
   // Fill minibatch
   for (size_t b = 0; b < _miniBatchSize; b++)
@@ -754,9 +754,10 @@ std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
 
   // Sorting minibatch: first by expId, second by agentId
   // to quickly detect duplicates when updating metadata
-  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> &exp0, const std::pair<size_t, size_t> &exp1) -> bool {
-    return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second;
-  });
+  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> &exp0, const std::pair<size_t, size_t> &exp1) -> bool
+            {
+              return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second;
+            });
 
   // Returning generated minibatch
   return miniBatch;
@@ -854,7 +855,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
     _curPolicyVector[expId][agentId] = curPolicy;
 
     // Get state value
-    _stateValueVectorContiguous[expId*numAgents+agentId] = curPolicy.stateValue;
+    _stateValueVectorContiguous[expId * numAgents + agentId] = curPolicy.stateValue;
     if (std::isfinite(curPolicy.stateValue) == false)
       KORALI_LOG_ERROR("Calculated state value returned an invalid value: %f\n", curPolicy.stateValue);
 
@@ -869,7 +870,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
 
     // Set importance weight and truncated importance weight
     _importanceWeightVector[expId][agentId] = importanceWeight;
-    _truncatedImportanceWeightVectorContiguous[expId*numAgents+agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
+    _truncatedImportanceWeightVectorContiguous[expId * numAgents + agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
 
     // Keep track of off-policyness (in principle only necessary for agentId==policyId)
     if (not _multiAgentCorrelation)
@@ -952,8 +953,8 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
       const float truncatedProdImportanceWeight = std::min(_importanceWeightTruncationLevel, _productImportanceWeightVector[expId]);
 
       // Overwrite truncated importance weights
-      for( size_t a = 0; a<numAgents; a++ )
-        _truncatedImportanceWeightVectorContiguous[expId*numAgents+a] = truncatedProdImportanceWeight;
+      for (size_t a = 0; a < numAgents; a++)
+        _truncatedImportanceWeightVectorContiguous[expId * numAgents + a] = truncatedProdImportanceWeight;
 
       // Record change of on-policyness
       for (size_t d = 0; d < numAgents; d++)
@@ -982,12 +983,12 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
       // Average state-value
       float averageStateValue = 0.0f;
       for (size_t a = 0; a < numAgents; a++)
-        averageStateValue += _stateValueVectorContiguous[expId*numAgents + a];
+        averageStateValue += _stateValueVectorContiguous[expId * numAgents + a];
       averageStateValue /= numAgents;
 
       // Overwrite state value with average
-      for( size_t a = 0; a < numAgents; a++ )
-        _stateValueVectorContiguous[expId*numAgents + a] = averageStateValue;
+      for (size_t a = 0; a < numAgents; a++)
+        _stateValueVectorContiguous[expId * numAgents + a] = averageStateValue;
 
       // Same for truncated state-value
       if (_terminationVector[expId] == e_truncated)
@@ -1068,28 +1069,28 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
 
     // If non-terminal state, set next retrace value
     if (_terminationVector[endId] == e_nonTerminal)
-    for( size_t a = 0; a<numAgents; a++ )
-      retV[a] = _retraceValueVectorContiguous[(endId + 1)*numAgents+a];
+      for (size_t a = 0; a < numAgents; a++)
+        retV[a] = _retraceValueVectorContiguous[(endId + 1) * numAgents + a];
 
     // Now iterating backwards and compute retrace value
     for (ssize_t curId = endId; curId >= startId; curId--)
-    for (size_t a = 0; a<numAgents; a++ )
-    {
-      // Load truncated importance weight
-      const float truncatedImportanceWeight = _truncatedImportanceWeightVectorContiguous[curId*numAgents+a];
+      for (size_t a = 0; a < numAgents; a++)
+      {
+        // Load truncated importance weight
+        const float truncatedImportanceWeight = _truncatedImportanceWeightVectorContiguous[curId * numAgents + a];
 
-      // Load state value
-      const float stateValue = _stateValueVectorContiguous[curId*numAgents+a];
+        // Load state value
+        const float stateValue = _stateValueVectorContiguous[curId * numAgents + a];
 
-      // Getting current reward, action, and state
-      const float curReward = getScaledReward(_rewardVectorContiguous[curId*numAgents+a]);
+        // Getting current reward, action, and state
+        const float curReward = getScaledReward(_rewardVectorContiguous[curId * numAgents + a]);
 
-      // Apply recursion
-      retV[a] = stateValue + truncatedImportanceWeight * (curReward + _discountFactor * retV[a] - stateValue);
+        // Apply recursion
+        retV[a] = stateValue + truncatedImportanceWeight * (curReward + _discountFactor * retV[a] - stateValue);
 
-      // Store retrace value
-      _retraceValueVectorContiguous[curId*numAgents+a] = retV[a];
-    }
+        // Store retrace value
+        _retraceValueVectorContiguous[curId * numAgents + a] = retV[a];
+      }
   }
 }
 
@@ -1183,12 +1184,12 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Truncated State Value"] = _truncatedStateValueVector[i];
     stateJson["Experience Replay"][i]["Termination"] = _terminationVector[i];
 
-    for( size_t a = 0; a<numAgents; a++ )
+    for (size_t a = 0; a < numAgents; a++)
     {
-      stateJson["Experience Replay"][i]["Reward"][a] = _rewardVectorContiguous[i*numAgents+a];
-      stateJson["Experience Replay"][i]["State Value"][a] = _stateValueVectorContiguous[i*numAgents+a];
-      stateJson["Experience Replay"][i]["Retrace Value"][a] = _retraceValueVectorContiguous[i*numAgents+a];
-      stateJson["Experience Replay"][i]["Truncated Importance Weight"][a] = _truncatedImportanceWeightVectorContiguous[i*numAgents+a];
+      stateJson["Experience Replay"][i]["Reward"][a] = _rewardVectorContiguous[i * numAgents + a];
+      stateJson["Experience Replay"][i]["State Value"][a] = _stateValueVectorContiguous[i * numAgents + a];
+      stateJson["Experience Replay"][i]["Retrace Value"][a] = _retraceValueVectorContiguous[i * numAgents + a];
+      stateJson["Experience Replay"][i]["Truncated Importance Weight"][a] = _truncatedImportanceWeightVectorContiguous[i * numAgents + a];
     }
 
     std::vector<float> expStateValue(numAgents, 0.0f);
@@ -1299,14 +1300,14 @@ void Agent::deserializeExperienceReplay()
     _stateVector.add(stateJson["Experience Replay"][i]["State"].get<std::vector<std::vector<float>>>());
     _actionVector.add(stateJson["Experience Replay"][i]["Action"].get<std::vector<std::vector<float>>>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<std::vector<float>>());
-    
+
     _productImportanceWeightVector.add(stateJson["Experience Replay"][i]["Product Importance Weight"].get<float>());
     _isOnPolicyVector.add(stateJson["Experience Replay"][i]["Is On Policy"].get<std::vector<char>>());
     _truncatedStateVector.add(stateJson["Experience Replay"][i]["Truncated State"].get<std::vector<std::vector<float>>>());
     _truncatedStateValueVector.add(stateJson["Experience Replay"][i]["Truncated State Value"].get<std::vector<float>>());
     _terminationVector.add(stateJson["Experience Replay"][i]["Termination"].get<termination_t>());
 
-    for( size_t a = 0; a<numAgents; a++ )
+    for (size_t a = 0; a < numAgents; a++)
     {
       _rewardVectorContiguous.add(stateJson["Experience Replay"][i]["Reward"][a].get<float>());
       _stateValueVectorContiguous.add(stateJson["Experience Replay"][i]["State Value"][a].get<float>());
@@ -1385,7 +1386,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
     }
 
-    if( _policyUpdateCount != 0 )
+    if (_policyUpdateCount != 0)
     {
       printAgentInformation();
       _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);

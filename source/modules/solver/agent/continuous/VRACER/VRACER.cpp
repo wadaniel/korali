@@ -34,7 +34,7 @@ void VRACER::initializeAgent()
 
   _effectiveMinibatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
 
-  if( _multiAgentRelationship == "Competition" )
+  if (_multiAgentRelationship == "Competition")
     _effectiveMinibatchSize = _miniBatchSize;
 
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
@@ -95,7 +95,7 @@ void VRACER::trainPolicy()
   const auto stateSequenceBatch = getMiniBatchStateSequence(miniBatch);
 
   // Prepare stateSequenceBatch and miniBatch
-  auto _miniBatch          = miniBatch;
+  auto _miniBatch = miniBatch;
   auto _stateSequenceBatch = stateSequenceBatch;
 
   // Buffer for policy info to update experience metadata
@@ -108,16 +108,16 @@ void VRACER::trainPolicy()
   for (size_t p = 0; p < numPolicies; p++)
   {
     // Disable experience sharing by splitting minibatch for competing agents
-    if( _multiAgentRelationship == "Competition" )
+    if (_multiAgentRelationship == "Competition")
     {
       std::vector<std::pair<size_t, size_t>> miniBatchBuffer(_miniBatchSize);
       std::vector<std::vector<std::vector<float>>> stateSequenceBuffer(_miniBatchSize);
-      for( size_t i = 0; i<_miniBatchSize; i++ )
+      for (size_t i = 0; i < _miniBatchSize; i++)
       {
-        miniBatchBuffer[i]     = miniBatch[ i*_problem->_agentsPerEnvironment + p ];
-        stateSequenceBuffer[i] = stateSequenceBatch[ i*_problem->_agentsPerEnvironment + p ];
+        miniBatchBuffer[i] = miniBatch[i * _problem->_agentsPerEnvironment + p];
+        stateSequenceBuffer[i] = stateSequenceBatch[i * _problem->_agentsPerEnvironment + p];
       }
-      _miniBatch          = miniBatchBuffer;
+      _miniBatch = miniBatchBuffer;
       _stateSequenceBatch = stateSequenceBuffer;
     }
 
@@ -138,13 +138,13 @@ void VRACER::trainPolicy()
     _criticPolicyLearner[p]->runGeneration();
 
     // Store policyData for agent p for later update of metadata
-    if ( numPolicies > 1 && (_multiAgentRelationship != "Competition") )
+    if (numPolicies > 1 && (_multiAgentRelationship != "Competition"))
       for (size_t b = 0; b < _miniBatchSize; b++)
         policyInfoUpdateMetadata[b * numPolicies + p] = policyInfo[b * numPolicies + p];
   }
 
   // Correct experience metadata
-  if ( (numPolicies > 1) && (_multiAgentRelationship != "Competition") )
+  if ((numPolicies > 1) && (_multiAgentRelationship != "Competition"))
     updateExperienceMetadata(_miniBatch, policyInfoUpdateMetadata);
 }
 
@@ -170,9 +170,9 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t
     const auto &expAction = _actionVector[expId][agentId];
 
     // Gathering metadata
-    const auto &stateValue = _stateValueVectorContiguous[expId*numAgents + agentId];
+    const auto &stateValue = _stateValueVectorContiguous[expId * numAgents + agentId];
     const auto &curPolicy = _curPolicyVector[expId][agentId];
-    const auto &expVtbc = _retraceValueVectorContiguous[expId*numAgents+agentId];
+    const auto &expVtbc = _retraceValueVectorContiguous[expId * numAgents + agentId];
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
@@ -180,7 +180,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t
     // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
     gradientLoss[0] = (expVtbc - stateValue);
 
-    //Gradient has to be divided by Number of Agents in Cooperation models
+    // Gradient has to be divided by Number of Agents in Cooperation models
     if (_multiAgentRelationship == "Cooperation")
       gradientLoss[0] /= numAgents;
 
@@ -188,12 +188,12 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t
     if (_isOnPolicyVector[expId][agentId])
     {
       // Qret for terminal state is just reward
-      float Qret = getScaledReward(_rewardVectorContiguous[expId*numAgents+agentId]);
+      float Qret = getScaledReward(_rewardVectorContiguous[expId * numAgents + agentId]);
 
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
       {
-        const float nextExpVtbc = _retraceValueVectorContiguous[(expId + 1)*numAgents+agentId];
+        const float nextExpVtbc = _retraceValueVectorContiguous[(expId + 1) * numAgents + agentId];
         Qret += _discountFactor * nextExpVtbc;
       }
 

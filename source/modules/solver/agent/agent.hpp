@@ -71,13 +71,13 @@ struct policy_t
   size_t actionIndex;
 
   /**
-  * @brief [Discrete] Stores the action probabilities of the categorial distribution.
-  */
+   * @brief [Discrete] Stores the action probabilities of the categorial distribution.
+   */
   std::vector<float> actionProbabilities;
 
   /**
-  * @brief [Discrete] Flags the actions that are available at the current state.
-  */
+   * @brief [Discrete] Flags the actions that are available at the current state.
+   */
   std::vector<size_t> availableActions;
 
   /**

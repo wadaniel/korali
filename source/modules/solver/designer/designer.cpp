@@ -297,10 +297,11 @@ void Designer::runGeneration()
       if (_utility[e] > maxUtility)
       {
         maxUtility = _utility[e];
-        _optimalDesign = e;
+        _optimalDesignIndex = e;
       }
     }
   }
+  (*_k)["Results"]["Utility"] = _utility;
 }
 
 void Designer::evaluateDesign(Sample &sample)
@@ -370,11 +371,13 @@ void Designer::printGenerationAfter()
 
 void Designer::finalize()
 {
-  _k->_logger->logInfo("Minimal", "Optimal Design (indx=%ld): [", _optimalDesign);
+  _k->_logger->logInfo("Minimal", "Optimal Design (indx=%ld): [", _optimalDesignIndex);
   for (size_t d = 0; d < _problem->_designVectorSize; d++)
   {
-    const size_t dimIdx = (size_t)(_optimalDesign / _designHelperIndices[d]) % _numberOfDesignSamples[d];
-    _k->_logger->logData("Minimal", " %f ", _designLowerBounds[d] + dimIdx * _designGridSpacing[d]);
+    const size_t dimIdx = (size_t)(_optimalDesignIndex / _designHelperIndices[d]) % _numberOfDesignSamples[d];
+    const double optimalDesign = _designLowerBounds[d] + dimIdx * _designGridSpacing[d];
+    (*_k)["Results"]["Optimal Design"] = optimalDesign;
+    _k->_logger->logData("Minimal", " %f ", optimalDesign);
   }
   _k->_logger->logData("Minimal", "]\n");
 
@@ -567,20 +570,20 @@ void Designer::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Number Of Designs");
  }
 
+ if (isDefined(js, "Optimal Design Index"))
+ {
+ try { _optimalDesignIndex = js["Optimal Design Index"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ designer ] \n + Key:    ['Optimal Design Index']\n%s", e.what()); } 
+   eraseValue(js, "Optimal Design Index");
+ }
+
  if (isDefined(js, "Utility"))
  {
  try { _utility = js["Utility"].get<std::vector<double>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ designer ] \n + Key:    ['Utility']\n%s", e.what()); } 
    eraseValue(js, "Utility");
- }
-
- if (isDefined(js, "Optimal Design"))
- {
- try { _optimalDesign = js["Optimal Design"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ designer ] \n + Key:    ['Optimal Design']\n%s", e.what()); } 
-   eraseValue(js, "Optimal Design");
  }
 
  if (isDefined(js, "Executions Per Generation"))
@@ -635,8 +638,8 @@ void Designer::getConfiguration(knlohmann::json& js)
    js["Number Of Prior Samples"] = _numberOfPriorSamples;
    js["Number Of Likelihood Samples"] = _numberOfLikelihoodSamples;
    js["Number Of Designs"] = _numberOfDesigns;
+   js["Optimal Design Index"] = _optimalDesignIndex;
    js["Utility"] = _utility;
-   js["Optimal Design"] = _optimalDesign;
  Solver::getConfiguration(js);
 } 
 

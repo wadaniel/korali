@@ -126,13 +126,13 @@ class Designer : public Solver
   */
    size_t _numberOfDesigns;
   /**
+  * @brief [Internal Use] Index of the optimal design.
+  */
+   size_t _optimalDesignIndex;
+  /**
   * @brief [Internal Use] Evaluation of utility.
   */
    std::vector<double> _utility;
-  /**
-  * @brief [Internal Use] Coordinates of the optimal design.
-  */
-   size_t _optimalDesign;
   
  
   /**

@@ -21,8 +21,8 @@ korali_source += module_source
 korali_config += module_config
 
 subdir('agent')
-subdir('designer')
 subdir('deepSupervisor')
+subdir('designer')
 subdir('executor')
 subdir('integrator')
 subdir('optimizer')

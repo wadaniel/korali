@@ -22,7 +22,7 @@ void Designer::setInitialConfiguration()
   _parameterHelperIndices.resize(_problem->_parameterVectorSize);
   for (size_t i = 0; i < _problem->_parameterVectorSize; i++)
   {
-    auto varIdx = _problem->_parameterVectorIndexes[i];
+    const auto varIdx = _problem->_parameterVectorIndexes[i];
 
     // Check upper and lower bound
     _parameterLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
@@ -115,7 +115,7 @@ void Designer::setInitialConfiguration()
   _designHelperIndices.resize(_problem->_designVectorSize);
   for (size_t i = 0; i < _problem->_designVectorSize; i++)
   {
-    auto varIdx = _problem->_designVectorIndexes[i];
+    const auto varIdx = _problem->_designVectorIndexes[i];
 
     // Check upper and lower bound
     _designLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
@@ -159,7 +159,7 @@ void Designer::setInitialConfiguration()
   _numberOfMeasurementSamples.resize(_problem->_parameterVectorSize);
   for (size_t i = 0; i < _problem->_measurementVectorSize; i++)
   {
-    auto varIdx = _problem->_measurementVectorIndexes[i];
+    const auto varIdx = _problem->_measurementVectorIndexes[i];
 
     // Check number of samples
     _numberOfMeasurementSamples[i] = _k->_variables[varIdx]->_numberOfSamples;
@@ -242,7 +242,7 @@ void Designer::runGeneration()
 
   for (size_t i = 0; i < numEvaluations; i++)
   {
-    auto evaluation = KORALI_GET(std::vector<std::vector<double>>, _samples[i], "Model Evaluation");
+    const auto evaluation = KORALI_GET(std::vector<std::vector<double>>, _samples[i], "Model Evaluation");
 
     // Check whether one value per design was returned
     if (evaluation.size() != _numberOfDesigns)
@@ -305,7 +305,7 @@ void Designer::runGeneration()
 
 void Designer::evaluateDesign(Sample &sample)
 {
-  auto evaluations = KORALI_GET(std::vector<std::vector<double>>, sample, "Evaluations");
+  const auto evaluations = KORALI_GET(std::vector<std::vector<double>>, sample, "Evaluations");
 
   double utility = 0.0;
   const double negInvTwoSigmaSq = -1 / (2 * _sigma * _sigma);

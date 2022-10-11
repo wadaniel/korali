@@ -339,15 +339,8 @@ void Designer::evaluateDesign(Sample &sample)
         exponents[k] = MSEinner;
       }
 
-      // Compute max and perform reduced sum
-      const double max = *std::max_element(exponents.begin(), exponents.end());
-      double sumExp = 0.0;
-      for (size_t k = 0; k < _numberOfPriorSamples; k++)
-        sumExp += std::exp(exponents[k] - max);
-      sumExp /= (double)_numberOfPriorSamples;
-
       // Finalize computation of second part
-      const double marginal = max + std::log(sumExp);
+      const double marginal = logSumExp(exponents);
 
       // Sum Utility
       utility += (MSE - marginal);

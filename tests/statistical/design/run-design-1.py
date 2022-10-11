@@ -29,15 +29,6 @@ e["Variables"][indx]["Upper Bound"] = 1.0
 e["Variables"][indx]["Distribution"] = "Grid"
 indx += 1
 
-if numMeasurements == 2:
-	e["Variables"][indx]["Name"] = "d2"
-	e["Variables"][indx]["Type"] = "Design"
-	e["Variables"][indx]["Number Of Samples"] = 101
-	e["Variables"][indx]["Lower Bound"] = 0.0
-	e["Variables"][indx]["Upper Bound"] = 1.0
-	e["Variables"][indx]["Distribution"] = "Grid"
-	indx += 1
-
 e["Variables"][indx]["Name"] = "theta"
 e["Variables"][indx]["Type"] = "Parameter"
 e["Variables"][indx]["Lower Bound"] = 0.0
@@ -48,16 +39,13 @@ indx += 1
 
 e["Variables"][indx]["Name"] = "y1"
 e["Variables"][indx]["Type"] = "Measurement"
-e["Variables"][indx]["Number Of Samples"] = 1e2
+e["Variables"][indx]["Number Of Samples"] = 1e3
 indx += 1
-
-if numMeasurements == 2:
-	e["Variables"][indx]["Name"] = "y2"
-	e["Variables"][indx]["Type"] = "Measurement"
-	e["Variables"][indx]["Number Of Samples"] = 1e2
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
-# k["Conduit"]["Type"] = "Concurrent"
-# k["Conduit"]["Concurrent Jobs"] = 12
 k.run(e)
+
+# Check design
+optimalDesign = e["Results"]["Optimal Design"] 
+assert(math.isclose(optimalDesign, 1., abs_tol=2e-2))

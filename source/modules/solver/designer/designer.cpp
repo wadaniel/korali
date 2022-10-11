@@ -291,14 +291,11 @@ void Designer::runGeneration()
     // Gather result
     _utility[e] = KORALI_GET(double, _samples[e], "Utility");
 
-// Update maximum
-#pragma omp critical
+    // Update maximum
+    if (_utility[e] > maxUtility)
     {
-      if (_utility[e] > maxUtility)
-      {
-        maxUtility = _utility[e];
-        _optimalDesignIndex = e;
-      }
+      maxUtility = _utility[e];
+      _optimalDesignIndex = e;
     }
   }
   (*_k)["Results"]["Utility"] = _utility;

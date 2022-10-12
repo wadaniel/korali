@@ -23,7 +23,6 @@ sns.color_palette("tab10")
 from korali.rlview.utils import get_figure
 
 ##################### Plotting Reward History
-
 def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservations, showAgents, dir ):
     # get color
     color = next(ax._get_lines.prop_cycler)['color']

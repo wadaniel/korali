@@ -338,6 +338,41 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Episode Id"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Candidate Count"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Worst Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Average Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Average Reward History"] = "Not a Vector";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Average Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["Experience Replay"]["Off Policy"]["Count"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -485,17 +520,17 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Concurrent Environments");
+  agentJs.erase("Concurrent Workers");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = "Not a Number";
+  agentJs["Concurrent Workers"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = 1;
+  agentJs["Concurrent Workers"] = 1;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -526,26 +561,6 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Mini Batch"]["Size"] = 1;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"].erase("Strategy");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = 1;
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = "Unknown";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = "Uniform";
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -1379,8 +1394,8 @@ namespace
    e._solver = a;
 
    Sample s;
-   auto curPolicy = a->getAgentPolicy();
-   s["Policy Hyperparameters"] = a->getAgentPolicy();
+   auto curPolicy = a->getPolicy();
+   s["Policy Hyperparameters"] = a->getPolicy();
    s["Sample Id"] = 0;
    s["State Rescaling"]["Means"] = std::vector<float>({0.0});
    s["State Rescaling"]["Standard Deviations"] = std::vector<float>({1.0});

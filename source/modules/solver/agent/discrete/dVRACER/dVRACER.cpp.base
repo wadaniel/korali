@@ -34,7 +34,7 @@ void __className__::initializeAgent()
     _criticPolicyExperiment[p]["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
     _criticPolicyExperiment[p]["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount; // The value function, action q values, and inverse temperatur
 
-    _criticPolicyExperiment[p]["Solver"]["Type"] = "Learner/DeepSupervisor";
+    _criticPolicyExperiment[p]["Solver"]["Type"] = "DeepSupervisor";
     _criticPolicyExperiment[p]["Solver"]["Mode"] = "Training";
     _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
     _criticPolicyExperiment[p]["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;

@@ -213,7 +213,7 @@ namespace
 
   ASSERT_NO_THROW(a->processEpisode(episode));
   a->_timeSequenceLength = 2;
-  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1,0));
+  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationBuffer.size()-1,0));
 
   // Triggering bad path in serialization routine
   e._fileOutputPath = "/dev/null/\%*Incorrect Path*";

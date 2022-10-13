@@ -164,52 +164,49 @@ namespace
 
   // Testing Process Episode corner cases
   knlohmann::json episode;
-  episode["Environment Id"] = 0;
-  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Sample Id"] = 0;
+  episode["Experiences"][0]["State"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][0]["Termination"] = "Terminal";
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
   ASSERT_NO_THROW(a->processEpisode(episode));
 
   // No state value provided error
   episode["Experiences"][0]["Policy"].erase("State Value");
   ASSERT_ANY_THROW(a->processEpisode(episode));
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Truncated State"] = std::vector<std::vector<float>>({{0.0f}});
   ASSERT_NO_THROW(a->processEpisode(episode));
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
+  episode["Experiences"][0]["Truncated State"] = std::vector<std::vector<float>>({{std::numeric_limits<float>::infinity()}});
   ASSERT_ANY_THROW(a->processEpisode(episode));
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Truncated State"] = std::vector<std::vector<float>>({{0.0f}});
 
   // Check truncated state sequence for sequences > 1
-  episode["Experiences"][0]["Environment Id"] = 0;
-  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Experiences"][0]["State"]  = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][0]["Termination"] = "Non Terminal";
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
 
-  episode["Experiences"][1]["Environment Id"] = 0;
-  episode["Experiences"][1]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][1]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][1]["Reward"] = 1.0f;
+  episode["Experiences"][1]["State"]  = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][1]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][1]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][1]["Termination"] = "Non Terminal";
-  episode["Experiences"][1]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][1]["Policy"]["State Value"] = std::vector<float>({1.0f});
 
-  episode["Experiences"][2]["Environment Id"] = 0;
-  episode["Experiences"][2]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][2]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][2]["Reward"] = 1.0f;
+  episode["Experiences"][2]["State"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][2]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][2]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][2]["Termination"] = "Truncated";
-  episode["Experiences"][2]["Policy"]["State Value"] = 1.0;
-  episode["Experiences"][2]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][2]["Policy"]["State Value"] = std::vector<float>({1.0f});
+  episode["Experiences"][2]["Truncated State"] = std::vector<std::vector<float>>({{0.0f}});
 
   ASSERT_NO_THROW(a->processEpisode(episode));
   a->_timeSequenceLength = 2;
@@ -1366,16 +1363,6 @@ namespace
    auto baseExpJs = experimentJs;
 
    // Testing optional parameters
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Statistics"]["Average Action Sigmas"] = "Not a Number";
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Statistics"]["Average Action Sigmas"] = std::vector<float>({0.0});
-   ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
    e["Variables"][0].erase("Initial Exploration Noise");

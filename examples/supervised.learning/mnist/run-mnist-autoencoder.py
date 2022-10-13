@@ -50,7 +50,7 @@ if len(sys.argv) == 2:
 e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = 1
 e["Problem"]["Training Batch Size"] = trainingBatchSize
-e["Problem"]["Inference Batch Size"] = testingBatchSize
+e["Problem"]["Testing Batch Size"] = testingBatchSize
 e["Problem"]["Input"]["Size"] = len(trainingImages[0])
 e["Problem"]["Solution"]["Size"] = len(trainingImages[0])
 
@@ -58,6 +58,7 @@ e["Problem"]["Solution"]["Size"] = len(trainingImages[0])
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 e["Solver"]["Type"] = "DeepSupervisor"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"

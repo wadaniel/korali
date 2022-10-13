@@ -45,11 +45,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-<<<<<<< HEAD:examples/learning/reinforcement/cartpole/run-dvracer.py
 e["Problem"]["Actions Between Policy Updates"] = 5
-=======
 e["Problem"]["Testing Frequency"] = 100
->>>>>>> master:examples/reinforcement.learning/cartpole/run-dvracer.py
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -75,10 +72,6 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = args.learningRate
 e["Solver"]["Mini Batch"]["Size"] = 32
-<<<<<<< HEAD:examples/learning/reinforcement/cartpole/run-dvracer.py
-e["Solver"]["Concurrent Environments"] = args.concurrentEnvironments
-=======
->>>>>>> master:examples/reinforcement.learning/cartpole/run-dvracer.py
 
 ### Defining Experience Replay configuration
 

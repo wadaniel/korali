@@ -68,12 +68,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-<<<<<<< HEAD:examples/learning/reinforcement/cartpole/run-vracer.py
-e["Solver"]["Episodes Per Generation"] = 10 
-e["Solver"]["Concurrent Environments"] = args.concurrentEnvironments
-=======
 e["Solver"]["Episodes Per Generation"] = 10
->>>>>>> master:examples/reinforcement.learning/cartpole/run-vracer.py
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000

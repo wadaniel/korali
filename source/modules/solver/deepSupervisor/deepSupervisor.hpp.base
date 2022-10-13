@@ -56,13 +56,21 @@ class __className__ : public __parentClassName__
 
   void initialize() override;
   void runGeneration() override;
-  void runTrainingGeneration();
-  void runTestingGeneration();
   void printGenerationAfter() override;
 
   /**
+   * @brief Runs training generation.
+   */
+  void runTrainingGeneration();
+
+  /**
+   * @brief Runs testing generation.
+   */
+  void runTestingGeneration();
+
+  /**
    * @brief Run the backward pipeline of the network given the gradient of the loss and return the gradient.
-   * @param sample A vector containing the gradient of the loss with respect to the output of the network
+   * @param gradients A vector containing the gradient of the loss with respect to the output of the network
    */
   std::vector<float> backwardGradients(const std::vector<std::vector<float>> &gradients);
 

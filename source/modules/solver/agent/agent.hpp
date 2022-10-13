@@ -635,22 +635,19 @@ class Agent : public Solver
 
   /**
    * @brief Additional post-processing of episode after episode terminated.
-   * @param episodeId The unique identifier of the provided episode
    * @param episode A vector of experiences pertaining to the episode.
    */
   void processEpisode(knlohmann::json &episode);
 
   /**
    * @brief Generates an experience mini batch from the replay memory
-   * @param miniBatchSize Size of the mini batch to create
-   * @return A vector with the indexes to the experiences in the mini batch
+   * @return A vector of pairs with the indexes to the experiences and agents in the mini batch
    */
   std::vector<std::pair<size_t, size_t>> generateMiniBatch();
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
    * @param miniBatch Indexes to the latest experiences in a batch of sequences
-   * @param includeAction Specifies whether to include the experience's action in the sequence
    * @return The time step vector of states
    */
   std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<std::pair<size_t, size_t>> &miniBatch);
@@ -669,14 +666,17 @@ class Agent : public Solver
 
   /**
    * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
-   * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @param stateSequence The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @param policyIdx The index for the policy for which the state-value is computed
    * @return A JSON object containing the information produced by the policies given the current state series
    */
   virtual float calculateStateValue(const std::vector<std::vector<float>> &stateSequence, size_t policyIdx = 0) = 0;
 
   /**
    * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
-   * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @param stateSequenceBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+   * @param policy Vector with policy objects that is filled after forwarding the policy
+   * @param policyIdx The index for the policy for which the state-value is computed
    * @return A JSON object containing the information produced by the policies given the current state series
    */
   virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) = 0;
@@ -691,6 +691,7 @@ class Agent : public Solver
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
    * @param expId The index of the second-to-latest experience in the sequence
+   * @param agentId The index of the agent
    * @return The time step vector of states, including the truncated state
    */
   std::vector<std::vector<float>> getTruncatedStateSequence(size_t expId, size_t agentId);
@@ -737,7 +738,6 @@ class Agent : public Solver
 
   /**
    * @brief Rescales a given reward by the square root of the sum of squarred rewards
-   * @param agentId The id of the environment to which this reward belongs
    * @param reward the input reward to rescale
    * @return The normalized reward
    */

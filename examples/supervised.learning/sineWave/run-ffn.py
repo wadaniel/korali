@@ -130,10 +130,6 @@ testInferredSet = [ x[0] for x in e["Solver"]["Evaluation"] ]
 mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
 print("MSE on test set: {}".format(mse))
 
-if (mse > args.testMSEThreshold):
- print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
- exit(-1)
-
  ### Plotting Results
 
  #if (args.plot):

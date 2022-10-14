@@ -639,16 +639,6 @@ class Agent : public Solver
   std::vector<std::vector<float>> _backgroundTrajectoryLogProbabilities;
   std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
 
-  /**
-  * @brief [Profiling] Measures the amount of time taken by the session
-  */
-  double _sessionTrajectoryLogProbabilityUpdateTime;
-
-  /**
-  * @brief [Profiling] Measures the amount of time taken by the generation
-  */
-  double _generationTrajectoryLogProbabilityUpdateTime;
-
   /****************************************************************************************************
    * Variables for reward function learning
    ***************************************************************************************************/
@@ -716,6 +706,11 @@ class Agent : public Solver
    * @brief TODO
    */
   size_t _sessionStatUpdateTime;
+  
+  /**
+  * @brief [Profiling] Measures the amount of time taken to update the log probabilities of the tajectories in the current session
+  */
+  double _sessionTrajectoryLogProbabilityUpdateTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
@@ -765,6 +760,11 @@ class Agent : public Solver
    * @brief [Profiling] TODO
    */
   double _generationStatUpdateTime;
+ 
+  /**
+  * @brief [Profiling] Measures the amount of time taken by the generation
+  */
+  double _generationTrajectoryLogProbabilityUpdateTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state

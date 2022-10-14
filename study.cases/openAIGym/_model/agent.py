@@ -73,18 +73,20 @@ def environment(s, env):
        obsjson = json.load(infile)
        obsstates = obsjson["States"]
        obsactions = obsjson["Actions"]
+       obsrewards = obsjson["Rewards"]
    else:
        obsjson = {}
        obsstates = []
        obsactions = []
+       obsrewards = []
  
  else:
    saveState = False
    obsjson = {}
    obsstates = []
    obsactions = []
-   
- s["State"] = env.reset().tolist()
+  
+ s["State"] = env.reset()[0].tolist()
  step = 0
  done = False
  
@@ -94,7 +96,6 @@ def environment(s, env):
  
  states = []
  actions = []
- rewards = []
  
  while not done and step < 1000:
   
@@ -106,10 +107,10 @@ def environment(s, env):
   
   # Performing the action
   action = s["Action"]
-  state, reward, done, _ = env.step(action)
+  state, reward, done, _ = env.step(action)[:4]
   
   # Getting Reward
-  s["Reward"] = reward
+  s[:4]["Reward"] = reward
   
   # Printing step information
   #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
@@ -129,9 +130,10 @@ def environment(s, env):
  if (saveState): 
    obsstates.append(states)
    obsactions.append(actions)
+   obsrewards.append(cumulativeReward)
    obsjson["States"] = obsstates
    obsjson["Actions"] = obsactions
-   obsjson["Rewards"] = rewards
+   obsjson["Rewards"] = obsrewards
    with open(fname, 'w') as f:
      json.dump(obsjson, f)
  

@@ -59,7 +59,7 @@ void Agent::initialize()
   _episodeIdBuffer.resize(_experienceReplayMaximumSize);
 
   // Pre-allocate space for policies
-  _policyVector.resize(_experienceReplayMaximumSize);
+  _policyBuffer.resize(_experienceReplayMaximumSize);
 
   // Initialize background samples
   _backgroundTrajectoryCount = 0;
@@ -444,7 +444,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       // Store background trajectory
       for (size_t i = 0; i < episodeLength; ++i)
       {
-        _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyVector[episodeStartIdx];
+        _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
         _backgroundTrajectoryStates[_backgroundTrajectoryCount][i] = _stateBuffer[episodeStartIdx + i];
         _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
         _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
@@ -499,7 +499,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     // Store background trajectory
     for (size_t i = 0; i < episodeLength; ++i)
     {
-      _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyVector[episodeStartIdx];
+      _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
       _backgroundTrajectoryStates[_backgroundTrajectoryCount][i] = _stateBuffer[episodeStartIdx + i];
       _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
@@ -549,7 +549,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       _backgroundTrajectoryFeatures[replacementIdx][i] = _featureBuffer[episodeStartIdx + i];
     }
 
-    _backgroundPolicyHyperparameter[replacementIdx] = _policyVector[episodeStartIdx];
+    _backgroundPolicyHyperparameter[replacementIdx] = _policyBuffer[episodeStartIdx];
     _backgroundTrajectoryCount++;
 
     if (_useFusionDistribution)
@@ -1251,9 +1251,6 @@ void Agent::processEpisode(knlohmann::json &episode)
     // Getting features
     _featureBuffer.add(episode["Experiences"][expId]["Features"].get<std::vector<float>>());
 
-    // Getting policy
-    _policyVector.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
-
     // Getting reward (TODO: batch forwarding)
     const float reward = calculateReward({{episode["Experiences"][expId]["Features"].get<std::vector<float>>()}})[0];
 
@@ -1300,6 +1297,13 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     _terminationBuffer.add(termination);
     _truncatedStateBuffer.add(truncatedState);
+    
+    // Storing policy
+    if (expId == 0)
+        _policyBuffer.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
+    else
+        _policyBuffer.add({}); // Placeholder
+
 
     // Getting policy information and state value
     policy_t expPolicy;

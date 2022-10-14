@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#BSUB -W 24:00
+#BSUB -J vracer-irl
+#BSUB -o vracer-irl.out
+#BSUB -e vracer-irl.err
+#BSUB -n 8
+#BSUB -N wadaniel@ethz.ch
+#######BSUB -R "rusage[mem=8000]"
+
+export OMP_NUM_THREADS=8
+pushd .
+cd ..
+
+source /cluster/apps/local/env2lmod.sh
+module purge
+module load gcc/8.2.0 python/3.9.9 openmpi/4.0.2 gsl/2.6
+module load git-lfs
+
+python3 run-vracer-irl.py --env Walker2d-v4 --run 1
+code=$?
+
+exit $code

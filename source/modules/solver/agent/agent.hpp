@@ -706,7 +706,7 @@ class Agent : public Solver
    * @brief TODO
    */
   size_t _sessionStatUpdateTime;
-  
+
   /**
   * @brief [Profiling] Measures the amount of time taken to update the log probabilities of the tajectories in the current session
   */
@@ -760,7 +760,7 @@ class Agent : public Solver
    * @brief [Profiling] TODO
    */
   double _generationStatUpdateTime;
- 
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */

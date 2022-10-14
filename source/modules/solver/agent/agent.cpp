@@ -458,7 +458,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     }
 
     if (_backgroundTrajectoryCount != _backgroundBatchSize)
-      KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
+      KORALI_LOG_ERROR("Error during background batch intialization. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
     _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
@@ -470,8 +470,8 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       {
         // Insert probability from quadratic policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
-        for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
-          _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
+        for (size_t j = 1; j < _backgroundTrajectoryCount; ++j)
+          _backgroundTrajectoryLogProbabilities[i][j] = trajectoryLogP;
       }
       else
       {
@@ -590,8 +590,7 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
       if (_useFusionDistribution)
         for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
         {
-          const float trajectoryLogP = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
-          _demonstrationTrajectoryLogProbabilities[m][i + 1] = trajectoryLogP;
+          _demonstrationTrajectoryLogProbabilities[m][i + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
         }
     }
   }

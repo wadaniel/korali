@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+import sys
 import gym
-#import pyBulletEnvironments
 import numpy as np
 from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper
+
+if (gym.__version__ != "0.26.2"):
+    print("[agent] Gym version 0.26.2 expected, but is {gym.__version__}")
+    print("[agent] Exit..")
+    sys.exit()
 
 def initEnvironment(e, envName, moviePath = ''):
 
@@ -46,7 +51,7 @@ def initEnvironment(e, envName, moviePath = ''):
   e["Variables"][i]["Type"] = "State"
   e["Variables"][i]["Lower Bound"] = float(env.observation_space.low[i])
   e["Variables"][i]["Upper Bound"] = float(env.observation_space.high[i])
-  
+ 
  # Defining Action Variables
  
  for i in range(actionVariableCount):
@@ -63,31 +68,30 @@ def agent(s, env):
  else:
   printStep = False
  
- state = env.reset().tolist()
+ state = env.reset()[0].tolist()
  s["State"] = state
  s["Features"] = state #list(state[-3:]) 
 
  step = 0
  done = False
-
+ 
  # Storage for cumulative reward
  cumulativeReward = 0.0
  
  overSteps = 0
-  
+ 
  while not done and step < 1000:
-
   # Getting new action
   s.update()
   
-  # Printing step information    
+  # Printing step information
   #if (printStep):  print('[Korali] Frame ' + str(step), end = '')
   
   # Performing the action
   action = s["Action"]
  
   s["Features"] = list(state) #list(state[-3:]) 
-  state, reward, done, _ = env.step(action)
+  state, reward, done, _ = env.step(action)[:4]
  
   # Getting Reward
   s["Reward"] = reward
@@ -96,10 +100,10 @@ def agent(s, env):
   #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
   cumulativeReward = cumulativeReward + reward 
   #if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
-   
+  
   # Storing New State
   s["State"] = state.tolist()
-   
+  
   # Advancing step counter
   step = step + 1
 
@@ -109,4 +113,3 @@ def agent(s, env):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
-

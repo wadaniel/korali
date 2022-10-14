@@ -276,6 +276,24 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
     {
+      // Update background and demonstration batch after initial RM is full and then every 10 episodes
+      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
+      {
+        const auto startTime = std::chrono::steady_clock::now();    // Profiling
+        
+        // Sample trajectory to replace
+        const float u = _uniformGenerator->getRandomNumber();
+        const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
+        updateBackgroundBatch(bckIdx);
+        updateDemonstrationBatch(bckIdx);
+  
+        const auto endTime = std::chrono::steady_clock::now();                                                                              // Profiling
+        _sessionTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();    // Profiling
+        _generationTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); // Profiling
+
+        _k->_logger->logInfo("Detailed", "Done!\n");
+      }
+
       // Update the reward function based on guided cost learning
       while (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
@@ -307,7 +325,7 @@ void Agent::trainingGeneration()
         if (_policyUpdateCount == 0)
           rescaleStates();
 
-      // If we accumulated enough experiences, we rescale the states (once)
+      // If we accumulated enough experiences, we rescale the features (once)
       if (_featureRescalingEnabled == true)
         if (_policyUpdateCount == 0)
           rescaleFeatures();
@@ -398,7 +416,6 @@ void Agent::testingGeneration()
 
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
 {
-  const auto startTime = std::chrono::steady_clock::now();
 
   // Initialize background batch
   if (_backgroundTrajectoryCount == 0)
@@ -557,17 +574,10 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
   }
 
-  const auto endTime = std::chrono::steady_clock::now();
-  const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  _sessionTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  _generationTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
-  const auto startTime = std::chrono::steady_clock::now();
-
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing demonstration batch..\n");
@@ -607,12 +617,6 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
   {
     _k->_logger->logInfo("Detailed", "Skipping demonstration batch update.\n");
   }
-
-  const auto endTime = std::chrono::steady_clock::now();
-  const double duration = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
-  _sessionTrajectoryLogProbabilityUpdateTime += duration;
-  _generationTrajectoryLogProbabilityUpdateTime += duration;
-  _k->_logger->logInfo("Detailed", "Done (%3.3fs)!\n", duration / 1.0e9);
 }
 
 void Agent::partitionFunctionStat()
@@ -820,11 +824,13 @@ std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vec
 void Agent::updateRewardFunction()
 {
   const size_t stepsPerUpdate = 1;
+
+  const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::minstd_rand0 generator(seed);
+
+
   for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
   {
-    const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::minstd_rand0 generator(seed);
-
     // Randomize demonstration batch
     std::vector<size_t> randomDemonstrationIndexes(_problem->_numberObservedTrajectories);
     std::iota(std::begin(randomDemonstrationIndexes), std::end(randomDemonstrationIndexes), 0);
@@ -888,11 +894,13 @@ void Agent::updateRewardFunction()
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
+      if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][0]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx = randomBackgroundIndexes[i];
         demonstrationTrajectoryLogProbabilities[n][i + 1] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
-        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("non finite");
+        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
       }
     }
 
@@ -949,12 +957,14 @@ void Agent::updateRewardFunction()
 
       cumulativeRewardsBackgroundBatch[m] = cumReward;
 
-      backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from linear policy
+      backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
+      if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+      
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx2 = randomBackgroundIndexes[i];
         backgroundTrajectoryLogProbabilities[m][i + 1] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
-        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("non finite");
+        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
       }
     }
 
@@ -968,8 +978,6 @@ void Agent::updateRewardFunction()
         backgroundBatchLogImportanceWeights[m] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       else
         backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
-
-      //printf("BbIw %f cr %f (tot %f)\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
     }
 
     // Calculate importance weights of demonstration batch
@@ -982,8 +990,6 @@ void Agent::updateRewardFunction()
         demonstrationBatchLogImportanceWeights[n] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
       else
         demonstrationBatchLogImportanceWeights[n] = -demonstrationTrajectoryLogProbabilities[n][0];
-
-      //printf("DbIw %f cr %f (tot %f)\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n], demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n]);
     }
 
     // Preparation for calculation of log partition function with log-sum-exp trick
@@ -1044,7 +1050,6 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
-        //printf("grad bb %f %f\n", gradientCumulativeRewardFunctionBackgroundBatch[m][k], _maxEntropyGradient[k]);
       }
     }
 
@@ -1058,7 +1063,6 @@ void Agent::updateRewardFunction()
       {
         // Contribution from partition function
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
-        //printf("grad db %f %f\n", gradientCumulativeRewardFunctionDemonstrationBatch[n][k], _maxEntropyGradient[k]);
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
@@ -1198,16 +1202,6 @@ void Agent::attendWorker(size_t workerId)
           _testingBestEpisodeId = _currentEpisode;
           _testingBestPolicy["Policy Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"];
         }
-      }
-
-      // Update background and demonstration batch after initial RM is full and then every 10 episodes
-      if (_experienceCount >= _experienceReplayStartSize && ((_experienceCount - _experienceReplayStartSize) / _experiencesBetweenRewardUpdates >= _backgroundTrajectoryCount))
-      {
-        // Sample trajectory to replace
-        const float u = _uniformGenerator->getRandomNumber();
-        const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
-        updateBackgroundBatch(bckIdx);
-        updateDemonstrationBatch(bckIdx);
       }
 
       // Obtaining profiling information

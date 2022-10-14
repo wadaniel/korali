@@ -279,14 +279,14 @@ void Agent::trainingGeneration()
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
       if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
-        const auto startTime = std::chrono::steady_clock::now();    // Profiling
-        
+        const auto startTime = std::chrono::steady_clock::now(); // Profiling
+
         // Sample trajectory to replace
         const float u = _uniformGenerator->getRandomNumber();
         const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
         updateBackgroundBatch(bckIdx);
         updateDemonstrationBatch(bckIdx);
-  
+
         const auto endTime = std::chrono::steady_clock::now();                                                                              // Profiling
         _sessionTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();    // Profiling
         _generationTrajectoryLogProbabilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); // Profiling
@@ -416,7 +416,6 @@ void Agent::testingGeneration()
 
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
 {
-
   // Initialize background batch
   if (_backgroundTrajectoryCount == 0)
   {
@@ -573,7 +572,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
   {
     _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
   }
-
 }
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
@@ -827,7 +825,6 @@ void Agent::updateRewardFunction()
   const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::minstd_rand0 generator(seed);
 
-
   for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
   {
     // Randomize demonstration batch
@@ -958,7 +955,7 @@ void Agent::updateRewardFunction()
 
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
       if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
-      
+
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx2 = randomBackgroundIndexes[i];
@@ -1297,13 +1294,12 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     _terminationBuffer.add(termination);
     _truncatedStateBuffer.add(truncatedState);
-    
+
     // Storing policy
     if (expId == 0)
-        _policyBuffer.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
+      _policyBuffer.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
     else
-        _policyBuffer.add({}); // Placeholder
-
+      _policyBuffer.add({}); // Placeholder
 
     // Getting policy information and state value
     policy_t expPolicy;
@@ -1948,7 +1944,7 @@ void Agent::printGenerationAfter()
 
     if (_stateRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
-    
+
     if (_featureRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Using Feature Rescaling\n");
 

@@ -311,7 +311,7 @@ class __className__ : public __parentClassName__
    * @brief TODO
    */
   size_t _sessionStatUpdateTime;
-  
+
   /**
   * @brief [Profiling] Measures the amount of time taken to update the log probabilities of the tajectories in the current session
   */
@@ -365,7 +365,7 @@ class __className__ : public __parentClassName__
    * @brief [Profiling] TODO
    */
   double _generationStatUpdateTime;
- 
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */

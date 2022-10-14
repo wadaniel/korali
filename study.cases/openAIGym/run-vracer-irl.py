@@ -113,13 +113,13 @@ e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 8
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SoftReLU"
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 16
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 8 
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/SoftReLU"

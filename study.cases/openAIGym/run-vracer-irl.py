@@ -92,15 +92,15 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Feature Rescaling"]["Enabled"] = False
+e["Solver"]["Feature Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 500
+e["Solver"]["Experiences Between Reward Updates"] = 100
 e["Solver"]["Demonstration Batch Size"] = 5
-e["Solver"]["Background Batch Size"] = 50
-e["Solver"]["Background Sample Size"] = 500
+e["Solver"]["Background Batch Size"] = 100
+e["Solver"]["Background Sample Size"] = 1000
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
@@ -129,8 +129,8 @@ e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Function"]
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]['Neural Network']['Optimizer'] = "Adam"
-e["Solver"]["L2 Regularization"]["Enabled"] = False
-e["Solver"]["L2 Regularization"]["Importance"] = 0.
+e["Solver"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["L2 Regularization"]["Importance"] = 1.
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
@@ -146,7 +146,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 2e6
 
 ### Setting file output configuration
 

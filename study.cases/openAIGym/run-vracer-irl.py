@@ -113,13 +113,13 @@ e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 8
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/SoftReLU"
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 8
+e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 16
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/SoftReLU"
@@ -129,8 +129,8 @@ e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][3]["Function"]
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]['Neural Network']['Optimizer'] = "Adam"
-e["Solver"]["L2 Regularization"]["Enabled"] = True
-e["Solver"]["L2 Regularization"]["Importance"] = 1.
+e["Solver"]["L2 Regularization"]["Enabled"] = False
+e["Solver"]["L2 Regularization"]["Importance"] = 0.
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128

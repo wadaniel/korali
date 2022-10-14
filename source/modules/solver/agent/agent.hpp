@@ -524,9 +524,9 @@ class Agent : public Solver
   cBuffer<std::vector<float>> _featureBuffer;
 
   /**
-   * @brief Stores the policyHyperparameters of the agent at the given state
+   * @brief Stores the policyHyperparameters of the agent of a given episode
    */
-  cBuffer<std::vector<float>> _policyVector;
+  cBuffer<std::vector<float>> _policyBuffer;
 
   /**
   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)

@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #BSUB -W 24:00
 #BSUB -J vracer-irl
-#BSUB -o vracer-irl.out
-#BSUB -e vracer-irl.err
+#BSUB -o vracer-irl-<%%J>.out
+#BSUB -e vracer-irl-<%%J>.err
 #BSUB -n 8
 #BSUB -N wadaniel@ethz.ch
 

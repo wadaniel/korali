@@ -430,6 +430,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       const size_t episodeLength = _episodePosBuffer[expId];
       const size_t episodeStartIdx = expId - episodeLength;
 
+      // Safety checks
       if (_terminationBuffer[expId] == e_nonTerminal)
         KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
       if (episodeStartIdx == 0 && m < _backgroundBatchSize - 1)
@@ -486,9 +487,9 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     const size_t episodeLength = _episodePosBuffer[expId];
     const size_t episodeStartIdx = expId - episodeLength;
 
-    // Increase background sample counter
-    if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
-      KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
+    // Safety check
+    if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
+      KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
 
     // Allocate container for trajectory information
     _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
@@ -536,10 +537,10 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     const size_t episodeStartIdx = expId - episodeLength;
 
     // Safety checks
-    if (_terminationBuffer[episodeStartIdx - 1] == e_nonTerminal)
-      KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
+    if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
+      KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
 
-      // Replace background trajectory
+    // Replace background trajectory
 #pragma omp parallel for
     for (size_t i = 0; i < episodeLength; ++i)
     {

@@ -137,7 +137,7 @@ void __className__::initialize()
   _sessionPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
   _sessionRewardUpdateTime = 0.0;
-  _sessionStatUpdateTime = 0.0;
+  _sessionPartitionFunctionStatUpdateTime = 0.0;
   _sessionWorkerAttendingTime = 0.0;
   _sessionTrajectoryLogProbabilityUpdateTime = 0.0;
 
@@ -239,7 +239,7 @@ void __className__::trainingGeneration()
   _generationPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationRewardUpdateTime = 0.0;
-  _generationStatUpdateTime = 0.0;
+  _generationPartitionFunctionStatUpdateTime = 0.0;
   _generationWorkerAttendingTime = 0.0;
   _generationTrajectoryLogProbabilityUpdateTime = 0.0;
 
@@ -313,9 +313,9 @@ void __className__::trainingGeneration()
 
         //partitionFunctionStat();
 
-        auto endTime = std::chrono::steady_clock::now();                                                                // Profiling
-        _sessionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-        _generationStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+        auto endTime = std::chrono::steady_clock::now();                                                                                 // Profiling
+        _sessionPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+        _generationPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
 
       // If we accumulated enough experiences, we rescale the states (once)
@@ -382,7 +382,7 @@ void __className__::trainingGeneration()
   for (ssize_t e = startEpisodeId; e < endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
   _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId);
-  
+
   // Updating average feature reward statistics
   _trainingAverageFeatureReward = 0.0f;
   for (ssize_t e = startEpisodeId; e < endEpisodeId; e++)
@@ -441,7 +441,7 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
       if (episodeStartIdx == 0 && m < _backgroundBatchSize - 1)
         KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled (%zu/%zu) to fill a single back ground batch.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
-      // Allocate memory for new trajectory 
+      // Allocate memory for new trajectory
       _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
@@ -475,7 +475,7 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
         // Insert probability from linear policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
         for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
-          _backgroundTrajectoryLogProbabilities[i][j+1] = trajectoryLogP;
+          _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
       }
       else
       {
@@ -495,7 +495,7 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
     if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
       KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
 
-    // Allocate memory for new trajectory 
+    // Allocate memory for new trajectory
     _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
@@ -511,7 +511,7 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
 
     // Increase background sample counter
     _backgroundTrajectoryCount++;
-    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1].resize(_backgroundSampleSize + 1);
+    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1].resize(_backgroundSampleSize + 1);
 
     if (_useFusionDistribution)
     {
@@ -520,14 +520,14 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
         _backgroundTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
 
       // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
-      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
+      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
       for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
         _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
     }
     else
     {
       // Evaluate trajectory log probability with own policy
-      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
   }
   // replace background trajectories
@@ -542,7 +542,7 @@ void __className__::updateBackgroundBatch(const size_t replacementIdx)
     if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
       KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
 
-    // Allocate memory for new trajectory 
+    // Allocate memory for new trajectory
     _backgroundTrajectoryStates[replacementIdx].resize(episodeLength);
     _backgroundTrajectoryActions[replacementIdx].resize(episodeLength);
     _backgroundTrajectoryFeatures[replacementIdx].resize(episodeLength);
@@ -1809,6 +1809,10 @@ void __className__::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Current Policy"]["Unbounded Action"] = _curPolicyBuffer[i].unboundedAction;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Index"] = _curPolicyBuffer[i].actionIndex;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"] = _curPolicyBuffer[i].actionProbabilities;
+
+    stateJson["Experience Replay"][i]["Feature"] = _featureBuffer[i];
+    stateJson["Experience Replay"][i]["Reward Update"] = _rewardUpdateBuffer[i];
+    stateJson["Experience Replay"][i]["Policy"] = _policyBuffer[i];
   }
 
   // If results directory doesn't exist, create it
@@ -1847,6 +1851,8 @@ void __className__::deserializeExperienceReplay()
   _retraceValueBuffer.clear();
   _rewardBuffer.clear();
   _rewardUpdateBuffer.clear();
+  _featureBuffer.clear();
+  _policyBuffer.clear();
   _environmentIdBuffer.clear();
   _stateValueBuffer.clear();
   _importanceWeightBuffer.clear();
@@ -1869,6 +1875,8 @@ void __className__::deserializeExperienceReplay()
     _actionBuffer.add(stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>());
     _rewardBuffer.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
     _rewardUpdateBuffer.add(stateJson["Experience Replay"][i]["Reward Update"].get<float>());
+    _featureBuffer.add(stateJson["Experience Replay"][i]["Feature"].get<std::vector<float>>());
+    _policyBuffer.add(stateJson["Experience Replay"][i]["Policy"].get<std::vector<float>>());
     _environmentIdBuffer.add(stateJson["Experience Replay"][i]["Environment Id"].get<float>());
     _stateValueBuffer.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueBuffer.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
@@ -1934,10 +1942,10 @@ void __className__::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Reward:               %f\n", _trainingLastReward);
-    _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
-    _k->_logger->logInfo("Normal", " + %lu-Episode Average Feature Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
-    _k->_logger->logInfo("Normal", " + Best Reward (Episode):       %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
+    _k->_logger->logInfo("Normal", " + Latest Reward:                       %f\n", _trainingLastReward);
+    _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:          %f\n", _trainingAverageDepth, _trainingAverageReward);
+    _k->_logger->logInfo("Normal", " + %lu-Episode Average Feature Reward:  %f\n", _trainingAverageDepth, _trainingAverageFeatureReward);
+    _k->_logger->logInfo("Normal", " + Best Reward (Episode):               %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     if (_testingBestEpisodeId > 0)
     {

@@ -672,7 +672,7 @@ class Agent : public Solver
    ***************************************************************************************************/
 
   /**
-   * @brief [Profiling] Measures the amount of time taken by the generation
+   * @brief [Profiling] Measures the amount of time taken since launch
    */
   double _sessionRunningTime;
 
@@ -702,17 +702,17 @@ class Agent : public Solver
   double _sessionPolicyUpdateTime;
 
   /**
-   * @brief [Profiling] Measures the time taken to update the reward function in the current generation
+   * @brief [Profiling] Measures the time taken to update the reward function since launch
    */
   double _sessionRewardUpdateTime;
 
   /**
-   * @brief TODO
+   * @brief [Profiling] Measures the time taken to update the log partition statistics since launch
    */
-  size_t _sessionStatUpdateTime;
+  size_t _sessionPartitionFunctionStatUpdateTime;
 
   /**
-  * @brief [Profiling] Measures the amount of time taken to update the log probabilities of the tajectories in the current session
+  * @brief [Profiling] Measures the amount of time taken to update the log probabilities of the tajectories since launch
   */
   double _sessionTrajectoryLogProbabilityUpdateTime;
 
@@ -761,9 +761,9 @@ class Agent : public Solver
   double _generationRewardUpdateTime;
 
   /**
-   * @brief [Profiling] TODO
+   * @brief [Profiling] Measures the time taken to update the log partition statistics in the current generation
    */
-  double _generationStatUpdateTime;
+  double _generationPartitionFunctionStatUpdateTime;
 
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation

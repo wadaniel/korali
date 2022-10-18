@@ -146,7 +146,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 2e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 3e6
 
 ### Setting file output configuration
 

@@ -67,6 +67,7 @@ void Agent::initialize()
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
   _statisticCumulativeRewards.resize(0);
+  _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
 
   //  Pre-allocating space for state time sequence
   _stateTimeSequence.resize(_timeSequenceLength);
@@ -461,17 +462,16 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       KORALI_LOG_ERROR("Error during background batch intialization. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
-    _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
     for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
     {
       _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize + 1);
       const float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
       if (_useFusionDistribution)
       {
-        // Insert probability from quadratic policy first
+        // Insert probability from linear policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
-        for (size_t j = 1; j < _backgroundTrajectoryCount; ++j)
-          _backgroundTrajectoryLogProbabilities[i][j] = trajectoryLogP;
+        for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
+          _backgroundTrajectoryLogProbabilities[i][j+1] = trajectoryLogP;
       }
       else
       {
@@ -507,8 +507,8 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 
     // Increase background sample counter
     _backgroundTrajectoryCount++;
+    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1].resize(_backgroundSampleSize + 1);
 
-    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize + 1);
     if (_useFusionDistribution)
     {
       // For all previous background trajectories evaluate log probability with newest policy
@@ -516,17 +516,15 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
         _backgroundTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
 
       // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
-      logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
+      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
       for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
-        logProbabilitiesNewTrajectory[i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
+        _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
     }
     else
     {
       // Evaluate trajectory log probability with own policy
-      logProbabilitiesNewTrajectory[_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+      _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount-1][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
-
-    _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1] = logProbabilitiesNewTrajectory;
   }
   // replace background trajectories
   else if (replacementIdx < _backgroundSampleSize)
@@ -836,6 +834,7 @@ void Agent::updateRewardFunction()
     // Randomize background batch
     const size_t maxRand = std::min(_backgroundTrajectoryCount, _backgroundSampleSize);
     std::vector<size_t> randomBackgroundIndexes(maxRand);
+    std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
 
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
@@ -1296,7 +1295,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     _terminationBuffer.add(termination);
     _truncatedStateBuffer.add(truncatedState);
 
-    // Storing policy
+    // Storing policy on episode start
     if (expId == 0)
       _policyBuffer.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
     else

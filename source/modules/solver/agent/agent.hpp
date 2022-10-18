@@ -276,6 +276,10 @@ class Agent : public Solver
   */
    float _trainingAverageReward;
   /**
+  * @brief [Internal Use] Contains a running average of the training episode feature rewards.
+  */
+   float _trainingAverageFeatureReward;
+  /**
   * @brief [Internal Use] Remembers the cumulative sum of rewards for the last training episode.
   */
    float _trainingLastReward;

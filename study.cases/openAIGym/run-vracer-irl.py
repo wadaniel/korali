@@ -26,29 +26,19 @@ with open(obsfile, 'r') as infile:
     obsactions = obsjson["Actions"]
 
 ### Compute Feauters from states
-
-#nf = 8
-#nf = 17
 obsfeatures = []
-#maxFeatures = [-np.inf] * nf
 for trajectory, actions in zip(obsstates, obsactions):
     features = []
-    #distance = np.zeros(nf)
     for idx in range(len(trajectory)):
-        # state: last two are velocities
-        #f = list(trajectory[idx][-nf:]) #+ [float(sum(np.array(actions[idx])**2))]
-        #features.append(list(f))
         features.append(list(trajectory[idx]))
-        #distance += np.array(f)/0.04
 
-    #print(f'distance covered: {distance}')
     obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
 print("Max feature values found in observations:")
-print(np.max(np.array(obsfeatures), axis=1))
+#print(np.max(np.array(obsfeatures), axis=1))
 print("Min feature values found in observations:")
-print(np.min(np.array(obsfeatures), axis=1))
+#print(np.min(np.array(obsfeatures), axis=1))
 ####### Defining Korali Problem
 
 import korali
@@ -92,7 +82,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Feature Rescaling"]["Enabled"] = True
+e["Solver"]["Feature Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
@@ -100,7 +90,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["Experiences Between Reward Updates"] = 500
 e["Solver"]["Demonstration Batch Size"] = 5
 e["Solver"]["Background Batch Size"] = 50
-e["Solver"]["Background Sample Size"] = 1000
+e["Solver"]["Background Sample Size"] = 100
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 

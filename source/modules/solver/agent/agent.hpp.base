@@ -366,7 +366,6 @@ class __className__ : public __parentClassName__
    * @param stateSequenceBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
    * @param policy Vector with policy objects that is filled after forwarding the policy
    * @param policyIdx The index for the policy for which the state-value is computed
-   * @return A JSON object containing the information produced by the policies given the current state series
    */
   virtual void runPolicy(const std::vector<std::vector<std::vector<float>>> &stateSequenceBatch, std::vector<policy_t> &policy, size_t policyIdx = 0) = 0;
 

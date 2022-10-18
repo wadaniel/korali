@@ -197,6 +197,7 @@ class DeepSupervisor : public Solver
   /**
    * @brief Run the backward pipeline of the network given the gradient of the loss and return the gradient.
    * @param gradients A vector containing the gradient of the loss with respect to the output of the network
+   * @return A vector containing the gradient of the loss with respect to the weights of the network
    */
   std::vector<float> backwardGradients(const std::vector<std::vector<float>> &gradients);
 

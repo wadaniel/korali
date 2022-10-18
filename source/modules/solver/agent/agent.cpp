@@ -88,6 +88,7 @@ void Agent::initialize()
     _trainingBestReward = -korali::Inf;
     _trainingBestEpisodeId = 0;
     _trainingAverageReward = 0.0f;
+    _trainingAverageFeatureReward = 0.0f;
 
     // Initializing testing statistics
     _testingAverageReward = -korali::Inf;
@@ -145,9 +146,9 @@ void Agent::initialize()
   _sessionTrajectoryLogProbabilityUpdateTime = 0.0;
 
   // Initializing session-specific counters
-  _sessionExperienceCount = 0;
-  _sessionEpisodeCount = 0;
   _sessionGeneration = 1;
+  _sessionEpisodeCount = 0;
+  _sessionExperienceCount = 0;
   _sessionPolicyUpdateCount = 0;
   _sessionRewardUpdateCount = 0;
 
@@ -376,14 +377,21 @@ void Agent::trainingGeneration()
    * Updating statistics/bookkeeping
    *********************************************************************/
 
-  // Updating average cumulative reward statistics
   _trainingAverageReward = 0.0f;
   ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
+  ssize_t endEpisodeId = _trainingRewardHistory.size();
   if (startEpisodeId < 0) startEpisodeId = 0;
-  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+
+  // Updating average reward statistics
+  for (ssize_t e = startEpisodeId; e < endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId);
+  
+  // Updating average feature reward statistics
+  _trainingAverageFeatureReward = 0.0f;
+  for (ssize_t e = startEpisodeId; e < endEpisodeId; e++)
+    _trainingAverageFeatureReward += _trainingFeatureRewardHistory[e];
+  _trainingAverageFeatureReward /= (float)(endEpisodeId - startEpisodeId);
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -437,7 +445,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       if (episodeStartIdx == 0 && m < _backgroundBatchSize - 1)
         KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled (%zu/%zu) to fill a single back ground batch.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
-      // Allocate container for trajectory information
+      // Allocate memory for new trajectory 
       _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
@@ -491,7 +499,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
       KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
 
-    // Allocate container for trajectory information
+    // Allocate memory for new trajectory 
     _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
@@ -537,6 +545,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     // Safety checks
     if (_episodeIdBuffer[episodeStartIdx] != _episodeIdBuffer[expId])
       KORALI_LOG_ERROR("Experience %zu is not the start of same trajectory.", episodeStartIdx);
+
+    // Allocate memory for new trajectory 
+    _backgroundTrajectoryStates[replacementIdx].resize(episodeLength);
+    _backgroundTrajectoryActions[replacementIdx].resize(episodeLength);
+    _backgroundTrajectoryFeatures[replacementIdx].resize(episodeLength);
 
     // Replace background trajectory
 #pragma omp parallel for
@@ -623,8 +636,9 @@ void Agent::partitionFunctionStat()
   std::vector<float> fusionLogpf(_backgroundTrajectoryCount);
 
   // Calculate cumulative rewards for background batch
-  std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundTrajectoryCount, 0.0);
-  for (size_t m = 0; m < _backgroundTrajectoryCount; ++m)
+  const size_t numTrajectories = std::min(_backgroundTrajectoryCount, _backgroundSampleSize);
+  std::vector<float> cumulativeRewardsBackgroundBatch(numTrajectories, 0.0);
+  for (size_t m = 0; m < numTrajectories; ++m)
   {
     const size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
 
@@ -660,7 +674,7 @@ void Agent::partitionFunctionStat()
   // Randomize demonstration batch
   std::vector<size_t> randomDemonstrationIndexes(_problem->_numberObservedTrajectories);
   std::iota(std::begin(randomDemonstrationIndexes), std::end(randomDemonstrationIndexes), 0);
-  //std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator); // NO RANDOMIZATION
+  //std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator); // RANDOMIZATION
 
   // Calculate cumulative rewards for demonstration batch
   std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
@@ -695,7 +709,7 @@ void Agent::partitionFunctionStat()
   }
 
 #pragma omp parallel for schedule(dynamic)
-  for (size_t batchSize = 1; batchSize <= _backgroundTrajectoryCount; ++batchSize)
+  for (size_t batchSize = 1; batchSize <= numTrajectories; ++batchSize)
   {
     // Get background trajectory log probabilities
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
@@ -1926,6 +1940,7 @@ void Agent::printGenerationAfter()
 
     _k->_logger->logInfo("Normal", " + Latest Reward:               %f\n", _trainingLastReward);
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
+    _k->_logger->logInfo("Normal", " + %lu-Episode Average Feature Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward (Episode):       %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     if (_testingBestEpisodeId > 0)
@@ -2050,6 +2065,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Average Reward']\n%s", e.what()); } 
    eraseValue(js, "Training", "Average Reward");
+ }
+
+ if (isDefined(js, "Training", "Average Feature Reward"))
+ {
+ try { _trainingAverageFeatureReward = js["Training"]["Average Feature Reward"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Average Feature Reward']\n%s", e.what()); } 
+   eraseValue(js, "Training", "Average Feature Reward");
  }
 
  if (isDefined(js, "Training", "Last Reward"))
@@ -2781,6 +2804,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Training"]["Environment Id History"] = _trainingEnvironmentIdHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;
+   js["Training"]["Average Feature Reward"] = _trainingAverageFeatureReward;
    js["Training"]["Last Reward"] = _trainingLastReward;
    js["Training"]["Best Reward"] = _trainingBestReward;
    js["Training"]["Best Episode Id"] = _trainingBestEpisodeId;

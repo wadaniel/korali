@@ -22,7 +22,7 @@ def validateOutput(output):
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate):
+def plotRewardHistory(ax, dirs, results, featureReward, minReward, maxReward, averageDepth, maxObservations, showCI, aggregate):
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  maxPlotObservations = -math.inf
  maxPlotReward = -math.inf
@@ -47,7 +47,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    dirs.insert(resId+envId, resultsFolder+" env {}".format(envId))
    res = {}
    res["Solver"] = { "Training" : { "Experience History" : [ exp for (env, exp) in zip (envIds, r["Solver"]["Training"]["Experience History"]) if env == envId ] } }
-   res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, r["Solver"]["Training"]["Reward History"]) if env == envId ]
+   if featureReward:
+    res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, r["Solver"]["Training"]["Feature Reward History"]) if env == envId ]
+   else:
+    res["Solver"]["Training"]["Reward History"] = [ rew for (env, rew) in zip(envIds, r["Solver"]["Training"]["Reward History"]) if env == envId ]
 
    cumulativeObsCountHistory = np.cumsum(np.array(res["Solver"]["Training"]["Experience History"])) / nAgents
    rewardHistory = np.array(res["Solver"]["Training"]["Reward History"])
@@ -175,6 +178,11 @@ if __name__ == '__main__':
      required=False,
      nargs='+')
  parser.add_argument(
+     '--featureReward',
+     help='Plot Feature Reward',
+     required=False,
+     action='store_true')
+ parser.add_argument(
      '--maxObservations',
      help='Maximum observations (x-axis) to display',
      type=int,
@@ -256,7 +264,7 @@ if __name__ == '__main__':
      
  ### Creating plots
 
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
+ plotRewardHistory(ax1, args.dir, results, args.featureReward, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
  if (len(args.dir)>1):
      plt.legend()
  plt.draw()
@@ -272,7 +280,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
+   plotRewardHistory(ax1, args.dir, results, args.featureReward, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
    plt.draw()
    
    # Check if maximum time exceeded

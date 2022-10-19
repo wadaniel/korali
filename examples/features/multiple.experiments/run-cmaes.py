@@ -71,8 +71,6 @@ for i in range(8):
   # Adding Experiment to vector
   eList.append(e)
 
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
 k["Profiling"]["Detail"] = "Full"
 k["Profiling"]["Frequency"] = 0.5
 

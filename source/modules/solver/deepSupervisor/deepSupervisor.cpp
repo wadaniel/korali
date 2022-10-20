@@ -88,12 +88,12 @@ void DeepSupervisor::initialize()
   // If the hyperparameters have not been specified, produce new initial ones
   if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
 
-  // Initialize optimizer
-  if (_k->_currentGeneration > 1)
+  // Initialize optimizer if can not be loaded
+  if ( _k->_currentGeneration < _k->_fileOutputFrequency )
   {
     // Configuring neural network's inputs
     knlohmann::json optimizerConfig;
-    optimizerConfig["Type"] = _neuralNetworkOptimizer;
+    optimizerConfig["Type"] = "deepSupervisor/optimizers/"+_neuralNetworkOptimizer;
     optimizerConfig["N Vars"] = _hyperparameters.size();
 
     _optimizer = dynamic_cast<korali::fGradientBasedOptimizer *>(korali::Module::getModule(optimizerConfig, _k));

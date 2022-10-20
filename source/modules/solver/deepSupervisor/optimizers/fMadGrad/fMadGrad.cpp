@@ -88,15 +88,6 @@ void fMadGrad::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Momentum");
  }
 
- if (isDefined(js, "Epsilon"))
- {
- try { _epsilon = js["Epsilon"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ fMadGrad ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
-   eraseValue(js, "Epsilon");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by fMadGrad.\n"); 
-
  fGradientBasedOptimizer::setConfiguration(js);
  _type = "deepSupervisor/optimizers/fMadGrad";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
@@ -107,7 +98,6 @@ void fMadGrad::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Epsilon"] = _epsilon;
    js["Initial Value"] = _initialValue;
    js["s"] = _s;
    js["v"] = _v;
@@ -119,7 +109,7 @@ void fMadGrad::getConfiguration(knlohmann::json& js)
 void fMadGrad::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Epsilon\": 1e-08, \"Eta\": 0.001, \"Momentum\": 0.9}";
+ std::string defaultString = "{\"Eta\": 0.001, \"Momentum\": 0.9}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  fGradientBasedOptimizer::applyModuleDefaults(js);

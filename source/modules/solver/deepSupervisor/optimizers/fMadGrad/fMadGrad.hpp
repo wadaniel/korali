@@ -25,10 +25,6 @@ class fMadGrad : public fGradientBasedOptimizer
 {
   public: 
   /**
-  * @brief Term to guard agains numerical instability.
-  */
-   float _epsilon;
-  /**
   * @brief [Internal Use] Intitial value x0, currently set to 0.
   */
    std::vector<float> _initialValue;

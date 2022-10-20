@@ -9,14 +9,14 @@ RUNNAME=$1
 TASK=$2
 
 # number of agents
-NAGENTS=4
+NAGENTS=100
 
 # number of workers
 NWORKER=64
 # NWORKER=1
 
 # number of nodes per worker
-NRANKS=2
+NRANKS=1
 # NRANKS=9
 
 # number of cores per worker

@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "modules/solver/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/deepSupervisor/optimizers/fAdam/fAdam.hpp"
+#include "modules/solver/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 
 namespace korali
 {
@@ -79,7 +79,6 @@ class fAdaBelief : public fGradientBasedOptimizer
   */
   void applyVariableDefaults() override;
   
-
 
   virtual void initialize() override;
   virtual void processResult(std::vector<float> &gradient) override;

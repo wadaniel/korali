@@ -55,7 +55,6 @@ class fAdaGrad : public fGradientBasedOptimizer
   void applyVariableDefaults() override;
   
 
-
   virtual void initialize() override;
   virtual void processResult(std::vector<float> &gradient) override;
   virtual void reset() override;

@@ -66,7 +66,7 @@ class fGradientBasedOptimizer : public Module
    * @brief [Internal Use] Current value of parameters.
    */
   std::vector<float> _currentValue;
-  
+
   /**
    * @brief Takes a sample evaluation and its gradient and calculates the next set of parameters
    * @param gradient The gradient of the objective function at the current set of parameters

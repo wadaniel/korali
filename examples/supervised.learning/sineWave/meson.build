@@ -40,7 +40,7 @@ test('supervised.learning.sineWave.fnn.madgrad', e,
 
 e = find_program('run-ffn.py', required: true)
 test('supervised.learning.sineWave.fnn.adam', e,
-      args: [ '--optimizer', 'Adam', '--learningRate', '0.005', '--engine', 'Korali', '--maxGenerations', '30'],
+      args: [ '--optimizer', 'fAdam', '--learningRate', '0.005', '--engine', 'Korali', '--maxGenerations', '30'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

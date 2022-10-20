@@ -135,7 +135,7 @@ void fAdam::getConfiguration(knlohmann::json& js)
 void fAdam::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Epsilon\": 1e-08, \"Beta1\": 0.9, \"Beta2\": 0.999, \"Eta\": 0.001}";
+ std::string defaultString = "{\"Beta1\": 0.9, \"Beta2\": 0.999, \"Eta\": 0.001}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  fGradientBasedOptimizer::applyModuleDefaults(js);

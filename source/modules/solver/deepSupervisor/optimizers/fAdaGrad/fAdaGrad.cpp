@@ -74,7 +74,7 @@ void fAdaGrad::getConfiguration(knlohmann::json& js)
 void fAdaGrad::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Epsilon\": 1e-08, \"Eta\": 0.001}";
+ std::string defaultString = "{}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  fGradientBasedOptimizer::applyModuleDefaults(js);

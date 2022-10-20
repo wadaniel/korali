@@ -30,6 +30,15 @@ void fGradientBasedOptimizer::setConfiguration(knlohmann::json& js)
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
+ if (isDefined(js, "Epsilon"))
+ {
+ try { _epsilon = js["Epsilon"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimizers ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
+   eraseValue(js, "Epsilon");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by optimizers.\n"); 
+
  if (isDefined(js, "N Vars"))
  {
  try { _nVars = js["N Vars"].get<size_t>();
@@ -58,6 +67,7 @@ void fGradientBasedOptimizer::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
+   js["Epsilon"] = _epsilon;
    js["N Vars"] = _nVars;
    js["Eta"] = _eta;
  Module::getConfiguration(js);
@@ -66,7 +76,7 @@ void fGradientBasedOptimizer::getConfiguration(knlohmann::json& js)
 void fGradientBasedOptimizer::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"N Vars\": 0, \"Eta\": 0.0001}";
+ std::string defaultString = "{\"Epsilon\": 1e-08, \"N Vars\": 0, \"Eta\": 0.0001}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Module::applyModuleDefaults(js);

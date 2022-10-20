@@ -102,15 +102,6 @@ void fAdaBelief::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Second Central Moment");
  }
 
- if (isDefined(js, "Epsilon"))
- {
- try { _epsilon = js["Epsilon"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ fAdaBelief ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
-   eraseValue(js, "Epsilon");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by fAdaBelief.\n"); 
-
  if (isDefined(js, "Beta1"))
  {
  try { _beta1 = js["Beta1"].get<float>();
@@ -139,7 +130,6 @@ void fAdaBelief::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Epsilon"] = _epsilon;
    js["Beta1"] = _beta1;
    js["Beta2"] = _beta2;
    js["Beta1 Pow"] = _beta1Pow;

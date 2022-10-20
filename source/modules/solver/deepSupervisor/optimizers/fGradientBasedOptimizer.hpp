@@ -31,6 +31,10 @@ class fGradientBasedOptimizer : public Module
 {
   public: 
   /**
+  * @brief Term to guard agains numerical instability.
+  */
+   float _epsilon;
+  /**
   * @brief Size of variable space size(x) of f(x)
   */
    size_t _nVars;

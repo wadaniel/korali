@@ -344,6 +344,10 @@ class Agent : public Solver
   */
    float _experienceReplayOffPolicyRatio;
   /**
+  * @brief [Internal Use] Keeps a history of all off policy ratios.
+  */
+   std::vector<float> _experienceReplayOffPolicyHistory;
+  /**
   * @brief [Internal Use] Indicates the current cutoff to classify experiences as on- or off-policy 
   */
    float _experienceReplayOffPolicyCurrentCutoff;
@@ -411,6 +415,14 @@ class Agent : public Solver
   * @brief [Internal Use] Number of samples collected from background distribution.
   */
    size_t _backgroundTrajectoryCount;
+  /**
+  * @brief [Internal Use] The log probability of the demonstration batch using the latest policy.
+  */
+   std::vector<float> _demonstrationLogProbability;
+  /**
+  * @brief [Internal Use] The cumulative feature rewards of the demonstration batch.
+  */
+   std::vector<float> _demonstrationFeatureReward;
   /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */

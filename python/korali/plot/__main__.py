@@ -30,14 +30,22 @@ def main(path, test, output, plotAll=False):
   signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
   configFile = path + '/gen00000000.json'
-  if (not os.path.isfile(configFile)):
+  latestFile = path + '/genLatest.json'
+  
+  if (os.path.isfile(configFile)):
+      with open(configFile) as f:
+        js = json.load(f)
+
+  elif (os.path.isfile(latestFile)):
+      with open(latestFile) as f:
+        js = json.load(f)
+
+  else:
     print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
     exit(-1)
 
-  with open(configFile) as f:
-    js = json.load(f)
-  configRunId = js['Run ID']
 
+  configRunId = js['Run ID']
   resultFiles = [
       f for f in os.listdir(path)
       if os.path.isfile(os.path.join(path, f)) and f.startswith('gen')
@@ -55,12 +63,17 @@ def main(path, test, output, plotAll=False):
         curGen = genJs['Current Generation']
         genList[curGen] = genJs
 
-  del genList[0]
+  if len(genList) > 1:
+      del genList[0]
 
   solverName = js['Solver']['Type'].lower()
   solverDir = ""
   moduleName = ""
-
+ 
+  if ("agent" in solverName):
+   solverDir = curdir + '/AGENT'
+   moduleName = '.AGENT'
+ 
   if ("cmaes" in solverName):
    solverDir = curdir + '/HMC'
    moduleName = '.HMC'
@@ -96,7 +109,7 @@ def main(path, test, output, plotAll=False):
   if ("tmcmc" in solverName):
    solverDir = curdir + '/TMCMC'
    moduleName = '.TMCMC'
-  
+ 
   if (solverDir == ""):
    print("[Korali] Solver '{0}' does not provide support for plotting.".format(solverName))
    exit(0)

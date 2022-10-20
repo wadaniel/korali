@@ -61,8 +61,14 @@ void Agent::initialize()
   // Pre-allocate space for policies
   _policyBuffer.resize(_experienceReplayMaximumSize);
 
+  // Initialize Histories
+  _trainingRewardHistory.resize(0);
+  _experienceReplayOffPolicyHistory.resize(0);
+
   // Initialize background samples
   _backgroundTrajectoryCount = 0;
+  _demonstrationFeatureReward.resize(0);
+  _demonstrationLogProbability.resize(0);
   _statisticLogPartitionFunction.resize(0);
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
@@ -284,8 +290,9 @@ void Agent::trainingGeneration()
         const auto startTime = std::chrono::steady_clock::now(); // Profiling
 
         // Sample trajectory to replace
-        const float u = _uniformGenerator->getRandomNumber();
-        const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
+        //const float u = _uniformGenerator->getRandomNumber();
+        //const size_t bckIdx = std::floor(u * (float)(_rewardUpdateCount + 1)); // TODO: fix statistic
+        const size_t bckIdx = _backgroundTrajectoryCount % _backgroundSampleSize;
         updateBackgroundBatch(bckIdx);
         updateDemonstrationBatch(bckIdx);
 
@@ -535,7 +542,8 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     }
   }
   // replace background trajectories
-  else if (replacementIdx < _backgroundSampleSize)
+  //else if (replacementIdx < _backgroundSampleSize)
+  else
   {
     _k->_logger->logInfo("Detailed", "Replacing background trajectories (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
     const size_t expId = _terminationBuffer.size() - 1;
@@ -580,14 +588,16 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       _backgroundTrajectoryLogProbabilities[replacementIdx][replacementIdx + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
-  else
-  {
-    _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
-  }
+  //else
+  //{
+  //  _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
+  //}
 }
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
+
+  float demoLogP = 0.;
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing demonstration batch..\n");
@@ -602,30 +612,37 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
         {
           _demonstrationTrajectoryLogProbabilities[m][i + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
         }
+      demoLogP += _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount];
     }
   }
   else if (_backgroundTrajectoryCount < _backgroundSampleSize && _useFusionDistribution)
   // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with new trajectory..\n");
-    for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
+    for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
-      _demonstrationTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+      _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
+      demoLogP += _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount];
     }
   }
-  else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution)
+  //else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution)
+  else
   // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with replaced trajectory..\n");
-    for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
+    for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
-      _demonstrationTrajectoryLogProbabilities[i][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
+      _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[replacementIdx]);
+      demoLogP += _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1];
     }
   }
-  else
-  {
-    _k->_logger->logInfo("Detailed", "Skipping demonstration batch update.\n");
-  }
+
+  _k->_logger->logInfo("Detailed", "Logprogability of demo %f\n", demoLogP);
+  _demonstrationLogProbability.push_back(demoLogP);
+  //else
+  //{
+  //  _k->_logger->logInfo("Detailed", "Skipping demonstration batch update.\n");
+  //}
 }
 
 void Agent::partitionFunctionStat()
@@ -852,6 +869,7 @@ void Agent::updateRewardFunction()
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
 
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
+    float cumDemoReward = 0.;
     std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
     std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(_backgroundBatchSize + 1));
@@ -902,6 +920,7 @@ void Agent::updateRewardFunction()
       }
 
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
+      cumDemoReward += cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
       if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][0]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
@@ -913,6 +932,7 @@ void Agent::updateRewardFunction()
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
       }
     }
+    _demonstrationFeatureReward.push_back(cumDemoReward/(float) _demonstrationBatchSize);
 
     // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
     std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
@@ -1053,6 +1073,7 @@ void Agent::updateRewardFunction()
 
     // Calculate gradient of loglikelihood (contribution from partition function & background batch)
     const float invTotalBatchSize = 1. / totalBatchSize;
+    /*
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float mult = std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
@@ -1062,6 +1083,7 @@ void Agent::updateRewardFunction()
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
     }
+    */
 
     const float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
@@ -1072,7 +1094,7 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
-        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        // _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
 
         // Contribution from demonstration return
         _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
@@ -1187,6 +1209,7 @@ void Agent::attendWorker(size_t workerId)
         _trainingEnvironmentIdHistory.push_back(message["Episodes"][i]["Environment Id"].get<size_t>());
         _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
         _trainingLastReward = cumulativeReward;
+        _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);
         if (cumulativeReward > _trainingBestReward)
         {
           _trainingBestReward = cumulativeReward;
@@ -2208,6 +2231,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Experience Replay", "Off Policy", "Ratio");
  }
 
+ if (isDefined(js, "Experience Replay", "Off Policy", "History"))
+ {
+ try { _experienceReplayOffPolicyHistory = js["Experience Replay"]["Off Policy"]["History"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Replay']['Off Policy']['History']\n%s", e.what()); } 
+   eraseValue(js, "Experience Replay", "Off Policy", "History");
+ }
+
  if (isDefined(js, "Experience Replay", "Off Policy", "Current Cutoff"))
  {
  try { _experienceReplayOffPolicyCurrentCutoff = js["Experience Replay"]["Off Policy"]["Current Cutoff"].get<float>();
@@ -2343,6 +2374,22 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Trajectory Count']\n%s", e.what()); } 
    eraseValue(js, "Background Trajectory Count");
+ }
+
+ if (isDefined(js, "Demonstration Log Probability"))
+ {
+ try { _demonstrationLogProbability = js["Demonstration Log Probability"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Demonstration Log Probability']\n%s", e.what()); } 
+   eraseValue(js, "Demonstration Log Probability");
+ }
+
+ if (isDefined(js, "Demonstration Feature Reward"))
+ {
+ try { _demonstrationFeatureReward = js["Demonstration Feature Reward"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Demonstration Feature Reward']\n%s", e.what()); } 
+   eraseValue(js, "Demonstration Feature Reward");
  }
 
  if (isDefined(js, "Statistic Log Partition Function"))
@@ -2829,6 +2876,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Best Policy"] = _testingBestPolicy;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
+   js["Experience Replay"]["Off Policy"]["History"] = _experienceReplayOffPolicyHistory;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;
    js["Current Learning Rate"] = _currentLearningRate;
    js["Policy Update Count"] = _policyUpdateCount;
@@ -2846,6 +2894,8 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Feature Rescaling"]["Sigmas"] = _featureRescalingSigmas;
    js["Reward Update Count"] = _rewardUpdateCount;
    js["Background Trajectory Count"] = _backgroundTrajectoryCount;
+   js["Demonstration Log Probability"] = _demonstrationLogProbability;
+   js["Demonstration Feature Reward"] = _demonstrationFeatureReward;
    js["Statistic Log Partition Function"] = _statisticLogPartitionFunction;
    js["Statistic Fusion Log Partition Function"] = _statisticFusionLogPartitionFunction;
    js["Statistic Feature Weights"] = _statisticFeatureWeights;

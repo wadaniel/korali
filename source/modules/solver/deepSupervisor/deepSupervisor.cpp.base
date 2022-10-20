@@ -32,11 +32,7 @@ void __className__::initialize()
   if (_batchConcurrency > 1) batchSizes.push_back(_problem->_trainingBatchSize / _batchConcurrency);
   if (_batchConcurrency > 1) batchSizes.push_back(_problem->_testingBatchSize / _batchConcurrency);
 
-  /*****************************************************************
-   * Setting up Neural Networks
-   *****************************************************************/
-
-  // Configuring neural network's inputs
+  // Configuring neural network
   knlohmann::json neuralNetworkConfig;
   neuralNetworkConfig["Type"] = "Neural Network";
   neuralNetworkConfig["Engine"] = _neuralNetworkEngine;
@@ -85,28 +81,25 @@ void __className__::initialize()
   _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _neuralNetwork->initialize();
 
-  /*****************************************************************
-   * Initializing NN hyperparameters
-   *****************************************************************/
-
   // If the hyperparameters have not been specified, produce new initial ones
   if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
 
-  /*****************************************************************
-   * Setting up weight and bias optimization experiment
-   *****************************************************************/
+  // Initialize optimizer
+  if( _k->_currentGeneration > 1 )
+  {
+    // Configuring neural network's inputs
+    knlohmann::json optimizerConfig;
+    optimizerConfig["Type"] = _neuralNetworkOptimizer;
+    optimizerConfig["N Vars"] = _hyperparameters.size();
 
-  if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(_hyperparameters.size());
-  if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(_hyperparameters.size());
-  if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(_hyperparameters.size());
-  if (_neuralNetworkOptimizer == "RMSProp") _optimizer = new korali::fRMSProp(_hyperparameters.size());
-  if (_neuralNetworkOptimizer == "Adagrad") _optimizer = new korali::fAdagrad(_hyperparameters.size());
+    _optimizer = dynamic_cast<korali::fGradientBasedOptimizer*>(korali::Module::getModule(optimizerConfig, _k));
+    _optimizer->applyModuleDefaults(optimizerConfig);
+    _optimizer->setConfiguration(optimizerConfig);
+    _optimizer->initialize();
+  }
 
-  // Setting hyperparameter structures in the neural network and optmizer
+  // Setting hyperparameter structures in the neural network and optimizer
   setHyperparameters(_hyperparameters);
-
-  // Resetting Optimizer
-  _optimizer->reset();
 
   // Setting current loss
   _currentLoss = 0.0f;
@@ -288,7 +281,7 @@ void __className__::runTrainingGeneration()
   if (_lossFunction == "Direct Gradient") nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 
   // Passing hyperparameter gradients through a gradient descent update
-  _optimizer->processResult(0.0f, nnHyperparameterGradients);
+  _optimizer->processResult(nnHyperparameterGradients);
 
   // Getting new set of hyperparameters from the gradient descent algorithm
   _neuralNetwork->setHyperparameters(_optimizer->_currentValue);

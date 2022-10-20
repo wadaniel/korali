@@ -85,15 +85,6 @@ void fAdam::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Second Moment");
  }
 
- if (isDefined(js, "Epsilon"))
- {
- try { _epsilon = js["Epsilon"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ fAdam ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
-   eraseValue(js, "Epsilon");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by fAdam.\n"); 
-
  if (isDefined(js, "Beta1"))
  {
  try { _beta1 = js["Beta1"].get<float>();
@@ -122,7 +113,6 @@ void fAdam::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Epsilon"] = _epsilon;
    js["Beta1"] = _beta1;
    js["Beta2"] = _beta2;
    js["Beta1 Pow"] = _beta1Pow;
@@ -135,7 +125,7 @@ void fAdam::getConfiguration(knlohmann::json& js)
 void fAdam::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Beta1\": 0.9, \"Beta2\": 0.999, \"Eta\": 0.001}";
+ std::string defaultString = "{\"Beta1\": 0.9, \"Beta2\": 0.999}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  fGradientBasedOptimizer::applyModuleDefaults(js);

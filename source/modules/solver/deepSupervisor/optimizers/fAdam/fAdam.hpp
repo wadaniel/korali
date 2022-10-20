@@ -27,10 +27,6 @@ class fAdam : public fGradientBasedOptimizer
   /**
   * @brief Term to guard agains numerical instability.
   */
-   float _epsilon;
-  /**
-  * @brief Term to guard agains numerical instability.
-  */
    float _beta1;
   /**
   * @brief Term to guard agains numerical instability.

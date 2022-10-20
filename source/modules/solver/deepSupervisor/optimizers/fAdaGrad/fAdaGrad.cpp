@@ -47,15 +47,6 @@ void fAdaGrad::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Gdiag");
  }
 
- if (isDefined(js, "Epsilon"))
- {
- try { _epsilon = js["Epsilon"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ fAdaGrad ] \n + Key:    ['Epsilon']\n%s", e.what()); } 
-   eraseValue(js, "Epsilon");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Epsilon'] required by fAdaGrad.\n"); 
-
  fGradientBasedOptimizer::setConfiguration(js);
  _type = "deepSupervisor/optimizers/fAdaGrad";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
@@ -66,7 +57,6 @@ void fAdaGrad::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Epsilon"] = _epsilon;
    js["Gdiag"] = _gdiag;
  fGradientBasedOptimizer::getConfiguration(js);
 } 

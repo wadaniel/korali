@@ -6,8 +6,10 @@ namespace korali
 
 void fAdaBelief::initialize()
 {
-  _secondCentralMoment.resize(_nVars, 0.0f);
   fGradientBasedOptimizer::initialize();
+  _firstMoment.resize(_nVars, 0.0f);
+  _secondMoment.resize(_nVars, 0.0f);
+  _secondCentralMoment.resize(_nVars, 0.0f);
   reset();
 }
 
@@ -143,7 +145,7 @@ void fAdaBelief::getConfiguration(knlohmann::json& js)
 void fAdaBelief::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{}";
+ std::string defaultString = "{\"Beta1\": 0.9, \"Beta2\": 0.999}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  fGradientBasedOptimizer::applyModuleDefaults(js);

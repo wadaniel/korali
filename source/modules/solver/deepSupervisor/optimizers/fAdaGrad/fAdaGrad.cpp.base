@@ -4,7 +4,7 @@ __startNamespace__;
 
 void __className__::initialize()
 {
-  __parentClassName__::initialize();
+  fGradientBasedOptimizer::initialize();
   _gdiag.resize(_nVars, 0.0f);
   reset();
 }

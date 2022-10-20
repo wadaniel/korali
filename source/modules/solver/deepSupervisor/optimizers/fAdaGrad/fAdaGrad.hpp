@@ -25,10 +25,6 @@ class fAdaGrad : public fGradientBasedOptimizer
 {
   public: 
   /**
-  * @brief Term to guard agains numerical instability.
-  */
-   float _epsilon;
-  /**
   * @brief [Internal Use] Digaonal sum of the outer products of the gradients diag(gg^T)
   */
    std::vector<float> _gdiag;

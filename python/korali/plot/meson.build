@@ -1,5 +1,6 @@
 # pure python sources
 python_sources = files([
+  'AGENT.py',
   'CMAES.py',
   'DEA.py',
   'LMCMAES.py',

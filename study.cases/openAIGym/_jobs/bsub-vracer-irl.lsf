@@ -15,7 +15,15 @@ module purge
 module load gcc/8.2.0 python/3.9.9 openmpi/4.0.2 gsl/2.6
 module load git-lfs
 
-python3 run-vracer-irl.py --env Hopper-v4 --run 1
+RUN=1
+EBRU=10
+ENV="Hopper-v4"
+
+python3 run-vracer-irl.py --env Hopper-v4 --ebru $EBRU --run $RUN
+python3 -m korali.plot --dir "_result_irl_${ENV}_${RUN}" --out "${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir "_result_irl_${ENV}_${RUN}" --out "irl-${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir "_result_irl_${ENV}_${RUN}" --out "firl-${ENV}_${RUN}.png" --featureReward
+
 code=$?
 
 exit $code

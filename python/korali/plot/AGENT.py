@@ -18,7 +18,7 @@ def plot(genList, **kwargs):
 
   erStartSize = data["Solver"]["Experience Replay"]["Start Size"]
   expHistory = data["Solver"]["Training"]["Experience History"]
-  offpHistory = data["Solver"]["Experience Replay"]["Off Policy"]["History"]
+  #offpHistory = data["Solver"]["Experience Replay"]["Off Policy"]["History"]
   cumExpHistory = np.cumsum(expHistory)
 
   demoFeatureRewards = data["Solver"]["Demonstration Feature Reward"]

@@ -33,6 +33,9 @@ e["Solver"]["Viability Population Size"] = 4
 e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
+
+e["Console Output"]["Verbosity"] = "Detailed"
+
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)

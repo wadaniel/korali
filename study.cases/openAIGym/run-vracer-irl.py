@@ -12,6 +12,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--rnn', help='Reward Neural Net size.', required=False, default=8, type=int)
 parser.add_argument('--ebru', help='Experiences between reward update.', required=False, default=500, type=int)
+parser.add_argument('--dbs', help='Demonstration Batch Size.', required=False, default=5, type=int)
+parser.add_argument('--bbs', help='Background Batch Size.', required=False, default=50, type=int)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()
@@ -84,14 +86,14 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Feature Rescaling"]["Enabled"] = False
+e["Solver"]["Feature Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
-e["Solver"]["Demonstration Batch Size"] = 5
-e["Solver"]["Background Batch Size"] = 50
+e["Solver"]["Demonstration Batch Size"] = args.dbs
+e["Solver"]["Background Batch Size"] = args.bbs
 e["Solver"]["Background Sample Size"] = 100
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5

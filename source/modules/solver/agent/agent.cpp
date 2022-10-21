@@ -887,7 +887,6 @@ void Agent::updateRewardFunction()
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
 
         const size_t batchSize = std::min(_rewardFunctionBatchSize, observedTrajectoryLength - t);
-#pragma omp parallel for
         for (size_t b = 0; b < batchSize; ++b)
         {
           featuresBatch[b] = {_problem->_observationsFeatures[demIdx][b]};
@@ -897,8 +896,6 @@ void Agent::updateRewardFunction()
         const auto rewards = calculateReward(featuresBatch);
 
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ \
-                                   : cumReward)
         for (size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
@@ -953,7 +950,6 @@ void Agent::updateRewardFunction()
         std::vector<std::vector<float>> backwardMultiplier(_rewardFunctionBatchSize, std::vector<float>(1, 0.));
 
         const size_t batchSize = std::min(_rewardFunctionBatchSize, backgroundTrajectoryLength - t);
-#pragma omp parallel for
         for (size_t b = 0; b < batchSize; ++b)
         {
           featuresBatch[b] = {_backgroundTrajectoryFeatures[bckIdx][b]};
@@ -963,8 +959,6 @@ void Agent::updateRewardFunction()
         const auto rewards = calculateReward(featuresBatch);
 
         // Accumulate cumulative reward
-#pragma omp parallel for reduction(+ \
-                                   : cumReward)
         for (size_t b = 0; b < batchSize; ++b)
         {
           cumReward += rewards[b];
@@ -990,17 +984,22 @@ void Agent::updateRewardFunction()
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
       if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
 
+      if(_useFusionDistribution)
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx2 = randomBackgroundIndexes[i];
         backgroundTrajectoryLogProbabilities[m][i + 1] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
         if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
       }
+      else
+      {
+        KORALI_LOG_ERROR("Not yet implemneted.");
+      }
+
     }
 
     // Calculate importance weights of background batch
     std::vector<float> backgroundBatchLogImportanceWeights(_backgroundBatchSize);
-#pragma omp parallel for
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -1012,7 +1011,6 @@ void Agent::updateRewardFunction()
 
     // Calculate importance weights of demonstration batch
     std::vector<float> demonstrationBatchLogImportanceWeights(_demonstrationBatchSize);
-#pragma omp parallel for
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
@@ -1025,8 +1023,6 @@ void Agent::updateRewardFunction()
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     float maxSquaredExp = -Inf;
-#pragma omp parallel for reduction(max \
-                                   : maxExp, maxSquaredExp)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -1034,8 +1030,6 @@ void Agent::updateRewardFunction()
       if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
 
-#pragma omp parallel for reduction(max \
-                                   : maxExp, maxSquaredExp)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -1046,8 +1040,6 @@ void Agent::updateRewardFunction()
     float sumExpNoMax = 0.0;
     float sumSquaredExpNoMax = 0.0;
 
-#pragma omp parallel for reduction(+ \
-                                   : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
@@ -1055,8 +1047,6 @@ void Agent::updateRewardFunction()
       sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
-#pragma omp parallel for reduction(+ \
-                                   : sumExpNoMax, sumSquaredExpNoMax)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
@@ -1073,36 +1063,34 @@ void Agent::updateRewardFunction()
 
     // Calculate gradient of loglikelihood (contribution from partition function & background batch)
     const float invTotalBatchSize = 1. / totalBatchSize;
-    /*
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      const float mult = std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
+      const float mult = _demonstrationBatchSize * std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
     }
-    */
 
     const float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      const float mult = std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * invTotalBatchSize;
+      const float mult = _demonstrationBatchSize * std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
-        // _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
 
         // Contribution from demonstration return
-        _maxEntropyGradient[k] += invDemoBatchSize * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        _maxEntropyGradient[k] += gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
         if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
     }
 
-    // Passing hyperparameter gradients through an ADAM update
+    // Passing hyperparameter gradients through an Adam update
     _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);
 
     // Getting new set of hyperparameters from Adam

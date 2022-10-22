@@ -28,7 +28,7 @@ option('openmp',
 
 option('onednn',
   type : 'boolean',
-  value : false,
+  value : true,
   description : 'oneDNN support',
   yield: true
 )

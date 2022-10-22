@@ -14,6 +14,7 @@ parser.add_argument('--rnn', help='Reward Neural Net size.', required=False, def
 parser.add_argument('--ebru', help='Experiences between reward update.', required=False, default=500, type=int)
 parser.add_argument('--dbs', help='Demonstration Batch Size.', required=False, default=5, type=int)
 parser.add_argument('--bbs', help='Background Batch Size.', required=False, default=50, type=int)
+parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()
@@ -140,7 +141,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 3e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
 
 ### Setting file output configuration
 

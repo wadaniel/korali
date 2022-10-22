@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #BSUB -W 24:00
 #BSUB -J vracer-irl
-#BSUB -o vracer-irl-<%%J>.out
-#BSUB -e vracer-irl-<%%J>.err
+#BSUB -o vracer-irl-%J.out
+#BSUB -e vracer-irl-%J.err
 #BSUB -n 8
 #BSUB -N wadaniel@ethz.ch
 
@@ -19,10 +19,16 @@ RUN=1
 EBRU=10
 ENV="Hopper-v4"
 
-python3 run-vracer-irl.py --env Hopper-v4 --ebru $EBRU --run $RUN
-python3 -m korali.plot --dir "_result_irl_${ENV}_${RUN}" --out "${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir "_result_irl_${ENV}_${RUN}" --out "irl-${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir "_result_irl_${ENV}_${RUN}" --out "firl-${ENV}_${RUN}.png" --featureReward
+
+python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --run ${RUN}
+
+DIR="./_result_irl_${ENV}_${RUN}/"
+
+echo ${ENV} ${RUN}, ${EBRU} > "${DIR}/run.config"
+
+python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward
 
 code=$?
 

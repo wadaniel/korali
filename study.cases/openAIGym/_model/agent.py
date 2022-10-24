@@ -11,7 +11,7 @@ def initEnvironment(e, envName, moviePath = ''):
  # Creating environment 
  
  #env = gym.make(envName, exclude_current_positions_from_observation=True)
- env = gym.make(envName)
+ env = gym.make(envName, reset_noise_scale=0.3, exclude_current_positions_from_observation=False)
  
  # Handling special cases
  
@@ -35,7 +35,7 @@ def initEnvironment(e, envName, moviePath = ''):
  e["Problem"]["Custom Settings"]["Save State"] = "False"
  
  # Getting environment variable counts
- stateVariableCount = env.observation_space.shape[0]
+ stateVariableCount = env.observation_space.shape[0] - 1
  actionVariableCount = env.action_space.shape[0]
  
  # Generating state variable index list
@@ -86,7 +86,7 @@ def environment(s, env):
    obsstates = []
    obsactions = []
   
- s["State"] = env.reset()[0].tolist()
+ s["State"] = env.reset()[0].tolist()[1:]
  step = 0
  done = False
  
@@ -107,10 +107,11 @@ def environment(s, env):
   
   # Performing the action
   action = s["Action"]
-  state, reward, done, _ = env.step(action)[:4]
+  state, reward, done = env.step(action)[:3]
+  print(state)
   
   # Getting Reward
-  s[:4]["Reward"] = reward
+  s["Reward"] = reward
   
   # Printing step information
   #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
@@ -121,7 +122,7 @@ def environment(s, env):
       actions.append(action)
   
   # Storing New State
-  s["State"] = state.tolist()
+  s["State"] = state.tolist()[1:]
   
   # Advancing step counter
   step = step + 1

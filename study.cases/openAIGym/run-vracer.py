@@ -13,7 +13,7 @@ parser.add_argument('--dis', help='Sampling Distribution.', required=False, type
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
-parser.add_argument('--run', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--run', help='Run tag.', required=False, type=int, default = 0)
 parser.add_argument('--test', help='Run policy evaluation.', required=False, action='store_true')
 args = parser.parse_args()
 print(args)
@@ -91,7 +91,7 @@ e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment
 if args.test:
-    e["Solver"]["Testing"]["Sample Ids"] = list(range(50))
+    e["Solver"]["Testing"]["Sample Ids"] = list(range(100))
     e["Problem"]["Custom Settings"]["Save State"] = "True"
     e["Problem"]["Custom Settings"]["File Name"] = f"observations_{args.env}.json"
     #e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"

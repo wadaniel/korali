@@ -2,7 +2,7 @@
 
 # Install openAI gym
 
-python3 -m pip install gym
+python3 -m pip install gym[mujoco]
 
 ##### Running Test
 

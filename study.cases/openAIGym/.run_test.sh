@@ -1,20 +1,13 @@
 #!/bin/bash
 
-###### Check if necessary python modules are installed ######
+# Install openAI gym
 
 python3 -m pip install gym
-exit_code=$?
-
-exit_code=$(( $exit_code || $? ))
-
-##### Deleting Previous Results 
-
-echo "  + Deleting previous results..."
-rm -rf _result*
-exit_code=$(( $exit_code || $? ))
 
 ##### Running Test
 
+# delete old test
+rm -rf _result_vracer_HalfCheetah-v4_-1/
+
 echo "Running ${file} ..."
-python3 run-vracer.py --env HalfCheetah-v4 --exp 1000
-exit_code=$(( $exit_code || $? ))
+python3 run-vracer.py --env HalfCheetah-v4 --exp 1000 --run -1

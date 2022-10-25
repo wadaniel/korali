@@ -15,7 +15,7 @@ def initEnvironment(e, envName, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName, exclude_current_positions_from_observation=True)
+ env = gym.make(envName, exclude_current_positions_from_observation=False)
  
  # Handling special cases
  
@@ -38,7 +38,7 @@ def initEnvironment(e, envName, moviePath = ''):
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
  
  # Getting environment variable counts
- stateVariableCount = env.observation_space.shape[0]
+ stateVariableCount = env.observation_space.shape[0] - 1
  actionVariableCount = env.action_space.shape[0]
  
  # Generating state variable index list
@@ -69,7 +69,7 @@ def agent(s, env):
   printStep = False
  
  state = env.reset()[0].tolist()
- s["State"] = state
+ s["State"] = state[1:]
  s["Features"] = state #list(state[-3:]) 
 
  step = 0
@@ -102,7 +102,7 @@ def agent(s, env):
   #if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
   
   # Storing New State
-  s["State"] = state.tolist()
+  s["State"] = state.tolist()[1:]
   
   # Advancing step counter
   step = step + 1

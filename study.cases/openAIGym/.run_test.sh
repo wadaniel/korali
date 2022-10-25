@@ -3,6 +3,7 @@
 # Install openAI gym
 
 python3 -m pip install gym[mujoco]
+python3 -m pip install cffi
 
 ##### Running Test
 

@@ -96,9 +96,9 @@ void VRACER::trainPolicy()
   // Gathering state sequences for selected minibatch
   const auto stateSequenceBatch = getMiniBatchStateSequence(miniBatch);
 
-  // Prepare stateSequenceBatch and miniBatch
-  auto _miniBatch = miniBatch;
-  auto _stateSequenceBatch = stateSequenceBatch;
+  // For "Competition", the minibatch needs to be modified, create copy
+  auto miniBatchCopy = miniBatch;
+  auto stateSequenceBatchCopy = stateSequenceBatch;
 
   // Buffer for policy info to update experience metadata
   std::vector<policy_t> policyInfoUpdateMetadata(miniBatch.size());
@@ -112,26 +112,26 @@ void VRACER::trainPolicy()
     // Disable experience sharing by splitting minibatch for competing agents
     if (_multiAgentRelationship == "Competition")
     {
-      std::vector<std::pair<size_t, size_t>> miniBatchBuffer(_miniBatchSize);
-      std::vector<std::vector<std::vector<float>>> stateSequenceBuffer(_miniBatchSize);
+      std::vector<std::pair<size_t, size_t>> miniBatchCompetition(_miniBatchSize);
+      std::vector<std::vector<std::vector<float>>> stateSequenceCompetition(_miniBatchSize);
       for (size_t i = 0; i < _miniBatchSize; i++)
       {
-        miniBatchBuffer[i] = miniBatch[i * _problem->_agentsPerEnvironment + p];
-        stateSequenceBuffer[i] = stateSequenceBatch[i * _problem->_agentsPerEnvironment + p];
+        miniBatchCompetition[i] = miniBatch[i * _problem->_agentsPerEnvironment + p];
+        stateSequenceCompetition[i] = stateSequenceBatch[i * _problem->_agentsPerEnvironment + p];
       }
-      _miniBatch = miniBatchBuffer;
-      _stateSequenceBatch = stateSequenceBuffer;
+      miniBatchCopy = miniBatchCompetition;
+      stateSequenceBatchCopy = stateSequenceCompetition;
     }
 
     // Forward NN
     std::vector<policy_t> policyInfo;
-    runPolicy(_stateSequenceBatch, policyInfo, p);
+    runPolicy(stateSequenceBatchCopy, policyInfo, p);
 
     // Using policy information to update experience's metadata
-    updateExperienceMetadata(_miniBatch, policyInfo);
+    updateExperienceMetadata(miniBatchCopy, policyInfo);
 
     // Now calculating policy gradients
-    calculatePolicyGradients(_miniBatch, p);
+    calculatePolicyGradients(miniBatchCopy, p);
 
     // Updating learning rate for critic/policy learner guided by REFER
     _criticPolicyLearner[p]->_learningRate = _currentLearningRate;
@@ -147,7 +147,7 @@ void VRACER::trainPolicy()
 
   // Correct experience metadata
   if ((numPolicies > 1) && (_multiAgentRelationship != "Competition"))
-    updateExperienceMetadata(_miniBatch, policyInfoUpdateMetadata);
+    updateExperienceMetadata(miniBatchCopy, policyInfoUpdateMetadata);
 }
 
 void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t>> &miniBatch, const size_t policyIdx)
@@ -177,7 +177,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t
     const auto &expVtbc = _retraceValueBufferContiguous[expId * numAgents + agentId];
 
     // Storage for the update gradient
-    std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize, 0.0f);
+    std::vector<float> gradientLoss(1 + _policyParameterCount, 0.0f);
 
     // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
     gradientLoss[0] = (expVtbc - stateValue);
@@ -221,7 +221,7 @@ void VRACER::calculatePolicyGradients(const std::vector<std::pair<size_t, size_t
       }
 
       // Set Gradient of Loss wrt Params
-      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+      for (size_t i = 0; i < _policyParameterCount; i++)
         gradientLoss[1 + i] = _experienceReplayOffPolicyREFERCurrentBeta[agentId] * lossOffPolicy * polGrad[i];
     }
 

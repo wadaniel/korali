@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import gym
-#import pyBulletEnvironments
 import math
 from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper
@@ -63,7 +62,7 @@ def agent(s, env):
  else:
   printStep = False
   
- s["State"] = env.reset().tolist()
+ s["State"] = env.reset()[0].tolist()
  step = 0
  done = False
 
@@ -82,7 +81,7 @@ def agent(s, env):
   
   # Performing the action
   action = s["Action"]
-  state, reward, done, _ = env.step(action)
+  state, reward, done = env.step(action)[:3]
  
   # Getting Reward
   s["Reward"] = reward

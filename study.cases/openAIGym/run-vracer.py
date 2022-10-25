@@ -9,10 +9,11 @@ from agent import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--dis', help='Sampling Distribution.', required=True)
+parser.add_argument('--dis', help='Sampling Distribution.', required=False, type=str, default="Clipped Normal")
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--run', help='Run tag.', required=False, type=int, default = 0)
 args = parser.parse_args()
 print(args)
 
@@ -25,7 +26,7 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
+resultFolder = f'_result_vracer_{args.env}_{args.run}/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment

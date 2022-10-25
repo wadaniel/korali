@@ -1,4 +1,5 @@
 #!/bin/bash
+exit #TODO: reinstantiate test (DW 25.10.2023)
 
 # Install openAI gym
 

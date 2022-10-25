@@ -77,6 +77,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 ### Setting file output configuration
 
 e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

@@ -131,9 +131,9 @@ void __className__::runTestingGeneration()
   if (_batchConcurrency > 1)
   {
     // Calculating per worker dimensions
-    size_t NW = _problem->_testingBatchSize / _batchConcurrency;
-    size_t T = _problem->_inputData[0].size();
-    size_t IC = _problem->_inputData[0][0].size();
+    const size_t NW = _problem->_testingBatchSize / _batchConcurrency;
+    const size_t T = _problem->_inputData[0].size();
+    const size_t IC = _problem->_inputData[0][0].size();
 
     // Getting current NN hyperparameters
     const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
@@ -203,10 +203,10 @@ void __className__::runTrainingGeneration()
   if (_lossFunction == "Mean Squared Error" && _batchConcurrency > 1)
   {
     // Calculating per worker dimensions
-    size_t NW = _problem->_trainingBatchSize / _batchConcurrency;
-    size_t T = _problem->_inputData[0].size();
-    size_t IC = _problem->_inputData[0][0].size();
-    size_t OC = _problem->_solutionData[0].size();
+    const size_t NW = _problem->_trainingBatchSize / _batchConcurrency;
+    const size_t T = _problem->_inputData[0].size();
+    const size_t IC = _problem->_inputData[0][0].size();
+    const size_t OC = _problem->_solutionData[0].size();
 
     // Getting current NN hyperparameters
     const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
@@ -347,23 +347,23 @@ std::vector<float> __className__::backwardGradients(const std::vector<std::vecto
 void __className__::runTrainingOnWorker(korali::Sample &sample)
 {
   // Updating hyperparameters in the worker's NN
-  auto nnHyperparameters = KORALI_GET(std::vector<float>, sample, "Hyperparameters");
+  const auto nnHyperparameters = KORALI_GET(std::vector<float>, sample, "Hyperparameters");
   _neuralNetwork->setHyperparameters(nnHyperparameters);
   sample._js.getJson().erase("Hyperparameters");
 
   // Getting input from sample
-  auto inputDataFlat = KORALI_GET(std::vector<float>, sample, "Input Data");
+  const auto inputDataFlat = KORALI_GET(std::vector<float>, sample, "Input Data");
   sample._js.getJson().erase("Input Data");
 
   // Getting solution from sample
-  auto solutionDataFlat = KORALI_GET(std::vector<float>, sample, "Solution Data");
+  const auto solutionDataFlat = KORALI_GET(std::vector<float>, sample, "Solution Data");
   sample._js.getJson().erase("Solution Data");
 
   // Getting input dimensions
-  auto inputDims = KORALI_GET(std::vector<size_t>, sample, "Input Dims");
-  size_t N = inputDims[0];
-  size_t T = inputDims[1];
-  size_t IC = inputDims[2];
+  const auto inputDims = KORALI_GET(std::vector<size_t>, sample, "Input Dims");
+  const size_t N = inputDims[0];
+  const size_t T = inputDims[1];
+  const size_t IC = inputDims[2];
   sample._js.getJson().erase("Input Dims");
 
   // De-flattening input
@@ -374,8 +374,8 @@ void __className__::runTrainingOnWorker(korali::Sample &sample)
         input[i][j][k] = inputDataFlat[i * T * IC + j * IC + k];
 
   // Getting solution dimensions
-  auto solutionDims = KORALI_GET(std::vector<size_t>, sample, "Solution Dims");
-  size_t OC = solutionDims[1];
+  const auto solutionDims = KORALI_GET(std::vector<size_t>, sample, "Solution Dims");
+  const size_t OC = solutionDims[1];
   sample._js.getJson().erase("Solution Dims");
 
   // De-flattening solution

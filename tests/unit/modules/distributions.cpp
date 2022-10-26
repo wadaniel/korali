@@ -11,6 +11,7 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/distribution/univariate/uniform/uniformratio.hpp"
 #include "modules/distribution/univariate/poisson/poisson.hpp"
 #include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"

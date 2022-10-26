@@ -23,14 +23,14 @@ def plot(genList, **kwargs):
 
   demoFeatureRewards = data["Solver"]["Demonstration Feature Reward"]
   demoLogProbabilities = data["Solver"]["Demonstration Log Probability"]
+  maxEntropyObjective = data["Solver"]["Max Entropy Objective"]
 
   fig, ax = plt.subplots(2, 2, num='Korali Results', figsize=(8, 8))
-  
-  ax[0,1].plot(cumExpHistory, offpHistory)
-
   ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoFeatureRewards), endpoint=True)
+  
+  ax[1,0].plot(cumExpHistory, offpHistory)
+  ax[0,1].plot(ex, maxEntropyObjective)
   ax[1,0].plot(ex, demoFeatureRewards)
-  ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoLogProbabilities), endpoint=True)
   ax[1,1].plot(ex, demoLogProbabilities)
 
   #plt.suptitle('AGENTDiagnostics', fontweight='bold', fontsize=12)

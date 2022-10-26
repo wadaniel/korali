@@ -69,6 +69,7 @@ void Agent::initialize()
   _backgroundTrajectoryCount = 0;
   _demonstrationFeatureReward.resize(0);
   _demonstrationLogProbability.resize(0);
+  _maxEntropyObjective.resize(0);
   _statisticLogPartitionFunction.resize(0);
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
@@ -1073,7 +1074,6 @@ void Agent::updateRewardFunction()
       }
     }
 
-    const float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
@@ -1089,6 +1089,8 @@ void Agent::updateRewardFunction()
         if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
     }
+
+    _maxEntropyGradient.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
 
     // Passing hyperparameter gradients through an Adam update
     _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);
@@ -2380,6 +2382,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Demonstration Feature Reward");
  }
 
+ if (isDefined(js, "Max Entropy Objective"))
+ {
+ try { _maxEntropyObjective = js["Max Entropy Objective"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Max Entropy Objective']\n%s", e.what()); } 
+   eraseValue(js, "Max Entropy Objective");
+ }
+
  if (isDefined(js, "Statistic Log Partition Function"))
  {
  try { _statisticLogPartitionFunction = js["Statistic Log Partition Function"].get<std::vector<std::vector<float>>>();
@@ -2884,6 +2894,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Background Trajectory Count"] = _backgroundTrajectoryCount;
    js["Demonstration Log Probability"] = _demonstrationLogProbability;
    js["Demonstration Feature Reward"] = _demonstrationFeatureReward;
+   js["Max Entropy Objective"] = _maxEntropyObjective;
    js["Statistic Log Partition Function"] = _statisticLogPartitionFunction;
    js["Statistic Fusion Log Partition Function"] = _statisticFusionLogPartitionFunction;
    js["Statistic Feature Weights"] = _statisticFeatureWeights;

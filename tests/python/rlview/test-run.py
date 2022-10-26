@@ -5,7 +5,7 @@ r = call(["python3", "-m", "korali.rlview", "--dir", "abf2d_vracer1", "--test"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "-m", "korali.rlview", "--dir", "abf2d_vracer1", "--maxObservations", "10000", "--test"])
+r = call(["python3", "-m", "korali.rlview", "--dir", "abf2d_vracer1", "--maxEpisodes", "10000", "--test"])
 if r!=0:
   exit(r)
 

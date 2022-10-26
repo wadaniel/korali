@@ -83,6 +83,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
 double _cumulativeTime;
 
 void Module::initialize() {};
+void Module::setEngine(korali::Engine* engine) {_k->_engine = engine;};
 void Module::finalize() {};
 std::string Module::getType() { return _type; };
 bool Module::checkTermination() { return false; };

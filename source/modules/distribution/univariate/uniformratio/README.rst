@@ -2,33 +2,17 @@
 Ratio of Two Uniform Distribution
 **********************************
 
-Uniform
----------
+UniformRatio
+------------
 
-The Uniform distribution has the probability density function:
+The UniformRatio distribution is the distribution of :math:`Z=X/Y`, where :math:`X` and :math:`Y` are two uniformly distributed random variables. The probability density function is:
 
 .. math::
 
-    f(x;a,b)=
+    f(z;minX,maxX,minY,maxY)=
     \begin{cases}
-    \frac{1}{b-a}\,, &  x \in [a,b]\,, \\
+        (min(maxY, maxX / z)^2 - max(minY, minX / z)^2) * C &  z \in [ minX/maxY, maxX/minY ]\,, \\
     0, & \text{otherwise,}
     \end{cases}
     
-where :math:`b` is the **upper bound** and :math:`a<b` the **lower bound**.
-
-
-Ratio of two Unifom Distributions
-----------------------------------
-
-
-The ratio of two indipendent uniform distributions (X,Y) has the following density function:
-
-.. math::
-
-    f(z;a,b,c,d)=
-    \begin{cases}
-    \frac{1}{b-a}\,, &  x \in [a,b]\,, \\
-    0, & \text{otherwise,}
-    \end{cases}
- 
+where :math:`minX` and :math:`maxX` are the bounds of the random variable X, and :math:`minY` and :math:`maxY` are the bounds of the random variable Y. :math:`C` is a normalization constant.

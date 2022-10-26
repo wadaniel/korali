@@ -11,7 +11,7 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/distribution/univariate/uniform/uniformratio.hpp"
+#include "modules/distribution/univariate/uniformratio/uniformratio.hpp"
 #include "modules/distribution/univariate/poisson/poisson.hpp"
 #include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -2726,15 +2726,15 @@ namespace
  {
   knlohmann::json distributionJs;
   Experiment e;
-  distribution::univariate::Uniform* d;
+  distribution::univariate::UniformRatio* d;
 
   // Creating distribution with an incorrect name
   distributionJs["Type"] = "Distribution/Univariate/UniformRatio";
-  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Uniform *>(Module::getModule(distributionJs, &e)));
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
 
   // Creating distribution correctly now
   distributionJs["Type"] = "Univariate/Uniform/UniformRatio";
-  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Uniform *>(Module::getModule(distributionJs, &e)));
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
 
   //////////////////////////////////////////////////
 
@@ -2754,7 +2754,7 @@ namespace
 
   // Testing get configuration method
   d->getConfiguration(distributionJs);
-  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniform");
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniformratio");
   ASSERT_EQ(distributionJs["Minimum X"].get<double>(), 2.0);
   ASSERT_EQ(distributionJs["Maximum X"].get<double>(), 8.0);
   ASSERT_EQ(distributionJs["Minimum Y"].get<double>(), 1.0);

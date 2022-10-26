@@ -9,10 +9,12 @@ from agent import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-parser.add_argument('--dis', help='Sampling Distribution.', required=True)
+parser.add_argument('--dis', help='Sampling Distribution.', required=False, type=str, default="Clipped Normal")
 parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
 parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
 parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
+parser.add_argument('--exp', help='Number of experiences.', required=False, type=int, default = 1000000)
+parser.add_argument('--run', help='Run tag.', required=False, type=int, default = 0)
 args = parser.parse_args()
 print(args)
 
@@ -25,7 +27,7 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
+resultFolder = f'_result_vracer_{args.env}_{args.run}/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -76,12 +78,12 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
-e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
 e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 200
+e["File Output"]["Use Multiple Files"] = False
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

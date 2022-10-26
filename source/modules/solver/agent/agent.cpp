@@ -754,10 +754,9 @@ std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
 
   // Sorting minibatch: first by expId, second by agentId
   // to quickly detect duplicates when updating metadata
-  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> &exp0, const std::pair<size_t, size_t> &exp1) -> bool
-            {
-              return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second;
-            });
+  std::sort(miniBatch.begin(), miniBatch.end(), [numAgents](const std::pair<size_t, size_t> &exp0, const std::pair<size_t, size_t> &exp1) -> bool {
+    return exp0.first * numAgents + exp0.second < exp1.first * numAgents + exp1.second;
+  });
 
   // Returning generated minibatch
   return miniBatch;

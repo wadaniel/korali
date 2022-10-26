@@ -930,6 +930,8 @@ void Agent::updateRewardFunction()
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
       }
     }
+
+    // Record history of feature reward of demonstrations
     _demonstrationFeatureReward.push_back(cumDemoReward/(float) _demonstrationBatchSize);
 
     // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
@@ -1090,7 +1092,8 @@ void Agent::updateRewardFunction()
       }
     }
 
-    _maxEntropyGradient.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
+    // Record history of max entropy objective
+    _maxEntropyObjective.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
 
     // Passing hyperparameter gradients through an Adam update
     _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);

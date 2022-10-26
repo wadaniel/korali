@@ -28,7 +28,7 @@ def plot(genList, **kwargs):
   fig, ax = plt.subplots(2, 2, num='Korali Results', figsize=(8, 8))
   ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoFeatureRewards), endpoint=True)
   
-  ax[1,0].plot(cumExpHistory, offpHistory)
+  ax[0,0].plot(cumExpHistory, offpHistory)
   ax[0,1].plot(ex, maxEntropyObjective)
   ax[1,0].plot(ex, demoFeatureRewards)
   ax[1,1].plot(ex, demoLogProbabilities)

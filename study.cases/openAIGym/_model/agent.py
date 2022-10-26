@@ -108,7 +108,6 @@ def environment(s, env):
   # Performing the action
   action = s["Action"]
   state, reward, done = env.step(action)[:3]
-  print(state)
   
   # Getting Reward
   s["Reward"] = reward

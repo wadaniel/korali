@@ -2721,6 +2721,266 @@ namespace
   EXPECT_EQ(d->getLogDensityGradient( 5.0 ), 0.0);
   EXPECT_EQ(d->getLogDensityHessian( 5.0 ), 0.0);
  }
+ 
+ TEST(Distrtibutions, UniformRatioDistribution)
+ {
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::Uniform* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/UniformRatio";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Uniform *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/Uniform/UniformRatio";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Uniform *>(Module::getModule(distributionJs, &e)));
+
+  //////////////////////////////////////////////////
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
+  auto baseJs = distributionJs;
+
+  // Testing correct shape
+  distributionJs["Minimum X"] = 2.0;
+  distributionJs["Maximum X"] = 8.0;
+  distributionJs["Minimum Y"] = 1.0;
+  distributionJs["Maximum Y"] = 9.0;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniform");
+  ASSERT_EQ(distributionJs["Minimum X"].get<double>(), 2.0);
+  ASSERT_EQ(distributionJs["Maximum X"].get<double>(), 8.0);
+  ASSERT_EQ(distributionJs["Minimum Y"].get<double>(), 1.0);
+  ASSERT_EQ(distributionJs["Maximum Y"].get<double>(), 9.0);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Minimum X") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum X") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Minimum Y") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum Y") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect minimum/maximum
+  d->_minimumX = 16.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_ANY_THROW(d->getRandomNumber());
+
+  // Testing correct minimum/maximum
+  d->_minimumX = 2.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_NO_THROW(d->getRandomNumber());
+
+  /////////////////////////////////////////////////
+
+  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+  for(float i = 0.; i < 10; i += 0.25)
+      printf("ratio %f: %f\n"), d->getDensity( i );
+
+
+  for(float i = 0.; i < 10; i += 0.25)
+      printf("log ratio %f: %f\n"), d->getLogDensity( i );
+
+  // Testing expected density
+  /*
+  EXPECT_NEAR(d->getDensity( 0 ), 0 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.50 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.00000001 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.00 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.00 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.00 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.00 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.00 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.20 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.30 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.40 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.50 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.60 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.80 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.90 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.0000000001 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.10 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.20 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.30 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.40 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.50 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.60 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.70 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.80 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.90 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.00 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.10 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.20 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.30 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.40 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.50 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.60 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.70 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.80 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.90 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 10.00 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+
+  // Testing expected log density
+
+  EXPECT_EQ(d->getLogDensity( 0.00 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.10 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.20 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.30 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.40 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.50 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.60 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.70 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.80 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.90 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.00 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.10 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.20 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.30 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.40 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.50 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.60 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.70 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.80 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 1.90 ), -INFINITY);
+  EXPECT_NEAR(d->getLogDensity( 2.000000001 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.00 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.00 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.00 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.00 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.00 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.10 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.20 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.30 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.40 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.50 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.60 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.70 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.80 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.90 ), -1.791759469 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_EQ(d->getLogDensity( 8.00000001 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.10 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.20 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.30 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.40 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.50 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.60 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.70 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.80 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 8.90 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.00 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.10 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.20 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.30 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.40 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.50 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.60 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.70 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.80 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9.90 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 10.00 ), -INFINITY);
+  */
+
+ }
+
 
  TEST(Distrtibutions, WeibullDistribution)
   {

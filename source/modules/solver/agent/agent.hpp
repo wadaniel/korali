@@ -424,6 +424,10 @@ class Agent : public Solver
   */
    std::vector<float> _demonstrationFeatureReward;
   /**
+  * @brief [Internal Use] The history of the max entropy objective.
+  */
+   std::vector<float> _maxEntropyObjective;
+  /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */
    std::vector<std::vector<float>> _statisticLogPartitionFunction;

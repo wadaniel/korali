@@ -65,6 +65,7 @@ void __className__::initialize()
   _backgroundTrajectoryCount = 0;
   _demonstrationFeatureReward.resize(0);
   _demonstrationLogProbability.resize(0);
+  _maxEntropyObjective.resize(0);
   _statisticLogPartitionFunction.resize(0);
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
@@ -1069,7 +1070,6 @@ void __className__::updateRewardFunction()
       }
     }
 
-    const float invDemoBatchSize = 1. / _demonstrationBatchSize;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
@@ -1085,6 +1085,8 @@ void __className__::updateRewardFunction()
         if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
     }
+
+    _maxEntropyGradient.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
 
     // Passing hyperparameter gradients through an Adam update
     _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);

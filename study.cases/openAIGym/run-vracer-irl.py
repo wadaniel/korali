@@ -22,9 +22,8 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-
-#obsfile = f"observations_{args.env}.json"
-obsfile = f"observations_position_{args.env}.json"
+excludePositions = True
+obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:
@@ -39,7 +38,7 @@ for trajectory, actions in zip(rawstates, obsactions):
     states = []
     features = []
     for idx in range(len(trajectory)):
-        states.append(list(trajectory[idx][1:]))
+        states.append(list(trajectory[idx])) if excludePositions else states.append(list(trajectory[idx][1:]))
         features.append(list(trajectory[idx]))
 
     obsstates.append(list(states))
@@ -63,7 +62,7 @@ e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
 
-initEnvironment(e, args.env)
+initEnvironment(e, args.env, excludePositions)
 
 ### IRL variables
 

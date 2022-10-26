@@ -2733,7 +2733,7 @@ namespace
   ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
 
   // Creating distribution correctly now
-  distributionJs["Type"] = "Univariate/Uniform/UniformRatio";
+  distributionJs["Type"] = "Univariate/UniformRatio/UniformRatio";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
 
   //////////////////////////////////////////////////

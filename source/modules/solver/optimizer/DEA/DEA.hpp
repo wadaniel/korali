@@ -32,31 +32,31 @@ class DEA : public Optimizer
 {
   private:
   /**
-  * @brief Mutate a sample.
-  * @param sampleIdx Index of sample to be mutated.
- */
+   * @brief Mutate a sample.
+   * @param sampleIdx Index of sample to be mutated.
+   */
   void mutateSingle(size_t sampleIdx);
 
   /**
-  * @brief Fix sample params that are outside of domain.
-  * @param sampleIdx Index of sample that is outside of domain.
- */
+   * @brief Fix sample params that are outside of domain.
+   * @param sampleIdx Index of sample that is outside of domain.
+   */
   void fixInfeasible(size_t sampleIdx);
 
   /**
-  * @brief Update the state of Differential Evolution
-  * @param samples Sample evaluations.
- */
+   * @brief Update the state of Differential Evolution
+   * @param samples Sample evaluations.
+   */
   void updateSolver(std::vector<Sample> &samples);
 
   /**
-  * @brief Create new set of candidates.
- */
+   * @brief Create new set of candidates.
+   */
   void initSamples();
 
   /**
-  * @brief Mutate samples and distribute them.
- */
+   * @brief Mutate samples and distribute them.
+   */
   void prepareGeneration();
 
   public: 
@@ -137,17 +137,9 @@ class DEA : public Optimizer
   */
    std::vector<double> _maxDistances;
   /**
-  * @brief [Internal Use] Keeps count of infeasible samples so far.
-  */
-   size_t _infeasibleSampleCount;
-  /**
   * @brief [Internal Use] Minimum step size of any variable in the current generation.
   */
    double _currentMinimumStepSize;
-  /**
-  * @brief [Termination Criteria] Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False).
-  */
-   size_t _maxInfeasibleResamplings;
   /**
   * @brief [Termination Criteria] Specifies the target fitness to stop minimization.
   */
@@ -185,28 +177,28 @@ class DEA : public Optimizer
   
 
   /**
- * @brief Configures Differential Evolution/
- */
+   * @brief Configures Differential Evolution/
+   */
   void setInitialConfiguration() override;
 
   /**
- * @brief Executes sampling & evaluation generation.
- */
+   * @brief Executes sampling & evaluation generation.
+   */
   void runGeneration() override;
 
   /**
- * @brief Console Output before generation runs.
- */
+   * @brief Console Output before generation runs.
+   */
   void printGenerationBefore() override;
 
   /**
- * @brief Console output after generation.
- */
+   * @brief Console output after generation.
+   */
   void printGenerationAfter() override;
 
   /**
- * @brief Final console output at termination.
- */
+   * @brief Final console output at termination.
+   */
   void finalize() override;
 };
 

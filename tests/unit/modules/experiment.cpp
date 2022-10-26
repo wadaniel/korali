@@ -36,8 +36,6 @@ namespace
   e->_isFinished = false;
   ASSERT_NO_THROW(e->initialize());
 
-  ASSERT_ANY_THROW(e->getEvaluation({{{}}}));
-
   expJs = backJs;
   expJs.erase("Variables");
   ASSERT_NO_THROW(e->setConfiguration(expJs));
@@ -192,6 +190,27 @@ namespace
   e->initialize();
   expJs.erase("Variables");
   ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs["File Output"].erase("Use Multiple Files");
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs["File Output"]["Use Multiple Files"] = "Not a Number";
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs["File Output"]["Use Multiple Files"] = true;
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_NO_THROW(e->setConfiguration(expJs));
 
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));

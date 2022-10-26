@@ -144,7 +144,7 @@ void Output::forwardData(const size_t t)
 #endif
 
   // Performing postprocessing
-#pragma omp parallel for simd
+#pragma omp parallel for
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {

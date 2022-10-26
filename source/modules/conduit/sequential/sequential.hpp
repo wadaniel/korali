@@ -55,16 +55,16 @@ class Sequential : public Conduit
   
 
   /**
-  * @brief User-Level thread (coroutine) containing the CPU execution state of the single worker.
-  */
+   * @brief User-Level thread (coroutine) containing the CPU execution state of the single worker.
+   */
   cothread_t _workerThread;
 
   /**
-  * @brief Queue of messages sent from the engine to the worker
-  */
+   * @brief Queue of messages sent from the engine to the worker
+   */
   std::queue<knlohmann::json> _workerMessageQueue;
 
-  bool isRoot() override;
+  bool isRoot() const override;
   void initServer() override;
   void initialize() override;
   void terminateServer() override;
@@ -77,7 +77,8 @@ class Sequential : public Conduit
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;
   void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
-  size_t getProcessId() override;
+  size_t getProcessId() const override;
+  size_t getWorkerCount() const override;
 };
 
 } //conduit

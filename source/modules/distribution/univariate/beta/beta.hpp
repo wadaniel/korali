@@ -30,19 +30,19 @@ class Beta : public Univariate
   private:
   public: 
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] Shape parameter of the beta distribution.
   */
    double _alpha;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] Shape parameter of the beta distribution.
   */
    std::string _alphaConditional;
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] Shape parameter of the beta distribution.
   */
    double _beta;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] Shape parameter of the beta distribution.
   */
    std::string _betaConditional;
   
@@ -75,42 +75,42 @@ class Beta : public Univariate
   
 
   /*
-  * @brief Updates distribution with new parameter (here shape alpha and beta).
-  */
+   * @brief Updates distribution with new parameter (here shape alpha and beta).
+   */
   void updateDistribution() override;
 
   /**
- * @brief Gets the probability density of the distribution at point x.
- * @param x point to evaluate P(x)
- * @return Value of the probability density.
- */
+   * @brief Gets the probability density of the distribution at point x.
+   * @param x point to evaluate P(x)
+   * @return Value of the probability density.
+   */
   double getDensity(const double x) const override;
 
   /**
- * @brief Gets the Log probability density of the distribution at point x.
- * @param x point to evaluate log(P(x))
- * @return Log of probability density.
- */
+   * @brief Gets the Log probability density of the distribution at point x.
+   * @param x point to evaluate log(P(x))
+   * @return Log of probability density.
+   */
   double getLogDensity(double x) const override;
 
   /**
- * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
- * @param x point to evaluate grad(log(P(x)))
- * @return Gradient of log of probability density.
- */
+   * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
+   * @param x point to evaluate grad(log(P(x)))
+   * @return Gradient of log of probability density.
+   */
   double getLogDensityGradient(double x) const override;
 
   /**
- * @brief Gets the second derivative of the log probability density of the distribution wrt. to x.
- * @param x point to evaluate H(log(P(x)))
- * @return Hessian of log of probability density.
- */
+   * @brief Gets the second derivative of the log probability density of the distribution wrt. to x.
+   * @param x point to evaluate H(log(P(x)))
+   * @return Hessian of log of probability density.
+   */
   double getLogDensityHessian(double x) const override;
 
   /**
-  * @brief Draws and returns a random number from the distribution.
-  * @return Random real number.
-  */
+   * @brief Draws and returns a random number from the distribution.
+   * @return Random real number.
+   */
   double getRandomNumber() override;
 };
 

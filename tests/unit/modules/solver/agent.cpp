@@ -5,6 +5,7 @@
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #include "modules/solver/agent/discrete/dVRACER/dVRACER.hpp"
+#include "modules/conduit/sequential/sequential.hpp"
 
 namespace korali
 {
@@ -13,6 +14,7 @@ namespace korali
   extern Sample *__currentSample;
   extern size_t __envFunctionId;
   extern solver::Agent *_agent;
+  extern Conduit* _conduit;
   extern cothread_t _envThread;
   extern size_t _launchId;
   extern void __environmentWrapper();
@@ -28,6 +30,7 @@ namespace
  using namespace korali::solver::agent::discrete;
  using namespace korali::problem;
  using namespace korali::problem::reinforcementLearning;
+ using namespace korali::conduit;
 
 
  //////////////// Base Agent CLASS ////////////////////////
@@ -49,16 +52,18 @@ namespace
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   reinforcementLearning::Continuous* pC;
   knlohmann::json problemRefJs;
+
   problemRefJs["Type"] = "Reinforcement Learning / Continuous";
   problemRefJs["Environment Function"] = [](Sample &s){};
-  problemRefJs["Training Reward Threshold"] = 50.0;
-  problemRefJs["Policy Testing Episodes"] = 20;
+
   e["Variables"][0]["Name"] = "State0";
   e["Variables"][1]["Name"] = "Action0";
   e["Variables"][1]["Type"] = "Action";
   e["Variables"][1]["Initial Exploration Noise"] = 0.45;
   e["Variables"][1]["Lower Bound"] = 0.00;
   e["Variables"][1]["Upper Bound"] = 1.00;
+
+  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
 
   Variable vState;
   vState._name = "State0";
@@ -75,10 +80,21 @@ namespace
   e._variables.push_back(&vAction);
 
   ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
-  e._problem = pC;
-  pC->initialize();
 
-  // Using a neural network solver (deep learning) for inference
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pC->applyModuleDefaults(problemRefJs));
+
+  // Covering variable functions (no effect)
+  ASSERT_NO_THROW(pC->applyVariableDefaults());
+
+  // Setting up problem correctly
+  ASSERT_NO_THROW(pC->setConfiguration(problemRefJs));
+
+  // Intitialize problem
+  e._problem = pC;
+  ASSERT_NO_THROW(pC->initialize());
+
+  // Using a agent solver
 
   agentJs["Type"] = "Agent / Continuous / VRACER";
   agentJs["Mode"] = "Training";
@@ -112,7 +128,7 @@ namespace
   auto baseOptJs = agentJs;
   auto baseExpJs = experimentJs;
 
-//   // Setting up optimizer correctly
+  // Setting up optimizer correctly
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
@@ -137,93 +153,57 @@ namespace
 
   // Case testing with testing best curPolicy empty
   a->_mode = "Testing";
+  a->_testingSampleIds = std::vector<size_t>();
   ASSERT_ANY_THROW(a->initialize()); // No sample ids defined
-
-  a->_testingSampleIds = std::vector<size_t>({1});
-  a->_trainingCurrentPolicy = std::vector<float>({1.0});
-  a->_testingBestPolicy = std::vector<float>();
-  ASSERT_NO_THROW(a->initialize());
-  ASSERT_EQ(a->_testingPolicy, a->_trainingCurrentPolicy);
 
   // Testing Process Episode corner cases
   knlohmann::json episode;
-  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Sample Id"] = 0;
+  episode["Experiences"][0]["State"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][0]["Termination"] = "Terminal";
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
-
-  // No state value provided error
-  episode["Experiences"][0]["Policy"].erase("State Value");
-  ASSERT_ANY_THROW(a->processEpisode(0, episode));
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
-
-  // Reward adjusted due to out of bounds action
-  a->_rewardOutboundPenalizationEnabled = true;
-  a->_rewardOutboundPenalizationFactor = 0.5f;
-  episode["Experiences"][0]["Reward"] = 1.0f;
-  episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
-  a->_rewardVector.clear();
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
-  ASSERT_EQ(a->_rewardVector[0], 0.5f);
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
+  ASSERT_NO_THROW(a->processEpisode(episode));
 
   // Correct handling of truncated state
   episode["Experiences"][0]["Termination"] = "Truncated";
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
-
-  // Correct handling of truncated state
-  episode["Experiences"][0]["Termination"] = "Truncated";
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
-  ASSERT_ANY_THROW(a->processEpisode(0, episode));
-  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Truncated State"] = std::vector<std::vector<float>>({{0.0f}});
+  ASSERT_NO_THROW(a->processEpisode(episode));
 
   // Check truncated state sequence for sequences > 1
-  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Experiences"][0]["State"]  = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][0]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][0]["Termination"] = "Non Terminal";
-  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
-  episode["Experiences"][1]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][1]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][1]["Reward"] = 1.0f;
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
+
+  episode["Experiences"][1]["State"]  = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][1]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][1]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][1]["Termination"] = "Non Terminal";
-  episode["Experiences"][1]["Policy"]["State Value"] = 1.0;
-  episode["Experiences"][2]["State"] = std::vector<float>({0.0f});
-  episode["Experiences"][2]["Action"] = std::vector<float>({0.0f});
-  episode["Experiences"][2]["Reward"] = 1.0f;
+  episode["Experiences"][1]["Policy"]["State Value"] = std::vector<float>({1.0f});
+
+  episode["Experiences"][2]["State"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][2]["Action"] = std::vector<std::vector<float>>({{0.0f}});
+  episode["Experiences"][2]["Reward"] = std::vector<float>({1.0f});
   episode["Experiences"][2]["Termination"] = "Truncated";
-  episode["Experiences"][2]["Policy"]["State Value"] = 1.0;
-  episode["Experiences"][2]["Truncated State"] = std::vector<float>({0.0f});
-  a->processEpisode(0, episode);
-  ASSERT_NO_THROW(a->processEpisode(0, episode));
+  episode["Experiences"][2]["Policy"]["State Value"] = std::vector<float>({1.0f});
+  episode["Experiences"][2]["Truncated State"] = std::vector<std::vector<float>>({{0.0f}});
+
+  ASSERT_NO_THROW(a->processEpisode(episode));
   a->_timeSequenceLength = 2;
-  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationVector.size()-1));
+  ASSERT_NO_THROW(a->getTruncatedStateSequence(a->_terminationBuffer.size()-1,0));
 
   // Triggering bad path in serialization routine
   e._fileOutputPath = "/dev/null/\%*Incorrect Path*";
   ASSERT_ANY_THROW(a->serializeExperienceReplay());
   ASSERT_ANY_THROW(a->deserializeExperienceReplay());
 
-  // Some specific printing cases
-  a->_mode = "Training";
-  a->_maxEpisodes = 0;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_maxEpisodes = 1;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_maxExperiences = 0;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_maxExperiences = 1;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_maxPolicyUpdates = 0;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_maxPolicyUpdates = 1;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = -korali::Inf;
-  ASSERT_NO_THROW(a->printGenerationAfter());
-  a->_testingTargetAverageReward = 1.0;
-  ASSERT_NO_THROW(a->printGenerationAfter());
+  // No state value provided error
+  episode["Experiences"][0]["Policy"].erase("State Value");
+  ASSERT_ANY_THROW(a->processEpisode(episode));
+  episode["Experiences"][0]["Policy"]["State Value"] = std::vector<float>({1.0f});
 
   // Testing optional parameters
   agentJs = baseOptJs;
@@ -243,7 +223,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Action Upper Bounds"] = std::vector<float>({0.0});
+  agentJs["Action Upper Bounds"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -263,7 +243,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Training"]["Reward History"] = std::vector<float>({1.0});
+  agentJs["Training"]["Reward History"] = std::vector<std::vector<float>>({{1.0}});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -283,7 +263,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Training"]["Average Reward"] = 1.0;
+  agentJs["Training"]["Average Reward"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -293,7 +273,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Training"]["Last Reward"] = 1.0;
+  agentJs["Training"]["Last Reward"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -303,7 +283,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Training"]["Best Reward"] = 1.0;
+  agentJs["Training"]["Best Reward"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -313,7 +293,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Training"]["Best Episode Id"] = 1;
+  agentJs["Training"]["Best Episode Id"] = std::vector<size_t>({1});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -328,13 +308,18 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Best Reward"] = "Not a Number";
+  agentJs["Testing"]["Best Episode Id"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
+  
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Best Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+  agentJs["Testing"]["Candidate Count"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+  
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Best Reward"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -343,69 +328,19 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Worst Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Best Episode Id"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Best Episode Id"] = 1;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Candidate Count"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Candidate Count"] = 1;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
   agentJs["Testing"]["Average Reward"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
+ 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Average Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Stdev Reward"] = "Not a Number";
+  agentJs["Testing"]["Average Reward History"] = "Not a Vector";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Stdev Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Previous Average Reward"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Previous Average Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Testing"]["Best Average Reward"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Best Average Reward"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
+  
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Experience Replay"]["Off Policy"]["Count"] = "Not a Number";
@@ -413,7 +348,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"]["Count"] = 1;
+  agentJs["Experience Replay"]["Off Policy"]["Count"] = std::vector<size_t>({1});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -423,7 +358,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"]["Ratio"] = 1.0;
+  agentJs["Experience Replay"]["Off Policy"]["Ratio"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -458,16 +393,6 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Current Sample ID"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Current Sample ID"] = 1;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
   agentJs["Experience Count"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -476,16 +401,6 @@ namespace
   agentJs["Experience Count"] = 1;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Sigma"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Rescaling"]["Sigma"] = 1.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
- 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["Reward"]["Rescaling"]["Sum Squared Rewards"] = "Not a Number";
@@ -498,12 +413,12 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Count"] = "Not a Number";
+  agentJs["Reward"]["Rescaling"]["Sigma"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Count"] = 1;
+  agentJs["Reward"]["Rescaling"]["Sigma"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -513,7 +428,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["State Rescaling"]["Means"] = std::vector<float>({1.0});
+  agentJs["State Rescaling"]["Means"] = std::vector<std::vector<float>>({{1.0}});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -523,14 +438,14 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["State Rescaling"]["Sigmas"] = std::vector<float>({1.0});
+  agentJs["State Rescaling"]["Sigmas"] = std::vector<std::vector<float>>({{1.0}});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   // Testing mandatory parameters
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Mode");
+  ASSERT_NO_THROW(agentJs.erase("Mode"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -545,46 +460,22 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"].erase("Sample Ids");
+  ASSERT_NO_THROW(agentJs.erase("Concurrent Workers"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Sample Ids"] = "Not a Number";
+  agentJs["Concurrent Workers"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Sample Ids"] = std::vector<size_t>({0});
+  agentJs["Concurrent Workers"] = 1;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"].erase("Policy");
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Testing"]["Policy"] = std::vector<size_t>({0});
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs.erase("Concurrent Environments");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Concurrent Environments"] = 1;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs.erase("Episodes Per Generation");
+  ASSERT_NO_THROW(agentJs.erase("Episodes Per Generation"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -599,7 +490,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Mini Batch"].erase("Size");
+  ASSERT_NO_THROW(agentJs["Mini Batch"].erase("Size"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -614,27 +505,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Mini Batch"].erase("Strategy");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = 1;
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = "Unknown";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Mini Batch"]["Strategy"] = "Uniform";
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs.erase("Time Sequence Length");
+  ASSERT_NO_THROW(agentJs.erase("Time Sequence Length"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -649,7 +520,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Learning Rate");
+  ASSERT_NO_THROW(agentJs.erase("Learning Rate"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -661,10 +532,25 @@ namespace
   experimentJs = baseExpJs;
   agentJs["Learning Rate"] = 1.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+ 
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  ASSERT_NO_THROW(agentJs.erase("Importance Weight Truncation Level"));
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["L2 Regularization"].erase("Enabled");
+  agentJs["Importance Weight Truncation Level"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Importance Weight Truncation Level"] = 1.0;
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  ASSERT_NO_THROW(agentJs["L2 Regularization"].erase("Enabled"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -679,7 +565,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["L2 Regularization"].erase("Importance");
+  ASSERT_NO_THROW(agentJs["L2 Regularization"].erase("Importance"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -694,7 +580,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Neural Network"].erase("Hidden Layers");
+  ASSERT_NO_THROW(agentJs["Neural Network"].erase("Hidden Layers"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -704,7 +590,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Neural Network"].erase("Optimizer");
+  ASSERT_NO_THROW(agentJs["Neural Network"].erase("Optimizer"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -719,7 +605,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Neural Network"].erase("Engine");
+  ASSERT_NO_THROW(agentJs["Neural Network"].erase("Engine"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -734,7 +620,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Discount Factor");
+  ASSERT_NO_THROW(agentJs.erase("Discount Factor"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -749,7 +635,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"].erase("Serialize");
+  ASSERT_NO_THROW(agentJs["Experience Replay"].erase("Serialize"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -764,7 +650,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"].erase("Start Size");
+  ASSERT_NO_THROW(agentJs["Experience Replay"].erase("Start Size"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -779,7 +665,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"].erase("Maximum Size");
+  ASSERT_NO_THROW(agentJs["Experience Replay"].erase("Maximum Size"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -794,7 +680,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"].erase("Cutoff Scale");
+  ASSERT_NO_THROW(agentJs["Experience Replay"]["Off Policy"].erase("Cutoff Scale"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -809,7 +695,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"].erase("Target");
+  ASSERT_NO_THROW(agentJs["Experience Replay"]["Off Policy"].erase("Target"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -824,7 +710,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"].erase("Annealing Rate");
+  ASSERT_NO_THROW(agentJs["Experience Replay"]["Off Policy"].erase("Annealing Rate"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -839,7 +725,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Experience Replay"]["Off Policy"].erase("REFER Beta");
+  ASSERT_NO_THROW(agentJs["Experience Replay"]["Off Policy"].erase("REFER Beta"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -869,7 +755,7 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["State Rescaling"].erase("Enabled");
+  ASSERT_NO_THROW(agentJs["State Rescaling"].erase("Enabled"));
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -880,36 +766,6 @@ namespace
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
   agentJs["State Rescaling"]["Enabled"] = true;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"].erase("Enabled");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Enabled"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Enabled"] = true;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"].erase("Factor");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Factor"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Reward"]["Outbound Penalization"]["Factor"] = 2.0;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -929,12 +785,17 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"].erase("Policy");
+  agentJs["Testing"].erase("Sample Ids");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Testing"]["Policy"] = knlohmann::json();
+  agentJs["Testing"]["Sample Ids"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["Testing"]["Sample Ids"] = std::vector<size_t>({0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
@@ -984,36 +845,6 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"].erase("Target Average Reward");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"]["Target Average Reward"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"]["Target Average Reward"]  = 200.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"].erase("Average Reward Increment");
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"]["Average Reward Increment"] = "Not a Number";
-  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
-  agentJs["Termination Criteria"]["Testing"]["Average Reward Increment"]  = 200.0;
-  ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-  agentJs = baseOptJs;
-  experimentJs = baseExpJs;
   agentJs["Termination Criteria"].erase("Max Policy Updates");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -1049,14 +880,6 @@ namespace
   a->_experienceCount = 5;
   ASSERT_FALSE(a->checkTermination());
 
-  // Checking average reward increment termination
-  a->_mode = "Training";
-  a->_testingAverageRewardIncrement  = 10.0;
-  a->_testingPreviousAverageReward  = 20.0;
-  ASSERT_TRUE(a->checkTermination());
-  a->_testingPreviousAverageReward  = 5.0;
-  ASSERT_FALSE(a->checkTermination());
-
   // Checking curPolicy update termination
   a->_mode = "Training";
   a->_maxPolicyUpdates   = 10;
@@ -1087,8 +910,7 @@ namespace
    knlohmann::json problemRefJs;
    problemRefJs["Type"] = "Reinforcement Learning / Continuous";
    problemRefJs["Environment Function"] = [](Sample &s){};
-   problemRefJs["Training Reward Threshold"] = 50.0;
-   problemRefJs["Policy Testing Episodes"] = 20;
+
    e["Variables"][0]["Name"] = "State0";
    e["Variables"][1]["Name"] = "Action0";
    e["Variables"][1]["Type"] = "Action";
@@ -1112,7 +934,7 @@ namespace
 
    ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
    e._problem = pC;
-   pC->initialize();
+   ASSERT_NO_THROW(pC->initialize());
 
    // Using a neural network solver (deep learning) for inference
 
@@ -1154,26 +976,48 @@ namespace
    a->_normalGenerator->applyModuleDefaults(normalDistroJs);
    a->_normalGenerator->setConfiguration(normalDistroJs);
 
+   // Creating uniform generator
+   knlohmann::json uniformDistroJs;
+   uniformDistroJs["Type"] = "Univariate/Uniform";
+   uniformDistroJs["Minimum"] = -1.0;
+   uniformDistroJs["Maximum"] = +1.0;
+   a->_uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+   a->_uniformGenerator->applyVariableDefaults();
+   a->_uniformGenerator->applyModuleDefaults(uniformDistroJs);
+   a->_uniformGenerator->setConfiguration(uniformDistroJs);
+
    // Backup the correct base configuration
    auto baseOptJs = agentJs;
    auto baseExpJs = experimentJs;
 
    // Testing distribution corner cases
-   policy_t curPolicy;
-   policy_t prevPolicy;
-   curPolicy.distributionParameters = std::vector<float>({0.0, 1.0});
-   prevPolicy.distributionParameters = std::vector<float>({0.0, 0.5});
-   curPolicy.unboundedAction = std::vector<float>({0.1f});
-   prevPolicy.unboundedAction = std::vector<float>({0.1f});
-   auto testAction = std::vector<float>({0.1f});
+   std::vector<policy_t> curPolicy (1);
+   std::vector<policy_t> prevPolicy(1);
+   curPolicy[0].distributionParameters = std::vector<float>({0.0, 1.0});
+   prevPolicy[0].distributionParameters = std::vector<float>({0.0, 0.5});
+   curPolicy[0].unboundedAction = std::vector<float>({0.1f});
+   prevPolicy[0].unboundedAction = std::vector<float>({0.1f});
+   auto testAction = std::vector<std::vector<float>>(1,std::vector<float>({0.1f}));
 
    a->_policyDistribution = "Normal";
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
+
+   a->_policyDistribution = "Clipped Normal";
+   a->_actionLowerBounds = std::vector<float>({0.0});
+   a->_actionUpperBounds = std::vector<float>({1.0});
+   ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+
+   a->_policyDistribution = "Truncated Normal";
+   ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
 
    a->_policyDistribution = "Beta";
    a->_actionLowerBounds = std::vector<float>({-std::numeric_limits<float>::infinity()});
@@ -1187,14 +1031,14 @@ namespace
    a->_actionLowerBounds = std::vector<float>({-1.0f});
    a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   curPolicy.distributionParameters = std::vector<float>({0.5, 0.2236});
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   curPolicy[0].distributionParameters = std::vector<float>({0.5, 0.2236});
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
 
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
 
    pC->_actionVectorIndexes[0] = 1;
    e._variables[1]->_initialExplorationNoise = -1.0f;
@@ -1215,11 +1059,11 @@ namespace
    a->_actionLowerBounds = std::vector<float>({0.0f});
    a->_actionUpperBounds = std::vector<float>({1.0f});
    ASSERT_NO_THROW(a->agent::Continuous::initializeAgent());
-   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy));
-   ASSERT_NO_THROW(a->generateTestingAction(curPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->generateTrainingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->generateTestingAction(curPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testAction[0], curPolicy[0], prevPolicy[0]));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy[0], prevPolicy[0]));
 
    pC->_actionVectorIndexes[0] = 1;
    e._variables[1]->_initialExplorationNoise = -1.0f;
@@ -1331,8 +1175,7 @@ namespace
    knlohmann::json problemRefJs;
    problemRefJs["Type"] = "Reinforcement Learning / Continuous";
    problemRefJs["Environment Function"] = 0;
-   problemRefJs["Training Reward Threshold"] = 50.0;
-   problemRefJs["Policy Testing Episodes"] = 20;
+
    e["Variables"][0]["Name"] = "State0";
    e["Variables"][1]["Name"] = "Action0";
    e["Variables"][1]["Type"] = "Action";
@@ -1395,16 +1238,6 @@ namespace
    // Testing optional parameters
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
-   agentJs["Statistics"]["Average Action Sigmas"] = "Not a Number";
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Statistics"]["Average Action Sigmas"] = std::vector<float>({0.0});
-   ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
    e["Variables"][0].erase("Initial Exploration Noise");
    ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
@@ -1421,8 +1254,8 @@ namespace
    e._solver = a;
 
    Sample s;
-   auto curPolicy = a->getAgentPolicy();
-   s["Policy Hyperparameters"] = a->getAgentPolicy();
+   auto curPolicy = a->getPolicy();
+   s["Policy Hyperparameters"] = a->getPolicy();
    s["Sample Id"] = 0;
    s["State Rescaling"]["Means"] = std::vector<float>({0.0});
    s["State Rescaling"]["Standard Deviations"] = std::vector<float>({1.0});
@@ -1434,6 +1267,11 @@ namespace
      s["Termination"] = "Unknown";
    };
    _functionVector[0] = &modelFc;
+
+   // Creating conduit
+   knlohmann::json conduitJs;
+   conduitJs["Type"] = "Sequential";
+   ASSERT_NO_THROW(_conduit = dynamic_cast<Sequential *>(Module::getModule(conduitJs, NULL)));
 
    _launchId = 0;
    __envFunctionId = 0;
@@ -1479,8 +1317,7 @@ namespace
    knlohmann::json problemRefJs;
    problemRefJs["Type"] = "Reinforcement Learning / Discrete";
    problemRefJs["Environment Function"] = [](Sample &s){};
-   problemRefJs["Training Reward Threshold"] = 50.0;
-   problemRefJs["Policy Testing Episodes"] = 20;
+
    problemRefJs["Possible Actions"] = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
    e["Variables"][0]["Name"] = "State0";
    e["Variables"][1]["Name"] = "Action0";
@@ -1500,6 +1337,7 @@ namespace
    ASSERT_NO_THROW(pD = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemRefJs, &e)));
    e._problem = pD;
    pD->_possibleActions = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
+   pD->initialize();
    ASSERT_NO_THROW(pD->initialize());
 
    // Using a neural network solver (deep learning) for inference
@@ -1510,6 +1348,7 @@ namespace
    agentJs["Experiences Between Policy Updates"] = 1;
    agentJs["Discount Factor"] = 0.99;
    agentJs["Learning Rate"] = 0.0001;
+   agentJs["Importance Weight Truncation Level"] = 0.0001;
    agentJs["Mini Batch"]["Size"] = 32;
    agentJs["Experience Replay"]["Start Size"] = 1000;
    agentJs["Experience Replay"]["Maximum Size"] = 10000;
@@ -1531,42 +1370,6 @@ namespace
 
    // Covering variable functions (no effect)
    ASSERT_NO_THROW(a->applyVariableDefaults());
-
-   // Backup the correct base configuration
-   auto baseOptJs = agentJs;
-   auto baseExpJs = experimentJs;
-
-   // Testing distribution corner cases
-   policy_t curPolicy;
-   policy_t prevPolicy;
-   curPolicy.distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
-   curPolicy.actionIndex = 0;
-   prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
-   prevPolicy.actionIndex = 0;
-   size_t testActionIdx = 0;
-   auto testAction = std::vector<float>({-10.0f});
-
-   ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
-   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
-   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
-
-   // Testing mandatory parameters
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs.erase("Random Action Probability");
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Random Action Probability"] = "Not a Number";
-   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-   agentJs = baseOptJs;
-   experimentJs = baseExpJs;
-   agentJs["Random Action Probability"] = 1.0f;
-   ASSERT_NO_THROW(a->setConfiguration(agentJs));
   }
 
  TEST(a, dVRACER)
@@ -1588,9 +1391,8 @@ namespace
     knlohmann::json problemRefJs;
     problemRefJs["Type"] = "Reinforcement Learning / Discrete";
     problemRefJs["Environment Function"] = [](Sample &s){};
-    problemRefJs["Training Reward Threshold"] = 50.0;
-    problemRefJs["Policy Testing Episodes"] = 20;
     problemRefJs["Possible Actions"] = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
+
     e["Variables"][0]["Name"] = "State0";
     e["Variables"][1]["Name"] = "Action0";
     e["Variables"][1]["Type"] = "Action";
@@ -1609,7 +1411,7 @@ namespace
     ASSERT_NO_THROW(pD = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemRefJs, &e)));
     e._problem = pD;
     pD->_possibleActions = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
-    pD->initialize();
+    ASSERT_NO_THROW(pD->initialize());
 
     // Using a neural network solver (deep learning) for inference
 
@@ -1640,36 +1442,6 @@ namespace
 
     // Covering variable functions (no effect)
     ASSERT_NO_THROW(a->applyVariableDefaults());
-
-    // Backup the correct base configuration
-    auto baseOptJs = agentJs;
-    auto baseExpJs = experimentJs;
-
-    // Testing optional parameters
-    agentJs = baseOptJs;
-    experimentJs = baseExpJs;
-    agentJs["Statistics"]["Average Action Sigmas"] = "Not a Number";
-    ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-    agentJs = baseOptJs;
-    experimentJs = baseExpJs;
-    agentJs["Statistics"]["Average Action Sigmas"] = std::vector<float>({0.0});
-    ASSERT_NO_THROW(a->setConfiguration(agentJs));
-
-    agentJs = baseOptJs;
-    experimentJs = baseExpJs;
-    e["Variables"][0].erase("Initial Exploration Noise");
-    ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-    agentJs = baseOptJs;
-    experimentJs = baseExpJs;
-    e["Variables"][0]["Initial Exploration Noise"] = "Not a Number";
-    ASSERT_ANY_THROW(a->setConfiguration(agentJs));
-
-    agentJs = baseOptJs;
-    experimentJs = baseExpJs;
-    e["Variables"][0]["Initial Exploration Noise"] = 0.0f;
-    ASSERT_NO_THROW(a->setConfiguration(agentJs));
    }
 
 } // namespace

@@ -32,9 +32,13 @@ class Distributed : public Conduit
 {
   public: 
   /**
-  * @brief Specifies the number of MPI ranks per Korali worker (k).
+  * @brief Specifies the number of MPI ranks per Korali worker.
   */
    int _ranksPerWorker;
+  /**
+  * @brief Specifies the number of MPI ranks for the Korali engine.
+  */
+   int _engineRanks;
   
  
   /**
@@ -59,8 +63,8 @@ class Distributed : public Conduit
   
 
   /**
-  * @brief ID of the current rank.
-  */
+   * @brief ID of the current rank.
+   */
   int _rankId;
 
   /**
@@ -69,34 +73,29 @@ class Distributed : public Conduit
   int _rankCount;
 
   /**
-  * @brief Number of Korali Teams in execution
-  */
+   * @brief Number of Korali Teams in execution
+   */
   int _workerCount;
 
   /**
-  * @brief Signals whether the worker has been assigned a team
-  */
+   * @brief Signals whether the worker has been assigned a team
+   */
   int _workerIdSet;
 
   /**
- * @brief Local ID the rank within its Korali Worker
- */
+   * @brief Local ID the rank within its Korali Worker
+   */
   int _localRankId;
 
   /**
-  * @brief Storage that contains the rank teams for each worker
-  */
+   * @brief Storage that contains the rank teams for each worker
+   */
   std::vector<std::vector<int>> _workerTeams;
 
   /**
-  * @brief Map that indicates to which worker does the current rank correspond to
-  */
-  std::vector<int> _rankToWorkerMap;
-
-  /**
-   * @brief Checks whether the number of MPI workers satisfies the requirement
+   * @brief Map that indicates to which worker does the current rank correspond to
    */
-  void checkRankCount();
+  std::vector<int> _rankToWorkerMap;
 
   void initServer() override;
   void initialize() override;
@@ -109,14 +108,16 @@ class Distributed : public Conduit
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;
   void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
-  size_t getProcessId() override;
+  size_t getProcessId() const override;
 
   /**
-  * @brief Determines which rank is the root.
-  * @return The rank id of the root rank.
-  */
-  int getRootRank();
-  bool isRoot() override;
+   * @brief Determines which rank is the root.
+   * @return The rank id of the root rank.
+   */
+  int getRootRank() const;
+  bool isRoot() const override;
+  bool isWorkerLeadRank() const override;
+  size_t getWorkerCount() const override;
 };
 
 } //conduit

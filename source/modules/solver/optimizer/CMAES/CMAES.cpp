@@ -8,9 +8,6 @@
 #include <numeric> // std::iota
 #include <stdio.h>
 #include <unistd.h>
-//#include <gsl/gsl_vector.h>
-//#include <gsl/gsl_matrix.h>
-//#include <gsl/gsl_blas.h>
 
 namespace korali
 {
@@ -32,12 +29,12 @@ void CMAES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
-  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount)));
+  if (_populationSize == 1) KORALI_LOG_ERROR("'Population Size' must be larger 1.");
   if (_muValue == 0) _muValue = _populationSize / 2;
   if (_viabilityMuValue == 0) _viabilityMuValue = _viabilityPopulationSize / 2;
 
-  size_t s_max = std::max(_populationSize, _viabilityPopulationSize);
-  size_t mu_max = std::max(_muValue, _viabilityMuValue);
+  const size_t s_max = std::max(_populationSize, _viabilityPopulationSize);
+  const size_t mu_max = std::max(_muValue, _viabilityMuValue);
 
   _chiSquareNumber = sqrt((double)_variableCount) * (1. - 1. / (4. * _variableCount) + 1. / (21. * _variableCount * _variableCount));
   _chiSquareNumberDiscreteMutations = sqrt((double)_variableCount) * (1. - 1. / (4. * _variableCount) + 1. / (21. * _variableCount * _variableCount));
@@ -121,8 +118,9 @@ void CMAES::setInitialConfiguration()
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("'Initial Value' of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("'Initial Value' of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_lowerBound >= _k->_variables[i]->_upperBound) KORALI_LOG_ERROR("Lower bound of variable \'%s\' is not strictly smaller than upper bound.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialValue = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
@@ -130,6 +128,7 @@ void CMAES::setInitialConfiguration()
     {
       if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
       if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_lowerBound >= _k->_variables[i]->_upperBound) KORALI_LOG_ERROR("Lower bound of variable \'%s\' is not strictly smaller than upper bound.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
   }
@@ -337,7 +336,7 @@ void CMAES::checkMeanAndSetRegime()
   KORALI_WAIT(sample);
   _constraintEvaluationCount++;
 
-  auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+  const auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
     if (cEvals[c] > 0.0) return; /* mean violates constraint, do nothing */
@@ -371,7 +370,7 @@ void CMAES::updateConstraints()
     KORALI_WAIT(sample);
     _constraintEvaluationCount++;
 
-    auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+    const auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
     for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       _constraintEvaluations[c][i] = cEvals[c];
@@ -414,7 +413,7 @@ void CMAES::reEvaluateConstraints()
 
       _sampleConstraintViolationCounts[i] = 0;
 
-      auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+      const auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       {
@@ -452,7 +451,6 @@ void CMAES::prepareGeneration()
   if (_mirroredSampling == false)
     for (size_t i = 0; i < _currentPopulationSize; ++i)
     {
-      bool isFeasible;
       do
       {
         std::vector<double> rands(_variableCount);
@@ -461,11 +459,7 @@ void CMAES::prepareGeneration()
 
         if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-        isFeasible = isSampleFeasible(_samplePopulation[i]);
-
-        _infeasibleSampleCount += isFeasible ? 0 : 1;
-
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isSampleFeasible(_samplePopulation[i]) == false);
     }
   else
     for (size_t i = 0; i < _currentPopulationSize; i += 2)
@@ -490,11 +484,10 @@ void CMAES::prepareGeneration()
           discretize(_samplePopulation[i + 1]);
         }
 
-        isFeasible = isSampleFeasible(_samplePopulation[i]) && isSampleFeasible(_samplePopulation[i + 1]);
+        isFeasible = isSampleFeasible(_samplePopulation[i]);
+        isFeasible = isFeasible && isSampleFeasible(_samplePopulation[i + 1]);
 
-        if (isFeasible == false) _infeasibleSampleCount++;
-
-      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+      } while (isFeasible == false);
     }
 }
 
@@ -523,7 +516,7 @@ void CMAES::sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumb
   {
     if ((sampleIdx + 1) < _numberOfDiscreteMutations)
     {
-      double p_geom = std::pow(0.7, 1.0 / _numberMaskingMatrixEntries);
+      const double p_geom = std::pow(0.7, 1.0 / _numberMaskingMatrixEntries);
       size_t select = std::floor(_uniformGenerator->getRandomNumber() * _numberMaskingMatrixEntries);
 
       for (size_t d = 0; d < _variableCount; ++d)
@@ -543,7 +536,7 @@ void CMAES::sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumb
       for (size_t d = 0; d < _variableCount; ++d)
         if (_k->_variables[d]->_granularity != 0.0)
         {
-          double dmutation = std::round(_bestEverVariables[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity - _samplePopulation[sampleIdx][d];
+          const double dmutation = std::round(_bestEverVariables[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity - _samplePopulation[sampleIdx][d];
           _discreteMutations[sampleIdx * _variableCount + d] = dmutation;
           _samplePopulation[sampleIdx][d] += dmutation;
         }
@@ -562,7 +555,11 @@ void CMAES::updateDistribution()
   {
     _bestValidSample = -1;
     for (size_t i = 0; i < _currentPopulationSize; i++)
-      if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
+      if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0)
+      {
+        _bestValidSample = _sortingIndex[i];
+        break;
+      }
   }
 
   /* update function value history */
@@ -591,19 +588,15 @@ void CMAES::updateDistribution()
   if (_muType == "Proportional")
   {
     double valueSum = 0.;
-    double valueSquaredSum = 0.;
     for (size_t i = 0; i < _currentMuValue; ++i)
     {
       const double value = _valueVector[_sortingIndex[i]];
       _muWeights[i] = value;
       valueSum += value;
-      valueSquaredSum += value * value;
     }
 
     for (size_t i = 0; i < _currentMuValue; ++i)
       _muWeights[i] /= valueSum;
-
-    //_effectiveMu = valueSum * valueSum / valueSquaredSum;
   }
 
   /* update mean */
@@ -662,7 +655,7 @@ void CMAES::updateDistribution()
   /* calculate norm(ps) */
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
-  int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / std::sqrt(1. - std::pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
+  const int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / std::sqrt(1. - std::pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
 
   /* cumulation for covariance matrix (pc) using B*D*z~_variableCount(0,C) */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -697,9 +690,9 @@ void CMAES::updateDistribution()
 void CMAES::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
-  double ccov1 = 2.0 / (std::pow(_variableCount + 1.3, 2) + _effectiveMu);
-  double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2. + 1. / _effectiveMu) / (std::pow(_variableCount + 2.0, 2) + _effectiveMu));
-  double sigmasquare = _sigma * _sigma;
+  const double ccov1 = 2.0 / (std::pow(_variableCount + 1.3, 2) + _effectiveMu);
+  const double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2. + 1. / _effectiveMu) / (std::pow(_variableCount + 2.0, 2) + _effectiveMu));
+  const double sigmasquare = _sigma * _sigma;
 
   /* update covariance matrix */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -747,14 +740,14 @@ void CMAES::updateSigma()
   }
 
   /* escape flat evaluation */
-  if (_currentBestValue == _valueVector[_sortingIndex[_currentMuValue - 1]])
+  if (_muValue > 1 && _currentBestValue == _valueVector[_sortingIndex[_currentMuValue - 1]])
   {
     _sigma *= exp(0.2 + _sigmaCumulationFactor / _dampFactor);
     _k->_logger->logWarning("Detailed", "Sigma increased due to equal function values.\n");
   }
 
   /* upper bound check for _sigma */
-  double _upperBound = sqrt(_trace / _variableCount);
+  const double _upperBound = sqrt(_trace / _variableCount);
 
   if (_sigma > _upperBound)
   {
@@ -769,22 +762,13 @@ void CMAES::updateSigma()
 
 void CMAES::numericalErrorTreatment()
 {
-  //treat maximal standard deviations
-  //TODO
-
-  //treat minimal standard deviations
+  // treat minimal standard deviations
   for (size_t d = 0; d < _variableCount; ++d)
     if (_sigma * sqrt(_covarianceMatrix[d * _variableCount + d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
     {
       _sigma = (_k->_variables[d]->_minimumStandardDeviationUpdate) / sqrt(_covarianceMatrix[d * _variableCount + d]) * exp(0.05 + _sigmaCumulationFactor / _dampFactor);
       _k->_logger->logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
     }
-
-  //too low coordinate axis deviations
-  //TODO
-
-  //treat numerical precision provblems
-  //TODO
 }
 
 void CMAES::handleConstraints()
@@ -796,7 +780,7 @@ void CMAES::handleConstraints()
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
-        //update constraint normal
+        // update constraint normal
         for (size_t c = 0; c < _constraintEvaluations.size(); c++)
           if (_viabilityIndicator[c][i] == true)
           {
@@ -822,10 +806,7 @@ void CMAES::handleConstraints()
 
     updateEigensystem(_auxiliarCovarianceMatrix);
 
-    /* in original some stopping criterion (TOLX) */
-    // TODO
-
-    //resample invalid points
+    // resample invalid points
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
@@ -847,7 +828,7 @@ void CMAES::handleConstraints()
 
     reEvaluateConstraints();
 
-  } //while _maxConstraintViolationCount > 0
+  } // while _maxConstraintViolationCount > 0
 }
 
 void CMAES::updateDiscreteMutationMatrix()
@@ -890,8 +871,8 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
   eigen(_variableCount, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
-  double minCovEV = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  double maxCovEV = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+  const double minCovEV = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+  const double maxCovEV = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
   if (minCovEV <= 0.0)
   {
     _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", _minimumCovarianceEigenvalue);
@@ -961,9 +942,13 @@ void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sort
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
 
+  // clang-format off
   // sort indexes based on comparing values in vec
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2)
-            { return vec[i1] > vec[i2]; });
+            {
+              return vec[i1] > vec[i2];
+            });
+  // clang-format on
 }
 
 void CMAES::printGenerationBefore() { return; }
@@ -1184,22 +1169,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Current Best Variables");
  }
 
- if (isDefined(js, "Previous Best Value"))
- {
- try { _previousBestValue = js["Previous Best Value"].get<double>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Previous Best Value']\n%s", e.what()); } 
-   eraseValue(js, "Previous Best Value");
- }
-
- if (isDefined(js, "Best Sample Index"))
- {
- try { _bestSampleIndex = js["Best Sample Index"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Best Sample Index']\n%s", e.what()); } 
-   eraseValue(js, "Best Sample Index");
- }
-
  if (isDefined(js, "Previous Best Ever Value"))
  {
  try { _previousBestEverValue = js["Previous Best Ever Value"].get<double>();
@@ -1326,14 +1295,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Conjugate Evolution Path L2 Norm']\n%s", e.what()); } 
    eraseValue(js, "Conjugate Evolution Path L2 Norm");
- }
-
- if (isDefined(js, "Infeasible Sample Count"))
- {
- try { _infeasibleSampleCount = js["Infeasible Sample Count"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Infeasible Sample Count']\n%s", e.what()); } 
-   eraseValue(js, "Infeasible Sample Count");
  }
 
  if (isDefined(js, "Maximum Diagonal Covariance Matrix Element"))
@@ -1746,15 +1707,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Global Success Learning Rate'] required by CMAES.\n"); 
 
- if (isDefined(js, "Termination Criteria", "Max Infeasible Resamplings"))
- {
- try { _maxInfeasibleResamplings = js["Termination Criteria"]["Max Infeasible Resamplings"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Termination Criteria']['Max Infeasible Resamplings']\n%s", e.what()); } 
-   eraseValue(js, "Termination Criteria", "Max Infeasible Resamplings");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Termination Criteria']['Max Infeasible Resamplings'] required by CMAES.\n"); 
-
  if (isDefined(js, "Termination Criteria", "Max Condition Covariance Matrix"))
  {
  try { _maxConditionCovarianceMatrix = js["Termination Criteria"]["Max Condition Covariance Matrix"].get<double>();
@@ -1822,7 +1774,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Covariance Matrix Adaption Strength"] = _covarianceMatrixAdaptionStrength;
    js["Normal Vector Learning Rate"] = _normalVectorLearningRate;
    js["Global Success Learning Rate"] = _globalSuccessLearningRate;
-   js["Termination Criteria"]["Max Infeasible Resamplings"] = _maxInfeasibleResamplings;
    js["Termination Criteria"]["Max Condition Covariance Matrix"] = _maxConditionCovarianceMatrix;
    js["Termination Criteria"]["Min Standard Deviation"] = _minStandardDeviation;
    js["Termination Criteria"]["Max Standard Deviation"] = _maxStandardDeviation;
@@ -1845,8 +1796,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Sample Population"] = _samplePopulation;
    js["Finished Sample Count"] = _finishedSampleCount;
    js["Current Best Variables"] = _currentBestVariables;
-   js["Previous Best Value"] = _previousBestValue;
-   js["Best Sample Index"] = _bestSampleIndex;
    js["Previous Best Ever Value"] = _previousBestEverValue;
    js["Sorting Index"] = _sortingIndex;
    js["Covariance Matrix"] = _covarianceMatrix;
@@ -1863,7 +1812,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
    js["Evolution Path"] = _evolutionPath;
    js["Conjugate Evolution Path"] = _conjugateEvolutionPath;
    js["Conjugate Evolution Path L2 Norm"] = _conjugateEvolutionPathL2Norm;
-   js["Infeasible Sample Count"] = _infeasibleSampleCount;
    js["Maximum Diagonal Covariance Matrix Element"] = _maximumDiagonalCovarianceMatrixElement;
    js["Minimum Diagonal Covariance Matrix Element"] = _minimumDiagonalCovarianceMatrixElement;
    js["Maximum Covariance Eigenvalue"] = _maximumCovarianceEigenvalue;
@@ -1903,7 +1851,7 @@ void CMAES::getConfiguration(knlohmann::json& js)
 void CMAES::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Population Size\": 0, \"Mu Value\": 0, \"Mu Type\": \"Logarithmic\", \"Initial Sigma Cumulation Factor\": -1.0, \"Initial Damp Factor\": -1.0, \"Is Sigma Bounded\": false, \"Initial Cumulative Covariance\": -1.0, \"Use Gradient Information\": false, \"Gradient Step Size\": 0.01, \"Diagonal Covariance\": false, \"Mirrored Sampling\": false, \"Viability Population Size\": 2, \"Viability Mu Value\": 0, \"Max Covariance Matrix Corrections\": 1000000, \"Target Success Rate\": 0.1818, \"Covariance Matrix Adaption Strength\": 0.1, \"Normal Vector Learning Rate\": -1.0, \"Global Success Learning Rate\": 0.2, \"Termination Criteria\": {\"Max Infeasible Resamplings\": 10000, \"Max Condition Covariance Matrix\": Infinity, \"Min Standard Deviation\": -Infinity, \"Max Standard Deviation\": Infinity}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Best Ever Value\": -Infinity, \"Current Min Standard Deviation\": Infinity, \"Current Max Standard Deviation\": -Infinity, \"Minimum Covariance Eigenvalue\": Infinity, \"Maximum Covariance Eigenvalue\": -Infinity}";
+ std::string defaultString = "{\"Population Size\": 0, \"Mu Value\": 0, \"Mu Type\": \"Logarithmic\", \"Initial Sigma Cumulation Factor\": -1.0, \"Initial Damp Factor\": -1.0, \"Is Sigma Bounded\": false, \"Initial Cumulative Covariance\": -1.0, \"Use Gradient Information\": false, \"Gradient Step Size\": 0.01, \"Diagonal Covariance\": false, \"Mirrored Sampling\": false, \"Viability Population Size\": 2, \"Viability Mu Value\": 0, \"Max Covariance Matrix Corrections\": 1000000, \"Target Success Rate\": 0.1818, \"Covariance Matrix Adaption Strength\": 0.1, \"Normal Vector Learning Rate\": -1.0, \"Global Success Learning Rate\": 0.2, \"Termination Criteria\": {\"Max Condition Covariance Matrix\": Infinity, \"Min Standard Deviation\": -Infinity, \"Max Standard Deviation\": Infinity}, \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": 0.0, \"Maximum\": 1.0}, \"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Best Ever Value\": -Infinity, \"Current Min Standard Deviation\": Infinity, \"Current Max Standard Deviation\": -Infinity, \"Minimum Covariance Eigenvalue\": Infinity, \"Maximum Covariance Eigenvalue\": -Infinity}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Optimizer::applyModuleDefaults(js);
@@ -1923,12 +1871,6 @@ void CMAES::applyVariableDefaults()
 bool CMAES::checkTermination()
 {
  bool hasFinished = false;
-
- if (_k->_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings)))
- {
-  _terminationCriteria.push_back("CMAES['Max Infeasible Resamplings'] = " + std::to_string(_maxInfeasibleResamplings) + ".");
-  hasFinished = true;
- }
 
  if (_k->_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue))
  {

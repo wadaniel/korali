@@ -29,9 +29,17 @@ class ReinforcementLearning : public Problem
 {
   public: 
   /**
-  * @brief Number of agents in a given environment. All agents share the same policy .
+  * @brief Number of agents in a given environment .
   */
    size_t _agentsPerEnvironment;
+  /**
+  * @brief Number of policies in a given environment. All agents share the same policy or all have individual policy.
+  */
+   size_t _policiesPerEnvironment;
+  /**
+  * @brief Maximum number of different types of environments.
+  */
+   size_t _environmentCount;
   /**
   * @brief Function to initialize and run an episode in the environment.
   */
@@ -41,15 +49,11 @@ class ReinforcementLearning : public Problem
   */
    size_t _actionsBetweenPolicyUpdates;
   /**
-  * @brief Number of generations after which the policy will be forcibly tested (even if it does not meet the threshold).
+  * @brief Number of episodes after which the policy will be tested.
   */
    size_t _testingFrequency;
   /**
-  * @brief Minimum value of the episode's cummulative sum of rewards for a policy to be considered as candidate.
-  */
-   float _trainingRewardThreshold;
-  /**
-  * @brief Number of test episodes to run the policy (without noise) for, for which the average average sum of rewards will serve to evaluate the termination criteria.
+  * @brief Number of test episodes to run the policy (without noise) for, for which the average sum of rewards will serve to evaluate the termination criteria.
   */
    size_t _policyTestingEpisodes;
   /**
@@ -72,6 +76,10 @@ class ReinforcementLearning : public Problem
   * @brief [Internal Use] Stores the indexes of the variables that constitute the action vector.
   */
    std::vector<size_t> _stateVectorIndexes;
+  /**
+  * @brief [Internal Use] The maximum number of actions an agent can take (only relevant for discrete).
+  */
+   size_t _actionCount;
   
  
   /**
@@ -148,12 +156,12 @@ class ReinforcementLearning : public Problem
   /**
    * @brief Contains the state rescaling means
    */
-  std::vector<float> _stateRescalingMeans;
+  std::vector<std::vector<float>> _stateRescalingMeans;
 
   /**
    * @brief Contains the state rescaling sigmas
    */
-  std::vector<float> _stateRescalingSdevs;
+  std::vector<std::vector<float>> _stateRescalingSdevs;
 
   /**
    * @brief [Profiling] Stores policy evaluation time per episode
@@ -161,13 +169,13 @@ class ReinforcementLearning : public Problem
   double _agentPolicyEvaluationTime;
 
   /**
-  * @brief [Profiling] Stores environment evaluation time per episode
-  */
+   * @brief [Profiling] Stores environment evaluation time per episode
+   */
   double _agentComputationTime;
 
   /**
-  * @brief [Profiling] Stores communication time per episode
-  */
+   * @brief [Profiling] Stores communication time per episode
+   */
   double _agentCommunicationTime;
 };
 

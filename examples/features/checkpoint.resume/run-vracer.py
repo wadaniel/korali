@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../../learning/reinforcement/cartpole/_model')
+sys.path.append('../../reinforcement.learning/cartpole/_model')
 from env import *
 
 ####### Defining Korali Problem
@@ -32,9 +32,8 @@ if (found == True):
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Environment Count"] = 3
 e["Problem"]["Actions Between Policy Updates"] = 500
-e["Problem"]["Training Reward Threshold"] = 450
-e["Problem"]["Policy Testing Episodes"] = 10
 
 ### Defining State variables
 
@@ -56,11 +55,17 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
-e["Solver"]["Mini Batch"]["Size"] = 32
+e["Solver"]["Mini Batch"]["Size"] = 64
+
+### Normalization Configuration
+
+e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
+e["Solver"]["State Rescaling"]["Enabled"] = True 
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 
@@ -79,16 +84,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-### Defining Termination Criteria
-
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "_result_vracer"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 10
+e["File Output"]["Use Multiple Files"] = False
  
 ### Running Training Experiment
 

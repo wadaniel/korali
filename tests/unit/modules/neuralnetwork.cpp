@@ -203,6 +203,14 @@ namespace
    ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.4, 0.000001);
    ASSERT_NO_THROW(nn->backward({{{0.5}}}));
 
+   layer->_function = "Elementwise/Clip";
+   layer->_alpha = 0.9;
+   layer->_beta = 1.0;
+   ASSERT_NO_THROW(layer->createForwardPipeline());
+   ASSERT_NO_THROW(nn->forward({{{0.5}}}));
+   ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.9, 0.000001);
+   ASSERT_NO_THROW(nn->backward({{{0.9}}}));
+
    layer->_function = "Elementwise/Log";
    ASSERT_NO_THROW(layer->createForwardPipeline());
    ASSERT_NO_THROW(nn->forward({{{0.5}}}));
@@ -239,6 +247,14 @@ namespace
    ASSERT_NO_THROW(layer->createForwardPipeline());
    ASSERT_NO_THROW(nn->forward({{{0.5}}}));
    ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.46211715, 0.001);
+   ASSERT_NO_THROW(nn->backward({{{0.5}}}));
+ 
+   layer->_function = "Elementwise/SoftReLU";
+   layer->_alpha = 0.0;
+   layer->_beta = 0.0;
+   ASSERT_NO_THROW(layer->createForwardPipeline());
+   ASSERT_NO_THROW(nn->forward({{{0.5}}}));
+   ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.9740769842, 0.001);
    ASSERT_NO_THROW(nn->backward({{{0.5}}}));
 
    layer->_function = "Elementwise/Logistic";

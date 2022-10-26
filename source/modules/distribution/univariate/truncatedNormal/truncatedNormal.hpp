@@ -33,35 +33,35 @@ class TruncatedNormal : public Univariate
 
   public: 
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] The mean of the untruncated Normal distribution.
   */
    double _mu;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] The mean of the untruncated Normal distribution.
   */
    std::string _muConditional;
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] The standard deviation of the untruncated Normal distribution.
   */
    double _sigma;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] The standard deviation of the untruncated Normal distribution.
   */
    std::string _sigmaConditional;
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] The lower bound of the truncated Normal distribution.
   */
    double _minimum;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] The lower bound of the truncated Normal distribution.
   */
    std::string _minimumConditional;
   /**
-  * @brief [Conditional Variable Value] 
+  * @brief [Conditional Variable Value] The upper bound of the truncated Normal distribution.
   */
    double _maximum;
   /**
-  * @brief [Conditional Variable Reference] 
+  * @brief [Conditional Variable Reference] The upper bound of the truncated Normal distribution.
   */
    std::string _maximumConditional;
   
@@ -94,42 +94,42 @@ class TruncatedNormal : public Univariate
   
 
   /*
-  * @brief Updates distribution with new parameter (here upper and lower boundaries, and standard deviation of a normal distribution).
-  */
+   * @brief Updates distribution with new parameter (here upper and lower boundaries, and standard deviation of a normal distribution).
+   */
   void updateDistribution() override;
 
   /**
- * @brief Gets the probability density of the distribution at point x.
- * @param x point to evaluate P(x)
- * @return Value of the probability density.
- */
+   * @brief Gets the probability density of the distribution at point x.
+   * @param x point to evaluate P(x)
+   * @return Value of the probability density.
+   */
   double getDensity(const double x) const override;
 
   /**
- * @brief Gets the Log probability density of the distribution at point x.
- * @param x point to evaluate log(P(x))
- * @return Log of probability density.
- */
+   * @brief Gets the Log probability density of the distribution at point x.
+   * @param x point to evaluate log(P(x))
+   * @return Log of probability density.
+   */
   double getLogDensity(const double x) const override;
 
   /**
- * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
- * @param x point to evaluate grad(log(P(x)))
- * @return Gradient of log of probability density.
- */
+   * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
+   * @param x point to evaluate grad(log(P(x)))
+   * @return Gradient of log of probability density.
+   */
   double getLogDensityGradient(double x) const override;
 
   /**
- * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
- * @param x point to evaluate grad(log(P(x)))
- * @return Gradient of log of probability density.
- */
+   * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
+   * @param x point to evaluate grad(log(P(x)))
+   * @return Gradient of log of probability density.
+   */
   double getLogDensityHessian(double x) const override;
 
   /**
-  * @brief Draws and returns a random number from the distribution.
-  * @return Random real number.
-  */
+   * @brief Draws and returns a random number from the distribution.
+   * @return Random real number.
+   */
   double getRandomNumber() override;
 };
 

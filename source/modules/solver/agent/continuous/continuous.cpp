@@ -17,9 +17,13 @@ void Continuous::initializeAgent()
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
+  // Only relevant for discrete
+  _problem->_actionCount = 0;
+
   // Obtaining action shift and scales for bounded distributions
   _actionShifts.resize(_problem->_actionVectorSize);
   _actionScales.resize(_problem->_actionVectorSize);
+
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     // For bounded distributions, infinite bounds should result in an error message
@@ -41,7 +45,6 @@ void Continuous::initializeAgent()
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mus and Sigmas
 
-    // Allocating space for the required transformations
     _policyParameterTransformationMasks.resize(_policyParameterCount);
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
@@ -49,29 +52,27 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];
-      float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+      const auto varIdx = _problem->_actionVectorIndexes[i];
+      const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
       if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
       // Identity mask for Means
+      _policyParameterTransformationMasks[i] = "Identity";
       _policyParameterScaling[i] = 1.0; //_actionScales[i];
       _policyParameterShifting[i] = _actionShifts[i];
-      _policyParameterTransformationMasks[i] = "Identity";
 
       // Softplus mask for Sigmas
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus"; // f(x) = 0.5 * (x + std::sqrt(1. + x * x));
       _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
-      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus";
     }
   }
 
   if (_policyDistribution == "Beta")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Mu and Variance
-
-    // Allocating space for the required transformations
     _policyParameterTransformationMasks.resize(_policyParameterCount);
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
@@ -79,7 +80,7 @@ void Continuous::initializeAgent()
     // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      auto varIdx = _problem->_actionVectorIndexes[i];
+      const size_t varIdx = _problem->_actionVectorIndexes[i];
       const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
@@ -101,42 +102,53 @@ void Continuous::initializeAgent()
 void Continuous::getAction(korali::Sample &sample)
 {
   // Get action for all the agents in the environment
-  for (size_t i = 0; i < sample["State"].size(); i++)
+  for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
   {
     // Getting current state
+
     auto state = sample["State"][i];
 
     // Adding state to the state time sequence
-    _stateTimeSequence.add(state);
+    _stateTimeSequence[i].add(state);
 
     // Storage for the action to select
     std::vector<float> action(_problem->_actionVectorSize);
 
     // Forward state sequence to get the Gaussian means and sigmas from policy
-    auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+    // in case of multiple polices it runs the i-th policy otherwise standard
+    std::vector<policy_t> policy;
+    if (_problem->_policiesPerEnvironment == 1)
+      runPolicy({_stateTimeSequence[i].getVector()}, policy);
+    else
+      runPolicy({_stateTimeSequence[i].getVector()}, policy, i);
 
     /*****************************************************************************
-   * During Training we select action according to policy's probability
-   * distribution
-   ****************************************************************************/
+     * During Training we select action according to policy's probability
+     * distribution
+     ****************************************************************************/
 
-    if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
-
-    /*****************************************************************************
-   * During testing, we select the means (point of highest density) for all
-   * elements of the action vector
-   ****************************************************************************/
-
-    if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
+    if (sample["Mode"] == "Training") action = generateTrainingAction(policy[0]);
 
     /*****************************************************************************
-   * Storing the action and its policy
-   ****************************************************************************/
+     * During testing, we select the modes for all
+     * elements of the action vector
+     ****************************************************************************/
 
-    sample["Policy"][i]["Distribution Parameters"] = policy.distributionParameters;
-    sample["Policy"][i]["State Value"] = policy.stateValue;
-    sample["Policy"][i]["Unbounded Action"] = policy.unboundedAction;
+    if (sample["Mode"] == "Testing") action = generateTestingAction(policy[0]);
+
+    /*****************************************************************************
+     * Storing the action and its policy
+     ****************************************************************************/
+
+    // Check action
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      if (std::isfinite(action[j]) == false) KORALI_LOG_ERROR("Agent %lu action %lu returned an invalid value: %f\n", i, j, action[j]);
+
+    // Write action to sample
     sample["Action"][i] = action;
+    sample["Policy"]["State Value"][i] = policy[0].stateValue;
+    sample["Policy"]["Unbounded Action"][i] = policy[0].unboundedAction;
+    sample["Policy"]["Distribution Parameters"][i] = policy[0].distributionParameters;
   }
 }
 
@@ -397,7 +409,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (std::isfinite(logImportanceWeight) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
 
   // Calculating actual importance weight by exp
-  const float importanceWeight = std::exp(logImportanceWeight);
+  const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
   return importanceWeight;
 }
@@ -405,7 +417,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   // Storage for importance weight gradients
-  std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.);
+  std::vector<float> importanceWeightGradients(_policyParameterCount, 0.);
 
   if (_policyDistribution == "Normal")
   {
@@ -438,8 +450,8 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
     }
 
-    float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    float importanceWeight = std::exp(logImportanceWeight);
+    const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) importanceWeightGradients[i] *= importanceWeight;
@@ -460,10 +472,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
       const float unboundedAction = oldPolicy.unboundedAction[i];
 
-      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
-      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
-
       // Deviation from expAction and current Mean
       const float curActionDif = unboundedAction - curMu;
 
@@ -477,12 +485,12 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.0f / curSigma;
 
       // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMu, curSigma);
-      logpOldPolicy += normalLogDensity(oldPolicy.unboundedAction[i], oldMu, oldSigma);
+      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
+      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -557,10 +565,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
-    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+    for (size_t i = 0; i < _policyParameterCount; i++)
       importanceWeightGradients[i] *= importanceWeight;
   }
 
@@ -643,7 +651,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-    const float importanceWeight = std::exp(logImportanceWeight);
+    const float importanceWeight = std::exp(logImportanceWeight); // TODO: reuse importance weight calculation from updateExperienceReplayMetadata
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -707,7 +715,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
 {
   // Storage for KL Divergence Gradients
-  std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
+  std::vector<float> KLDivergenceGradients(_policyParameterCount, 0.0);
 
   if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
@@ -953,14 +961,6 @@ void Continuous::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Action Scales");
  }
 
- if (isDefined(js, "Policy", "Parameter Count"))
- {
- try { _policyParameterCount = js["Policy"]["Parameter Count"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ continuous ] \n + Key:    ['Policy']['Parameter Count']\n%s", e.what()); } 
-   eraseValue(js, "Policy", "Parameter Count");
- }
-
  if (isDefined(js, "Policy", "Parameter Transformation Masks"))
  {
  try { _policyParameterTransformationMasks = js["Policy"]["Parameter Transformation Masks"].get<std::vector<std::string>>();
@@ -1020,7 +1020,6 @@ void Continuous::getConfiguration(knlohmann::json& js)
  if(_normalGenerator != NULL) _normalGenerator->getConfiguration(js["Normal Generator"]);
    js["Action Shifts"] = _actionShifts;
    js["Action Scales"] = _actionScales;
-   js["Policy"]["Parameter Count"] = _policyParameterCount;
    js["Policy"]["Parameter Transformation Masks"] = _policyParameterTransformationMasks;
    js["Policy"]["Parameter Scaling"] = _policyParameterScaling;
    js["Policy"]["Parameter Shifting"] = _policyParameterShifting;

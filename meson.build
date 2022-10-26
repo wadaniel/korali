@@ -1,6 +1,6 @@
 project('korali', ['c', 'cpp'],
   version: '3.0.0',
-  license: 'GPL-3.0-only', # or also later?
+  license: 'MIT', # or also later?
   default_options: [
     'cpp_std=c++17',
     'b_ndebug=if-release',
@@ -164,6 +164,7 @@ subdir('python/korali')
 # tests
 if get_option('test')
   nomalloc = environment({'MALLOC_PERTURB_': '0'})
-  subdir('tests')
   subdir('examples')
+  subdir('study.cases')
+  subdir('tests')
 endif

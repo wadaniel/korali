@@ -219,6 +219,7 @@ namespace
   Variable v;
   v._distributionIndex = 0;
   e._variables.push_back(&v);
+  e["Solver"]["Type"] = "DeepSupervisor";
   e["Variables"][0]["Name"] = "Var 1";
   e["Variables"][0]["Initial Mean"] = 0.0;
   e["Variables"][0]["Initial Standard Deviation"] = 0.25;
@@ -232,16 +233,15 @@ namespace
   problemJs["Type"] = "Supervised Learning";
   problemJs["Max Timesteps"] = 1;
   problemJs["Training Batch Size"] = 1;
-  problemJs["Inference Batch Size"] = 1;
+  problemJs["Testing Batch Size"] = 1;
 
   problemJs["Input"]["Data"] = std::vector<std::vector<std::vector<float>>>({{{0.0}}});
   problemJs["Input"]["Size"] = 1;
   problemJs["Solution"]["Data"] = std::vector<std::vector<float>>({{0.0}});
   problemJs["Solution"]["Size"] = 1;
 
-  e["Solver"]["Type"] = "Learner/DeepSupervisor";
-
   ASSERT_NO_THROW(pObj = dynamic_cast<SupervisedLearning *>(Module::getModule(problemJs, &e)));
+ 
   e._problem = pObj;
 
   // Defaults should be applied without a problem
@@ -254,6 +254,16 @@ namespace
   auto baseProbJs = problemJs;
   auto baseExpJs = experimentJs;
 
+  e["Solver"]["Type"] = "Agent";
+  
+  // Testing wrong solver
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+ 
+  e["Solver"]["Type"] = "DeepSupervisor";
+  
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  
   // Testing correct configuration
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
@@ -289,17 +299,17 @@ namespace
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
-  problemJs.erase("Inference Batch Size");
+  problemJs.erase("Testing Batch Size");
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
-  problemJs["Inference Batch Size"] = "Not a Number";
+  problemJs["Testing Batch Size"] = "Not a Number";
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
-  problemJs["Inference Batch Size"] = 1;
+  problemJs["Testing Batch Size"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
@@ -377,7 +387,7 @@ namespace
   problemJs["Solution"]["Size"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
-
+ 
  TEST(Problem, Sampling)
  {
   // Creating base experiment
@@ -682,229 +692,6 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   e["Variables"][0]["Sampled Values"] = std::vector<double>();
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
- }
-
- TEST(Problem, Integration)
- {
-  // Creating base experiment
-  Experiment e;
-  auto& experimentJs = e._js.getJson();
-
-  knlohmann::json uniformDistroJs;
-  uniformDistroJs["Type"] = "Univariate/Uniform";
-  uniformDistroJs["Minimum"] = 0.0;
-  uniformDistroJs["Maximum"] = 1.0;
-  auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
-  uniformGenerator->applyVariableDefaults();
-  uniformGenerator->applyModuleDefaults(uniformDistroJs);
-  uniformGenerator->setConfiguration(uniformDistroJs);
-  e._distributions.push_back(uniformGenerator);
-  e._distributions[0]->_name = "Uniform";
-
-  // Creating initial variable
-  Variable v;
-  v._precomputedValues = std::vector<double>({0.0});
-  e._variables.push_back(&v);
-
-  // Integrand function
-  std::function<void(korali::Sample&)> modelFc = [](Sample& s) { s["Evaluation"] = 1.0; };
-
-  // Configuring Problem
-  Integration* pObj;
-  knlohmann::json problemJs;
-  problemJs["Type"] = "Integration";
-  problemJs["Integrand"] = modelFc;
-  problemJs["Integration Method"] = "Rectangle";
-  e["Solver"]["Type"] = "Integrator";
-
-  e["Variables"][0]["Name"] = "Var X";
-  e["Variables"][0]["Number Of Gridpoints"] = 10;
-  e["Variables"][0]["Sampling Distribution"] = "Uniform";
-  e["Variables"][0]["Lower Bound"] = 0.0;
-  e["Variables"][0]["Upper Bound"] = 1.0;
-  e["Variables"][0]["Sample Points"] = std::vector<double>({ 0.0, 0.1, 0.2, 0.3 });
-  e["Variables"][0]["Quadrature Weights"] = std::vector<double>({ 0.0, 0.1, 0.2, 0.3 });
-
-  ASSERT_NO_THROW(pObj = dynamic_cast<Integration *>(Module::getModule(problemJs, &e)));
-  e._problem = pObj;
-
-  // Defaults should be applied without a problem
-  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
-
-  // Covering variable functions (no effect)
-  pObj->applyVariableDefaults();
-  ASSERT_NO_THROW(pObj->applyVariableDefaults());
-
-  // Trying to run unknown operation
-  Sample s;
-  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
-
-  // Backup the correct base configuration
-  auto baseProbJs = problemJs;
-  auto baseExpJs = experimentJs;
-
-  // Testing correct configuration
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  // Testing unrecognized solver
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Solver"]["Type"] = "";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  // Testing initialization
-  ASSERT_NO_THROW(pObj->initialize());
-
-  // Testing fail cases
-  pObj->_integrationMethod = "Monte Carlo";
-  e._variables[0]->_samplingDistribution = "Unknown";
-  ASSERT_ANY_THROW(pObj->initialize());
-
-  pObj->_integrationMethod = "Custom";
-  e._variables[0]->_samplingDistribution = "";
-  e._variables[0]->_quadratureWeights = std::vector<double>({});
-  e._variables[0]->_samplePoints = std::vector<double>({0.0});
-  ASSERT_ANY_THROW(pObj->initialize());
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs.erase("Integrand");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Integrand"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Integrand"] = 1;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs.erase("Integration Method");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Integration Method"] = 1.0;
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Integration Method"] = "Unknown";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Integration Method"] = "Rectangle";
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Lower Bound");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Lower Bound"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Lower Bound"] = 1.0;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Upper Bound");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Upper Bound"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Upper Bound"] = 1.0;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Number Of Gridpoints");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Number Of Gridpoints"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Number Of Gridpoints"] = 1;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Sampling Distribution");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Sampling Distribution"] = 1.0;
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Sampling Distribution"] = "Uniform";
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Distribution Index");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Distribution Index"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Distribution Index"] = 1;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Sample Points");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Sample Points"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Sample Points"] = std::vector<double>({});
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0].erase("Quadrature Weights");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Quadrature Weights"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  e["Variables"][0]["Quadrature Weights"] = std::vector<double>({});
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 
@@ -1531,9 +1318,9 @@ namespace
   v._precomputedValues = std::vector<double>({0.0});
   e._variables.push_back(&v);
   e["Solver"]["Type"] = "Sampler/TMCMC";
-  e["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
-  e["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
-  e["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+  e["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.0});
   e["Variables"][0]["Name"] = "Var X";
   e["Variables"][0]["Prior Distribution"] = "Uniform";
 
@@ -1592,13 +1379,13 @@ namespace
 
   pObj->_subExperiments[0]["Variables"][0]["Name"] = "Var X";
   pObj->_subExperiments[0]["Variables"][0]["Prior Distribution"] = "Uniform";
-  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  pObj->_subExperiments[0]["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
-  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+  pObj->_subExperiments[0]["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.0});
 
-  pObj->_subExperiments[0]["Solver"].erase("Sample LogPrior Database");
+  pObj->_subExperiments[0]["Results"].erase("Posterior Sample LogPrior Database");
   ASSERT_ANY_THROW(pObj->initialize());
-  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+  pObj->_subExperiments[0]["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.0});
 
   pObj->_subExperiments[0]["Is Finished"] = false;
   ASSERT_ANY_THROW(pObj->initialize());
@@ -1686,9 +1473,9 @@ namespace
   v._precomputedValues = std::vector<double>({0.0});
   e._variables.push_back(&v);
   e["Solver"]["Type"] = "Sampler/TMCMC";
-  e["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
-  e["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
-  e["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+  e["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.0});
   e["Variables"][0]["Name"] = "Var X";
   e["Variables"][0]["Prior Distribution"] = "Uniform";
 
@@ -1708,38 +1495,38 @@ namespace
   psiExp["Solver"]["Burn In"] = 3;
   psiExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   psiExp["Solver"]["Covariance Scaling"] = 0.01;
-  psiExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
-  psiExp["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.1});
-  psiExp["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.1});
+  psiExp["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.1}});
+  psiExp["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.1});
+  psiExp["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.1});
   psiExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
 
-  knlohmann::json thetaExp;
-  thetaExp["Is Finished"] = true;
-  thetaExp["Problem"]["Type"] = "Bayesian/Reference";
-  thetaExp["Problem"]["Reference Data"] = std::vector<double>({0.0});
-  thetaExp["Problem"]["Likelihood Model"] = "Normal";
-  thetaExp["Problem"]["Computational Model"] = 0;
-  thetaExp["Variables"][0]["Name"] = "Var X";
-  thetaExp["Variables"][0]["Prior Distribution"] = "Uniform";
-  thetaExp["Distributions"][0]["Name"] = "Uniform";
-  thetaExp["Distributions"][0]["Type"] = "Univariate/Uniform";
-  thetaExp["Distributions"][0]["Minimum"] = 0.0;
-  thetaExp["Distributions"][0]["Maximum"] = 1.0;
-  thetaExp["Solver"]["Type"] = "Sampler/TMCMC";
-  thetaExp["Solver"]["Population Size"] = 1000;
-  thetaExp["Solver"]["Burn In"] = 3;
-  thetaExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
-  thetaExp["Solver"]["Covariance Scaling"] = 0.01;
-  thetaExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
-  thetaExp["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.1});
-  thetaExp["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.1});
-  thetaExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
+  knlohmann::json subExp;
+  subExp["Is Finished"] = true;
+  subExp["Problem"]["Type"] = "Bayesian/Reference";
+  subExp["Problem"]["Reference Data"] = std::vector<double>({0.0});
+  subExp["Problem"]["Likelihood Model"] = "Normal";
+  subExp["Problem"]["Computational Model"] = 0;
+  subExp["Variables"][0]["Name"] = "Var X";
+  subExp["Variables"][0]["Prior Distribution"] = "Uniform";
+  subExp["Distributions"][0]["Name"] = "Uniform";
+  subExp["Distributions"][0]["Type"] = "Univariate/Uniform";
+  subExp["Distributions"][0]["Minimum"] = 0.0;
+  subExp["Distributions"][0]["Maximum"] = 1.0;
+  subExp["Solver"]["Type"] = "Sampler/TMCMC";
+  subExp["Solver"]["Population Size"] = 1000;
+  subExp["Solver"]["Burn In"] = 3;
+  subExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
+  subExp["Solver"]["Covariance Scaling"] = 0.01;
+  subExp["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.1}});
+  subExp["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.1});
+  subExp["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.1});
+  subExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
 
   // Configuring Problem
   Theta* pObj;
   knlohmann::json problemJs;
   problemJs["Type"] = "Hierarchical/Theta";
-  problemJs["Theta Experiment"] = thetaExp;
+  problemJs["Sub Experiment"] = subExp;
   problemJs["Psi Experiment"] = psiExp;
 
   ASSERT_NO_THROW(pObj = dynamic_cast<Theta *>(Module::getModule(problemJs, &e)));
@@ -1770,7 +1557,7 @@ namespace
 
   // Testing initialization
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
+  pObj->_subExperiment = subExp;
   ASSERT_NO_THROW(pObj->initialize());
 
   knlohmann::json optExp;
@@ -1782,7 +1569,7 @@ namespace
   optExp["Solver"]["Type"] = "Optimizer/CMAES";
   optExp["Solver"]["Population Size"] = 16;
   pObj->_psiExperiment = optExp;
-  pObj->_thetaExperiment = thetaExp;
+  pObj->_subExperiment = subExp;
   ASSERT_ANY_THROW(pObj->initialize());
 
   optExp["Variables"][0]["Name"] = "Var 1";
@@ -1793,47 +1580,47 @@ namespace
   optExp["Solver"]["Type"] = "Optimizer/CMAES";
   optExp["Solver"]["Population Size"] = 16;
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = optExp;
+  pObj->_subExperiment = optExp;
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
+  pObj->_subExperiment = subExp;
   pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
-  pObj->_thetaExperiment["Is Finished"] = false;
+  pObj->_subExperiment = subExp;
+  pObj->_subExperiment["Is Finished"] = false;
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
+  pObj->_subExperiment = subExp;
   pObj->_psiExperiment["Problem"]["Type"] = "Sampling";
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
+  pObj->_subExperiment = subExp;
   pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<double>({});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
-  pObj->_psiExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  pObj->_subExperiment = subExp;
+  pObj->_psiExperiment["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
-  pObj->_thetaExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  pObj->_subExperiment = subExp;
+  pObj->_subExperiment["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
-  problemJs.erase("Theta Experiment");
+  problemJs.erase("Sub Experiment");
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
-  problemJs["Theta Experiment"] = std::vector<knlohmann::json>();
+  problemJs["Sub Experiment"] = std::vector<knlohmann::json>();
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
@@ -1869,9 +1656,9 @@ namespace
   v._precomputedValues = std::vector<double>({0.0});
   e._variables.push_back(&v);
   e["Solver"]["Type"] = "Sampler/TMCMC";
-  e["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
-  e["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
-  e["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+  e["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.0});
+  e["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.0});
   e["Variables"][0]["Name"] = "Var X";
   e["Variables"][0]["Prior Distribution"] = "Uniform";
 
@@ -1891,9 +1678,9 @@ namespace
   psiExp["Solver"]["Burn In"] = 3;
   psiExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
   psiExp["Solver"]["Covariance Scaling"] = 0.01;
-  psiExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
-  psiExp["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.1});
-  psiExp["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.1});
+  psiExp["Results"]["Posterior Sample Database"] = std::vector<std::vector<double>>({{0.1}});
+  psiExp["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({0.1});
+  psiExp["Results"]["Posterior Sample LogLikelihood Database"] = std::vector<double>({0.1});
   psiExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
 
   // Configuring Problem
@@ -1955,7 +1742,7 @@ namespace
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_psiExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  pObj->_psiExperiment["Results"]["Posterior Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
@@ -2002,8 +1789,6 @@ namespace
   knlohmann::json problemJs;
   problemJs["Type"] = "Reinforcement Learning / Discrete";
   problemJs["Environment Function"] = 0;
-  problemJs["Training Reward Threshold"] = 50.0;
-  problemJs["Policy Testing Episodes"] = 20;
   problemJs["Possible Actions"] = std::vector<std::vector<float>>({{0.0}, {1.0}});
 
   ASSERT_NO_THROW(pObj = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemJs, &e)));
@@ -2084,6 +1869,21 @@ namespace
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
+  problemJs.erase("Agents Per Environment");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Agents Per Environment"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Agents Per Environment"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
   problemJs.erase("Environment Function");
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
@@ -2125,51 +1925,6 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs["Actions Between Policy Updates"] = 1;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs.erase("Testing Frequency");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Testing Frequency"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Testing Frequency"] = 1;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs.erase("Training Reward Threshold");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Training Reward Threshold"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Training Reward Threshold"] = 1.0;
-  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs.erase("Policy Testing Episodes");
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Policy Testing Episodes"] = "Not a Number";
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
-
-  problemJs = baseProbJs;
-  experimentJs = baseExpJs;
-  problemJs["Policy Testing Episodes"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
@@ -2226,6 +1981,28 @@ namespace
   experimentJs = baseExpJs;
   e["Variables"][0]["Upper Bound"] = 1.0;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing RL Testing episodes
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Testing Frequency"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Testing Frequency");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Policy Testing Episodes"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Policy Testing Episodes");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
  }
 
  TEST(Problem, ReinforcementLearningContinuous)
@@ -2257,8 +2034,6 @@ namespace
    knlohmann::json problemJs;
    problemJs["Type"] = "Reinforcement Learning / Continuous";
    problemJs["Environment Function"] = 0;
-   problemJs["Training Reward Threshold"] = 50.0;
-   problemJs["Policy Testing Episodes"] = 20;
 
    ASSERT_NO_THROW(pObj = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemJs, &e)));
    e._problem = pObj;

@@ -150,8 +150,6 @@ void Nested::setInitialConfiguration()
   {
     initEllipseVector();
   }
-
-  (*_k)["Results"]["Posterior Samples"] = {};
 }
 
 void Nested::runGeneration()
@@ -514,9 +512,13 @@ void Nested::sortLiveSamplesAscending()
   // Init sample ranks
   std::iota(_liveSamplesRank.begin(), _liveSamplesRank.end(), 0);
 
+  // clang-format off
   // Sort sample rank ascending based on likelihood and prior weight
   std::sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool
-            { return this->_liveLogPriorWeights[idx1] + this->_liveLogLikelihoods[idx1] < this->_liveLogPriorWeights[idx2] + this->_liveLogLikelihoods[idx2]; });
+            {
+              return this->_liveLogPriorWeights[idx1] + this->_liveLogLikelihoods[idx1] < this->_liveLogPriorWeights[idx2] + this->_liveLogLikelihoods[idx2];
+            });
+  // clang-format on
 }
 
 void Nested::updateDeadSamples(size_t sampleIdx)
@@ -610,9 +612,9 @@ void Nested::generatePosterior()
     }
   }
 
-  (*_k)["Results"]["Posterior Samples Database"] = posteriorSamples;
-  (*_k)["Results"]["Posterior Samples LogPrior Database"] = posteriorSamplesLogPriorDatabase;
-  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = posteriorSamplesLogLikelihoodDatabase;
+  (*_k)["Results"]["Posterior Sample Database"] = posteriorSamples;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = posteriorSamplesLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = posteriorSamplesLogLikelihoodDatabase;
 }
 
 double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const
@@ -832,8 +834,8 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _variableCount, _variableCount);
 
   /* On output the diagonal and lower triangular part of the
-     * input matrix A contain the matrix L, while the upper triangular part
-     * contains the original matrix. */
+   * input matrix A contain the matrix L, while the upper triangular part
+   * contains the original matrix. */
 
   gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
 
@@ -1023,6 +1025,7 @@ void Nested::finalize()
   if (_k->_currentGeneration <= 1) return;
   if (_addLivePoints == true) consumeLiveSamples();
 
+  (*_k)["Results"]["LogEvidence"] = _logEvidence;
   generatePosterior();
 
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, std::sqrt(_logEvidenceVar));

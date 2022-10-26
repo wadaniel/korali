@@ -30,10 +30,6 @@ class Integration : public Problem
   * @brief Stores the function to integrate.
   */
    std::uint64_t _integrand;
-  /**
-  * @brief Indicates the name of the integration method to use.
-  */
-   std::string _integrationMethod;
   
  
   /**
@@ -68,7 +64,7 @@ class Integration : public Problem
   /**
    * @brief Produces an evaluation of the model, storing it in and stores it in sample["Evaluation"].
    * @param sample A Korali Sample
-  */
+   */
   void execute(korali::Sample &sample);
 };
 

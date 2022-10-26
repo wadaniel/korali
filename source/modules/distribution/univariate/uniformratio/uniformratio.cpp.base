@@ -29,13 +29,14 @@ double __className__::getLogDensity(const double z) const
 
 double __className__::getLogDensityGradient(const double z) const
 {
-  // TODO
+  KORALI_LOG_ERROR("'getLogDensityGradient' of distribution 'UniformRatio' not yet implemented.");
   return 0.0;
 }
 
 double __className__::getLogDensityHessian(const double z) const
 {
   // TODO
+  KORALI_LOG_ERROR("'getLogDensityHessian' of distribution 'UniformRatio' not yet implemented.");
   return 0.0;
 }
 

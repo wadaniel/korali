@@ -173,7 +173,6 @@ void Designer::setInitialConfiguration()
       }) == false)
     KORALI_LOG_ERROR("Number of measurement samples are inconsistent. You have to specify the same number of samples for every dimension.\n");
   // clang-format on
-  
   // Set number of likelihood samples
   _numberOfLikelihoodSamples = _numberOfMeasurementSamples[0];
 

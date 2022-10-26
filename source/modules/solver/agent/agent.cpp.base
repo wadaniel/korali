@@ -1066,7 +1066,7 @@ void __className__::updateRewardFunction()
     {
       const float mult = _demonstrationBatchSize * std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
-      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
+      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k) if(_optimizeMaxEntropyObjective == true)
       {
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
@@ -1080,6 +1080,7 @@ void __className__::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
+        if(_optimizeMaxEntropyObjective == true)
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
 
         // Contribution from demonstration return

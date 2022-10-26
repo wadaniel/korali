@@ -1070,7 +1070,7 @@ void Agent::updateRewardFunction()
     {
       const float mult = _demonstrationBatchSize * std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
 #pragma omp parallel for
-      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
+      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k) if(_optimizeMaxEntropyObjective == true)
       {
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
@@ -1084,6 +1084,7 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
         // Contribution from partition function
+        if(_optimizeMaxEntropyObjective == true)
         _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
 
         // Contribution from demonstration return
@@ -2690,6 +2691,15 @@ void Agent::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Experiences Between Partition Function Statistics'] required by agent.\n"); 
 
+ if (isDefined(js, "Optimize Max Entropy Objective"))
+ {
+ try { _optimizeMaxEntropyObjective = js["Optimize Max Entropy Objective"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Optimize Max Entropy Objective']\n%s", e.what()); } 
+   eraseValue(js, "Optimize Max Entropy Objective");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Optimize Max Entropy Objective'] required by agent.\n"); 
+
  if (isDefined(js, "Use Fusion Distribution"))
  {
  try { _useFusionDistribution = js["Use Fusion Distribution"].get<int>();
@@ -2839,6 +2849,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experiences Between Policy Updates"] = _experiencesBetweenPolicyUpdates;
    js["Experiences Between Reward Updates"] = _experiencesBetweenRewardUpdates;
    js["Experiences Between Partition Function Statistics"] = _experiencesBetweenPartitionFunctionStatistics;
+   js["Optimize Max Entropy Objective"] = _optimizeMaxEntropyObjective;
    js["Use Fusion Distribution"] = _useFusionDistribution;
    js["Demonstration Batch Size"] = _demonstrationBatchSize;
    js["Background Batch Size"] = _backgroundBatchSize;

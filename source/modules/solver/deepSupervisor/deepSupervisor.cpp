@@ -20,15 +20,9 @@ void DeepSupervisor::initialize()
   // Fixing termination criteria for testing mode
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
-  // Handle restart/continuation of experiment
+  // Don't reinitialize neural network if experiment was already initialized
   if (_k->_isInitialized == true) 
-  {
-    // Reinitialize optimizer
-    _optimizer->initialize(); 
-
-    // However, don't reinitialize neural network if experiment was already initialized
     return;
-  }
 
   // Check whether the minibatch size (N) can be divided by the requested concurrency
   if (_problem->_trainingBatchSize % _batchConcurrency > 0) KORALI_LOG_ERROR("The training concurrency requested (%lu) does not divide the training mini batch size (%lu) perfectly.", _batchConcurrency, _problem->_trainingBatchSize);

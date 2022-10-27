@@ -1237,6 +1237,10 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Current Policy"]["Available Actions"] = curAvailAct;
   }
 
+  // Serialize the optimizer
+  for( size_t p = 0; p<_problem->_policiesPerEnvironment; p++ )
+    _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
+
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
@@ -1334,6 +1338,10 @@ void Agent::deserializeExperienceReplay()
     _expPolicyBuffer.add(expPolicy);
     _curPolicyBuffer.add(curPolicy);
   }
+
+  // Deserialize the optimizer
+  for( size_t p = 0; p<_problem->_policiesPerEnvironment; p++ )
+    _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

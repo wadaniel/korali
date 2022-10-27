@@ -395,6 +395,21 @@ class Agent : public Solver
   std::vector<bool> _isWorkerRunning;
 
   /**
+   * @brief Pointer to training the actor network
+   */
+  std::vector<solver::DeepSupervisor *> _criticPolicyLearner;
+
+  /**
+   * @brief Korali experiment for obtaining the agent's action
+   */
+  std::vector<korali::Experiment> _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
+
+  /**
    * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
    */
   size_t _sessionExperienceCount;

@@ -42,6 +42,10 @@ class fGradientBasedOptimizer : public Module
   * @brief Step size/learning rate for current iterration.
   */
    float _eta;
+  /**
+  * @brief [Internal Use] Holds current values of the parameters.
+  */
+   std::vector<float> _currentValue;
   
  
   /**
@@ -64,11 +68,6 @@ class fGradientBasedOptimizer : public Module
   */
   void applyVariableDefaults() override;
   
-
-  /**
-   * @brief [Internal Use] Current value of parameters.
-   */
-  std::vector<float> _currentValue;
 
   /**
    * @brief Takes a sample evaluation and its gradient and calculates the next set of parameters

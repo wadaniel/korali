@@ -32,7 +32,7 @@ double __className__::getLogDensityGradient(const double z) const
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
 
-  double density = getDensity(z)
+  double density = getDensity(z);
 
   if (z < b0) return 0.;
   else if (z > b3) return 0.;

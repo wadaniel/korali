@@ -879,7 +879,6 @@ void Agent::updateRewardFunction()
     std::vector<size_t> randomBackgroundIndexes(maxRand);
     std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
-    _k->_logger->logInfo("Detailed", "A\n");
 
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
     float cumDemoReward = 0.;
@@ -929,12 +928,10 @@ void Agent::updateRewardFunction()
         t += batchSize;
       }
 
-      _k->_logger->logInfo("Detailed", "B1\n");
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
       cumDemoReward += cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
-      _k->_logger->logInfo("Detailed", "B2\n");
       if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][0]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
 
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
@@ -942,7 +939,6 @@ void Agent::updateRewardFunction()
         const size_t bckIdx = randomBackgroundIndexes[i];
         demonstrationTrajectoryLogProbabilities[n][i + 1] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
-        _k->_logger->logInfo("Detailed", "B3\n");
       }
     }
 
@@ -963,7 +959,6 @@ void Agent::updateRewardFunction()
       size_t t = 0;
       float cumReward = 0.0;
 
-      _k->_logger->logInfo("Detailed", "C\n");
       while (t < backgroundTrajectoryLength)
       {
         std::vector<std::vector<std::vector<float>>> featuresBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize, 0.)));
@@ -1003,7 +998,6 @@ void Agent::updateRewardFunction()
 
       backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
       if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
-      _k->_logger->logInfo("Detailed", "D\n");
 
       if(_useFusionDistribution)
       for (size_t i = 0; i < _backgroundBatchSize; ++i)

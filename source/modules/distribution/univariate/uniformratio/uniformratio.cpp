@@ -38,16 +38,19 @@ double UniformRatio::getLogDensityGradient(const double z) const
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
 
+  double density = getDensity(z);
+
   if (z < b0) return 0.;
   else if (z > b3) return 0.;
   else if (_maximumX / z > _maximumY && _minimumX / z < _minimumY) return 0.;
-  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return 2.*_minimumX*_minimumX / (_aux*z*z*z);
-  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return -2*_maximumX*_maximumX / (_aux*z*z*z);
-  else return 2. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z);
+  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return 2.*_minimumX*_minimumX / (_aux*z*z*z*density);
+  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return -2*_maximumX*_maximumX / (_aux*z*z*z*density);
+  else return 2. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z*density);
 }
 
 double UniformRatio::getLogDensityHessian(const double z) const
 {
+  return -1.;
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
 

@@ -85,7 +85,7 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 1e-9
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
@@ -101,7 +101,7 @@ e["Solver"]["Optimize Max Entropy Objective"] = True
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs
-e["Solver"]["Background Sample Size"] = 100
+e["Solver"]["Background Sample Size"] = args.bss
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 

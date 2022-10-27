@@ -2783,14 +2783,14 @@ namespace
 
   for(float i = 0.; i < 10; i += 0.25)
   {   
-      float tmp = d->getDensity( i );
+      float tmp = d->getLogDensityGradient( i );
       printf("ratio %f: %f\n", i, tmp );
   }
 
 
   for(float i = 0.; i < 10; i += 0.25)
   {
-      float tmp = d->getLogDensity( i );
+      float tmp = d->getLogDensityHessian( i );
       printf("log ratio %f: %f\n", i, tmp);
   }
 
@@ -2819,12 +2819,6 @@ namespace
   EXPECT_NEAR(d->getLogDensity( 8. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensity( 9. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensity( 10. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
-
-  // Throw not implemented error
-  ASSERT_ANY_THROW(d->getLogDensityGradient( 0.0 ));
-  
-  // Throw not implemented error
-  ASSERT_ANY_THROW(d->getLogDensityHessian( 0.0 ));
 
  }
 

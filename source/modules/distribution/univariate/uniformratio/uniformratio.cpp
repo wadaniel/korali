@@ -42,9 +42,9 @@ double UniformRatio::getLogDensityGradient(const double z) const
 
   if (z < b0) return 0.;
   else if (z > b3) return 0.;
-  else if (_maximumX / z > _maximumY && _minimumX / z < _minimumY) return 0.;
-  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return 2.*_minimumX*_minimumX / (_aux*z*z*z*density);
-  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return -2*_maximumX*_maximumX / (_aux*z*z*z*density);
+  else if (_maximumX / z >= _maximumY && _minimumX / z <= _minimumY) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z > _minimumY) return 2.*_minimumX*_minimumX / (_aux*z*z*z*density);
+  else if (_maximumX / z < _maximumY && _minimumX / z < _minimumY) return -2*_maximumX*_maximumX / (_aux*z*z*z*density);
   else return 2. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z*density);
 }
 
@@ -58,9 +58,9 @@ double UniformRatio::getLogDensityHessian(const double z) const
 
   if (z < b0) return 0.;
   else if (z > b3) return 0.;
-  else if (_maximumX / z > _maximumY && _minimumX / z < _minimumY) return 0.;
-  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return -logGrad*logGrad + -6.*_minimumX*_minimumX / (_aux*z*z*z*z*density);
-  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return -logGrad*logGrad + 6.*_maximumX*_maximumX / (_aux*z*z*z*z*density);
+  else if (_maximumX / z >= _maximumY && _minimumX / z <= _minimumY) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z > _minimumY) return -logGrad*logGrad + -6.*_minimumX*_minimumX / (_aux*z*z*z*z*density);
+  else if (_maximumX / z < _maximumY && _minimumX / z < _minimumY) return -logGrad*logGrad + 6.*_maximumX*_maximumX / (_aux*z*z*z*z*density);
   else return -logGrad*logGrad + 6. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z*z*density);
 }
 

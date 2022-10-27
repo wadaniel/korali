@@ -2779,33 +2779,6 @@ namespace
 
   /////////////////////////////////////////////////
 
-  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
-
-  for(float i = 0.; i < 10; i += 1.)
-  {   
-      float tmp = d->getDensity( i );
-      printf("ratio %f: %f\n", i, tmp );
-  }
-
-
-  for(float i = 0.; i < 10; i += 1.)
-  {
-      float tmp = d->getLogDensity( i );
-      printf("log ratio %f: %f\n", i, tmp);
-  }
-   
-  for(float i = 0.; i < 10; i += 1.)
-  {
-      float tmp = d->getLogDensityGradient( i );
-      printf("loggrad %f: %f\n", i, tmp);
-  }
-  
-  for(float i = 0.; i < 10; i += 1.)
-  {
-      float tmp = d->getLogDensityHessian( i );
-      printf("loghes %f: %f\n", i, tmp);
-  }
-  
   // Testing density
   EXPECT_NEAR(d->getDensity( 0 ), 0000000, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getDensity( 1. ), 0.625000, PDENSITY_ERROR_TOLERANCE);
@@ -2816,25 +2789,21 @@ namespace
   EXPECT_NEAR(d->getDensity( 9. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
  
   // Testing log density
-  EXPECT_NEAR(d->getLogDensity( 0 ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_EQ(d->getLogDensity( 0 ), -INFINITY);
   EXPECT_NEAR(d->getLogDensity( 2. ), -1.856298, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensity( 4. ), -3.465736, PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getLogDensity( 8. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getLogDensity( 9. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_EQ(d->getLogDensity( 8. ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9. ), -INFINITY);
 
   // Testing log density gradient
   EXPECT_NEAR(d->getLogDensityGradient( 0 ), 0.000000, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensityGradient( 1. ), -2.000000, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensityGradient( 2. ), -1.000000, PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getLogDensityGradient( 8. ), -INFINITY, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensityGradient( 9. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
   
   // Testing log density Hessian
-  EXPECT_NEAR(d->getLogDensityHessian( 0 ), 0.000000, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensityHessian( 1. ), -10.000000, PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensityHessian( 2. ), -2.500000, PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getLogDensityHessian( 3. ), 0.173958, PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getLogDensityHessian( 9. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
 
  }
 

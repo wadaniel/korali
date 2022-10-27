@@ -13,7 +13,6 @@ __startNamespace__;
 class __className__ : public __parentClassName__
 {
   public:
-  // VARIABLES =================================================
   /**
    * @brief [Internal Use] Current value of parameters.
    */

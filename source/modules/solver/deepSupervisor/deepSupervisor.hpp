@@ -102,6 +102,10 @@ class DeepSupervisor : public Solver
   */
    korali::fGradientBasedOptimizer* _optimizer;
   /**
+  * @brief [Internal Use] Keeps a history of all training episode rewards.
+  */
+   std::vector<float> _lossHistory;
+  /**
   * @brief [Termination Criteria] Specifies the maximum number of suboptimal generations.
   */
    float _targetLoss;

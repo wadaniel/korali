@@ -65,7 +65,6 @@ class fGradientBasedOptimizer : public Module
   void applyVariableDefaults() override;
   
 
-  // VARIABLES =================================================
   /**
    * @brief [Internal Use] Current value of parameters.
    */

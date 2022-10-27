@@ -72,7 +72,7 @@ e["Problem"]["Solution"]["Size"] = 10
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1
+e["Solver"]["Termination Criteria"]["Max Generations"] = 0
 e["Solver"]["Type"] = "DeepSupervisor"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
@@ -164,8 +164,8 @@ e["Solver"]["Neural Network"]["Hidden Layers"][7]["Function"] = "Softmax"
 
 ### Configuring output
 
-e["Console Output"]["Verbosity"] = "Silent"
-e["File Output"]["Enabled"] = False
+e["Console Output"]["Verbosity"] = "Normal"
+e["File Output"]["Enabled"] = True
 e["Random Seed"] = 0xC0FFEE
 
 ### Printing Configuration
@@ -182,11 +182,16 @@ print("[Korali] Decay: " + str(decay))
 
 for epoch in range(epochs):
  for step in range(stepsPerEpoch):
- 
+  # Print process
+  print("Processing epoch {}/{}, minibatch {}/{}".format(epoch, epochs, step, stepsPerEpoch))
+
   # Creating minibatch
   miniBatchInput = trainingImageVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
   miniBatchSolution = trainingLabelVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
   
+  # Load state
+  e.loadState('_korali_result/latest')
+
   # Passing minibatch to Korali
   e["Problem"]["Input"]["Data"] = miniBatchInput
   e["Problem"]["Solution"]["Data"] = miniBatchSolution

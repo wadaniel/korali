@@ -29,15 +29,28 @@ double __className__::getLogDensity(const double z) const
 
 double __className__::getLogDensityGradient(const double z) const
 {
-  KORALI_LOG_ERROR("'getLogDensityGradient' of distribution 'UniformRatio' not yet implemented.");
-  return 0.0;
+  const double b0 = _minimumX / _maximumY;
+  const double b3 = _maximumX / _minimumY;
+
+  if (z < b0) return 0.;
+  else if (z > b3) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z < _minimumY) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return 2.*_minimumX*_minimumX / (_aux*z*z*z);
+  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return -2*_maximumX*_maximumX / (_aux*z*z*z);
+  else return 2. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z);
 }
 
 double __className__::getLogDensityHessian(const double z) const
 {
-  // TODO
-  KORALI_LOG_ERROR("'getLogDensityHessian' of distribution 'UniformRatio' not yet implemented.");
-  return 0.0;
+  const double b0 = _minimumX / _maximumY;
+  const double b3 = _maximumX / _minimumY;
+
+  if (z < b0) return 0.;
+  else if (z > b3) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z < _minimumY) return 0.;
+  else if (_maximumX / z > _maximumY && _minimumX / z >= _minimumY) return -6.*_minimumX*_minimumX / (_aux*z*z*z*z);
+  else if (_maximumX / z <= _maximumY && _minimumX / z < _minimumY) return 6.*_maximumX*_maximumX / (_aux*z*z*z*z);
+  else return 6. * (_minimumX*_minimumX - _maximumX*_maximumX) / (_aux*z*z*z*z);
 }
 
 double __className__::getRandomNumber()

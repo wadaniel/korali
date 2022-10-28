@@ -16,10 +16,11 @@ module purge
 module load gcc/8.2.0 python/3.9.9 openmpi/4.0.2 gsl/2.6
 module load git-lfs
 
-RUN=11
+RUN=14
 EBRU=5000
 DBS=10
 BBS=50
+RNN=16
 BSS=1000
 EXP=5000000
 #ENV="Walker2d-v4"
@@ -36,9 +37,10 @@ echo DBS    ${DBS} >> "${DIR}/run.config"
 echo BBS    ${BBS} >> "${DIR}/run.config"
 echo BSS    ${BSS} >> "${DIR}/run.config"
 echo EXP    ${EXP} >> "${DIR}/run.config"
+echo RNN    ${RNN} >> "${DIR}/run.config"
 echo RUN    ${RUN} >> "${DIR}/run.config"
 
-python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --run ${RUN}
+python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --run ${RUN}
 
 python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
 python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png"

@@ -218,7 +218,7 @@ void Agent::initialize()
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _rewardFunctionNeuralNetworkHiddenLayers;
   _rewardFunctionExperiment["Solver"]["Output Weights Scaling"] = 0.001;
 
-  // No transformations for the state value output
+  // No transformations for the state value output (doesn't work)
   //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 0.0;
   //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 1.0;
   //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";

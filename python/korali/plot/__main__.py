@@ -117,6 +117,7 @@ def main(path, test, output, plotAll=False):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(moduleName, package="plot")
   solverLib.plot(genList, plotAll=plotAll )
+  plt.tight_layout()
 
   if not output:
     plt.show()

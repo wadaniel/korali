@@ -219,9 +219,14 @@ void Agent::initialize()
   _rewardFunctionExperiment["Solver"]["Output Weights Scaling"] = 0.001;
 
   // No transformations for the state value output
+  //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 0.0;
+  //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 1.0;
+  //_rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
+ 
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = -0.5f;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Sigmoid";
+
 
   // Running initialization to verify that the configuration is correct
   _rewardFunctionExperiment.initialize();
@@ -862,6 +867,7 @@ std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vec
 void Agent::updateRewardFunction()
 {
   const size_t stepsPerUpdate = 1;
+  const size_t totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
 
   const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::minstd_rand0 generator(seed);
@@ -884,7 +890,7 @@ void Agent::updateRewardFunction()
     float cumDemoReward = 0.;
     std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
-    std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(_backgroundBatchSize + 1));
+    std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(totalBatchSize));
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       const size_t demIdx = randomDemonstrationIndexes[n];
@@ -930,15 +936,18 @@ void Agent::updateRewardFunction()
 
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
       cumDemoReward += cumReward;
-
-      demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
-      if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][0]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
-
-      for (size_t i = 0; i < _backgroundBatchSize; ++i)
+      
+      for (size_t i = 0; i < _demonstrationBatchSize; ++i)
       {
-        const size_t bckIdx = randomBackgroundIndexes[i];
-        demonstrationTrajectoryLogProbabilities[n][i + 1] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
-        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i + 1]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+        demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
+        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+      }
+
+      for (size_t m = 0; m < _backgroundBatchSize; ++m)
+      {
+        const size_t bckIdx = randomBackgroundIndexes[m];
+        demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
+        if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
       }
     }
 
@@ -948,7 +957,7 @@ void Agent::updateRewardFunction()
     // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
     std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
-    std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(_backgroundBatchSize + 1));
+    std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(totalBatchSize));
 
     if(_optimizeMaxEntropyObjective)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
@@ -996,15 +1005,18 @@ void Agent::updateRewardFunction()
 
       cumulativeRewardsBackgroundBatch[m] = cumReward;
 
-      backgroundTrajectoryLogProbabilities[m][0] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
-      if (std::isfinite(backgroundTrajectoryLogProbabilities[m][0]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+      for(size_t n = 0; n < _demonstrationBatchSize; ++n)
+      {
+        backgroundTrajectoryLogProbabilities[m][n] = _backgroundTrajectoryLogProbabilities[bckIdx][0]; // probability from observed policy
+        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][n]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+      }
 
       if(_useFusionDistribution)
       for (size_t i = 0; i < _backgroundBatchSize; ++i)
       {
         const size_t bckIdx2 = randomBackgroundIndexes[i];
-        backgroundTrajectoryLogProbabilities[m][i + 1] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
-        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][i + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+        backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1];
+        if (std::isfinite(backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
       }
       else
       {
@@ -1019,7 +1031,7 @@ void Agent::updateRewardFunction()
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
       if (_useFusionDistribution)
-        backgroundBatchLogImportanceWeights[m] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
+        backgroundBatchLogImportanceWeights[m] = std::log((float)totalBatchSize) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       else
         backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
     }
@@ -1030,7 +1042,7 @@ void Agent::updateRewardFunction()
     {
       // Caclculate importance weight (1/K sum_k q_k(T))^-1
       if (_useFusionDistribution)
-        demonstrationBatchLogImportanceWeights[n] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
+        demonstrationBatchLogImportanceWeights[n] = std::log((float)totalBatchSize) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
       else
         demonstrationBatchLogImportanceWeights[n] = -demonstrationTrajectoryLogProbabilities[n][0];
     }
@@ -1070,15 +1082,13 @@ void Agent::updateRewardFunction()
     }
 
     // Calculate log of partition function
-    const float totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
-    _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log(totalBatchSize);
+    _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)totalBatchSize);
 
     // Reset gradient
     std::fill(_maxEntropyGradient.begin(), _maxEntropyGradient.end(), 0.);
 
     // Calculate gradient of loglikelihood (contribution from partition function & background batch)
-    const float invTotalBatchSize = 1. / totalBatchSize;
-    _k->_logger->logInfo("Detailed", "E\n");
+    const float invTotalBatchSize = 1. / (float) totalBatchSize;
     
     if(_optimizeMaxEntropyObjective == true)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)

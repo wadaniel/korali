@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import shutil as sh
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -177,6 +178,10 @@ print("[Korali] Batch Size: " + str(trainingBatchSize))
 print("[Korali] Epochs: " + str(epochs))
 print("[Korali] Initial Learning Rate: " + str(learningRate))
 print("[Korali] Decay: " + str(decay))
+
+### Delete old results
+
+sh.rmtree("_korali_result")
 
 ### Running SGD loop
 

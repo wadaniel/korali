@@ -21,7 +21,7 @@ void DeepSupervisor::initialize()
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
   // Don't reinitialize neural network if experiment was already initialized
-  if (_k->_isInitialized == true) 
+  if (_k->_isInitialized == true)
     return;
 
   // Check whether the minibatch size (N) can be divided by the requested concurrency
@@ -269,7 +269,8 @@ void DeepSupervisor::runTrainingGeneration()
       for (size_t i = 0; i < OC; i++)
         MSEVector[b][i] = MSEVector[b][i] - results[b][i];
 
-#pragma omp parallel for reduction(+:_currentLoss) collapse(2)
+#pragma omp parallel for reduction(+ \
+                                   : _currentLoss) collapse(2)
     for (size_t b = 0; b < N; b++)
       for (size_t i = 0; i < OC; i++)
         _currentLoss += MSEVector[b][i] * MSEVector[b][i];

@@ -1238,7 +1238,7 @@ void Agent::serializeExperienceReplay()
   }
 
   // Serialize the optimizer
-  for( size_t p = 0; p<_problem->_policiesPerEnvironment; p++ )
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->getConfiguration(stateJson["Optimizer"][p]);
 
   // If results directory doesn't exist, create it
@@ -1340,7 +1340,7 @@ void Agent::deserializeExperienceReplay()
   }
 
   // Deserialize the optimizer
-  for( size_t p = 0; p<_problem->_policiesPerEnvironment; p++ )
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling

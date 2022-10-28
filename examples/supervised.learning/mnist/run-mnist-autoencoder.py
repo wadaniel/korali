@@ -232,7 +232,8 @@ print("[Korali] Decay: " + str(decay))
 
 ### Delete old results
 
-sh.rmtree("_korali_result")
+if os.path.exists("_korali_result"):
+ sh.rmtree("_korali_result")
 
 ### Running SGD loop
 

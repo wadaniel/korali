@@ -11,6 +11,7 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/distribution/univariate/uniformratio/uniformratio.hpp"
 #include "modules/distribution/univariate/poisson/poisson.hpp"
 #include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -2720,6 +2721,104 @@ namespace
   EXPECT_EQ(d->getLogDensityGradient( 5.0 ), 0.0);
   EXPECT_EQ(d->getLogDensityHessian( 5.0 ), 0.0);
  }
+ 
+ TEST(Distrtibutions, UniformRatioDistribution)
+ {
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::UniformRatio* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/UniformRatio";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/UniformRatio";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::UniformRatio *>(Module::getModule(distributionJs, &e)));
+
+  //////////////////////////////////////////////////
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
+  auto baseJs = distributionJs;
+
+  // Testing correct shape
+  distributionJs["Minimum X"] = 2.0;
+  distributionJs["Maximum X"] = 8.0;
+  distributionJs["Minimum Y"] = 1.0;
+  distributionJs["Maximum Y"] = 9.0;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniformratio");
+  ASSERT_EQ(distributionJs["Minimum X"].get<double>(), 2.0);
+  ASSERT_EQ(distributionJs["Maximum X"].get<double>(), 8.0);
+  ASSERT_EQ(distributionJs["Minimum Y"].get<double>(), 1.0);
+  ASSERT_EQ(distributionJs["Maximum Y"].get<double>(), 9.0);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Minimum X") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum X") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Minimum Y") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum Y") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect minimum/maximum
+  d->_minimumX = 16.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_ANY_THROW(d->getRandomNumber());
+
+  // Testing correct minimum/maximum
+  d->_minimumX = 2.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_NO_THROW(d->getRandomNumber());
+
+  /////////////////////////////////////////////////
+
+  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+  for(float i = 0.; i < 10; i += 0.25)
+  {   
+      float tmp = d->getDensity( i );
+      printf("ratio %f: %f\n", i, tmp );
+  }
+
+
+  for(float i = 0.; i < 10; i += 0.25)
+  {
+      float tmp = d->getLogDensity( i );
+      printf("log ratio %f: %f\n", i, tmp);
+  }
+
+  // Testing expected density
+  /*
+  EXPECT_NEAR(d->getDensity( 0 ), 0 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.50 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.00000001 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 10.00 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
+
+  // Testing expected log density
+
+  EXPECT_EQ(d->getLogDensity( 0.00 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.10 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 0.20 ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 10.00 ), -INFINITY);
+  */
+
+  // Throw not implemented error
+  ASSERT_ANY_THROW(d->getLogDensityGradient( 0.0 ));
+  
+  // Throw not implemented error
+  ASSERT_ANY_THROW(d->getLogDensityHessian( 0.0 ));
+
+ }
+
 
  TEST(Distrtibutions, WeibullDistribution)
   {

@@ -161,3 +161,4 @@ e["File Output"]["Path"] = resultFolder
 ### Running Experiment
 
 k.run(e)
+print(args)

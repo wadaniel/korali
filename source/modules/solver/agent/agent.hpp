@@ -13,6 +13,7 @@
 #pragma once
 
 #include "auxiliar/cbuffer.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/deepSupervisor/deepSupervisor.hpp"
@@ -533,16 +534,6 @@ class Agent : public Solver
    * @brief Storage for the pointer to the learning problem
    */
   problem::ReinforcementLearning *_problem;
-
-  /**
-   * @brief Random device for the generation of shuffling numbers
-   */
-  std::random_device rd;
-
-  /**
-   * @brief Mersenne twister for the generation of shuffling numbers
-   */
-  std::mt19937 *mt;
 
   /****************************************************************************************************
    * Session-wise Profiling Timers

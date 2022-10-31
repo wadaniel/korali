@@ -528,7 +528,7 @@ void NeuralNetwork::getConfiguration(knlohmann::json& js)
 void NeuralNetwork::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Engine\": \"Korali\", \"Input Values\": [], \"Batch Sizes\": [], \"Uniform Generator\": {\"Type\": \"Univariate/Uniform\", \"Minimum\": -1.0, \"Maximum\": 1.0}}";
+ std::string defaultString = "{\"Engine\": \"Korali\", \"Input Values\": [], \"Batch Sizes\": [], \"Uniform Generator\": {\"Name\": \"Neural Network / Uniform Generator\", \"Type\": \"Univariate/Uniform\", \"Minimum\": -1.0, \"Maximum\": 1.0}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Module::applyModuleDefaults(js);

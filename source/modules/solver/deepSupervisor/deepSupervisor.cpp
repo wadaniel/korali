@@ -280,9 +280,6 @@ void DeepSupervisor::runTrainingGeneration()
     nnHyperparameterGradients = backwardGradients(MSEVector);
   }
 
-  // Store loss
-  _lossHistory.push_back(_currentLoss);
-
   // If the solution represents the gradients, just pass them on
   if (_lossFunction == "Direct Gradient") nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 
@@ -489,14 +486,6 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Optimizer");
  }
 
- if (isDefined(js, "Loss History"))
- {
- try { _lossHistory = js["Loss History"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Loss History']\n%s", e.what()); } 
-   eraseValue(js, "Loss History");
- }
-
  if (isDefined(js, "Mode"))
  {
  try { _mode = js["Mode"].get<std::string>();
@@ -672,7 +661,6 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Normalization Means"] = _normalizationMeans;
    js["Normalization Variances"] = _normalizationVariances;
  if(_optimizer != NULL) _optimizer->getConfiguration(js["Optimizer"]);
-   js["Loss History"] = _lossHistory;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 
  Solver::getConfiguration(js);

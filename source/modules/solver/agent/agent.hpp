@@ -13,7 +13,6 @@
 #pragma once
 
 #include "auxiliar/cbuffer.hpp"
-#include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/deepSupervisor/deepSupervisor.hpp"

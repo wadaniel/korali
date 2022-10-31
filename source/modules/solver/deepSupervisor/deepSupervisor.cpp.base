@@ -276,9 +276,6 @@ void __className__::runTrainingGeneration()
     nnHyperparameterGradients = backwardGradients(MSEVector);
   }
 
-  // Store loss
-  _lossHistory.push_back(_currentLoss);
-
   // If the solution represents the gradients, just pass them on
   if (_lossFunction == "Direct Gradient") nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 

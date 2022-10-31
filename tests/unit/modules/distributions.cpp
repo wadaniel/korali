@@ -2779,43 +2779,31 @@ namespace
 
   /////////////////////////////////////////////////
 
-  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+  // Testing density
+  EXPECT_NEAR(d->getDensity( 0 ), 0000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1. ), 0.625000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2. ), 0.156250, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4. ), 0.031250, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5. ), 0.016250, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
+ 
+  // Testing log density
+  EXPECT_EQ(d->getLogDensity( 0 ), -INFINITY);
+  EXPECT_NEAR(d->getLogDensity( 2. ), -1.856298, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4. ), -3.465736, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_EQ(d->getLogDensity( 8. ), -INFINITY);
+  EXPECT_EQ(d->getLogDensity( 9. ), -INFINITY);
 
-  for(float i = 0.; i < 10; i += 0.25)
-  {   
-      float tmp = d->getDensity( i );
-      printf("ratio %f: %f\n", i, tmp );
-  }
-
-
-  for(float i = 0.; i < 10; i += 0.25)
-  {
-      float tmp = d->getLogDensity( i );
-      printf("log ratio %f: %f\n", i, tmp);
-  }
-
-  // Testing expected density
-  /*
-  EXPECT_NEAR(d->getDensity( 0 ), 0 , PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getDensity( 1.50 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getDensity( 2.00000001 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getDensity( 2.10 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getDensity( 4.70 ), 0.166666667 , PDENSITY_ERROR_TOLERANCE);
-  EXPECT_NEAR(d->getDensity( 10.00 ), 0.000000000 , PDENSITY_ERROR_TOLERANCE);
-
-  // Testing expected log density
-
-  EXPECT_EQ(d->getLogDensity( 0.00 ), -INFINITY);
-  EXPECT_EQ(d->getLogDensity( 0.10 ), -INFINITY);
-  EXPECT_EQ(d->getLogDensity( 0.20 ), -INFINITY);
-  EXPECT_EQ(d->getLogDensity( 10.00 ), -INFINITY);
-  */
-
-  // Throw not implemented error
-  ASSERT_ANY_THROW(d->getLogDensityGradient( 0.0 ));
+  // Testing log density gradient
+  EXPECT_NEAR(d->getLogDensityGradient( 0 ), 0.000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensityGradient( 1. ), -2.000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensityGradient( 2. ), -1.000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensityGradient( 9. ), 0.000000, PDENSITY_ERROR_TOLERANCE);
   
-  // Throw not implemented error
-  ASSERT_ANY_THROW(d->getLogDensityHessian( 0.0 ));
+  // Testing log density Hessian
+  EXPECT_NEAR(d->getLogDensityHessian( 1. ), -10.000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensityHessian( 2. ), -2.500000, PDENSITY_ERROR_TOLERANCE);
 
  }
 

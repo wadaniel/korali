@@ -88,6 +88,11 @@ class fGradientBasedOptimizer : public Module
   virtual void postProcessResult(std::vector<float> &parameters);
 
   /**
+   * @brief Prints internals of solver
+   */
+  virtual void printInternals() = 0;
+
+  /**
    * @brief Restores the optimizer to the initial state
    */
   virtual void reset() = 0;

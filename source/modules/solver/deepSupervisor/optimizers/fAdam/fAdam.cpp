@@ -49,6 +49,14 @@ void fAdam::processResult(std::vector<float> &gradient)
   fGradientBasedOptimizer::postProcessResult(_currentValue);
 }
 
+void fAdam::printInternals()
+{
+  printf("_beta1Pow=%f, _beta2Pow=%f, ", _beta1Pow, _beta2Pow);
+  printf("_currentValue[i], _firstMoment[i], _secondMoment[i]:\n");
+  for (size_t i = 0; i < 10; i++)
+    printf("%f %f %f\n", _currentValue[i], _firstMoment[i], _secondMoment[i]);
+}
+
 void fAdam::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");

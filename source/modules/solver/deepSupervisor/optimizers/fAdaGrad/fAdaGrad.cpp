@@ -35,6 +35,13 @@ void fAdaGrad::processResult(std::vector<float> &gradient)
   fGradientBasedOptimizer::postProcessResult(_currentValue);
 }
 
+void fAdaGrad::printInternals()
+{
+  printf("_currentValue[i], _gdiag[i]:\n");
+  for (size_t i = 0; i < _nVars; i++)
+    printf("%f %f\n", _currentValue[i], _gdiag[i]);
+}
+
 void fAdaGrad::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");

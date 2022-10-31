@@ -3,9 +3,15 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__;
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+;
 
-double __className__::getDensity(const double z) const
+double UniformRatio::getDensity(const double z) const
 {
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
@@ -16,7 +22,7 @@ double __className__::getDensity(const double z) const
   return (std::pow(std::min(_maximumY, _maximumX / z), 2.) - std::pow(std::max(_minimumY, _minimumX / z), 2.)) / _aux;
 }
 
-double __className__::getLogDensity(const double z) const
+double UniformRatio::getLogDensity(const double z) const
 {
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
@@ -27,7 +33,7 @@ double __className__::getLogDensity(const double z) const
   return std::log(std::pow(std::min(_maximumY, _maximumX / z), 2.) - std::pow(std::max(_minimumY, _minimumX / z), 2.)) - std::log(_aux);
 }
 
-double __className__::getLogDensityGradient(const double z) const
+double UniformRatio::getLogDensityGradient(const double z) const
 {
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
@@ -48,7 +54,7 @@ double __className__::getLogDensityGradient(const double z) const
     return 2. * (_minimumX * _minimumX - _maximumX * _maximumX) / (_aux * z * z * z * density);
 }
 
-double __className__::getLogDensityHessian(const double z) const
+double UniformRatio::getLogDensityHessian(const double z) const
 {
   const double b0 = _minimumX / _maximumY;
   const double b3 = _maximumX / _minimumY;
@@ -70,7 +76,7 @@ double __className__::getLogDensityHessian(const double z) const
     return -logGrad * logGrad + 6. * (_minimumX * _minimumX - _maximumX * _maximumX) / (_aux * z * z * z * z * density);
 }
 
-double __className__::getRandomNumber()
+double UniformRatio::getRandomNumber()
 {
   if (_maximumX - _minimumX <= 0.0)
     KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound of the first (dividend) Uniform distribution in order to draw a random number.\n", _maximumX, _minimumX);
@@ -85,7 +91,7 @@ double __className__::getRandomNumber()
   return gsl_ran_flat(_range, _minimumX, _maximumX) / gsl_ran_flat(_range, _minimumY, _maximumY);
 }
 
-void __className__::updateDistribution()
+void UniformRatio::updateDistribution()
 {
   const double b0 = _minimumX / _maximumY;
   const double b1 = _minimumX / _minimumY;
@@ -97,6 +103,71 @@ void __className__::updateDistribution()
          _maximumX * _maximumX * (1. / b3 - 1. / b2) - _minimumY * _minimumY * (b3 - b2);
 }
 
-__moduleAutoCode__;
+void UniformRatio::setConfiguration(knlohmann::json& js) 
+{
+ if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
-__endNamespace__;
+  _hasConditionalVariables = false; 
+ if(js["Minimum X"].is_number()) {_minimumX = js["Minimum X"]; _minimumXConditional = ""; } 
+ if(js["Minimum X"].is_string()) { _hasConditionalVariables = true; _minimumXConditional = js["Minimum X"]; } 
+ eraseValue(js, "Minimum X");
+ if(js["Maximum X"].is_number()) {_maximumX = js["Maximum X"]; _maximumXConditional = ""; } 
+ if(js["Maximum X"].is_string()) { _hasConditionalVariables = true; _maximumXConditional = js["Maximum X"]; } 
+ eraseValue(js, "Maximum X");
+ if(js["Minimum Y"].is_number()) {_minimumY = js["Minimum Y"]; _minimumYConditional = ""; } 
+ if(js["Minimum Y"].is_string()) { _hasConditionalVariables = true; _minimumYConditional = js["Minimum Y"]; } 
+ eraseValue(js, "Minimum Y");
+ if(js["Maximum Y"].is_number()) {_maximumY = js["Maximum Y"]; _maximumYConditional = ""; } 
+ if(js["Maximum Y"].is_string()) { _hasConditionalVariables = true; _maximumYConditional = js["Maximum Y"]; } 
+ eraseValue(js, "Maximum Y");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
+
+ Univariate::setConfiguration(js);
+ _type = "univariate/uniformratio";
+ if(isDefined(js, "Type")) eraseValue(js, "Type");
+ if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: uniformratio: \n%s\n", js.dump(2).c_str());
+} 
+
+void UniformRatio::getConfiguration(knlohmann::json& js) 
+{
+
+ js["Type"] = _type;
+ if(_minimumXConditional == "") js["Minimum X"] = _minimumX;
+ if(_minimumXConditional != "") js["Minimum X"] = _minimumXConditional; 
+ if(_maximumXConditional == "") js["Maximum X"] = _maximumX;
+ if(_maximumXConditional != "") js["Maximum X"] = _maximumXConditional; 
+ if(_minimumYConditional == "") js["Minimum Y"] = _minimumY;
+ if(_minimumYConditional != "") js["Minimum Y"] = _minimumYConditional; 
+ if(_maximumYConditional == "") js["Maximum Y"] = _maximumY;
+ if(_maximumYConditional != "") js["Maximum Y"] = _maximumYConditional; 
+ Univariate::getConfiguration(js);
+} 
+
+void UniformRatio::applyModuleDefaults(knlohmann::json& js) 
+{
+
+ Univariate::applyModuleDefaults(js);
+} 
+
+void UniformRatio::applyVariableDefaults() 
+{
+
+ Univariate::applyVariableDefaults();
+} 
+
+double* UniformRatio::getPropertyPointer(const std::string& property)
+{
+ if (property == "Minimum X") return &_minimumX;
+ if (property == "Maximum X") return &_maximumX;
+ if (property == "Minimum Y") return &_minimumY;
+ if (property == "Maximum Y") return &_maximumY;
+ KORALI_LOG_ERROR(" + Property %s not recognized for distribution UniformRatio.\n", property.c_str());
+ return NULL;
+}
+
+;
+
+} //univariate
+} //distribution
+} //korali
+;

@@ -38,7 +38,7 @@ void fAdaGrad::processResult(std::vector<float> &gradient)
 void fAdaGrad::printInternals()
 {
   printf("_currentValue[i], _gdiag[i]:\n");
-  for (size_t i = 0; i < _nVars; i++)
+  for (size_t i = 0; i < 10; i++)
     printf("%f %f\n", _currentValue[i], _gdiag[i]);
 }
 

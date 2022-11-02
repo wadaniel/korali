@@ -6,6 +6,8 @@ namespace korali
 
 void fAdaBelief::initialize()
 {
+  _beta1Pow = 1.0f;
+  _beta2Pow = 1.0f;
   fGradientBasedOptimizer::initialize();
   _firstMoment.resize(_nVars, 0.0f);
   _secondCentralMoment.resize(_nVars, 0.0f);

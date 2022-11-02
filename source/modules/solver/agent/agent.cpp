@@ -70,6 +70,8 @@ void Agent::initialize()
   _demonstrationFeatureReward.resize(0);
   _demonstrationLogProbability.resize(0);
   _maxEntropyObjective.resize(0);
+  _demonstrationBatchImportanceWeight.resize(0);
+  _backgroundBatchImportanceWeight.resize(0);
   _statisticLogPartitionFunction.resize(0);
   _statisticFusionLogPartitionFunction.resize(0);
   _statisticFeatureWeights.resize(0);
@@ -194,6 +196,8 @@ void Agent::initialize()
   if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
 
   if (_backgroundSampleSize <= _backgroundBatchSize) KORALI_LOG_ERROR("Bachground Sample Size too small, must be greater than Background Batch Size");
+
+  if ((_demonstrationPolicy == "Constant" || _demonstrationPolicy == "Linear" || _demonstrationPolicy == "Quadratic") == false) KORALI_LOG_ERROR("Demonstration Policy is invalid, choose 'Constant', 'Linear' or 'Quadratic'");
 
   _backgroundTrajectoryStates.resize(_backgroundSampleSize);
   _backgroundTrajectoryActions.resize(_backgroundSampleSize);
@@ -609,7 +613,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
 
-  float demoLogP = 0.;
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing demonstration batch..\n");
@@ -626,7 +629,6 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
         {
           _demonstrationTrajectoryLogProbabilities[m][i + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[i]);
         }
-      demoLogP += _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount];
     }
   }
   else if (_backgroundTrajectoryCount < _backgroundSampleSize && _useFusionDistribution)
@@ -637,7 +639,6 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
-      demoLogP += _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount];
     }
   }
   //else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution)
@@ -649,12 +650,9 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[replacementIdx]);
-      demoLogP += _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1];
     }
   }
 
-  _k->_logger->logInfo("Detailed", "Logprogability of demo %f\n", demoLogP);
-  _demonstrationLogProbability.push_back(demoLogP);
   //else
   //{
   //  _k->_logger->logInfo("Detailed", "Skipping demonstration batch update.\n");
@@ -885,6 +883,9 @@ void Agent::updateRewardFunction()
     std::vector<size_t> randomBackgroundIndexes(maxRand);
     std::iota(std::begin(randomBackgroundIndexes), std::end(randomBackgroundIndexes), 0);
     std::shuffle(randomBackgroundIndexes.begin(), randomBackgroundIndexes.end(), generator);
+      
+    // For statistics
+    float demoLogP = 0.;
 
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
     float cumDemoReward = 0.;
@@ -941,6 +942,7 @@ void Agent::updateRewardFunction()
       {
         demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+        demoLogP += demonstrationTrajectoryLogProbabilities[n][i];
       }
 
       for (size_t m = 0; m < _backgroundBatchSize; ++m)
@@ -948,10 +950,14 @@ void Agent::updateRewardFunction()
         const size_t bckIdx = randomBackgroundIndexes[m];
         demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1];
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
+        demoLogP += demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m];
       }
     }
 
-    // Record history of feature reward of demonstrations
+    // Record history of logprobability of demonstrations
+    _demonstrationLogProbability.push_back(demoLogP / (float) (_demonstrationBatchSize + _backgroundBatchSize));
+
+    // Record history of average feature reward of demonstrations
     _demonstrationFeatureReward.push_back(cumDemoReward/(float) _demonstrationBatchSize);
 
     // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
@@ -1049,36 +1055,30 @@ void Agent::updateRewardFunction()
 
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
-    float maxSquaredExp = -Inf;
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       if (exp > maxExp) maxExp = exp;
-      if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
 
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
       if (exp > maxExp) maxExp = exp;
-      if (2. * exp > maxSquaredExp) maxSquaredExp = 2. * exp;
     }
 
     float sumExpNoMax = 0.0;
-    float sumSquaredExpNoMax = 0.0;
 
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       sumExpNoMax += std::exp(exp - maxExp);
-      sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
       const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
       sumExpNoMax += std::exp(exp - maxExp);
-      sumSquaredExpNoMax += std::exp(2. * exp - maxSquaredExp);
     }
 
     // Calculate log of partition function
@@ -1093,30 +1093,41 @@ void Agent::updateRewardFunction()
     if(_optimizeMaxEntropyObjective == true)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      const float mult = _demonstrationBatchSize * std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
+      const float mult = std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
+      if (mult < 0. ) KORALI_LOG_ERROR("Mult negative! is %f", mult);
+      if (mult > 1.1 ) KORALI_LOG_ERROR("Mult larger one! is %f", mult);
+
+
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k) 
       {
-        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
+        _maxEntropyGradient[k] -= _demonstrationBatchSize * mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
     }
 
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      const float mult = _demonstrationBatchSize * std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * invTotalBatchSize;
+      const float mult = std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * invTotalBatchSize;
+      if (mult < 0. ) KORALI_LOG_ERROR("Mult negative! is %f", mult);
+      if (mult > 1.1 ) KORALI_LOG_ERROR("Mult larger one! is %f", mult);
+
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
-        // Contribution from partition function
+        // Contribution from partition function and demonstration batch
         if(_optimizeMaxEntropyObjective == true)
-        _maxEntropyGradient[k] -= mult * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
-
+          _maxEntropyGradient[k] += (1.- _demonstrationBatchSize * mult) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        else
         // Contribution from demonstration return
-        _maxEntropyGradient[k] += gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+          _maxEntropyGradient[k] += gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
         if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
     }
+
+    // Record history of importance weights
+    _demonstrationBatchImportanceWeight.push_back(logSumExp(demonstrationBatchLogImportanceWeights) - std::log((float)_demonstrationBatchSize));
+    _backgroundBatchImportanceWeight.push_back(logSumExp(demonstrationBatchLogImportanceWeights) - std::log((float)_backgroundBatchSize));
 
     // Record history of max entropy objective
     _maxEntropyObjective.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
@@ -2365,6 +2376,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "State Rescaling", "Sigmas");
  }
 
+ if (isDefined(js, "Demonstration Policy"))
+ {
+ try { _demonstrationPolicy = js["Demonstration Policy"].get<std::string>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Demonstration Policy']\n%s", e.what()); } 
+   eraseValue(js, "Demonstration Policy");
+ }
+
  if (isDefined(js, "Feature Rescaling", "Means"))
  {
  try { _featureRescalingMeans = js["Feature Rescaling"]["Means"].get<std::vector<float>>();
@@ -2419,6 +2438,22 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Max Entropy Objective']\n%s", e.what()); } 
    eraseValue(js, "Max Entropy Objective");
+ }
+
+ if (isDefined(js, "Demonstration Batch Importance Weight"))
+ {
+ try { _demonstrationBatchImportanceWeight = js["Demonstration Batch Importance Weight"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Demonstration Batch Importance Weight']\n%s", e.what()); } 
+   eraseValue(js, "Demonstration Batch Importance Weight");
+ }
+
+ if (isDefined(js, "Background Batch Importance Weight"))
+ {
+ try { _backgroundBatchImportanceWeight = js["Background Batch Importance Weight"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Batch Importance Weight']\n%s", e.what()); } 
+   eraseValue(js, "Background Batch Importance Weight");
  }
 
  if (isDefined(js, "Statistic Log Partition Function"))
@@ -2929,6 +2964,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Log Sdev Partition Function"] = _logSdevPartitionFunction;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;
+   js["Demonstration Policy"] = _demonstrationPolicy;
    js["Feature Rescaling"]["Means"] = _featureRescalingMeans;
    js["Feature Rescaling"]["Sigmas"] = _featureRescalingSigmas;
    js["Reward Update Count"] = _rewardUpdateCount;
@@ -2936,6 +2972,8 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Demonstration Log Probability"] = _demonstrationLogProbability;
    js["Demonstration Feature Reward"] = _demonstrationFeatureReward;
    js["Max Entropy Objective"] = _maxEntropyObjective;
+   js["Demonstration Batch Importance Weight"] = _demonstrationBatchImportanceWeight;
+   js["Background Batch Importance Weight"] = _backgroundBatchImportanceWeight;
    js["Statistic Log Partition Function"] = _statisticLogPartitionFunction;
    js["Statistic Fusion Log Partition Function"] = _statisticFusionLogPartitionFunction;
    js["Statistic Feature Weights"] = _statisticFeatureWeights;

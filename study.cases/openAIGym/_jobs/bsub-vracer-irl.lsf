@@ -16,12 +16,12 @@ module purge
 module load gcc/8.2.0 python/3.9.9 openmpi/4.0.2 gsl/2.6
 module load git-lfs
 
-RUN=16
+RUN=22
 EBRU=5000
-DBS=20
-BBS=100
+DBS=10
+BBS=50
 RNN=8
-BSS=1000
+BSS=2000
 EXP=5000000
 #ENV="Walker2d-v4"
 ENV="HalfCheetah-v4"

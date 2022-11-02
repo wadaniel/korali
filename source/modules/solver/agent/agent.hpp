@@ -404,6 +404,10 @@ class Agent : public Solver
   */
    std::vector<float> _stateRescalingSigmas;
   /**
+  * @brief [Internal Use] Choose between 'Constant', 'Linear' or 'Quadratic'.
+  */
+   std::string _demonstrationPolicy;
+  /**
   * @brief [Internal Use] Contains the mean of the features during exploration phase. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
    std::vector<float> _featureRescalingMeans;
@@ -431,6 +435,14 @@ class Agent : public Solver
   * @brief [Internal Use] The history of the max entropy objective.
   */
    std::vector<float> _maxEntropyObjective;
+  /**
+  * @brief [Internal Use] TODO.
+  */
+   std::vector<float> _demonstrationBatchImportanceWeight;
+  /**
+  * @brief [Internal Use] TODO.
+  */
+   std::vector<float> _backgroundBatchImportanceWeight;
   /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */

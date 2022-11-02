@@ -86,7 +86,7 @@ void DeepSupervisor::initialize()
   _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _neuralNetwork->initialize();
   _neuralNetwork->generateInitialHyperparameters();
-  
+
   // Configure optimizer
   if (_k->_currentGeneration == 0)
   {

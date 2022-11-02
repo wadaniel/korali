@@ -54,6 +54,10 @@ class DeepSupervisor : public Solver
   */
    std::string _neuralNetworkOptimizer;
   /**
+  * @brief Stores the training neural network hyperparameters (weights and biases).
+  */
+   std::vector<float> _hyperparameters;
+  /**
   * @brief Function to calculate the difference (loss) between the NN inference and the exact solution and its gradients for optimization.
   */
    std::string _lossFunction;
@@ -77,10 +81,6 @@ class DeepSupervisor : public Solver
   * @brief Specifies in how many parts will the mini batch be split for concurrent processing. It must divide the training mini batch size perfectly.
   */
    size_t _batchConcurrency;
-  /**
-  * @brief [Internal Use] Stores the training neural network hyperparameters (weights and biases).
-  */
-   std::vector<float> _hyperparameters;
   /**
   * @brief [Internal Use] The output of the neural network if running on testing mode.
   */

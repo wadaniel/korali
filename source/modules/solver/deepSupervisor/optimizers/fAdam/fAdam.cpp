@@ -57,6 +57,7 @@ void fAdam::printInternals()
   printf("_currentValue[i], _firstMoment[i], _secondMoment[i]:\n");
   for (size_t i = 0; i < 10; i++)
     printf("%f %f %f\n", _currentValue[i], _firstMoment[i], _secondMoment[i]);
+  fflush(stdout);
 }
 
 void fAdam::setConfiguration(knlohmann::json& js) 

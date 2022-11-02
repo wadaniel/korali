@@ -85,15 +85,27 @@ void __className__::initialize()
   // If the hyperparameters have not been specified, produce new initial ones
   if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
 
-  // Configuring optimizer
-  knlohmann::json optimizerConfig;
-  optimizerConfig["Type"] = "deepSupervisor/optimizers/" + _neuralNetworkOptimizer;
-  optimizerConfig["N Vars"] = _hyperparameters.size();
+  // Configuring optimizer in first generation
+  if (_k->_currentGeneration == 0)
+  {
+    knlohmann::json optimizerConfig;
+    optimizerConfig["Type"] = "deepSupervisor/optimizers/" + _neuralNetworkOptimizer;
+    optimizerConfig["N Vars"] = _hyperparameters.size();
 
-  _optimizer = dynamic_cast<korali::fGradientBasedOptimizer *>(korali::Module::getModule(optimizerConfig, _k));
-  _optimizer->applyModuleDefaults(optimizerConfig);
-  _optimizer->setConfiguration(optimizerConfig);
-  _optimizer->initialize();
+    _optimizer = dynamic_cast<korali::fGradientBasedOptimizer *>(korali::Module::getModule(optimizerConfig, _k));
+    _optimizer->applyModuleDefaults(optimizerConfig);
+    _optimizer->setConfiguration(optimizerConfig);
+    _optimizer->initialize();
+  }
+  else
+  {
+    // Abort if _optimizer was not loaded
+    if (_optimizer == nullptr)
+      KORALI_LOG_ERROR("There was no new _optimizer configured, nor an old one loaded.");
+
+    // Set saved hyperparameters
+    _hyperparameters = _optimizer->_currentValue;
+  }
 
   // Setting hyperparameter structures in the neural network and optimizer
   setHyperparameters(_hyperparameters);

@@ -66,6 +66,7 @@ void fAdaBelief::printInternals()
   printf("_currentValue[i], _firstMoment[i], _secondCentralMoment[i]:\n");
   for (size_t i = 0; i < 10; i++)
     printf("%f %f %f\n", _currentValue[i], _firstMoment[i], _secondCentralMoment[i]);
+  fflush(stdout);
 }
 
 void fAdaBelief::setConfiguration(knlohmann::json& js) 

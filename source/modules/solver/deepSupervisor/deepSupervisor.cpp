@@ -20,7 +20,7 @@ void DeepSupervisor::initialize()
   // Fixing termination criteria for testing mode
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
-  // Don't reinitialize neural network if experiment was already initialized
+  // Don't reinitialize neural network if experiment was already initialized [if running several minibatches]
   if (_k->_isInitialized == true)
     return;
 
@@ -280,6 +280,9 @@ void DeepSupervisor::runTrainingGeneration()
     nnHyperparameterGradients = backwardGradients(MSEVector);
   }
 
+  // Append Loss to Loss History
+  _lossHistory.push_back(_currentLoss);
+
   // If the solution represents the gradients, just pass them on
   if (_lossFunction == "Direct Gradient") nnHyperparameterGradients = backwardGradients(_problem->_solutionData);
 
@@ -445,6 +448,14 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
+ if (isDefined(js, "Hyperparameters"))
+ {
+ try { _hyperparameters = js["Hyperparameters"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Hyperparameters']\n%s", e.what()); } 
+   eraseValue(js, "Hyperparameters");
+ }
+
  if (isDefined(js, "Evaluation"))
  {
  try { _evaluation = js["Evaluation"].get<std::vector<std::vector<float>>>();
@@ -459,6 +470,14 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Current Loss']\n%s", e.what()); } 
    eraseValue(js, "Current Loss");
+ }
+
+ if (isDefined(js, "Loss History"))
+ {
+ try { _lossHistory = js["Loss History"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Loss History']\n%s", e.what()); } 
+   eraseValue(js, "Loss History");
  }
 
  if (isDefined(js, "Normalization Means"))
@@ -551,15 +570,6 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Optimizer'] required by deepSupervisor.\n"); 
 
- if (isDefined(js, "Hyperparameters"))
- {
- try { _hyperparameters = js["Hyperparameters"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Hyperparameters']\n%s", e.what()); } 
-   eraseValue(js, "Hyperparameters");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Hyperparameters'] required by deepSupervisor.\n"); 
-
  if (isDefined(js, "Loss Function"))
  {
  try { _lossFunction = js["Loss Function"].get<std::string>();
@@ -648,7 +658,6 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Neural Network"]["Output Layer"] = _neuralNetworkOutputLayer;
    js["Neural Network"]["Engine"] = _neuralNetworkEngine;
    js["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
-   js["Hyperparameters"] = _hyperparameters;
    js["Loss Function"] = _lossFunction;
    js["Learning Rate"] = _learningRate;
    js["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
@@ -656,8 +665,10 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Output Weights Scaling"] = _outputWeightsScaling;
    js["Batch Concurrency"] = _batchConcurrency;
    js["Termination Criteria"]["Target Loss"] = _targetLoss;
+   js["Hyperparameters"] = _hyperparameters;
    js["Evaluation"] = _evaluation;
    js["Current Loss"] = _currentLoss;
+   js["Loss History"] = _lossHistory;
    js["Normalization Means"] = _normalizationMeans;
    js["Normalization Variances"] = _normalizationVariances;
  if(_optimizer != NULL) _optimizer->getConfiguration(js["Optimizer"]);

@@ -54,10 +54,6 @@ class DeepSupervisor : public Solver
   */
    std::string _neuralNetworkOptimizer;
   /**
-  * @brief Stores the training neural network hyperparameters (weights and biases).
-  */
-   std::vector<float> _hyperparameters;
-  /**
   * @brief Function to calculate the difference (loss) between the NN inference and the exact solution and its gradients for optimization.
   */
    std::string _lossFunction;
@@ -82,6 +78,10 @@ class DeepSupervisor : public Solver
   */
    size_t _batchConcurrency;
   /**
+  * @brief [Internal Use] Stores the training neural network hyperparameters (weights and biases).
+  */
+   std::vector<float> _hyperparameters;
+  /**
   * @brief [Internal Use] The output of the neural network if running on testing mode.
   */
    std::vector<std::vector<float>> _evaluation;
@@ -89,6 +89,10 @@ class DeepSupervisor : public Solver
   * @brief [Internal Use] Current value of the loss function.
   */
    float _currentLoss;
+  /**
+  * @brief [Internal Use] Current value of the loss function.
+  */
+   std::vector<float> _lossHistory;
   /**
   * @brief [Internal Use] Stores the current neural network normalization mean parameters.
   */

@@ -16,7 +16,7 @@ void __className__::initialize()
   // Fixing termination criteria for testing mode
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
-  // Don't reinitialize neural network if experiment was already initialized
+  // Don't reinitialize neural network if experiment was already initialized [if running several minibatches]
   if (_k->_isInitialized == true)
     return;
 
@@ -275,6 +275,9 @@ void __className__::runTrainingGeneration()
     // Running back propagation on the MSE vector
     nnHyperparameterGradients = backwardGradients(MSEVector);
   }
+
+  // Append Loss to Loss History
+  _lossHistory.push_back(_currentLoss);
 
   // If the solution represents the gradients, just pass them on
   if (_lossFunction == "Direct Gradient") nnHyperparameterGradients = backwardGradients(_problem->_solutionData);

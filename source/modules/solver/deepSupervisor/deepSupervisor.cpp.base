@@ -81,16 +81,15 @@ void __className__::initialize()
   _neuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
   _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _neuralNetwork->initialize();
-
-  // If the hyperparameters have not been specified, produce new initial ones
-  if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
-
-  // Configuring optimizer in first generation
+  _neuralNetwork->generateInitialHyperparameters();
+  
+  // Configure optimizer
   if (_k->_currentGeneration == 0)
   {
+    // Configure Optimizer
     knlohmann::json optimizerConfig;
     optimizerConfig["Type"] = "deepSupervisor/optimizers/" + _neuralNetworkOptimizer;
-    optimizerConfig["N Vars"] = _hyperparameters.size();
+    optimizerConfig["N Vars"] = _neuralNetwork->_hyperparameterCount;
 
     _optimizer = dynamic_cast<korali::fGradientBasedOptimizer *>(korali::Module::getModule(optimizerConfig, _k));
     _optimizer->applyModuleDefaults(optimizerConfig);
@@ -99,16 +98,9 @@ void __className__::initialize()
   }
   else
   {
-    // Abort if _optimizer was not loaded
-    if (_optimizer == nullptr)
-      KORALI_LOG_ERROR("There was no new _optimizer configured, nor an old one loaded.");
-
-    // Set saved hyperparameters
-    _hyperparameters = _optimizer->_currentValue;
+    // Load saved hyperparameters
+    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
-
-  // Setting hyperparameter structures in the neural network and optimizer
-  setHyperparameters(_hyperparameters);
 
   // Setting current loss
   _currentLoss = 0.0f;
@@ -304,15 +296,6 @@ void __className__::runTrainingGeneration()
 std::vector<float> __className__::getHyperparameters()
 {
   return _neuralNetwork->getHyperparameters();
-}
-
-void __className__::setHyperparameters(const std::vector<float> &hyperparameters)
-{
-  // Update evaluation network
-  _neuralNetwork->setHyperparameters(hyperparameters);
-
-  // Updating optimizer's current value
-  _optimizer->_currentValue = hyperparameters;
 }
 
 std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

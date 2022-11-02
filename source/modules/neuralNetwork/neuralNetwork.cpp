@@ -183,18 +183,20 @@ void NeuralNetwork::initialize()
   _isInitialized = true;
 }
 
-std::vector<float> NeuralNetwork::generateInitialHyperparameters()
+void NeuralNetwork::generateInitialHyperparameters()
 {
-  // Setting initial values for hyperparameters
+  // Empty storage for hyperparameters
   std::vector<float> initialHyperparameters;
 
+  // Initialize hyperparameters layer by layer
   for (size_t i = 0; i < _pipelines[0][0]._layerVector.size(); i++)
   {
     auto layerParameters = _pipelines[0][0]._layerVector[i]->generateInitialHyperparameters();
     initialHyperparameters.insert(initialHyperparameters.end(), layerParameters.begin(), layerParameters.end());
   }
 
-  return initialHyperparameters;
+  // Set hyperparameters in neural network
+  setHyperparameters(initialHyperparameters);
 }
 
 void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)

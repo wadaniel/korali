@@ -85,16 +85,15 @@ void DeepSupervisor::initialize()
   _neuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
   _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _neuralNetwork->initialize();
-
-  // If the hyperparameters have not been specified, produce new initial ones
-  if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
-
-  // Configuring optimizer in first generation
+  _neuralNetwork->generateInitialHyperparameters();
+  
+  // Configure optimizer
   if (_k->_currentGeneration == 0)
   {
+    // Configure Optimizer
     knlohmann::json optimizerConfig;
     optimizerConfig["Type"] = "deepSupervisor/optimizers/" + _neuralNetworkOptimizer;
-    optimizerConfig["N Vars"] = _hyperparameters.size();
+    optimizerConfig["N Vars"] = _neuralNetwork->_hyperparameterCount;
 
     _optimizer = dynamic_cast<korali::fGradientBasedOptimizer *>(korali::Module::getModule(optimizerConfig, _k));
     _optimizer->applyModuleDefaults(optimizerConfig);
@@ -103,16 +102,9 @@ void DeepSupervisor::initialize()
   }
   else
   {
-    // Abort if _optimizer was not loaded
-    if (_optimizer == nullptr)
-      KORALI_LOG_ERROR("There was no new _optimizer configured, nor an old one loaded.");
-
-    // Set saved hyperparameters
-    _hyperparameters = _optimizer->_currentValue;
+    // Load saved hyperparameters
+    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
-
-  // Setting hyperparameter structures in the neural network and optimizer
-  setHyperparameters(_hyperparameters);
 
   // Setting current loss
   _currentLoss = 0.0f;
@@ -308,15 +300,6 @@ void DeepSupervisor::runTrainingGeneration()
 std::vector<float> DeepSupervisor::getHyperparameters()
 {
   return _neuralNetwork->getHyperparameters();
-}
-
-void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameters)
-{
-  // Update evaluation network
-  _neuralNetwork->setHyperparameters(hyperparameters);
-
-  // Updating optimizer's current value
-  _optimizer->_currentValue = hyperparameters;
 }
 
 std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
@@ -574,15 +557,6 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Optimizer'] required by deepSupervisor.\n"); 
 
- if (isDefined(js, "Hyperparameters"))
- {
- try { _hyperparameters = js["Hyperparameters"].get<std::vector<float>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Hyperparameters']\n%s", e.what()); } 
-   eraseValue(js, "Hyperparameters");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Hyperparameters'] required by deepSupervisor.\n"); 
-
  if (isDefined(js, "Loss Function"))
  {
  try { _lossFunction = js["Loss Function"].get<std::string>();
@@ -671,7 +645,6 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["Neural Network"]["Output Layer"] = _neuralNetworkOutputLayer;
    js["Neural Network"]["Engine"] = _neuralNetworkEngine;
    js["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
-   js["Hyperparameters"] = _hyperparameters;
    js["Loss Function"] = _lossFunction;
    js["Learning Rate"] = _learningRate;
    js["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;

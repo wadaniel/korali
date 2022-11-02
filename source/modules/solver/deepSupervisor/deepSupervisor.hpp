@@ -54,10 +54,6 @@ class DeepSupervisor : public Solver
   */
    std::string _neuralNetworkOptimizer;
   /**
-  * @brief Stores the training neural network hyperparameters (weights and biases).
-  */
-   std::vector<float> _hyperparameters;
-  /**
   * @brief Function to calculate the difference (loss) between the NN inference and the exact solution and its gradients for optimization.
   */
    std::string _lossFunction;
@@ -171,12 +167,6 @@ class DeepSupervisor : public Solver
    * @return The hyperparameter.
    */
   std::vector<float> getHyperparameters();
-
-  /**
-   * @brief Sets the hyperparameter of the neural network.
-   * @param hyperparameters The parameter of the neural network.
-   */
-  void setHyperparameters(const std::vector<float> &hyperparameters);
 
   void initialize() override;
   void runGeneration() override;

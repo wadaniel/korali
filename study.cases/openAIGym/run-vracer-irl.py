@@ -15,6 +15,7 @@ parser.add_argument('--ebru', help='Experiences between reward update.', require
 parser.add_argument('--dbs', help='Demonstration Batch Size.', required=False, default=5, type=int)
 parser.add_argument('--bbs', help='Background Batch Size.', required=False, default=50, type=int)
 parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
+parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
@@ -97,6 +98,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
+e["Solver"]["Demonstration Policy"] = args.pol
 e["Solver"]["Optimize Max Entropy Objective"] = True
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs

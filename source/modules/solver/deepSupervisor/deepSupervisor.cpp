@@ -85,7 +85,6 @@ void DeepSupervisor::initialize()
   _neuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
   _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _neuralNetwork->initialize();
-  _neuralNetwork->generateInitialHyperparameters();
 
   // Configure optimizer
   if (_k->_currentGeneration == 0)
@@ -99,6 +98,7 @@ void DeepSupervisor::initialize()
     _optimizer->applyModuleDefaults(optimizerConfig);
     _optimizer->setConfiguration(optimizerConfig);
     _optimizer->initialize();
+    _optimizer->_currentValue = _neuralNetwork->generateInitialHyperparameters();
   }
   else
   {

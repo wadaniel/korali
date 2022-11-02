@@ -181,7 +181,7 @@ class NeuralNetwork : public Module
   /**
    * @brief Generates the initial values for the hyperparameters
    */
-  void generateInitialHyperparameters();
+  std::vector<float> generateInitialHyperparameters();
 
   /**
    * @brief Updates the values of weights, biases configuration to the NN

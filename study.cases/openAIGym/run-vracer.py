@@ -32,6 +32,10 @@ for i in range(100):
 	resultFolder = f'_result_vracer_{args.env}_{args.run}/'
 	e.loadState(resultFolder + '/latest');
 
+	### Set random seed
+
+	e["Random Seed"] = 0xC0FEE
+
 	### Initializing openAI Gym environment
 
 	initEnvironment(e, args.env)
@@ -56,7 +60,7 @@ for i in range(100):
 	e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = args.opt
 
 	e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-	e["Solver"]["Neural Network"]["Optimizer"] = "fAdam"
+	e["Solver"]['Neural Network']['Optimizer'] = "fAdam"
 	e["Solver"]["L2 Regularization"]["Enabled"] = args.l2 > 0.
 	e["Solver"]["L2 Regularization"]["Importance"] = args.l2
 
@@ -80,11 +84,12 @@ for i in range(100):
 
 	### Setting file output configuration
 
+	e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
 	e["Solver"]["Termination Criteria"]["Max Generations"] = i
 	e["Solver"]["Experience Replay"]["Serialize"] = True
 	e["Console Output"]["Verbosity"] = "Detailed"
 	e["File Output"]["Enabled"] = True
-	e["File Output"]["Frequency"] = 1
+	e["File Output"]["Frequency"] = 200
 	e["File Output"]["Use Multiple Files"] = False
 	e["File Output"]["Path"] = resultFolder
 

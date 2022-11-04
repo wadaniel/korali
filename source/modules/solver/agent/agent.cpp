@@ -106,10 +106,12 @@ void Agent::initialize()
     /* Initializing REFER information */
 
     // If cutoff scale is not defined, use a heuristic value [defaults to 4.0]
-    if (_experienceReplayOffPolicyCutoffScale < 0.0f)
+    if (_experienceReplayOffPolicyCutoffScale <= 0.0f)
       KORALI_LOG_ERROR("Experience Replay Cutoff Scale must be larger 0.0");
     _experienceReplayOffPolicyCount.resize(numAgents, 0);
     _experienceReplayOffPolicyRatio.resize(numAgents, 0.0f);
+    if (_learningRate <= 0.0f)
+      KORALI_LOG_ERROR("Learning rate must be larger 0.0");
     _currentLearningRate = _learningRate;
 
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;

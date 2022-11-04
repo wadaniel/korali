@@ -203,8 +203,11 @@ void __className__::calculatePolicyGradients(const std::vector<std::pair<size_t,
       // Compute Off-Policy Objective (eq. 5)
       const float lossOffPolicy = Qret - stateValue;
 
+      // Get importance weight
+      const auto importanceWeight = _importanceWeightBuffer[expId][agentId];
+
       // Compute Off-Policy Gradient
-      auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
+      auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy, importanceWeight);
 
       // Multi-agent correlation implies additional factor
       if (_multiAgentCorrelation)

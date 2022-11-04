@@ -547,10 +547,10 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Neural Network']['Optimizer']\n%s", e.what()); } 
 {
  bool validOption = false; 
- if (_neuralNetworkOptimizer == "fAdam") validOption = true; 
- if (_neuralNetworkOptimizer == "fAdaBelief") validOption = true; 
- if (_neuralNetworkOptimizer == "fMadGrad") validOption = true; 
- if (_neuralNetworkOptimizer == "fAdaGrad") validOption = true; 
+ if (_neuralNetworkOptimizer == "Adam") validOption = true; 
+ if (_neuralNetworkOptimizer == "AdaBelief") validOption = true; 
+ if (_neuralNetworkOptimizer == "MadGrad") validOption = true; 
+ if (_neuralNetworkOptimizer == "AdaGrad") validOption = true; 
  if (validOption == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ['Neural Network']['Optimizer'] required by deepSupervisor.\n", _neuralNetworkOptimizer.c_str()); 
 }
    eraseValue(js, "Neural Network", "Optimizer");

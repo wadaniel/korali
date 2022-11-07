@@ -149,12 +149,12 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Jumping back into the agent's environment
     runEnvironment(agent);
 
-    // In case of this being a single agent, rewert action format
+    // In case of this being a single agent, revert action format
     if (_agentsPerEnvironment == 1)
     {
-      auto action = KORALI_GET(std::vector<float>, agent, "Action");
+      auto action = agent["Action"].get<std::vector<float>>();
       agent._js.getJson().erase("Action");
-      agent["Action"][0] = action[0];
+      agent["Action"][0] = action;
     }
 
     // Storing experience's reward
@@ -279,6 +279,14 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
     if (_agentsPerEnvironment == 1) agent["Action"] = agent["Action"][0].get<std::vector<float>>();
 
     runEnvironment(agent);
+
+    // In case of this being a single agent, revert action format
+    if (_agentsPerEnvironment == 1)
+    {
+      auto action = agent["Action"].get<std::vector<float>>();
+      agent._js.getJson().erase("Action");
+      agent["Action"][0] = action;
+    }
 
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       testingRewards[i] += agent["Reward"][i].get<float>();

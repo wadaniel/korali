@@ -1380,7 +1380,7 @@ void Agent::printGenerationAfter()
     if (_rewardRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Reward Rescaling: N(0.0, %.3e)\n", _rewardRescalingSigma);
 
-    if (_testingBestEpisodeId > 0)
+    if ( _problem->_testingFrequency > 0 )
     {
       _k->_logger->logInfo("Normal", "Testing Statistics:\n");
       _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);

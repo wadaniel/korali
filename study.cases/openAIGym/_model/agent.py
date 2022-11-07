@@ -35,7 +35,6 @@ def initEnvironment(e, envName, moviePath = ''):
  e["Problem"]["Testing Frequency"] = 20
  e["Problem"]["Policy Testing Episodes"] = 10
 
-
  # Getting environment variable counts
  stateVariableCount = env.observation_space.shape[0]
  actionVariableCount = env.action_space.shape[0]

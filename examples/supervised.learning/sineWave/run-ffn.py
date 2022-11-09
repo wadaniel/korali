@@ -104,7 +104,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Configuring output
 
-e["Console Output"]["Frequency"] = 100
+e["Console Output"]["Frequency"] = 10
 e["File Output"]["Enabled"] = True
 e["File Output"]["Use Multiple Files"] = False
 e["Random Seed"] = 0xC0FFEE

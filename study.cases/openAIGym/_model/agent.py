@@ -11,11 +11,11 @@ if (gym.__version__ != "0.26.2"):
     print("[agent] Exit..")
     sys.exit()
 
-def initEnvironment(e, envName, moviePath = ''):
+def initEnvironment(e, envName, excludePositions, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName, exclude_current_positions_from_observation=True)
+ env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
  
  # Handling special cases
  
@@ -34,11 +34,12 @@ def initEnvironment(e, envName, moviePath = ''):
  
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
- e["Problem"]["Environment Function"] = lambda x : agent(x, env)
+ e["Problem"]["Environment Function"] = lambda x : agent(x, env, excludePositions)
  e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
  
  # Getting environment variable counts
- stateVariableCount = env.observation_space.shape[0]
+
+ stateVariableCount = env.observation_space.shape[0] if excludePositions else env.observation_space.shape[0] - 1
  actionVariableCount = env.action_space.shape[0]
  
  # Generating state variable index list
@@ -61,16 +62,16 @@ def initEnvironment(e, envName, moviePath = ''):
   e["Variables"][stateVariableCount + i]["Upper Bound"] = float(env.action_space.high[i])
   e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = 0.4472
 
-def agent(s, env):
+def agent(s, env, excludePositions):
 
  if (s["Custom Settings"]["Print Step Information"] == "Enabled"):
   printStep = True
  else:
   printStep = False
  
- state = env.reset()[0].tolist()
- s["State"] = state
- s["Features"] = state #list(state[-3:]) 
+ state = env.reset()[0]
+ s["State"] = state.tolist() if excludePositions else state.tolist()[1:]
+ s["Features"] = state.tolist()
 
  step = 0
  done = False
@@ -90,8 +91,8 @@ def agent(s, env):
   # Performing the action
   action = s["Action"]
  
-  s["Features"] = list(state) #list(state[-3:]) 
-  state, reward, done, _ = env.step(action)[:4]
+  s["Features"] = state.tolist()
+  state, reward, done, = env.step(action)[:3]
  
   # Getting Reward
   s["Reward"] = reward
@@ -102,7 +103,7 @@ def agent(s, env):
   #if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
   
   # Storing New State
-  s["State"] = state.tolist()
+  s["State"] = state.tolist() if excludePositions else state.tolist()[1:]
   
   # Advancing step counter
   step = step + 1

@@ -268,6 +268,7 @@ if __name__ == '__main__':
  if (len(args.dir)>1):
      plt.legend()
  plt.draw()
+ plt.tight_layout()
  
  ### Printing live results if update frequency > 0
  
@@ -282,6 +283,7 @@ if __name__ == '__main__':
    ax1.clear()
    plotRewardHistory(ax1, args.dir, results, args.featureReward, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI, args.aggregate)
    plt.draw()
+   plt.tight_layout()
    
    # Check if maximum time exceeded
    if (maxTime> 0.0):
@@ -290,7 +292,6 @@ if __name__ == '__main__':
     if (elapsedTime > maxTime):
      print('[Korali] Maximum plotting time reached. Exiting...') 
      exit(0)
- 
 
    plt.show()
   exit(0)

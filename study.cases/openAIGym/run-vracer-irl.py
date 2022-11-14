@@ -14,6 +14,8 @@ parser.add_argument('--rnn', help='Reward Neural Net size.', required=False, def
 parser.add_argument('--ebru', help='Experiences between reward update.', required=False, default=500, type=int)
 parser.add_argument('--dbs', help='Demonstration Batch Size.', required=False, default=5, type=int)
 parser.add_argument('--bbs', help='Background Batch Size.', required=False, default=50, type=int)
+parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
+parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
@@ -21,22 +23,26 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-
-obsfile = f"observations_{args.env}.json"
-obsstates = []
+excludePositions = False
+obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
+rawstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:
     obsjson = json.load(infile)
-    obsstates = obsjson["States"]
+    rawstates = obsjson["States"]
     obsactions = obsjson["Actions"]
 
 ### Compute Feauters from states
+obsstates = []
 obsfeatures = []
-for trajectory, actions in zip(obsstates, obsactions):
+for trajectory, actions in zip(rawstates, obsactions):
+    states = []
     features = []
     for idx in range(len(trajectory)):
+        states.append(list(trajectory[idx])) if excludePositions else states.append(list(trajectory[idx][1:]))
         features.append(list(trajectory[idx]))
 
+    obsstates.append(list(states))
     obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
@@ -57,7 +63,7 @@ e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
 
-initEnvironment(e, args.env)
+initEnvironment(e, args.env, excludePositions)
 
 ### IRL variables
 
@@ -80,7 +86,7 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 1e-9
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
@@ -92,10 +98,12 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
+e["Solver"]["Demonstration Policy"] = args.pol
+e["Solver"]["Optimize Max Entropy Objective"] = True
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs
-e["Solver"]["Background Sample Size"] = 100
+e["Solver"]["Background Sample Size"] = args.bss
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
@@ -155,3 +163,4 @@ e["File Output"]["Path"] = resultFolder
 ### Running Experiment
 
 k.run(e)
+print(args)

@@ -14,6 +14,8 @@ void Bayesian::initialize()
     bool foundDistribution = false;
 
     for (size_t j = 0; j < _k->_distributions.size(); j++)
+    {
+      _k->_distributions[j]->updateDistribution();
       if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name)
       {
         foundDistribution = true;
@@ -22,6 +24,7 @@ void Bayesian::initialize()
 
     if (foundDistribution == false)
       KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
+    }
   }
 }
 

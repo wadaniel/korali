@@ -23,7 +23,7 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-excludePositions = False
+excludePositions = True
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []

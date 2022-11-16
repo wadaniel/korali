@@ -22,9 +22,10 @@ void Bayesian::initialize()
         _k->_variables[i]->_distributionIndex = j;
       }
 
-      if (foundDistribution == false)
-        KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
     }
+    
+    if (foundDistribution == false)
+        KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
   }
 }
 

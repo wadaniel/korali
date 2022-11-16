@@ -436,29 +436,21 @@ class Agent : public Solver
   */
    std::vector<float> _maxEntropyObjective;
   /**
-  * @brief [Internal Use] TODO.
+  * @brief [Internal Use] History of avg demonstration batch importance weights.
   */
    std::vector<float> _demonstrationBatchImportanceWeight;
   /**
-  * @brief [Internal Use] TODO.
+  * @brief [Internal Use] History of avg background batch importance weights.
   */
    std::vector<float> _backgroundBatchImportanceWeight;
+  /**
+  * @brief [Internal Use] History of effective sample size.
+  */
+   std::vector<float> _effectiveSampleSize;
   /**
   * @brief [Internal Use] Container to collect statistics of log partition function.
   */
    std::vector<std::vector<float>> _statisticLogPartitionFunction;
-  /**
-  * @brief [Internal Use] Container to collect statistics of log partition function using the fusion distribution.
-  */
-   std::vector<std::vector<float>> _statisticFusionLogPartitionFunction;
-  /**
-  * @brief [Internal Use] Value of features when doing statistics of log partition function.
-  */
-   std::vector<std::vector<float>> _statisticFeatureWeights;
-  /**
-  * @brief [Internal Use] Value of trajectory returns.
-  */
-   std::vector<std::vector<float>> _statisticCumulativeRewards;
   /**
   * @brief [Termination Criteria] The solver will stop when the given number of episodes have been run.
   */

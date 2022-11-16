@@ -1169,6 +1169,7 @@ float Continuous::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::
   }
   else
   {
+    // Predict action with constant policy
     for (size_t t = 0; t < states.size(); ++t)
       for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
         trajectoryLogProbability += normalLogDensity(actions[t][d], _observationsApproximatorWeights[d][0], _observationsApproximatorSigmas[d]);

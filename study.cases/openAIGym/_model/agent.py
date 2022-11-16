@@ -15,7 +15,10 @@ def initEnvironment(e, envName, excludePositions, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
+ if (envName == 'Reacher-v4'):
+  env = gym.make(envName)
+ else:
+  env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
  
  # Handling special cases
  

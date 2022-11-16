@@ -931,6 +931,7 @@ namespace
   // Trying to run unknown operation
   Sample s;
   s["Sample Id"] = 0;
+  s["Parameters"] = std::vector<double>({0.5});
   ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
 
   // Backup the correct base configuration

@@ -2768,8 +2768,7 @@ namespace
 
   // Testing incorrect minimum/maximum
   d->_minimumX = 16.0;
-  ASSERT_NO_THROW(d->updateDistribution());
-  ASSERT_ANY_THROW(d->getRandomNumber());
+  ASSERT_ANY_THROW(d->updateDistribution());
 
   // Testing correct minimum/maximum
   d->_minimumX = 2.0;

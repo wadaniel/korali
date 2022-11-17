@@ -125,6 +125,8 @@ void Psi::updateConditionalPriors(Sample &sample)
 
 void Psi::evaluateLogLikelihood(Sample &sample)
 {
+  try
+  {
   updateConditionalPriors(sample);
 
   double logLikelihood = 0.0;
@@ -143,7 +145,12 @@ void Psi::evaluateLogLikelihood(Sample &sample)
     logLikelihood += logSumExp(logValues);
   }
 
-  sample["logLikelihood"] = logLikelihood;
+    sample["logLikelihood"] = logLikelihood;
+  }
+  catch (std::exception &e)
+  {
+    sample["logLikelihood"] = -Inf;
+  }
 }
 
 void Psi::setConfiguration(knlohmann::json& js) 

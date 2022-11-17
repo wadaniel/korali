@@ -110,7 +110,7 @@ void Bayesian::evaluateHessian(Sample &sample)
   evaluateLogPriorHessian(sample);
   evaluateLogLikelihoodHessian(sample);
   const auto logPriorHessian = KORALI_GET(std::vector<double>, sample, "logPrior Hessian");
-  auto logLikHessian = KORALI_GET(std::vector<double>, sample, "logLikHessian Hessian");
+  auto logLikHessian = KORALI_GET(std::vector<double>, sample, "logLikelihood Hessian");
 
   for (size_t i = 0; i < logPriorHessian.size(); i++)
     logLikHessian[i] += logPriorHessian[i];

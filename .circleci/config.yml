@@ -57,7 +57,7 @@ jobs:
           command: if [ "<< parameters.runTests >>" == "true" ]; then source tools/env/set_env.sh build; MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson test -C build; fi;
       - run:
           name: regression test
-          command: if [ "<< parameters.runRegressionTests >>" == "true" ]; then source tools/env/set_env.sh build; MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson regression_test -C build; fi;
+          command: if [ "<< parameters.runRegressionTests >>" == "true" ]; then source tools/env/set_env.sh build; MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson regression_test; fi;
       - run:
           name: install
           command: meson install -C build

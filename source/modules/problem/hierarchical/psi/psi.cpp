@@ -127,23 +127,23 @@ void Psi::evaluateLogLikelihood(Sample &sample)
 {
   try
   {
-  updateConditionalPriors(sample);
+    updateConditionalPriors(sample);
 
-  double logLikelihood = 0.0;
+    double logLikelihood = 0.0;
 
-  for (size_t i = 0; i < _subProblemsCount; i++)
-  {
-    std::vector<double> logValues(_subProblemsSampleLogPriors[i].size());
-
-    for (size_t j = 0; j < _subProblemsSampleLogPriors[i].size(); j++)
+    for (size_t i = 0; i < _subProblemsCount; i++)
     {
-      logValues[j] = -_subProblemsSampleLogPriors[i][j];
-      for (size_t k = 0; k < _conditionalPriors.size(); k++)
-        logValues[j] += _k->_distributions[_conditionalPriorIndexes[k]]->getLogDensity(_subProblemsSampleCoordinates[i][j][k]);
-    }
+      std::vector<double> logValues(_subProblemsSampleLogPriors[i].size());
 
-    logLikelihood += logSumExp(logValues);
-  }
+      for (size_t j = 0; j < _subProblemsSampleLogPriors[i].size(); j++)
+      {
+        logValues[j] = -_subProblemsSampleLogPriors[i][j];
+        for (size_t k = 0; k < _conditionalPriors.size(); k++)
+          logValues[j] += _k->_distributions[_conditionalPriorIndexes[k]]->getLogDensity(_subProblemsSampleCoordinates[i][j][k]);
+      }
+
+      logLikelihood += logSumExp(logValues);
+    }
 
     sample["logLikelihood"] = logLikelihood;
   }

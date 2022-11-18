@@ -164,7 +164,11 @@ subdir('python/korali')
 # tests
 if get_option('test')
   nomalloc = environment({'MALLOC_PERTURB_': '0'})
+  subdir('tests')
+endif
+
+if get_option('regression_test')
+  nomalloc = environment({'MALLOC_PERTURB_': '0'})
   subdir('examples')
   subdir('study.cases')
-  subdir('tests')
 endif

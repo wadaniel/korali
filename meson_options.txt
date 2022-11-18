@@ -5,13 +5,6 @@ option('test',
   yield: true
 )
 
-option('regression_test',
-  type : 'boolean',
-  value : false,
-  description : 'Run examples and study cases',
-  yield: true
-)
-
 option('mpi',
   type : 'boolean',
   value : false,

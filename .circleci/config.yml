@@ -26,9 +26,6 @@ jobs:
       runTests:
         type: string
         default: 'true'
-      runRegressionTests:
-        type: string
-        default: 'true'
       runCoverage:
         type: string
         default: 'false'
@@ -56,9 +53,6 @@ jobs:
           name: test
           command: if [ "<< parameters.runTests >>" == "true" ]; then source tools/env/set_env.sh build; MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson test -C build; fi;
       - run:
-          name: regression test
-          command: if [ "<< parameters.runRegressionTests >>" == "true" ]; then source tools/env/set_env.sh build; MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson regression_test; fi;
-      - run:
           name: install
           command: meson install -C build
       - run: 
@@ -77,8 +71,7 @@ workflows:
           image: ubuntu_openmpi_onednn
           buildtype: release
           runCoverage: 'true'
-          runTests: 'true'
-          runRegressionTests: 'false'
+          runTests: 'false'
           useMPI: 'true'
           useMPI4Py: 'true'
       - build:
@@ -87,7 +80,6 @@ workflows:
           buildtype: release
           runCoverage: 'false'
           runTests: 'true'
-          runRegressionTests: 'true'
           useMPI: 'true'
           useMPI4Py: 'false'
       - build:
@@ -96,7 +88,6 @@ workflows:
           buildtype: release
           runCoverage: 'false'
           runTests: 'true'
-          runRegressionTests: 'true'
           CC: 'clang'
           CXX: 'clang++'
           useMPI: 'true'
@@ -107,6 +98,5 @@ workflows:
           buildtype: release
           runCoverage: 'false'
           runTests: 'true'
-          runRegressionTests: 'true'
           useMPI: 'true'
           useMPI4Py: 'false'

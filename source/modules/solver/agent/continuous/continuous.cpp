@@ -421,9 +421,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
   if (_policyDistribution == "Normal")
   {
-    float logpCurPolicy = 0.f;
-    float logpOldPolicy = 0.f;
-
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
@@ -450,9 +447,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
   if (_policyDistribution == "Squashed Normal")
   {
-    float logpCurPolicy = 0.f;
-    float logpOldPolicy = 0.f;
-
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // Getting parameters from the new and old policies
@@ -481,9 +475,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
   if (_policyDistribution == "Clipped Normal")
   {
-    float logpCurPolicy = 0.f;
-    float logpOldPolicy = 0.f;
-
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // Getting parameters from the new and old policies
@@ -539,9 +530,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
   if (_policyDistribution == "Truncated Normal")
   {
-    float logpCurPolicy = 0.f;
-    float logpOldPolicy = 0.f;
-
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // Getting parameters from the new and old policies

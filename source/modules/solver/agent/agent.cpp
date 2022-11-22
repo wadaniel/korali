@@ -334,7 +334,7 @@ void Agent::testingGeneration()
   KORALI_WAITALL(testingWorkers);
 
   for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
-    _testingReward[workerId] = testingWorkers[workerId]["Testing Reward"].get<float>();
+    _testingReward[workerId] = KORALI_GET(float, testingWorkers[workerId], "Testing Reward");
 }
 
 void Agent::rescaleStates()

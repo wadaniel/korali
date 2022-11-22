@@ -469,7 +469,7 @@ namespace
   _functionVector.clear();
   _functionVector.push_back(&modelFc);
 
-  ASSERT_ANY_THROW(pObj->evaluate(s));
+  ASSERT_NO_THROW(pObj->evaluate(s));
   ASSERT_NO_THROW(pObj->evaluateGradient(s));
   ASSERT_NO_THROW(pObj->evaluateHessian(s));
 

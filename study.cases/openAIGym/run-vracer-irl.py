@@ -23,7 +23,7 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-excludePositions = True
+excludePositions = False
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []
@@ -99,7 +99,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Demonstration Policy"] = args.pol
-e["Solver"]["Optimize Max Entropy Objective"] = True
+e["Solver"]["Optimize Max Entropy Objective"] = False
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs

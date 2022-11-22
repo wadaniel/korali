@@ -292,6 +292,7 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
+      if(_optimizeMaxEntropyObjective == true)
       if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
         const auto startTime = std::chrono::steady_clock::now(); // Profiling
@@ -310,32 +311,6 @@ void Agent::trainingGeneration()
         _k->_logger->logInfo("Detailed", "Done!\n");
       }
 
-      // Update the reward function based on guided cost learning
-      while (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
-      {
-        auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-        updateRewardFunction();
-
-        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
-        _sessionRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-        _generationRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-        _rewardUpdateCount++;
-        _sessionRewardUpdateCount++;
-      }
-
-      if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
-      {
-        auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-        //partitionFunctionStat();
-
-        auto endTime = std::chrono::steady_clock::now();                                                                                 // Profiling
-        _sessionPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-        _generationPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-      }
-
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
         if (_policyUpdateCount == 0)
@@ -345,6 +320,41 @@ void Agent::trainingGeneration()
       if (_featureRescalingEnabled == true)
         if (_policyUpdateCount == 0)
           rescaleFeatures();
+    
+      if(_optimizeMaxEntropyObjective == false)
+      {
+            while(_rewardUpdateCount * _experiencesBetweenRewardUpdates <= _experienceReplayStartSize)
+            {
+                updateRewardFunction();
+                _rewardUpdateCount++;
+            }
+      }
+      else
+      {
+          // Update the reward function based on guided cost learning
+          while (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
+          {
+            auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
+            updateRewardFunction();
+
+            auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
+            _sessionRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+            _generationRewardUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
+            _rewardUpdateCount++;
+            _sessionRewardUpdateCount++;
+          }
+      }
+
+      if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
+      {
+        auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
+        auto endTime = std::chrono::steady_clock::now();                                                                                 // Profiling
+        _sessionPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+        _generationPartitionFunctionStatUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+      }
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
@@ -440,6 +450,7 @@ void Agent::testingGeneration()
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
 {
   // Initialize background batch
+  if(_optimizeMaxEntropyObjective == false) return;
   if (_backgroundTrajectoryCount == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing background batch..\n");
@@ -483,7 +494,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     if (_backgroundTrajectoryCount != _backgroundBatchSize)
       KORALI_LOG_ERROR("Error during background batch intialization. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
     
-    if(_optimizeMaxEntropyObjective == false) return;
 
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
     for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
@@ -533,7 +543,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     _backgroundTrajectoryCount++;
     _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1].resize(_backgroundSampleSize + 1);
 
-    if(_optimizeMaxEntropyObjective == false) return;
 
     if (_useFusionDistribution)
     {
@@ -582,7 +591,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     _backgroundPolicyHyperparameter[replacementIdx] = _policyBuffer[episodeStartIdx];
     _backgroundTrajectoryCount++;
     
-    if(_optimizeMaxEntropyObjective == false) return;
 
     if (_useFusionDistribution)
     {
@@ -610,11 +618,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
 
+  if(_optimizeMaxEntropyObjective == false) return;
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing demonstration batch..\n");
     _demonstrationTrajectoryLogProbabilities.resize(_problem->_numberObservedTrajectories);
-    if(_optimizeMaxEntropyObjective == false) return;
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m].resize(_backgroundSampleSize + 1);
@@ -632,27 +640,20 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
   // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with new trajectory..\n");
-    if(_optimizeMaxEntropyObjective == false) return;
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
   }
-  //else if (replacementIdx < _backgroundSampleSize && _useFusionDistribution)
   else
   // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with replaced trajectory..\n");
-    if(_optimizeMaxEntropyObjective == false) return;
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
-  //else
-  //{
-  //  _k->_logger->logInfo("Detailed", "Skipping demonstration batch update.\n");
-  //}
 }
 
 std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const
@@ -743,6 +744,8 @@ void Agent::updateRewardFunction()
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
       cumDemoReward += cumReward;
       
+      if(_optimizeMaxEntropyObjective == true)
+      {
       for (size_t i = 0; i < _demonstrationBatchSize; ++i)
       {
         demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
@@ -757,7 +760,11 @@ void Agent::updateRewardFunction()
         if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
         demoLogP += demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m];
       }
+      }
     }
+    
+    if(_optimizeMaxEntropyObjective == true)
+    {
 
     // Record history of logprobability of demonstrations
     _demonstrationLogProbability.push_back(demoLogP / (float) (_demonstrationBatchSize + _backgroundBatchSize));
@@ -770,7 +777,6 @@ void Agent::updateRewardFunction()
     std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(totalBatchSize));
 
-    if(_optimizeMaxEntropyObjective)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const size_t bckIdx = randomBackgroundIndexes[m];
@@ -909,7 +915,6 @@ void Agent::updateRewardFunction()
     // Calculate gradient of loglikelihood (contribution from partition function & background batch)
     const float invTotalBatchSize = 1. / (float) totalBatchSize;
     
-    if(_optimizeMaxEntropyObjective == true)
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       const float mult = std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * invTotalBatchSize;
@@ -923,7 +928,6 @@ void Agent::updateRewardFunction()
         _maxEntropyGradient[k] -= _demonstrationBatchSize * mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
       }
     }
-
     size_t negBracket = 0.;
     // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
@@ -938,18 +942,15 @@ void Agent::updateRewardFunction()
 #pragma omp parallel for
       for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
       {
-        // Contribution from partition function and demonstration batch
-        if(_optimizeMaxEntropyObjective == true)
-          _maxEntropyGradient[k] += (1.- _demonstrationBatchSize * mult) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
-        else
-        // Contribution from demonstration return
-          _maxEntropyGradient[k] += gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        _maxEntropyGradient[k] += (1.- _demonstrationBatchSize * mult) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
         if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
       }
+      _k->_logger->logInfo("Detailed", "Neg Bracket (%zu/%zu)!\n", negBracket, _demonstrationBatchSize);
+      _k->_logger->logInfo("Detailed", "Effective Sample Size (%f/%f)!\n", ess, (float) (_demonstrationBatchSize+_backgroundBatchSize));
+
+
     }
 
-    _k->_logger->logInfo("Detailed", "Neg Bracket (%zu/%zu)!\n", negBracket, _demonstrationBatchSize);
-    _k->_logger->logInfo("Detailed", "Effective Sample Size (%f/%f)!\n", ess, (float) (_demonstrationBatchSize+_backgroundBatchSize));
 
     // Record history of importance weights
     _demonstrationBatchImportanceWeight.push_back(logSumExp(demonstrationBatchLogImportanceWeights) - std::log((float)_demonstrationBatchSize));
@@ -959,7 +960,24 @@ void Agent::updateRewardFunction()
     // Record history of max entropy objective
     _maxEntropyObjective.push_back(cumDemoReward - _demonstrationBatchSize*_logPartitionFunction);
 
-    // Passing hyperparameter gradients through an Adam update
+ 
+    }
+    else
+    {
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+
+#pragma omp parallel for
+      for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
+      {
+        // Contribution from demonstration return
+        _maxEntropyGradient[k] += gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
+        if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
+      }
+    }
+    }
+
+   // Passing hyperparameter gradients through an Adam update
     _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);
 
     // Getting new set of hyperparameters from Adam

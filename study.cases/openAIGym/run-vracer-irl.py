@@ -58,7 +58,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = f'_result_irl_{args.env}_{args.run}'
+resultFolder = f'_result_dirl_{args.env}_{args.run}'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -113,7 +113,7 @@ e["Solver"]["Reward Function"]["Batch Size"] = 256
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = False
-e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
+e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 0.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = args.rnn

@@ -7,7 +7,7 @@ from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper
 
 if (gym.__version__ != "0.26.2"):
-    print("[agent] Gym version 0.26.2 expected, but is {gym.__version__}")
+    print(f"[agent] Gym version 0.26.2 expected, but is {gym.__version__}")
     print("[agent] Exit..")
     sys.exit()
 

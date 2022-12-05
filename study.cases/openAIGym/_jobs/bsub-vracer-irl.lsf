@@ -33,7 +33,7 @@ POL="Linear"
 #POL="Quadratic"
 
 
-DIR="./_result_dirl_${ENV}_${RUN}/"
+DIR="./_result_irl_${ENV}_${RUN}/"
 
 mkdir ${DIR}
 touch "${DIR}/run.config"

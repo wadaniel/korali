@@ -3,12 +3,14 @@
 #SBATCH --job-name="openai_irl"
 #SBATCH --output=openai_irl_%j.out
 #SBATCH --error=openai_irl_err_%j.out
-#SBATCH --time=24:00:00
+##SBATCH --time=24:00:00
+##SBATCH --partition=normal
+#SBATCH --time=00:30:00
+#SBATCH --partition=debug
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --ntasks-per-core=1
-#SBATCH --partition=normal
 #SBATCH --constraint=gpu
 #SBATCH --account=s1160
 
@@ -17,8 +19,9 @@ mkdir -p $RUNPATH
 
 pushd ..
 
+export RUN=-1
 cat run-vracer-irl.py
-source ../settings_irl.sh
+source settings_irl.sh
 
 cp run-vracer-irl.py $RUNPATH
 cp settings_irl.sh $RUNPATH

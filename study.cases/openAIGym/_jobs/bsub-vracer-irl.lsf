@@ -7,25 +7,14 @@
 #BSUB -n 8
 #BSUB -N wadaniel@ethz.ch
 
-export OMP_NUM_THREADS=8
-pushd .
-cd ..
-
 source /cluster/apps/local/env2lmod.sh
 module purge
 module load gcc/8.2.0 python/3.9.9 openmpi/4.0.2 gsl/2.6
 module load git-lfs
 
-RUN=22
-EBRU=5000
-DBS=10
-BBS=50
-RNN=8
-BSS=2000
-EXP=5000000
-#ENV="Walker2d-v4"
-ENV="HalfCheetah-v4"
-
+cd ..
+export OMP_NUM_THREADS=8
+source settings_irl.sh
 
 DIR="./_result_irl_${ENV}_${RUN}/"
 
@@ -38,13 +27,14 @@ echo BBS    ${BBS} >> "${DIR}/run.config"
 echo BSS    ${BSS} >> "${DIR}/run.config"
 echo EXP    ${EXP} >> "${DIR}/run.config"
 echo RNN    ${RNN} >> "${DIR}/run.config"
+echo POL    ${POL} >> "${DIR}/run.config"
 echo RUN    ${RUN} >> "${DIR}/run.config"
 
-python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --run ${RUN}
+python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --pol ${POL} --run ${RUN} 
 
 python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward
+python3 -m korali.rlview --dir $DIR --out "dirl-${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir $DIR --out "fdirl-${ENV}_${RUN}.png" --featureReward
 
 code=$?
 

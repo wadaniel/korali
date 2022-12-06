@@ -7,7 +7,7 @@ from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper
 
 if (gym.__version__ != "0.26.2"):
-    print("[agent] Gym version 0.26.2 expected, but is {gym.__version__}")
+    print(f"[agent] Gym version 0.26.2 expected, but is {gym.__version__}")
     print("[agent] Exit..")
     sys.exit()
 
@@ -15,7 +15,10 @@ def initEnvironment(e, envName, excludePositions, moviePath = ''):
 
  # Creating environment 
  
- env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
+ if (envName == 'Reacher-v4'):
+  env = gym.make(envName)
+ else:
+  env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
  
  # Handling special cases
  

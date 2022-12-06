@@ -16,23 +16,7 @@ cd ..
 export OMP_NUM_THREADS=8
 source settings_irl.sh
 
-#RUN=6
-#EBRU=10
-#DBS=10
-#BBS=50
-#RNN=32
-#BSS=1000
-#EXP=10000000
-#ENV="Walker2d-v4"
-#ENV="HalfCheetah-v4"
-#ENV="Swimmer-v4"
-#ENV="Hopper-v4"
-#ENV="Reacher-v4"
-#ENV="Ant-v4"
-#POL="Linear"
-#POL="Quadratic"
-
-DIR="/_result_irl_${ENV}_${RUN}/"
+DIR="./_result_irl_${ENV}_${RUN}/"
 
 mkdir ${DIR}
 touch "${DIR}/run.config"

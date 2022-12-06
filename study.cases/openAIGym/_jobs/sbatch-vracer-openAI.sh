@@ -20,7 +20,7 @@ cat > run.sh <<EOF
 #SBATCH --ntasks-per-core=1
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
-#SBATCH --account=s929
+#SBATCH --account=s1160
 
 RUNPATH=$SCRATCH/OpenAI/$ENV/\$SLURM_JOB_ID
 mkdir -p \$RUNPATH

@@ -23,7 +23,7 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-excludePositions = False
+excludePositions = True
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []
@@ -99,7 +99,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Demonstration Policy"] = args.pol
-e["Solver"]["Optimize Max Entropy Objective"] = True
+e["Solver"]["Optimize Max Entropy Objective"] = False
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs
@@ -113,7 +113,7 @@ e["Solver"]["Reward Function"]["Batch Size"] = 256
 e["Solver"]["Reward Function"]["Learning Rate"] = 1e-4
 
 e["Solver"]["Reward Function"]["L2 Regularization"]["Enabled"] = False
-e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 1.
+e["Solver"]["Reward Function"]["L2 Regularization"]["Importance"] = 0.
 
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Reward Function"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = args.rnn

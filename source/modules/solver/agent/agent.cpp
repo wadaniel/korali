@@ -698,7 +698,10 @@ void Agent::processEpisode(knlohmann::json &episode)
 
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
+  {
+    const float sigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
+    if (sigma > 1e-9) _rewardRescalingSigma = sigma;
+  }
 }
 
 std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()

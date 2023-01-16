@@ -23,7 +23,7 @@ args = parser.parse_args()
 print(args)
 
 ####### Load observations
-excludePositions = True
+excludePositions = False
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []
@@ -46,10 +46,6 @@ for trajectory, actions in zip(rawstates, obsactions):
     obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
-print("Max feature values found in observations:")
-#print(np.max(np.array(obsfeatures), axis=1))
-print("Min feature values found in observations:")
-#print(np.min(np.array(obsfeatures), axis=1))
 ####### Defining Korali Problem
 
 import korali

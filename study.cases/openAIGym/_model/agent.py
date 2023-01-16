@@ -89,7 +89,7 @@ def agent(s, env, excludePositions):
   s.update()
   
   # Printing step information
-  #if (printStep):  print('[Korali] Frame ' + str(step), end = '')
+  #print('[Korali] Frame ' + str(step), end = '')
   
   # Performing the action
   action = s["Action"]
@@ -101,9 +101,9 @@ def agent(s, env, excludePositions):
   s["Reward"] = reward
   
   # Printing step information
-  #if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
+  #print(' - State: ' + str(state) + ' - Action: ' + str(action))
   cumulativeReward = cumulativeReward + reward 
-  #if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
+  #print(' - Cumulative Reward: ' + str(cumulativeReward))
   
   # Storing New State
   s["State"] = state.tolist() if excludePositions else state.tolist()[1:]
@@ -111,7 +111,7 @@ def agent(s, env, excludePositions):
   # Advancing step counter
   step = step + 1
 
- if (printStep):  print(' - Cumulative Reward: ' + str(cumulativeReward))
+ #print(' - Cumulative Reward: ' + str(cumulativeReward))
  # Setting termination status
  if (done):
   s["Termination"] = "Terminal"

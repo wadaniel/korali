@@ -128,7 +128,10 @@ void Agent::initialize()
     _experienceCountPerEnvironment.resize(_problem->_environmentCount, 0);
 
     // Getting agent's initial policy
-    _trainingCurrentPolicy = getPolicy();
+    if (not isDefined(_trainingCurrentPolicy, "Policy Hyperparameters"))
+    {
+      _trainingCurrentPolicy = getPolicy();
+    }
   }
 
   // Setting current agent's training state
@@ -203,17 +206,17 @@ void Agent::initialize()
 
   _rewardFunctionExperiment["Problem"]["Type"] = "Supervised Learning";
   _rewardFunctionExperiment["Problem"]["Max Timesteps"] = 1;
-  _rewardFunctionExperiment["Problem"]["Inference Batch Size"] = 1;
   _rewardFunctionExperiment["Problem"]["Training Batch Size"] = _rewardFunctionBatchSize;
+  _rewardFunctionExperiment["Problem"]["Testing Batch Size"] = 1;
   _rewardFunctionExperiment["Problem"]["Input"]["Size"] = _problem->_featureVectorSize;
   _rewardFunctionExperiment["Problem"]["Solution"]["Size"] = 1;
 
   _rewardFunctionExperiment["Solver"]["Type"] = "DeepSupervisor";
+  _rewardFunctionExperiment["Solver"]["Mode"] = "Training";
   _rewardFunctionExperiment["Solver"]["L2 Regularization"]["Enabled"] = _rewardFunctionL2RegularizationEnabled;
   _rewardFunctionExperiment["Solver"]["L2 Regularization"]["Importance"] = _rewardFunctionL2RegularizationImportance;
   _rewardFunctionExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _rewardFunctionExperiment["Solver"]["Learning Rate"] = _rewardFunctionLearningRate;
-  _rewardFunctionExperiment["Solver"]["Steps Per Generation"] = 1;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _rewardFunctionNeuralNetworkHiddenLayers;
@@ -229,9 +232,13 @@ void Agent::initialize()
   _rewardFunctionExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Sigmoid";
 
   // Running initialization to verify that the configuration is correct
+  _rewardFunctionExperiment.setEngine(_k->_engine);
   _rewardFunctionExperiment.initialize();
   _rewardFunctionProblem = dynamic_cast<problem::SupervisedLearning *>(_rewardFunctionExperiment._problem);
   _rewardFunctionLearner = dynamic_cast<solver::DeepSupervisor *>(_rewardFunctionExperiment._solver);
+
+  _rewardFunctionProblem->_inputData.resize(_rewardFunctionBatchSize);
+  _rewardFunctionProblem->_solutionData.resize(_rewardFunctionBatchSize);
 
   // Init gradient
   _maxEntropyGradient.resize(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.0);

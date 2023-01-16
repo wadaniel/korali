@@ -240,7 +240,7 @@ knlohmann::json dVRACER::getPolicy()
 
 void dVRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+    _criticPolicyLearner->_neuralNetwork->setHyperparameters(hyperparameters.get<std::vector<float>>());
 }
 
 void dVRACER::printInformation()

@@ -28,7 +28,7 @@ class Executor : public Solver
   private:
   public: 
   /**
-  * @brief Specifies the number of model executions per generation and the maximum number of parallel executions. By default this setting is 0, meaning that all executions will be performed in the first generation and maximal scheduling. For values greater 0, executions will be split into batches and split into generations for intermediate output.
+  * @brief Specifies the number of model executions per generation. By default this setting is 0, meaning that all executions will be performed in the first generation. For values greater 0, executions will be split into batches and split int generations for intermediate output.
   */
    size_t _executionsPerGeneration;
   /**

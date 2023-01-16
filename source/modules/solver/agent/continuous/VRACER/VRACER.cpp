@@ -226,7 +226,7 @@ knlohmann::json VRACER::getPolicy()
 
 void VRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  _criticPolicyLearner->_neuralNetwork->setHyperparameters(hyperparameters.get<std::vector<float>>());
 }
 
 void VRACER::printInformation()

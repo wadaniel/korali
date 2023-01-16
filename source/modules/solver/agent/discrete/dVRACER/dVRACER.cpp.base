@@ -232,7 +232,7 @@ knlohmann::json __className__::getPolicy()
 
 void __className__::setPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+    _criticPolicyLearner->_neuralNetwork->setHyperparameters(hyperparameters.get<std::vector<float>>());
 }
 
 void __className__::printInformation()

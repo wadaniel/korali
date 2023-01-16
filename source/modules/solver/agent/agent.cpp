@@ -234,7 +234,7 @@ void Agent::initialize()
   _rewardFunctionLearner = dynamic_cast<solver::DeepSupervisor *>(_rewardFunctionExperiment._solver);
 
   // Init gradient
-  _maxEntropyGradient.resize(_rewardFunctionLearner->_hyperparameters.size(), 0.0);
+  _maxEntropyGradient.resize(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.0);
 }
 
 void Agent::runGeneration()
@@ -690,7 +690,7 @@ void Agent::updateRewardFunction()
     // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
     float cumDemoReward = 0.;
     std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
-    std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
+    std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.));
     std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(totalBatchSize));
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
@@ -767,7 +767,7 @@ void Agent::updateRewardFunction()
 
       // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
       std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
-      std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_hyperparameters.size(), 0.));
+      std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.));
       std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(totalBatchSize));
 
       for (size_t m = 0; m < _backgroundBatchSize; ++m)
@@ -962,7 +962,7 @@ void Agent::updateRewardFunction()
     }
 
     // Passing hyperparameter gradients through an Adam update
-    _rewardFunctionLearner->_optimizer->processResult(0.0f, _maxEntropyGradient);
+    _rewardFunctionLearner->_optimizer->processResult(_maxEntropyGradient);
 
     // Getting new set of hyperparameters from Adam
     _rewardFunctionLearner->_neuralNetwork->setHyperparameters(_rewardFunctionLearner->_optimizer->_currentValue);

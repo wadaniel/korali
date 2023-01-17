@@ -17,6 +17,7 @@ parser.add_argument('--bbs', help='Background Batch Size.', required=False, defa
 parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
 parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
+parser.add_argument('--dat', help='Number of observed trajectories used.', type=int, required=False, default=-1)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()
@@ -38,6 +39,7 @@ obsfeatures = []
 for trajectory, actions in zip(rawstates, obsactions):
     states = []
     features = []
+    
     for idx in range(len(trajectory)):
         states.append(list(trajectory[idx])) if excludePositions else states.append(list(trajectory[idx][1:]))
         features.append(list(trajectory[idx]))
@@ -63,9 +65,9 @@ initEnvironment(e, args.env, excludePositions)
 
 ### IRL variables
 
-e["Problem"]["Observations"]["States"] = obsstates
-e["Problem"]["Observations"]["Actions"] = obsactions
-e["Problem"]["Observations"]["Features"] = obsfeatures
+e["Problem"]["Observations"]["States"] = obsstates[:args.dat]
+e["Problem"]["Observations"]["Actions"] = obsactions[:args.dat]
+e["Problem"]["Observations"]["Features"] = obsfeatures[:args.dat]
 e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
 
 ### Defining Agent Configuration 
@@ -95,7 +97,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Demonstration Policy"] = args.pol
-e["Solver"]["Optimize Max Entropy Objective"] = False
+e["Solver"]["Optimize Max Entropy Objective"] = True
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs

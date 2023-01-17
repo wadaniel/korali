@@ -7,4 +7,5 @@ BSS=${BSS:-1000}        # background sample size
 EXP=${EXP:-5000000}     # number of experiences
 RNN=${RNN:-32}          # reward neural net size
 POL=${POL:-Quadratic}   # demo policy type
+POL=${DAT:-1000}        # number of obs
 RUN=${RUN:-100}         # run tag

@@ -2,6 +2,7 @@ run=300
 
 export ENV="Swimmer-v4"
 export POL="Quadratic"
+export DAT=1000
 export EXP=3000000
 
 for D in 1 4 16 64

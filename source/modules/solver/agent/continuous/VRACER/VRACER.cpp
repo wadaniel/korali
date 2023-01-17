@@ -32,16 +32,16 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Testing Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
   _criticPolicyExperiment["Solver"]["Type"] = "DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["Mode"] = "Training";
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
@@ -61,9 +61,13 @@ void VRACER::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
+  _criticPolicyExperiment.setEngine(_k->_engine);
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::DeepSupervisor *>(_criticPolicyExperiment._solver);
+
+  _criticPolicyProblem->_inputData.resize(_miniBatchSize);
+  _criticPolicyProblem->_solutionData.resize(_miniBatchSize);
 
   _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
   _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
@@ -226,7 +230,7 @@ knlohmann::json VRACER::getPolicy()
 
 void VRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  _criticPolicyLearner->_neuralNetwork->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
 void VRACER::printInformation()

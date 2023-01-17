@@ -17,13 +17,14 @@ parser.add_argument('--bbs', help='Background Batch Size.', required=False, defa
 parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
 parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
+parser.add_argument('--dat', help='Number of observed trajectories used.', type=int, required=False, default=-1)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()
 print(args)
 
 ####### Load observations
-excludePositions = True
+excludePositions = False
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
 obsactions = []
@@ -46,10 +47,6 @@ for trajectory, actions in zip(rawstates, obsactions):
     obsfeatures.append(list(features))
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
-print("Max feature values found in observations:")
-#print(np.max(np.array(obsfeatures), axis=1))
-print("Min feature values found in observations:")
-#print(np.min(np.array(obsfeatures), axis=1))
 ####### Defining Korali Problem
 
 import korali
@@ -67,9 +64,9 @@ initEnvironment(e, args.env, excludePositions)
 
 ### IRL variables
 
-e["Problem"]["Observations"]["States"] = obsstates
-e["Problem"]["Observations"]["Actions"] = obsactions
-e["Problem"]["Observations"]["Features"] = obsfeatures
+e["Problem"]["Observations"]["States"] = obsstates[:args.dat]
+e["Problem"]["Observations"]["Actions"] = obsactions[:args.dat]
+e["Problem"]["Observations"]["Features"] = obsfeatures[:args.dat]
 e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
 
 ### Defining Agent Configuration 
@@ -99,7 +96,7 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Demonstration Policy"] = args.pol
-e["Solver"]["Optimize Max Entropy Objective"] = False
+e["Solver"]["Optimize Max Entropy Objective"] = True
 e["Solver"]["Experiences Between Reward Updates"] = args.ebru
 e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs

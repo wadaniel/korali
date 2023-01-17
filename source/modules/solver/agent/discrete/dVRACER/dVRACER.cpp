@@ -27,11 +27,12 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Testing Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount; // The value function, action q values, and inverse temperature
 
   _criticPolicyExperiment["Solver"]["Type"] = "DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["Mode"] = "Training";
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
@@ -240,7 +241,7 @@ knlohmann::json dVRACER::getPolicy()
 
 void dVRACER::setPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+    _criticPolicyLearner->_neuralNetwork->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
 void dVRACER::printInformation()

@@ -39,7 +39,6 @@ obsfeatures = []
 for trajectory, actions in zip(rawstates, obsactions):
     states = []
     features = []
-    
     for idx in range(len(trajectory)):
         states.append(list(trajectory[idx])) if excludePositions else states.append(list(trajectory[idx][1:]))
         features.append(list(trajectory[idx]))
@@ -160,5 +159,5 @@ e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment
 
-k.run(e)
+.run(e)
 print(args)

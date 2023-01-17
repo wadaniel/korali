@@ -197,7 +197,7 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
 
   // Set hyperparameters in neural network
   setHyperparameters(initialHyperparameters);
-
+  
   return initialHyperparameters;
 }
 
@@ -292,7 +292,8 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
 
   // First, re-setting all output gradients to zero
   std::fill(p->_rawOutputGradients.begin(), p->_rawOutputGradients.end(), 0.0f);
-// To store the gradients in the NN we place them on the last input timestep
+
+  // To store the gradients in the NN we place them on the last input timestep
 #pragma omp parallel for
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
@@ -421,6 +422,8 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
 {
   if (hyperparameters.size() != _hyperparameterCount)
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
+
+  auto params = std::vector<float>(hyperparameters.begin(), hyperparameters.end());
 
   size_t layerCount = _pipelines[0][0]._layerVector.size();
 

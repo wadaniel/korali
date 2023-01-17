@@ -159,5 +159,5 @@ e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment
 
-.run(e)
+k.run(e)
 print(args)

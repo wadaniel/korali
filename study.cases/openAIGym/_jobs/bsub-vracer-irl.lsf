@@ -16,9 +16,10 @@ cd ..
 export OMP_NUM_THREADS=8
 source settings_irl.sh
 
-DIR="./_result_irl_${ENV}_${RUN}/"
+BASE="${SCRATCH}/gcl_ma/${LSB_JOBID}"
+DIR="${BASE}/_result_irl_${ENV}_${RUN}/"
 
-mkdir ${DIR}
+mkdir ${DIR} -p
 touch "${DIR}/run.config"
 echo ENV    ${ENV} >> "${DIR}/run.config"
 echo EBRU   ${EBRU} >> "${DIR}/run.config"
@@ -31,11 +32,21 @@ echo POL    ${POL} >> "${DIR}/run.config"
 echo DAT    ${DAT} >> "${DIR}/run.config"
 echo RUN    ${RUN} >> "${DIR}/run.config"
 
+cp -r _model ${BASE}
+cp -r run-vracer-irl.py ${BASE}
+cp observations*${ENV}* ${BASE}
+cp -r settings_irl.sh ${BASE}
+
+pushd .
+cd ${BASE}
+
 python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --pol ${POL} --dat ${DAT} --run ${RUN}
 
+popd
+
 python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir $DIR --out "dirl-${ENV}_${RUN}.png"
-python3 -m korali.rlview --dir $DIR --out "fdirl-${ENV}_${RUN}.png" --featureReward
+python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png" --showObservations --showCI 0.8
+python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward --showObservations --showCI 0.8
 
 code=$?
 

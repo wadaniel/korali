@@ -1,9 +1,10 @@
-run=5000
+run=6000
 
 export ENV="HalfCheetah-v4"
 export POL="Linear"
-export EXP=2000000
-export DAT=1000
+export EXP=3000000
+export DAT=100
+export EBRU=5000
 
 for D in 1 4 16 64
 do 

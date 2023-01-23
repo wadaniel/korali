@@ -643,6 +643,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
+  printf("upd demo\n");
   if (_optimizeMaxEntropyObjective == false) return;
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
@@ -678,6 +679,7 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
       _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
+  printf("done\n");
 }
 
 std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const
@@ -694,6 +696,7 @@ std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vec
 
 void Agent::updateRewardFunction()
 {
+  printf("update rew\n");
   const size_t stepsPerUpdate = 1;
   const size_t totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
 
@@ -1221,12 +1224,13 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     _terminationBuffer.add(termination);
     _truncatedStateBuffer.add(truncatedState);
+    _truncatedStateValueBuffer.add(truncatedStateValue);
+    
     // Storing policy on episode start
     if (expId == 0)
-      _policyBuffer.add(episode["Policy Hyperparameters"]["Policy"].get<std::vector<float>>());
+      _policyBuffer.add(episode["Policy Hyperparameters"].get<std::vector<float>>());
     else
       _policyBuffer.add({}); // Placeholder
-    _truncatedStateValueBuffer.add(truncatedStateValue);
 
     // Getting policy information and state value
     std::vector<policy_t> expPolicy(numAgents);
@@ -1641,7 +1645,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
         const float stateValue = _stateValueBufferContiguous[curId * numAgents + a];
 
         // Getting current reward, action, and state
-        const float curReward = getScaledReward(_rewardBufferContiguous[curId * numAgents + a]);
+        const float curReward = _rewardBufferContiguous[curId * numAgents + a];
 
         // Apply recursion
         retV[a] = stateValue + truncatedImportanceWeight * (curReward + _discountFactor * retV[a] - stateValue);

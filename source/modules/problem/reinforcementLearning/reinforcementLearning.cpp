@@ -182,6 +182,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &worker)
     return;
   }
 
+  const auto policy = _agent->getPolicy();
+  episode["Policy Hyperparameters"] = policy["Policy Hyperparameters"][0];
+
   // Saving experiences
   while (worker["Termination"] == "Non Terminal")
   {
@@ -190,6 +193,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &worker)
 
     // Store the current state in the experience
     episode["Experiences"][actionCount]["State"] = worker["State"];
+    
+    // Store the current state in the experience
+    episode["Experiences"][actionCount]["Features"] = worker["Features"];
 
     // Storing the current action
     episode["Experiences"][actionCount]["Action"] = worker["Action"];
@@ -471,10 +477,10 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
   // Sanity checks for state
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
-    if (worker["Features"][i].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
-    if (worker["Features"][i].size() != _featureVectorSize) KORALI_LOG_ERROR("Agents feature vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["Features"][i].size(), _featureVectorSize);
     if (worker["State"][i].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
     if (worker["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["State"][i].size(), _stateVectorSize);
+    if (worker["Features"][i].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
+    if (worker["Features"][i].size() != _featureVectorSize) KORALI_LOG_ERROR("Agents feature vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["Features"][i].size(), _featureVectorSize);
 
     for (size_t j = 0; j < _stateVectorSize; j++)
       if (std::isfinite(worker["State"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, worker["State"][i][j].get<float>());

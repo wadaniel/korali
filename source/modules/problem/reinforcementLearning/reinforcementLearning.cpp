@@ -430,9 +430,11 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
   // In case of this being a single worker, preprocess state and reward if necessary
   if (_conduit->isWorkerLeadRank() == false) return;
   
-  // Define state rescaling variables
+  // Define feature rescaling variables
   const auto featureRescalingMeans = worker["Feature Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
   const auto featureRescalingSdevs = worker["Feature Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
+  
+  // Define state rescaling variables
   const auto stateRescalingMeans = worker["State Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
   const auto stateRescalingSdevs = worker["State Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
 

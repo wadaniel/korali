@@ -870,7 +870,7 @@ class Agent : public Solver
    * @param miniBatch Indexes to the feature
    * @return The vector of features
    */
-  std::vector<std::vector<std::vector<float>>> getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch);
+  // std::vector<std::vector<std::vector<float>>> getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch);
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists

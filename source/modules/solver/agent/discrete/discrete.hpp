@@ -91,7 +91,7 @@ class Discrete : public Agent
   * @param policyHyperparameter The neural network policy hyperparameter.
   * @return The log probability of the trajectory.
   */
-  virtual std::vector<float> evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<std::vector<float>>> &actions, const std::vector<std::vector<float>> &policyHyperparameter) override;
+  virtual std::vector<float> evaluateTrajectoryLogProbability(const std::vector<std::vector<std::vector<float>>> &states, const std::vector<std::vector<std::vector<float>>> &actions, const std::vector<float> &policyHyperparameter) override;
 
   /**
   * @brief Evaluates the log probability of a trajectory given observed action frequencies.

@@ -78,30 +78,37 @@ void ReinforcementLearning::initialize()
   for (size_t t = 0; t < _numberObservedTrajectories; ++t)
   {
     size_t trajectoryLength = _observationsStates[t].size();
-    _totalObservedStateActionPairs += trajectoryLength;
-
-    for (size_t i = 0; i < trajectoryLength; ++i)
-    {
-      if (_observationsStates[t][i].size() != _stateVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
-    }
-
+    _totalObservedStateActionPairs += trajectoryLength * _agentsPerEnvironment;
+       
+    
     if (_observationsActions[t].size() != trajectoryLength)
       KORALI_LOG_ERROR("Trajectory (%zu) length of observed actions (%zu) does not agree with trajectory length of observed states (%zu)\n", t, _observationsActions[t].size(), trajectoryLength);
-
-    for (size_t i = 0; i < trajectoryLength; ++i)
-    {
-      if (_observationsActions[t][i].size() != _actionVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
-    }
 
     if (_observationsFeatures[t].size() != trajectoryLength)
       KORALI_LOG_ERROR("Trajectory length of observed features (trajectory %zu) does not agree with observed states\n", t);
 
-    for (size_t i = 0; i < trajectoryLength; ++i)
-    {
-      if (_observationsFeatures[t][i].size() != _featureVectorSize)
-        KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
+    for(size_t a = 0; a < _agentsPerEnvironment; ++a)
+    { 
+        if (_observationsStates[t][a].size() != _agentsPerEnvironment)
+            KORALI_LOG_ERROR("TODO");
+
+          if (_observationsActions[t][a].size() != _agentsPerEnvironment)
+            KORALI_LOG_ERROR("TODO");
+
+          if (_observationsFeatures[t][a].size() != _agentsPerEnvironment)
+            KORALI_LOG_ERROR("TODO");
+
+        for (size_t i = 0; i < trajectoryLength; ++i)
+        {
+          if (_observationsStates[t][a][i].size() != _stateVectorSize)
+            KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
+
+          if (_observationsActions[t][a][i].size() != _actionVectorSize)
+            KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
+
+          if (_observationsFeatures[t][a][i].size() != _featureVectorSize)
+            KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
+        }
     }
   }
 
@@ -670,7 +677,7 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Observations", "States"))
  {
- try { _observationsStates = js["Observations"]["States"].get<std::vector<std::vector<std::vector<float>>>>();
+ try { _observationsStates = js["Observations"]["States"].get<std::vector<std::vector<std::vector<std::vector<float>>>>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['States']\n%s", e.what()); } 
    eraseValue(js, "Observations", "States");
@@ -679,7 +686,7 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Observations", "Actions"))
  {
- try { _observationsActions = js["Observations"]["Actions"].get<std::vector<std::vector<std::vector<float>>>>();
+ try { _observationsActions = js["Observations"]["Actions"].get<std::vector<std::vector<std::vector<std::vector<float>>>>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['Actions']\n%s", e.what()); } 
    eraseValue(js, "Observations", "Actions");
@@ -688,7 +695,7 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Observations", "Features"))
  {
- try { _observationsFeatures = js["Observations"]["Features"].get<std::vector<std::vector<std::vector<float>>>>();
+ try { _observationsFeatures = js["Observations"]["Features"].get<std::vector<std::vector<std::vector<std::vector<float>>>>>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Observations']['Features']\n%s", e.what()); } 
    eraseValue(js, "Observations", "Features");

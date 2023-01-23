@@ -63,15 +63,15 @@ class ReinforcementLearning : public Problem
   /**
   * @brief Vector containing the states of the observed trajectories.
   */
-   std::vector<std::vector<std::vector<float>>> _observationsStates;
+   std::vector<std::vector<std::vector<std::vector<float>>>> _observationsStates;
   /**
   * @brief Vector containing the actions of the observed trajectories.
   */
-   std::vector<std::vector<std::vector<float>>> _observationsActions;
+   std::vector<std::vector<std::vector<std::vector<float>>>> _observationsActions;
   /**
   * @brief Vector containing the features corresponding to the observed state action pairs.
   */
-   std::vector<std::vector<std::vector<float>>> _observationsFeatures;
+   std::vector<std::vector<std::vector<std::vector<float>>>> _observationsFeatures;
   /**
   * @brief [Internal Use] Stores the dimension of the action space.
   */

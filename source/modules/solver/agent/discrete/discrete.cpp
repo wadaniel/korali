@@ -200,14 +200,14 @@ std::vector<float> Discrete::evaluateTrajectoryLogProbability(const std::vector<
      const auto &pActions = policy[0].distributionParameters;
      for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
        if (actions[t][a] == _problem->_possibleActions[actionIdx])
-         trajectoryLogProbability[a] += std::log(pActions[actionIdx][a]);
+         trajectoryLogProbability[a] += std::log(pActions[actionIdx]);
     }
   }
 
   return trajectoryLogProbability;
 }
 
-std::vector<float> Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<std::vector<float>>> &states, const std::vector<std::vector<std::Vector<float>>> &actions)
+std::vector<float> Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<std::vector<float>>> &states, const std::vector<std::vector<std::vector<float>>> &actions)
 {
   std::vector<float> trajectoryLogProbability(_problem->_agentsPerEnvironment, 0.);
 
@@ -218,7 +218,7 @@ std::vector<float> Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(
     {
     for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
       if (_problem->_possibleActions[actionIdx] == actions[t][a])
-        trajectoryLogProbability[a] += std::log(_observationsApproximatorActionProbabilities[actionIdx][a]);
+        trajectoryLogProbability[a] += std::log(_observationsApproximatorActionProbabilities[actionIdx]);
     }
   }
 

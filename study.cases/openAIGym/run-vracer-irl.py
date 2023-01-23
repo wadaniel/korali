@@ -17,7 +17,7 @@ parser.add_argument('--bbs', help='Background Batch Size.', required=False, defa
 parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
 parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
-parser.add_argument('--dat', help='Number of observed trajectories used.', type=int, required=False, default=-1)
+parser.add_argument('--dat', help='Number of observed trajectories used.', type=int, required=False, default=100)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()
@@ -27,24 +27,28 @@ print(args)
 excludePositions = False
 obsfile = f"observations_{args.env}.json" if excludePositions else f"observations_position_{args.env}.json"
 rawstates = []
-obsactions = []
+rawactions = []
 with open(obsfile, 'r') as infile:
     obsjson = json.load(infile)
     rawstates = obsjson["States"]
-    obsactions = obsjson["Actions"]
+    rawactions = obsjson["Actions"]
 
 ### Compute Feauters from states
 obsstates = []
 obsfeatures = []
-for trajectory, actions in zip(rawstates, obsactions):
+obsactions = []
+for trajectory, rawaction in zip(rawstates, rawactions):
     states = []
     features = []
+    actions = []
     for idx in range(len(trajectory)):
-        states.append(list(trajectory[idx])) if excludePositions else states.append(list(trajectory[idx][1:]))
-        features.append(list(trajectory[idx]))
+        states.append([list(trajectory[idx])]) if excludePositions else states.append([list(trajectory[idx][1:])])
+        features.append([list(trajectory[idx])])
+        actions.append([list(rawaction[idx])])
 
-    obsstates.append(list(states))
-    obsfeatures.append(list(features))
+    obsstates.append(states)
+    obsfeatures.append(features)
+    obsactions.append(actions)
 
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
 ####### Defining Korali Problem
@@ -102,7 +106,6 @@ e["Solver"]["Demonstration Batch Size"] = args.dbs
 e["Solver"]["Background Batch Size"] = args.bbs
 e["Solver"]["Background Sample Size"] = args.bss
 e["Solver"]["Use Fusion Distribution"] = True
-e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ## Reward Function Specification
 

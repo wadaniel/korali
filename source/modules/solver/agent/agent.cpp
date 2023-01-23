@@ -25,10 +25,7 @@ void Agent::initialize()
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  // Formatting reward history for each agent
-  _trainingRewardHistory.resize(numAgents);
-
-  // Allocating and obtaining action bounds information
+    // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
 
@@ -83,9 +80,12 @@ void Agent::initialize()
 
   // Pre-allocate space for policies
   _policyBuffer.resize(_experienceReplayMaximumSize);
+  
   // Initialize Histories
   _trainingRewardHistory.resize(0);
+  _trainingFeatureRewardHistory.resize(0);
   _experienceReplayOffPolicyHistory.resize(0);
+  
   // Initialize background samples
   _backgroundTrajectoryCount = 0;
   _demonstrationFeatureReward.resize(0);
@@ -95,6 +95,7 @@ void Agent::initialize()
   _backgroundBatchImportanceWeight.resize(0);
   _effectiveSampleSize.resize(0);
   _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
+  
   //  Pre-allocating space for state time sequence
   _stateTimeSequence.resize(numAgents);
   for (size_t a = 0; a < numAgents; ++a)
@@ -1114,8 +1115,12 @@ void Agent::attendWorker(size_t workerId)
           _trainingBestReward[a] = _trainingLastReward[a];
           _trainingBestEpisodeId[a] = episodeId;
         }
-        _trainingRewardHistory[a].push_back(_trainingLastReward[a]);
       }
+      
+      // Record rewards
+      _trainingRewardHistory.push_back(_trainingLastReward);
+      _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);
+      
       // Storing bookkeeping information
       _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
@@ -1197,6 +1202,9 @@ void Agent::processEpisode(knlohmann::json &episode)
         // Put reward to replay memory
         _rewardBufferContiguous.add(featureReward[a]);
     }
+
+    // Keep track of reward update time stamp
+    _rewardUpdateBuffer.add(_rewardUpdateCount);
 
     // Checking and adding experience termination status and truncated state to replay memory
     termination_t termination;
@@ -1294,30 +1302,10 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyBuffer.size() == _experienceReplayMaximumSize)
-    {
-      const auto &onPolicyBuffer = _isOnPolicyBuffer[0];
-
-      size_t count = 1;
-      // Consider all observation for the off-policy statistics
-      if (_problem->_policiesPerEnvironment == 1)
-        count = std::count(onPolicyBuffer.begin(), onPolicyBuffer.end(), false);
-
-      // Update offPolicyCount
       for (size_t a = 0; a < numAgents; a++)
-        if ((onPolicyBuffer[a] == false) || (_problem->_policiesPerEnvironment == 1))
-        {
-          // Safety check for overflow
-          if (_experienceReplayOffPolicyCount[a] < count)
-          {
-            KORALI_LOG_ERROR("Agent %ld: _experienceReplayOffPolicyCount=%ld smaller than decrement %ld.\n", a, _experienceReplayOffPolicyCount[a], count);
-            // count = _experienceReplayOffPolicyCount[d];
-          }
-
-          // Update off-policy count
-          _experienceReplayOffPolicyCount[a] -= count;
-        }
-    }
-
+          if(_isOnPolicyBuffer[0][a] == false)
+              _experienceReplayOffPolicyCount[a]--;
+    
     // Adding new experience's on policiness (by default is true when adding it to the ER)
     _isOnPolicyBuffer.add(std::vector<char>(numAgents, true));
 
@@ -1379,13 +1367,9 @@ void Agent::processEpisode(knlohmann::json &episode)
     for (size_t a = 0; a < numAgents; a++)
     {
       // Calculating retrace value. Importance weight is 1.0f because the policy is current.
-      retV[a] = getScaledReward(_rewardBufferContiguous[expId * numAgents + a]) + _discountFactor * retV[a];
+      retV[a] = _rewardBufferContiguous[expId * numAgents + a] + _discountFactor * retV[a];
       _retraceValueBufferContiguous[expId * numAgents + a] = retV[a];
     }
-
-  // Update reward rescaling sigma
-  if (_rewardRescalingEnabled)
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
 }
 
 std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
@@ -1557,23 +1541,6 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
     // Set importance weight and truncated importance weight
     _importanceWeightBuffer[expId][agentId] = importanceWeight;
     _truncatedImportanceWeightBufferContiguous[expId * numAgents + agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
-
-    // Keep track of off-policyness (in principle only necessary for agentId==policyId)
-    if (not _multiAgentCorrelation)
-    {
-      // Checking if experience is on policy
-      const bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
-
-      // Updating off policy count if a change is detected
-      if (_isOnPolicyBuffer[expId][agentId] == true && isOnPolicy == false)
-        offPolicyCountDelta[agentId]++;
-
-      if (_isOnPolicyBuffer[expId][agentId] == false && isOnPolicy == true)
-        offPolicyCountDelta[agentId]--;
-
-      // Write to onPolicy vector
-      _isOnPolicyBuffer[expId][agentId] = isOnPolicy;
-    }
 
     // Update truncated state value
     if (_terminationBuffer[expId] == e_truncated)

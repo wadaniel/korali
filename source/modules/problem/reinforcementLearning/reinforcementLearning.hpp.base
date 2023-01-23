@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
 __startNamespace__;
@@ -54,13 +55,11 @@ class __className__ : public __parentClassName__
   /**
    * @brief Contains the state rescaling means
    */
-  std::vector<float> _stateRescalingMeans;
+  std::vector<std::vector<float>> _stateRescalingMeans;
 
   /**
    * @brief Contains the state rescaling sigmas
    */
-  std::vector<float> _stateRescalingSdevs;
-
   /**
    * @brief Contains the feature rescaling means
    */
@@ -70,6 +69,7 @@ class __className__ : public __parentClassName__
    * @brief Contains the feature rescaling sigmas
    */
   std::vector<float> _featureRescalingSdevs;
+  std::vector<std::vector<float>> _stateRescalingSdevs;
 
   /**
    * @brief [Profiling] Stores policy evaluation time per episode

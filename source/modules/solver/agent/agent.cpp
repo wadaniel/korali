@@ -643,7 +643,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
 {
-  printf("upd demo\n");
   if (_optimizeMaxEntropyObjective == false) return;
   if (_demonstrationTrajectoryLogProbabilities.size() == 0)
   {
@@ -679,7 +678,6 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
       _demonstrationTrajectoryLogProbabilities[m][replacementIdx + 1] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
-  printf("done\n");
 }
 
 std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vector<float>>> &featuresBatch) const

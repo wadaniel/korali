@@ -1542,6 +1542,19 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
     _importanceWeightBuffer[expId][agentId] = importanceWeight;
     _truncatedImportanceWeightBufferContiguous[expId * numAgents + agentId] = std::min(_importanceWeightTruncationLevel, importanceWeight);
 
+    // Keep track of off-policyness (in principle only necessary for agentId==policyId)
+    const bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
+
+    // Updating off policy count if a change is detected
+    if (_isOnPolicyBuffer[expId][agentId] == true && isOnPolicy == false)
+      offPolicyCountDelta[agentId]++;
+
+    if (_isOnPolicyBuffer[expId][agentId] == false && isOnPolicy == true)
+      offPolicyCountDelta[agentId]--;
+
+    // Write to onPolicy vector
+    _isOnPolicyBuffer[expId][agentId] = isOnPolicy;
+
     // Update truncated state value
     if (_terminationBuffer[expId] == e_truncated)
     {
@@ -1605,6 +1618,62 @@ void __className__::updateExperienceMetadata(const std::vector<std::pair<size_t,
     size_t curEpisode = _episodeIdBuffer[currExpId];
     size_t nextEpisode = _episodeIdBuffer[nextExpId];
     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
+  }
+
+  size_t t = 0;
+  std::vector<ssize_t> featureMiniBatch(_rewardFunctionBatchSize);
+  std::vector<std::vector<std::vector<float>>> featureBatch(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+
+  size_t a = 0; // TODO: it agents
+
+  // Update rewards backward
+  for (size_t i = 0; i < retraceMiniBatch.size(); i++)
+  {
+    // Finding the earliest experience corresponding to the same episode as this experience
+    const ssize_t endId = retraceMiniBatch[i];
+
+    // If the starting experience has already been discarded, take the earliest one that still remains
+    const ssize_t startId = (ssize_t)_episodePosBuffer[endId] < endId ? endId - (ssize_t)_episodePosBuffer[endId] : 0;
+
+    // Now iterating backwards to find the beginning
+    for (ssize_t curId = endId; curId >= startId; curId--)
+    {
+      // Update reward if old
+      if (_rewardUpdateBuffer[curId] < _rewardUpdateCount)
+      {
+        // Add features and experience id
+        featureMiniBatch[t] = curId;
+        featureBatch[t++] = {_featureBuffer[curId][a]}; //TODO: it agents
+        if (t == _rewardFunctionBatchSize)
+        {
+          // Feature batch is full, forward features
+          const auto rewards = calculateReward(featureBatch);
+
+          // Update rewards
+          for (size_t b = 0; b < _rewardFunctionBatchSize; ++b)
+          {
+            const size_t expId = featureMiniBatch[b];
+            _rewardBufferContiguous[expId*_problem->_agentsPerEnvironment+a] = rewards[b];
+            _rewardUpdateBuffer[expId] = _rewardUpdateCount;
+          }
+
+          // Reset count
+          t = 0;
+        }
+      }
+    }
+  }
+
+  // Update the rest
+  if (t > 0)
+  {
+    const auto rewards = calculateReward(featureBatch);
+    for (size_t b = 0; b < t; ++b)
+    {
+      const ssize_t expId = featureMiniBatch[b];
+      _rewardBufferContiguous[expId*_problem->_agentsPerEnvironment+a] = rewards[b];
+      _rewardUpdateBuffer[expId] = _rewardUpdateCount;
+    }
   }
 
 // Calculating retrace value for the oldest experiences of unique episodes

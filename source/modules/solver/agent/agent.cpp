@@ -220,6 +220,7 @@ void Agent::initialize()
     _testingReward.resize(_testingSampleIds.size());
   }
 
+  if (_problem->_policiesPerEnvironment != 1) KORALI_LOG_ERROR("IRL does not support more than one policy.");
   if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
 
   if (_backgroundSampleSize <= _backgroundBatchSize) KORALI_LOG_ERROR("Bachground Sample Size too small, must be greater than Background Batch Size");
@@ -1350,14 +1351,6 @@ void Agent::processEpisode(knlohmann::json &episode)
       // Get value of trucated state
       if (std::isfinite(retV[a]) == false)
         KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", retV[a]);
-    }
-
-    // For cooporative multi-agent model truncated state-values are averaged
-    if (_multiAgentRelationship == "Cooperation")
-    {
-      float avgRetV = std::accumulate(retV.begin(), retV.end(), 0.);
-      avgRetV /= numAgents;
-      retV = std::vector<float>(numAgents, avgRetV);
     }
 
     // The value of the truncated state equals initial retrace Value

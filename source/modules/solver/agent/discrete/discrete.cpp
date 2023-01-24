@@ -192,15 +192,15 @@ std::vector<float> Discrete::evaluateTrajectoryLogProbability(const std::vector<
   // Evaluate all states within a single trajectory and calculate probability of trajectory
   for (size_t t = 0; t < states.size(); ++t)
   {
-    for ( size_t a = 0 ; a <_problem->_agentsPerEnvironment; ++a)
+    for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
     {
-     std::vector<policy_t> policy(1);
-     runPolicy({{states[t][a]}}, policy);
+      std::vector<policy_t> policy(1);
+      runPolicy({{states[t][a]}}, policy);
 
-     const auto &pActions = policy[0].distributionParameters;
-     for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
-       if (actions[t][a] == _problem->_possibleActions[actionIdx])
-         trajectoryLogProbability[a] += std::log(pActions[actionIdx]);
+      const auto &pActions = policy[0].distributionParameters;
+      for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+        if (actions[t][a] == _problem->_possibleActions[actionIdx])
+          trajectoryLogProbability[a] += std::log(pActions[actionIdx]);
     }
   }
 
@@ -214,11 +214,11 @@ std::vector<float> Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(
   // Evaluate all states within a single trajectory and calculate probability of trajectory
   for (size_t t = 0; t < states.size(); ++t)
   {
-    for ( size_t a = 0 ; a <_problem->_agentsPerEnvironment; ++a)
+    for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
     {
-    for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
-      if (_problem->_possibleActions[actionIdx] == actions[t][a])
-        trajectoryLogProbability[a] += std::log(_observationsApproximatorActionProbabilities[actionIdx]);
+      for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+        if (_problem->_possibleActions[actionIdx] == actions[t][a])
+          trajectoryLogProbability[a] += std::log(_observationsApproximatorActionProbabilities[actionIdx]);
     }
   }
 

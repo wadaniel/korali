@@ -195,7 +195,7 @@ std::vector<float> __className__::generateInitialHyperparameters()
 
   // Set hyperparameters in neural network
   setHyperparameters(initialHyperparameters);
-  
+
   return initialHyperparameters;
 }
 

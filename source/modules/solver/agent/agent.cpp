@@ -25,7 +25,7 @@ void Agent::initialize()
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-    // Allocating and obtaining action bounds information
+  // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
 
@@ -80,12 +80,12 @@ void Agent::initialize()
 
   // Pre-allocate space for policies
   _policyBuffer.resize(_experienceReplayMaximumSize);
-  
+
   // Initialize Histories
   _trainingRewardHistory.resize(0);
   _trainingFeatureRewardHistory.resize(0);
   _experienceReplayOffPolicyHistory.resize(0);
-  
+
   // Initialize background samples
   _backgroundTrajectoryCount = 0;
   _demonstrationFeatureReward.resize(0);
@@ -95,7 +95,7 @@ void Agent::initialize()
   _backgroundBatchImportanceWeight.resize(0);
   _effectiveSampleSize.resize(0);
   _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
-  
+
   //  Pre-allocating space for state time sequence
   _stateTimeSequence.resize(numAgents);
   for (size_t a = 0; a < numAgents; ++a)
@@ -138,7 +138,7 @@ void Agent::initialize()
     // Rescaling information
     _stateRescalingMeans = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 0.0f));
     _stateRescalingSigmas = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 1.0f));
-    
+
     _featureRescalingMeans = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_featureVectorSize, 0.0));
     _featureRescalingSigmas = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_featureVectorSize, 1.0));
 
@@ -522,7 +522,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     if (_backgroundTrajectoryCount != _backgroundBatchSize)
       KORALI_LOG_ERROR("Error during background batch intialization. Size is %zu but should be %zu.", _backgroundTrajectoryCount, _backgroundBatchSize);
 
-    
     // Evaluate all trajectory logprobabilities, at the beginning all trajectories sampled from same arbitrary policy
     for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
     {
@@ -696,7 +695,6 @@ std::vector<float> Agent::calculateReward(const std::vector<std::vector<std::vec
 
 void Agent::updateRewardFunction()
 {
-  printf("update rew\n");
   const size_t stepsPerUpdate = 1;
   const size_t totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
 
@@ -968,8 +966,8 @@ void Agent::updateRewardFunction()
           _maxEntropyGradient[k] += (1. - _demonstrationBatchSize * mult) * gradientCumulativeRewardFunctionDemonstrationBatch[n][k];
           if (std::isfinite(_maxEntropyGradient[k]) == false) KORALI_LOG_ERROR("Reward gradient not finite!");
         }
-        _k->_logger->logInfo("Detailed", "Neg Bracket (%zu/%zu)!\n", negBracket, _demonstrationBatchSize);
-        _k->_logger->logInfo("Detailed", "Effective Sample Size (%f/%f)!\n", ess, (float)(_demonstrationBatchSize + _backgroundBatchSize));
+        //_k->_logger->logInfo("Detailed", "Neg Bracket (%zu/%zu)!\n", negBracket, _demonstrationBatchSize);
+        //_k->_logger->logInfo("Detailed", "Effective Sample Size (%f/%f)!\n", ess, (float)(_demonstrationBatchSize + _backgroundBatchSize));
       }
 
       // Record history of importance weights
@@ -1000,7 +998,7 @@ void Agent::updateRewardFunction()
     // Getting new set of hyperparameters from Adam
     _rewardFunctionLearner->_neuralNetwork->setHyperparameters(_rewardFunctionLearner->_optimizer->_currentValue);
   }
-  _k->_logger->logInfo("Detailed", "Done!\n");
+  //_k->_logger->logInfo("Detailed", "Done!\n");
 }
 
 void Agent::rescaleStates()
@@ -1064,8 +1062,8 @@ void Agent::rescaleFeatures()
       _featureRescalingSigmas[a][d] = std::sqrt(squaredSumFeatures[a][d] / (float)_featureBuffer.size() - _featureRescalingMeans[a][d] * _featureRescalingMeans[a][d]);
       if (std::isfinite(_featureRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("Feature sdev not finite. Cannot scale features.");
 
-    _k->_logger->logInfo("Detailed", " + Feature [%zu]: N(%f, %f)\n", d, _featureRescalingMeans[a][d], _featureRescalingSigmas[a][d]);
-  }
+      _k->_logger->logInfo("Detailed", " + Feature [%zu]: N(%f, %f)\n", d, _featureRescalingMeans[a][d], _featureRescalingSigmas[a][d]);
+    }
 
   // Actual rescaling of initial features
   for (size_t i = 0; i < _featureBuffer.size(); ++i)
@@ -1119,11 +1117,11 @@ void Agent::attendWorker(size_t workerId)
           _trainingBestEpisodeId[a] = episodeId;
         }
       }
-      
+
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
       _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);
-      
+
       // Storing bookkeeping information
       _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
@@ -1195,15 +1193,15 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Getting reward (TODO: batch forwarding)
     std::vector<float> featureReward(numAgents, 0);
-    for(size_t a = 0; a < numAgents; ++a)
+    for (size_t a = 0; a < numAgents; ++a)
     {
-        featureReward[a] = calculateReward({{episode["Experiences"][expId]["Features"][a].get<std::vector<float>>()}})[0];
-        
-        // Accumulate feature reward
-        cumulativeFeatureReward[a] += featureReward[a];
-      
-        // Put reward to replay memory
-        _rewardBufferContiguous.add(featureReward[a]);
+      featureReward[a] = calculateReward({{episode["Experiences"][expId]["Features"][a].get<std::vector<float>>()}})[0];
+
+      // Accumulate feature reward
+      cumulativeFeatureReward[a] += featureReward[a];
+
+      // Put reward to replay memory
+      _rewardBufferContiguous.add(featureReward[a]);
     }
 
     // Keep track of reward update time stamp
@@ -1225,7 +1223,7 @@ void Agent::processEpisode(knlohmann::json &episode)
     _terminationBuffer.add(termination);
     _truncatedStateBuffer.add(truncatedState);
     _truncatedStateValueBuffer.add(truncatedStateValue);
-    
+
     // Storing policy on episode start
     if (expId == 0)
       _policyBuffer.add(episode["Policy Hyperparameters"].get<std::vector<float>>());
@@ -1307,9 +1305,9 @@ void Agent::processEpisode(knlohmann::json &episode)
     // If outgoing experience is off policy, subtract off policy counter
     if (_isOnPolicyBuffer.size() == _experienceReplayMaximumSize)
       for (size_t a = 0; a < numAgents; a++)
-          if(_isOnPolicyBuffer[0][a] == false)
-              _experienceReplayOffPolicyCount[a]--;
-    
+        if (_isOnPolicyBuffer[0][a] == false)
+          _experienceReplayOffPolicyCount[a]--;
+
     // Adding new experience's on policiness (by default is true when adding it to the ER)
     _isOnPolicyBuffer.add(std::vector<char>(numAgents, true));
 
@@ -1657,7 +1655,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
           for (size_t b = 0; b < _rewardFunctionBatchSize; ++b)
           {
             const size_t expId = featureMiniBatch[b];
-            _rewardBufferContiguous[expId*_problem->_agentsPerEnvironment+a] = rewards[b];
+            _rewardBufferContiguous[expId * _problem->_agentsPerEnvironment + a] = rewards[b];
             _rewardUpdateBuffer[expId] = _rewardUpdateCount;
           }
 
@@ -1675,7 +1673,7 @@ void Agent::updateExperienceMetadata(const std::vector<std::pair<size_t, size_t>
     for (size_t b = 0; b < t; ++b)
     {
       const ssize_t expId = featureMiniBatch[b];
-      _rewardBufferContiguous[expId*_problem->_agentsPerEnvironment+a] = rewards[b];
+      _rewardBufferContiguous[expId * _problem->_agentsPerEnvironment + a] = rewards[b];
       _rewardUpdateBuffer[expId] = _rewardUpdateCount;
     }
   }
@@ -1765,6 +1763,24 @@ std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId, s
 
   return timeSequence;
 }
+
+//std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchFeatureSequence(const std::vector<size_t> &miniBatch)
+//{
+//  // Allocating feature sequence vector
+//  std::vector<std::vector<std::vector<float>>> featureSequence(_rewardFunctionBatchSize, std::vector<std::vector<float>>(1, std::vector<float>(_problem->_featureVectorSize)));
+//
+//#pragma omp parallel for
+//  for (size_t b = 0; b < miniBatch.size(); b++)
+//  {
+//    // Getting current expId
+//    const size_t expId = miniBatch[b];
+//
+//    // Resizing state sequence vector to the correct time sequence length
+//    featureSequence[b] = {_featureBuffer[expId]};
+//  }
+//
+//  return featureSequence;
+//}
 
 void Agent::finalize()
 {

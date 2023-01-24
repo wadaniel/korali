@@ -79,8 +79,7 @@ void ReinforcementLearning::initialize()
   {
     size_t trajectoryLength = _observationsStates[t].size();
     _totalObservedStateActionPairs += trajectoryLength * _agentsPerEnvironment;
-       
-    
+
     if (_observationsActions[t].size() != trajectoryLength)
       KORALI_LOG_ERROR("Trajectory (%zu) length of observed actions (%zu) does not agree with trajectory length of observed states (%zu)\n", t, _observationsActions[t].size(), trajectoryLength);
 
@@ -89,26 +88,26 @@ void ReinforcementLearning::initialize()
 
     for (size_t i = 0; i < trajectoryLength; ++i)
     {
-          if (_observationsStates[t][i].size() != _agentsPerEnvironment)
-            KORALI_LOG_ERROR("TODO");
+      if (_observationsStates[t][i].size() != _agentsPerEnvironment)
+        KORALI_LOG_ERROR("TODO");
 
-          if (_observationsActions[t][i].size() != _agentsPerEnvironment)
-            KORALI_LOG_ERROR("TODO");
+      if (_observationsActions[t][i].size() != _agentsPerEnvironment)
+        KORALI_LOG_ERROR("TODO");
 
-          if (_observationsFeatures[t][i].size() != _agentsPerEnvironment)
-            KORALI_LOG_ERROR("TODO");
+      if (_observationsFeatures[t][i].size() != _agentsPerEnvironment)
+        KORALI_LOG_ERROR("TODO");
 
-        for(size_t a = 0; a < _agentsPerEnvironment; ++a)
-        { 
-          if (_observationsStates[t][i][a].size() != _stateVectorSize)
-            KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
+      for (size_t a = 0; a < _agentsPerEnvironment; ++a)
+      {
+        if (_observationsStates[t][i][a].size() != _stateVectorSize)
+          KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
 
-          if (_observationsActions[t][i][a].size() != _actionVectorSize)
-            KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
+        if (_observationsActions[t][i][a].size() != _actionVectorSize)
+          KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
 
-          if (_observationsFeatures[t][i][a].size() != _featureVectorSize)
-            KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
-        }
+        if (_observationsFeatures[t][i][a].size() != _featureVectorSize)
+          KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
+      }
     }
   }
 
@@ -193,7 +192,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &worker)
 
     // Store the current state in the experience
     episode["Experiences"][actionCount]["State"] = worker["State"];
-    
+
     // Store the current state in the experience
     episode["Experiences"][actionCount]["Features"] = worker["Features"];
 
@@ -442,11 +441,11 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
 
   // In case of this being a single worker, preprocess state and reward if necessary
   if (_conduit->isWorkerLeadRank() == false) return;
-  
+
   // Define feature rescaling variables
   const auto featureRescalingMeans = worker["Feature Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
   const auto featureRescalingSdevs = worker["Feature Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
-  
+
   // Define state rescaling variables
   const auto stateRescalingMeans = worker["State Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
   const auto stateRescalingSdevs = worker["State Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
@@ -487,7 +486,6 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
 
     for (size_t j = 0; j < _featureVectorSize; j++)
       if (std::isfinite(worker["Features"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu feature variable %lu returned an invalid value: %f\n", i, j, worker["Features"][i][j].get<float>());
-
   }
 
   // Normalizing State
@@ -510,7 +508,7 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
 
     for (size_t d = 0; d < _featureVectorSize; ++d)
       features[d] = (features[d] - featureRescalingMeans[i][d]) / featureRescalingSdevs[i][d];
-    
+
     // Re-storing state into agent
     worker["Features"][i] = features;
   }

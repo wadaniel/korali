@@ -1,9 +1,10 @@
-run=8000
+run=10000
 
-#export ENV="HalfCheetah-v4"
-export ENV="Swimmer-v4"
+export ENV="HalfCheetah-v4"
+#export ENV="Swimmer-v4"
 export POL="Linear"
-export EXP=3000000
+#export POL="Quadratic"
+export EXP=5000000
 export DAT=100
 
 for EU in 2000 5000

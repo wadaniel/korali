@@ -503,11 +503,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
+      _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
 
       // Store background trajectory
       for (size_t i = 0; i < episodeLength; ++i)
       {
-        _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
         _backgroundTrajectoryStates[_backgroundTrajectoryCount][i] = _stateBuffer[episodeStartIdx + i];
         _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
         _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
@@ -527,10 +527,10 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
     {
       _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize + 1);
-      auto trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
+      const auto trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
       if (_useFusionDistribution)
       {
-        // Insert probability from linear policy first
+        // Insert probability from demo policy first
         _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
         for (size_t j = 0; j < _backgroundTrajectoryCount; ++j)
           _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
@@ -557,11 +557,11 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     _backgroundTrajectoryStates[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryActions[_backgroundTrajectoryCount].resize(episodeLength);
     _backgroundTrajectoryFeatures[_backgroundTrajectoryCount].resize(episodeLength);
+    _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
 
     // Store background trajectory
     for (size_t i = 0; i < episodeLength; ++i)
     {
-      _backgroundPolicyHyperparameter[_backgroundTrajectoryCount] = _policyBuffer[episodeStartIdx];
       _backgroundTrajectoryStates[_backgroundTrajectoryCount][i] = _stateBuffer[episodeStartIdx + i];
       _backgroundTrajectoryActions[_backgroundTrajectoryCount][i] = _actionBuffer[episodeStartIdx + i];
       _backgroundTrajectoryFeatures[_backgroundTrajectoryCount][i] = _featureBuffer[episodeStartIdx + i];
@@ -577,7 +577,7 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       for (size_t i = 0; i < _backgroundTrajectoryCount - 1; ++i)
         _backgroundTrajectoryLogProbabilities[i][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
 
-      // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
+      // For newest trajectory evaluate log probability with observed policy, all previous policies, and the current one
       _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1]);
       for (size_t i = 0; i < _backgroundTrajectoryCount; ++i)
         _backgroundTrajectoryLogProbabilities[_backgroundTrajectoryCount - 1][i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundTrajectoryCount - 1], _backgroundTrajectoryActions[_backgroundTrajectoryCount - 1], _backgroundPolicyHyperparameter[i]);
@@ -607,7 +607,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     _backgroundTrajectoryFeatures[replacementIdx].resize(episodeLength);
 
     // Replace background trajectory
-#pragma omp parallel for
     for (size_t i = 0; i < episodeLength; ++i)
     {
       _backgroundTrajectoryStates[replacementIdx][i] = _stateBuffer[episodeStartIdx + i];

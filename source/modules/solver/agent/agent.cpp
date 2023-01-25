@@ -359,11 +359,13 @@ void Agent::trainingGeneration()
 
       if (_optimizeMaxEntropyObjective == false)
       {
+        _k->_logger->logInfo("Detailed", "Updating reward function..\n");
         while (_rewardUpdateCount * _experiencesBetweenRewardUpdates <= _experienceReplayStartSize)
         {
           updateRewardFunction();
           _rewardUpdateCount++;
         }
+        _k->_logger->logInfo("Detailed", "Done!\n");
       }
       else
       {
@@ -698,7 +700,6 @@ void Agent::updateRewardFunction()
 
   const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::minstd_rand0 generator(seed);
-  _k->_logger->logInfo("Detailed", "Update Reward Function..\n");
 
   for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
   {

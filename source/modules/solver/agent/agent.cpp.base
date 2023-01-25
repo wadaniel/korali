@@ -81,15 +81,17 @@ void __className__::initialize()
   _trainingRewardHistory.resize(0);
   _trainingFeatureRewardHistory.resize(0);
   _experienceReplayOffPolicyHistory.resize(0);
-
-  // Initialize background samples
-  _backgroundTrajectoryCount = 0;
   _demonstrationFeatureReward.resize(0);
   _demonstrationLogProbability.resize(0);
+  _backgroundLogProbability.resize(0);
   _maxEntropyObjective.resize(0);
+  _logPartitionFunctionHistory.resize(0);
   _demonstrationBatchImportanceWeight.resize(0);
   _backgroundBatchImportanceWeight.resize(0);
   _effectiveSampleSize.resize(0);
+
+  // Initialize background samples
+  _backgroundTrajectoryCount = 0;
   _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
 
   //  Pre-allocating space for state time sequence
@@ -721,6 +723,7 @@ void __className__::updateRewardFunction()
     for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
     {
       // For statistics
+      float bckLogP = 0.;
       float demoLogP = 0.;
 
       // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
@@ -791,15 +794,15 @@ void __className__::updateRewardFunction()
           }
         }
       }
+        
+      // Record history of logprobability of demonstrations
+      _demonstrationLogProbability.push_back(demoLogP / (float)(_demonstrationBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
+
+      // Record history of average feature reward of demonstrations
+      _demonstrationFeatureReward.push_back(cumDemoReward / (float)_demonstrationBatchSize);
 
       if (_optimizeMaxEntropyObjective == true)
       {
-        // Record history of logprobability of demonstrations
-        _demonstrationLogProbability.push_back(demoLogP / (float)(_demonstrationBatchSize + _backgroundBatchSize));
-
-        // Record history of average feature reward of demonstrations
-        _demonstrationFeatureReward.push_back(cumDemoReward / (float)_demonstrationBatchSize);
-
         // Calculate cumulative rewards for randomized background batch and extract trajectory probabilities
         std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
         std::vector<std::vector<float>> gradientCumulativeRewardFunctionBackgroundBatch(_backgroundBatchSize, std::vector<float>(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.));
@@ -854,15 +857,22 @@ void __className__::updateRewardFunction()
           {
             backgroundTrajectoryLogProbabilities[m][n] = _backgroundTrajectoryLogProbabilities[bckIdx][0][a]; // probability from observed policy
             if (std::isfinite(backgroundTrajectoryLogProbabilities[m][n]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+            bckLogP += backgroundTrajectoryLogProbabilities[m][n];
           }
 
           if (_useFusionDistribution)
+          {
             for (size_t i = 0; i < _backgroundBatchSize; ++i)
             {
               const size_t bckIdx2 = randomBackgroundIndexes[i];
               backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1][a]; 
               if (std::isfinite(backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
+              bckLogP += backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i];
             }
+
+            // Record history of logprobability of demonstrations
+            _backgroundLogProbability.push_back(bckLogP / (float)( _backgroundBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
+          }
           else
           {
             KORALI_LOG_ERROR("Not yet implemneted.");
@@ -974,9 +984,10 @@ void __className__::updateRewardFunction()
         // Record history of importance weights
         _demonstrationBatchImportanceWeight.push_back(logSumExp(demonstrationBatchLogImportanceWeights) - std::log((float)_demonstrationBatchSize));
         _backgroundBatchImportanceWeight.push_back(logSumExp(demonstrationBatchLogImportanceWeights) - std::log((float)_backgroundBatchSize));
-        _effectiveSampleSize.push_back(ess);
 
         // Record history of max entropy objective
+        _effectiveSampleSize.push_back(ess);
+        _logPartitionFunctionHistory.push_back(_logPartitionFunction);
         _maxEntropyObjective.push_back(cumDemoReward - _demonstrationBatchSize * _logPartitionFunction);
       }
       else

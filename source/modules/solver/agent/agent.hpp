@@ -437,6 +437,10 @@ class Agent : public Solver
   */
    std::vector<float> _demonstrationLogProbability;
   /**
+  * @brief [Internal Use] The log probability of the background batch using the latest policy.
+  */
+   std::vector<float> _backgroundLogProbability;
+  /**
   * @brief [Internal Use] The cumulative feature rewards of the demonstration batch.
   */
    std::vector<float> _demonstrationFeatureReward;
@@ -444,6 +448,10 @@ class Agent : public Solver
   * @brief [Internal Use] The history of the max entropy objective.
   */
    std::vector<float> _maxEntropyObjective;
+  /**
+  * @brief [Internal Use] The history of the log partition function.
+  */
+   std::vector<float> _logPartitionFunctionHistory;
   /**
   * @brief [Internal Use] History of avg demonstration batch importance weights.
   */

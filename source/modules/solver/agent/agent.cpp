@@ -357,15 +357,14 @@ void Agent::trainingGeneration()
         if (_policyUpdateCount == 0)
           rescaleFeatures();
 
+      _k->_logger->logInfo("Detailed", "Updating reward function..\n");
       if (_optimizeMaxEntropyObjective == false)
       {
-        _k->_logger->logInfo("Detailed", "Updating reward function..\n");
         while (_rewardUpdateCount * _experiencesBetweenRewardUpdates <= _experienceReplayStartSize)
         {
           updateRewardFunction();
           _rewardUpdateCount++;
         }
-        _k->_logger->logInfo("Detailed", "Done!\n");
       }
       else
       {
@@ -384,6 +383,7 @@ void Agent::trainingGeneration()
           _sessionRewardUpdateCount++;
         }
       }
+      _k->_logger->logInfo("Detailed", "Done!\n");
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))

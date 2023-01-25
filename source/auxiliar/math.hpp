@@ -336,6 +336,31 @@ T normalLogCCDF(const T &x, const T &mean, const T &sigma)
 }
 
 /**
+* @brief Computes the log density of a normal distribution.
+* @param x denisty evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log density
+*/
+template <typename T>
+T clippedNormalLogDensity(const T x, const T mu, const T sig, const T lb, const T ub)
+{
+  T logp = 0.;
+  if (x <= lb)
+  {
+    logp += normalLogCDF(x, mu, sig);
+  }
+  else if (ub <= x)
+  {
+    logp += normalLogCCDF(ub, mu, sig);
+  }
+  else
+  {
+    logp += normalLogDensity(x, mu, sig);
+  }
+}
+ 
+/**
 * @brief Computes the log density of a squashed normal distribution.
 * @param px density evaluation point
 * @param mean Mean of normal distribution

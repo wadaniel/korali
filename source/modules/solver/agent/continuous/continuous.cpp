@@ -214,7 +214,6 @@ void Continuous::initializeAgent()
       gsl_matrix_free(cov);
     }
 
-  printf("calc sigmas..\n");
   // Calculate squared error over all predictions
   std::vector<float> squaredErrors(_problem->_actionVectorSize, 0.);
   if (_demonstrationPolicy == "Linear")
@@ -537,21 +536,8 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float curMu = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      if (action[i] <= _actionLowerBounds[i])
-      {
-        logpCurPolicy += normalLogCDF(_actionLowerBounds[i], curMu, curSigma);
-        logpOldPolicy += normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma);
-      }
-      else if (_actionUpperBounds[i] <= action[i])
-      {
-        logpCurPolicy += normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
-        logpOldPolicy += normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma);
-      }
-      else
-      {
-        logpCurPolicy += normalLogDensity(action[i], curMu, curSigma);
-        logpOldPolicy += normalLogDensity(action[i], oldMu, oldSigma);
-      }
+      logpCurPolicy += clippedNormalLogDensity(action[i], curMu, curSigma, _actionLowerBounds[i], _actionUpperBounds[i]);
+      logpOldPolicy += clippedNormalLogDensity(action[i], oldMu, oldSigma, _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
 
@@ -1071,21 +1057,42 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
   policy[0] = policyHyperparameter;
   setPolicy(policy);
 
+  // Evaluate all states of all agents in a trajectory and calculate probability of actions
   std::vector<float> trajectoryLogProbability(_problem->_agentsPerEnvironment, 0.0);
-  // Evaluate all states within a single trajectory and calculate probability of trajectory
-  for (size_t t = 0; t < states.size(); ++t)
+  for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
   {
-    for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
+    std::vector<std::vector<std::vector<float>>> stateBatch(_miniBatchSize);
+    // Evaluate states in batches
+    for (size_t t = 0; t < states.size(); t += _miniBatchSize)
     {
-      std::vector<policy_t> policy(1);
-      runPolicy({{states[t][a]}}, policy);
-      for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
-        trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], policy[0].distributionParameters[d], policy[0].distributionParameters[_problem->_actionVectorSize + d]);
+      std::vector<policy_t> policy(_miniBatchSize);
+      for (size_t b = 0; b < _miniBatchSize; ++b)
+      {
+        if (t + b < states.size())
+          stateBatch[b] = {states[t + b][a]};
+      }
+      runPolicy(stateBatch, policy);
+
+      for (size_t b = 0; b < _miniBatchSize; ++b)
+      {
+        if (t + b < states.size())
+        {
+          if (_policyDistribution == "Normal")
+          for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+            trajectoryLogProbability[a] += normalLogDensity(actions[t + b][a][d], policy[b].distributionParameters[d], policy[b].distributionParameters[_problem->_actionVectorSize + d]);
+          else if (_policyDistribution == "Clipped Normal")
+          for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+            trajectoryLogProbability[a] += clippedNormalLogDensity(actions[t + b][a][d], policy[b].distributionParameters[d], policy[b].distributionParameters[_problem->_actionVectorSize + d], _actionLowerBounds[d], _actionUpperBounds[d]);
+          else
+                KORALI_LOG_ERROR("IRL does not support policy distribution of type '%s'.", _policyDistribution);
+        }
+      }
     }
   }
 
   for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
     if (std::isfinite(trajectoryLogProbability[a]) == false) KORALI_LOG_ERROR("Trajectory logprobability not finite!");
+  
   return trajectoryLogProbability;
 }
 

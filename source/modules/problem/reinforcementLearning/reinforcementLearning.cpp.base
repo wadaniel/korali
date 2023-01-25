@@ -469,44 +469,29 @@ void __className__::runEnvironment(Sample &worker)
 
   if (worker["Features"].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
   if (worker["Features"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents feature vector returned with the wrong size: %lu, expected: %lu.\n", worker["Features"].size(), _agentsPerEnvironment);
-  // Sanity checks for state
-  for (size_t i = 0; i < _agentsPerEnvironment; i++)
+
+  // Sanity checks for state and features
+  for (size_t i = 0; i < _agentsPerEnvironment; ++i)
   {
     if (worker["State"][i].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
     if (worker["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["State"][i].size(), _stateVectorSize);
-    if (worker["Features"][i].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
-    if (worker["Features"][i].size() != _featureVectorSize) KORALI_LOG_ERROR("Agents feature vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["Features"][i].size(), _featureVectorSize);
-
-    for (size_t j = 0; j < _stateVectorSize; j++)
-      if (std::isfinite(worker["State"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, worker["State"][i][j].get<float>());
-
-    for (size_t j = 0; j < _featureVectorSize; j++)
-      if (std::isfinite(worker["Features"][i][j].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu feature variable %lu returned an invalid value: %f\n", i, j, worker["Features"][i][j].get<float>());
-  }
-
-  // Normalizing State
-  for (size_t i = 0; i < _agentsPerEnvironment; i++)
-  {
-    auto state = worker["State"][i].get<std::vector<float>>();
 
     // Scale the state
     for (size_t d = 0; d < _stateVectorSize; ++d)
-      state[d] = (state[d] - stateRescalingMeans[i][d]) / stateRescalingSdevs[i][d];
+    {
+      worker["State"][i][d] = (worker["State"][i][d].get<float>() - stateRescalingMeans[i][d]) / stateRescalingSdevs[i][d];
+      if (std::isfinite(worker["State"][i][d].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, d, worker["State"][i][d].get<float>());
+    }
 
-    // Re-storing state into worker
-    worker["State"][i] = state;
-  }
+    if (worker["Features"][i].is_array() == false) KORALI_LOG_ERROR("Agent feature variable returned by the environment is not a vector.\n");
+    if (worker["Features"][i].size() != _featureVectorSize) KORALI_LOG_ERROR("Agents feature vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, worker["Features"][i].size(), _featureVectorSize);
 
-  // Normalizing Feature
-  for (size_t i = 0; i < _agentsPerEnvironment; i++)
-  {
-    auto features = worker["Features"][i].get<std::vector<float>>();
-
+    // Scale features
     for (size_t d = 0; d < _featureVectorSize; ++d)
-      features[d] = (features[d] - featureRescalingMeans[i][d]) / featureRescalingSdevs[i][d];
-
-    // Re-storing state into agent
-    worker["Features"][i] = features;
+    {
+      worker["Features"][i][d] = (worker["Features"][i][d].get<float>() - featureRescalingMeans[i][d]) / featureRescalingSdevs[i][d];
+      if (std::isfinite(worker["Features"][i][d].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu feature variable %lu returned an invalid value: %f\n", i, d, worker["Features"][i][d].get<float>());
+    }
   }
 
   // Checking correct format of reward

@@ -437,16 +437,20 @@ void Agent::trainingGeneration()
    *********************************************************************/
 
   // Updating average cumulative reward statistics
+  // 
+  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
+  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
+  if (startEpisodeId < 0) startEpisodeId = 0;
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
-  for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
+  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
   {
-    ssize_t startEpisodeId = _trainingRewardHistory[a].size() - _trainingAverageDepth;
-    ssize_t endEpisodeId = _trainingRewardHistory[a].size() - 1;
-    if (startEpisodeId < 0) startEpisodeId = 0;
-    for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-      _trainingAverageReward[a] += _trainingRewardHistory[a][e];
-    _trainingAverageReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
+    for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
+    {
+      _trainingAverageReward[a] += _trainingRewardHistory[e][a];
+    }
   }
+  for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
+  _trainingAverageReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -480,8 +484,9 @@ void Agent::testingGeneration()
 
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
 {
-  // Initialize background batch
   if (_optimizeMaxEntropyObjective == false) return;
+  
+  // Initialize background batch
   if (_backgroundTrajectoryCount == 0)
   {
     _k->_logger->logInfo("Detailed", "Initializing background batch..\n");
@@ -591,7 +596,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
     }
   }
   // replace background trajectories
-  //else if (replacementIdx < _backgroundSampleSize)
   else
   {
     _k->_logger->logInfo("Detailed", "Replacing background trajectories (%zu trajectories stored)..\n", _backgroundTrajectoryCount);
@@ -621,12 +625,12 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
 
     if (_useFusionDistribution)
     {
-      // For all previous background trajectories evaluate log probability with newest policy
+      // For all other background trajectories evaluate log probability with newest policy
       for (size_t i = 0; i < _backgroundSampleSize; ++i)
         if (i != replacementIdx)
           _backgroundTrajectoryLogProbabilities[i][replacementIdx + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[replacementIdx]);
 
-      // For newest policy evaluate trajectory log probability with observed policy, all previous policies, and the current one
+      // For newest policy evaluate trajectory log probability with observed policy, all other policies, and the current one
       _backgroundTrajectoryLogProbabilities[replacementIdx][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx]);
       for (size_t i = 0; i < _backgroundSampleSize; ++i)
         _backgroundTrajectoryLogProbabilities[replacementIdx][i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx], _backgroundPolicyHyperparameter[i]);
@@ -636,10 +640,6 @@ void Agent::updateBackgroundBatch(const size_t replacementIdx)
       _backgroundTrajectoryLogProbabilities[replacementIdx][replacementIdx + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[replacementIdx], _backgroundTrajectoryActions[replacementIdx], _backgroundPolicyHyperparameter[replacementIdx]);
     }
   }
-  //else
-  //{
-  //  _k->_logger->logInfo("Detailed", "Skipping background trajectory update.\n");
-  //}
 }
 
 void Agent::updateDemonstrationBatch(const size_t replacementIdx)
@@ -661,8 +661,8 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
         }
     }
   }
+  // Evaluate demonstrations with latest background policy
   else if (_backgroundTrajectoryCount < _backgroundSampleSize && _useFusionDistribution)
-  // Evaluate demonstrations with latest policy
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with new trajectory..\n");
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
@@ -670,8 +670,8 @@ void Agent::updateDemonstrationBatch(const size_t replacementIdx)
       _demonstrationTrajectoryLogProbabilities[m][_backgroundTrajectoryCount] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], _backgroundPolicyHyperparameter[_backgroundTrajectoryCount - 1]);
     }
   }
-  else
-  // Evaluate demonstrations with latest policy
+  // Evaluate demonstrations with latest background policy
+  else if (_useFusionDistribution)
   {
     _k->_logger->logInfo("Detailed", "Updating demonstration batch with replaced trajectory..\n");
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)

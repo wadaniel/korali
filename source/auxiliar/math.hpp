@@ -336,27 +336,28 @@ T normalLogCCDF(const T &x, const T &mean, const T &sigma)
 }
 
 /**
-* @brief Computes the log density of a normal distribution.
-* @param x denisty evaluation point
-* @param mean Mean of normal distribution
-* @param sigma Standard Deviation of normal distribution
+* @brief Computes the log density of a clipped normal distribution.
+* @param x density evaluation point
+* @param mu Mean of normal distribution
+* @param sig Standard Deviation of normal distribution
+* @param lb Lower bound of clipped normal distribution
+* @param ub Upper bound of clipped normal distribution
 * @return The log density
 */
 template <typename T>
 T clippedNormalLogDensity(const T x, const T mu, const T sig, const T lb, const T ub)
 {
-  T logp = 0.;
   if (x <= lb)
   {
-    logp += normalLogCDF(x, mu, sig);
+    return normalLogCDF(lb, mu, sig);
   }
   else if (ub <= x)
   {
-    logp += normalLogCCDF(ub, mu, sig);
+    return normalLogCCDF(ub, mu, sig);
   }
   else
   {
-    logp += normalLogDensity(x, mu, sig);
+    return normalLogDensity(x, mu, sig);
   }
 }
  

@@ -437,20 +437,25 @@ void Agent::trainingGeneration()
    *********************************************************************/
 
   // Updating average cumulative reward statistics
-  // 
   ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
   ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
   if (startEpisodeId < 0) startEpisodeId = 0;
+  
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
+  _trainingAverageFeatureReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
   {
     for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
     {
       _trainingAverageReward[a] += _trainingRewardHistory[e][a];
+      _trainingAverageFeatureReward[a] += _trainingFeatureRewardHistory[e][a];
     }
   }
   for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
+  {
   _trainingAverageReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
+  _trainingAverageFeatureReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
+  }
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -2030,6 +2035,8 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", numPolicies > 1 ? _experienceReplayOffPolicyCount[a] : _experienceReplayOffPolicyCount[a] / _problem->_agentsPerEnvironment, _stateBuffer.size(), _experienceReplayOffPolicyRatio[a], _experienceReplayOffPolicyTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
       _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERCurrentBeta[a]);
+      _k->_logger->logInfo("Normal", " + Latest Feature Reward for agent %lu:               %f\n", a, _trainingFeatureRewardHistory.back()[a]);
+      _k->_logger->logInfo("Normal", " + %lu-Episode Average Feature Reward for agent %lu:  %f\n", _trainingAverageDepth, a, _trainingAverageFeatureReward[a]);
       _k->_logger->logInfo("Normal", " + Latest Reward for agent %lu:               %f\n", a, _trainingLastReward[a]);
       _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward for agent %lu:  %f\n", _trainingAverageDepth, a, _trainingAverageReward[a]);
       _k->_logger->logInfo("Normal", " + Best Reward for agent %lu:                 %f (%lu)\n", a, _trainingBestReward[a], _trainingBestEpisodeId[a]);

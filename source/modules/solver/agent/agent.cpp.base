@@ -497,7 +497,14 @@ void __className__::processEpisode(knlohmann::json &episode)
       if (_rewardBufferContiguous.size() >= _experienceReplayMaximumSize * numAgents)
       {
         for (size_t a = 0; a < numAgents; a++)
+        {
           _rewardRescalingSumSquaredRewards -= _rewardBufferContiguous[a] * _rewardBufferContiguous[a];
+        }
+      }
+      else
+      {
+        for (size_t a = 0; a < numAgents; a++)
+           _rewardRescalingSumRewards += reward[a];
       }
       for (size_t a = 0; a < numAgents; a++)
       {
@@ -694,7 +701,9 @@ void __className__::processEpisode(knlohmann::json &episode)
 
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
+  {
     _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
+  }
 }
 
 std::vector<std::pair<size_t, size_t>> __className__::generateMiniBatch()

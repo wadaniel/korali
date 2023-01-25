@@ -87,6 +87,7 @@ void Agent::initialize()
   _experienceReplayOffPolicyHistory.resize(0);
   _demonstrationFeatureReward.resize(0);
   _demonstrationLogProbability.resize(0);
+  _backgroundFeatureReward.resize(0);
   _backgroundLogProbability.resize(0);
   _maxEntropyObjective.resize(0);
   _logPartitionFunctionHistory.resize(0);
@@ -442,7 +443,7 @@ void Agent::trainingGeneration()
   ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
   ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
   if (startEpisodeId < 0) startEpisodeId = 0;
-  
+
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
   _trainingAverageFeatureReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
@@ -455,8 +456,8 @@ void Agent::trainingGeneration()
   }
   for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
   {
-  _trainingAverageReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
-  _trainingAverageFeatureReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
+    _trainingAverageReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
+    _trainingAverageFeatureReward[a] /= (float)(endEpisodeId - startEpisodeId + 1);
   }
 
   // Increasing session's generation count
@@ -492,7 +493,7 @@ void Agent::testingGeneration()
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
 {
   if (_optimizeMaxEntropyObjective == false) return;
-  
+
   // Initialize background batch
   if (_backgroundTrajectoryCount == 0)
   {
@@ -729,9 +730,10 @@ void Agent::updateRewardFunction()
       // For statistics
       float bckLogP = 0.;
       float demoLogP = 0.;
+      float cumDemoReward = 0.;
+      float cumFeatureReward = 0.;
 
       // Calculate cumulative rewards for demonstration batch and extract trajectory probabilities
-      float cumDemoReward = 0.;
       std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
       std::vector<std::vector<float>> gradientCumulativeRewardFunctionDemonstrationBatch(_demonstrationBatchSize, std::vector<float>(_rewardFunctionLearner->_neuralNetwork->_hyperparameterCount, 0.));
       std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(totalBatchSize));
@@ -784,26 +786,20 @@ void Agent::updateRewardFunction()
         {
           for (size_t i = 0; i < _demonstrationBatchSize; ++i)
           {
-            demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0][a]; 
+            demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0][a];
             if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
-            demoLogP += demonstrationTrajectoryLogProbabilities[n][i];
+            demoLogP = safeLogPlus(demoLogP, demonstrationTrajectoryLogProbabilities[n][i]);
           }
 
           for (size_t m = 0; m < _backgroundBatchSize; ++m)
           {
             const size_t bckIdx = randomBackgroundIndexes[m];
-            demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1][a]; 
+            demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1][a];
             if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
-            demoLogP += demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m];
+            demoLogP = safeLogPlus(demoLogP, demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]);
           }
         }
       }
-        
-      // Record history of logprobability of demonstrations
-      _demonstrationLogProbability.push_back(demoLogP / (float)(_demonstrationBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
-
-      // Record history of average feature reward of demonstrations
-      _demonstrationFeatureReward.push_back(cumDemoReward / (float)_demonstrationBatchSize);
 
       if (_optimizeMaxEntropyObjective == true)
       {
@@ -856,12 +852,13 @@ void Agent::updateRewardFunction()
           }
 
           cumulativeRewardsBackgroundBatch[m] = cumReward;
+          cumFeatureReward += cumReward;
 
           for (size_t n = 0; n < _demonstrationBatchSize; ++n)
           {
             backgroundTrajectoryLogProbabilities[m][n] = _backgroundTrajectoryLogProbabilities[bckIdx][0][a]; // probability from observed policy
             if (std::isfinite(backgroundTrajectoryLogProbabilities[m][n]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
-            bckLogP += backgroundTrajectoryLogProbabilities[m][n];
+            bckLogP = safeLogPlus(bckLogP, backgroundTrajectoryLogProbabilities[m][n]);
           }
 
           if (_useFusionDistribution)
@@ -869,13 +866,10 @@ void Agent::updateRewardFunction()
             for (size_t i = 0; i < _backgroundBatchSize; ++i)
             {
               const size_t bckIdx2 = randomBackgroundIndexes[i];
-              backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1][a]; 
+              backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2 + 1][a];
               if (std::isfinite(backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + 1]) == false) KORALI_LOG_ERROR("Background trajectory log probability is not finite");
-              bckLogP += backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i];
+              bckLogP = safeLogPlus(bckLogP, backgroundTrajectoryLogProbabilities[m][_demonstrationBatchSize + i]);
             }
-
-            // Record history of logprobability of demonstrations
-            _backgroundLogProbability.push_back(bckLogP / (float)( _backgroundBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
           }
           else
           {
@@ -965,6 +959,7 @@ void Agent::updateRewardFunction()
             _maxEntropyGradient[k] -= _demonstrationBatchSize * mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
           }
         }
+
         size_t negBracket = 0.;
         // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
         for (size_t n = 0; n < _demonstrationBatchSize; ++n)
@@ -1007,6 +1002,16 @@ void Agent::updateRewardFunction()
           }
         }
       }
+
+      // Record history of logprobability of background batch
+      _backgroundLogProbability.push_back(bckLogP - std::log(_backgroundBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
+
+      // Record history of logprobability of demonstration batch
+      _demonstrationLogProbability.push_back(demoLogP - std::log(_demonstrationBatchSize * (_demonstrationBatchSize + _backgroundBatchSize)));
+
+      // Record history of average feature reward of demonstrations
+      _demonstrationFeatureReward.push_back(cumDemoReward / (float)_demonstrationBatchSize);
+      _backgroundFeatureReward.push_back(cumFeatureReward / (float)_backgroundBatchSize);
     }
 
     // Passing hyperparameter gradients through an Adam update
@@ -2477,6 +2482,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Demonstration Feature Reward");
  }
 
+ if (isDefined(js, "Background Feature Reward"))
+ {
+ try { _backgroundFeatureReward = js["Background Feature Reward"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Background Feature Reward']\n%s", e.what()); } 
+   eraseValue(js, "Background Feature Reward");
+ }
+
  if (isDefined(js, "Max Entropy Objective"))
  {
  try { _maxEntropyObjective = js["Max Entropy Objective"].get<std::vector<float>>();
@@ -3030,6 +3043,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Demonstration Log Probability"] = _demonstrationLogProbability;
    js["Background Log Probability"] = _backgroundLogProbability;
    js["Demonstration Feature Reward"] = _demonstrationFeatureReward;
+   js["Background Feature Reward"] = _backgroundFeatureReward;
    js["Max Entropy Objective"] = _maxEntropyObjective;
    js["Log Partition Function History"] = _logPartitionFunctionHistory;
    js["Demonstration Batch Importance Weight"] = _demonstrationBatchImportanceWeight;

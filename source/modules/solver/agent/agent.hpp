@@ -445,6 +445,10 @@ class Agent : public Solver
   */
    std::vector<float> _demonstrationFeatureReward;
   /**
+  * @brief [Internal Use] The cumulative feature rewards of the demonstration batch.
+  */
+   std::vector<float> _backgroundFeatureReward;
+  /**
   * @brief [Internal Use] The history of the max entropy objective.
   */
    std::vector<float> _maxEntropyObjective;

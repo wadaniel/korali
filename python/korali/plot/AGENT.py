@@ -20,13 +20,16 @@ def plot(genList, **kwargs):
   expHistory = data["Solver"]["Training"]["Experience History"]
   offpHistory = data["Solver"]["Experience Replay"]["Off Policy"]["History"]
   ess  = data["Solver"]["Effective Sample Size"]
-  bckZ = data["Solver"]["Background Batch Importance Weight"]
-  demZ = data["Solver"]["Demonstration Batch Importance Weight"]
+  bckW = data["Solver"]["Background Batch Importance Weight"]
+  demW = data["Solver"]["Demonstration Batch Importance Weight"]
   cumExpHistory = np.cumsum(expHistory)
 
   demoFeatureRewards = data["Solver"]["Demonstration Feature Reward"]
   demoLogProbabilities = data["Solver"]["Demonstration Log Probability"]
+  bckLogProbabilities = data["Solver"]["Background Feature Reward"]
+  bckLogProbabilities = data["Solver"]["Background Log Probability"]
   maxEntropyObjective = data["Solver"]["Max Entropy Objective"]
+  maxEntropyObjective = data["Solver"]["Log Partition Function History"]
 
   fig, ax = plt.subplots(2, 2, num='Korali Results', figsize=(8, 8))
   ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoFeatureRewards), endpoint=True)
@@ -36,7 +39,9 @@ def plot(genList, **kwargs):
   #ax[0,0].plot(ex, demZ, c='b')
   ax[0,0].plot(ex, ess)
   ax[0,1].plot(ex, maxEntropyObjective)
-  ax[1,0].plot(ex, demoFeatureRewards)
-  ax[1,1].plot(ex, demoLogProbabilities)
+  ax[1,0].plot(ex, demoFeatureRewards, c='b')
+  ax[1,0].plot(ex, bckFeatureRewards, c='r')
+  ax[1,1].plot(ex, demoLogProbabilities, c='b')
+  ax[1,1].plot(ex, bckLogProbabilities, c='r')
 
   #plt.suptitle('AGENTDiagnostics', fontweight='bold', fontsize=12)

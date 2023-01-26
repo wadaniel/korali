@@ -1057,22 +1057,24 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
   policyHyperParam[0] = policyHyperparameter;
   setPolicy(policyHyperParam);
 
+  size_t effectiveBatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
+
   // Evaluate all states of all agents in a trajectory and calculate probability of actions
   std::vector<float> trajectoryLogProbability(_problem->_agentsPerEnvironment, 0.0);
   for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
   {
     // Evaluate states in batches
-    for (size_t t = 0; t < states.size(); t += _miniBatchSize)
+    for (size_t t = 0; t < states.size(); t += effectiveBatchSize)
     {
-      std::vector<policy_t> policy(_miniBatchSize);
-      std::vector<std::vector<std::vector<float>>> stateBatch(_miniBatchSize);
-      for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+      std::vector<policy_t> policy(effectiveBatchSize);
+      std::vector<std::vector<std::vector<float>>> stateBatch(effectiveBatchSize);
+      for (size_t b = 0; b < effectiveBatchSize && ((t + b) < states.size()); ++b)
       {
         stateBatch[b] = {states[t + b][a]};
       }
       runPolicy(stateBatch, policy);
 
-      for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+      for (size_t b = 0; b < effectiveBatchSize && ((t + b) < states.size()); ++b)
       {
         if (_policyDistribution == "Normal")
           for (size_t d = 0; d < _problem->_actionVectorSize; ++d)

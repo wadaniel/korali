@@ -111,20 +111,6 @@ void VRACER::trainPolicy()
   // Update all policies using all experiences
   for (size_t p = 0; p < numPolicies; p++)
   {
-    // Disable experience sharing by splitting minibatch for competing agents
-    if (_multiAgentRelationship == "Competition")
-    {
-      std::vector<std::pair<size_t, size_t>> miniBatchCompetition(_miniBatchSize);
-      std::vector<std::vector<std::vector<float>>> stateSequenceCompetition(_miniBatchSize);
-      for (size_t i = 0; i < _miniBatchSize; i++)
-      {
-        miniBatchCompetition[i] = miniBatch[i * _problem->_agentsPerEnvironment + p];
-        stateSequenceCompetition[i] = stateSequenceBatch[i * _problem->_agentsPerEnvironment + p];
-      }
-      miniBatchCopy = miniBatchCompetition;
-      stateSequenceBatchCopy = stateSequenceCompetition;
-    }
-
     // Forward NN
     std::vector<policy_t> policyInfo;
     runPolicy(stateSequenceBatchCopy, policyInfo, p);

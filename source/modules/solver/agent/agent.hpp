@@ -309,6 +309,10 @@ class Agent : public Solver
   */
    std::vector<size_t> _trainingBestEpisodeId;
   /**
+  * @brief [Internal Use] Stores the best training policies configuration found so far.
+  */
+   knlohmann::json _trainingBestRewardParams;
+  /**
   * @brief [Internal Use] Stores the current training policies configuration.
   */
    knlohmann::json _trainingCurrentPolicies;

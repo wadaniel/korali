@@ -1140,6 +1140,15 @@ void Agent::attendWorker(size_t workerId)
         }
       }
 
+      // TODO: non-cooperative and multi policy case
+      if (_trainingLastReward[0] > _trainingBestReward[0])
+      {
+        _trainingBestPolicies["Policy Hyperparameters"][0] = _workers[workerId]["Policy Hyperparameters"][0];
+        _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
+            
+      }
+ 
+
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
       _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);
@@ -2212,6 +2221,13 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Training", "Best Episode Id");
  }
 
+ if (isDefined(js, "Training", "Best Reward Params"))
+ {
+ _trainingBestRewardParams = js["Training"]["Best Reward Params"].get<knlohmann::json>();
+
+   eraseValue(js, "Training", "Best Reward Params");
+ }
+
  if (isDefined(js, "Training", "Current Policies"))
  {
  _trainingCurrentPolicies = js["Training"]["Current Policies"].get<knlohmann::json>();
@@ -3009,6 +3025,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Training"]["Last Reward"] = _trainingLastReward;
    js["Training"]["Best Reward"] = _trainingBestReward;
    js["Training"]["Best Episode Id"] = _trainingBestEpisodeId;
+   js["Training"]["Best Reward Params"] = _trainingBestRewardParams;
    js["Training"]["Current Policies"] = _trainingCurrentPolicies;
    js["Training"]["Best Policies"] = _trainingBestPolicies;
    js["Testing"]["Reward"] = _testingReward;

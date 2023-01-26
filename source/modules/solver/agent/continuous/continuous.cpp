@@ -1057,7 +1057,7 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
   policyHyperParam[0] = policyHyperparameter;
   setPolicy(policyHyperParam);
 
-  size_t effectiveBatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
+  const size_t effectiveBatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
 
   // Evaluate all states of all agents in a trajectory and calculate probability of actions
   std::vector<float> trajectoryLogProbability(_problem->_agentsPerEnvironment, 0.0);

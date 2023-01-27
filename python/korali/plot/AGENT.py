@@ -26,7 +26,7 @@ def plot(genList, **kwargs):
 
   demoFeatureRewards = data["Solver"]["Demonstration Feature Reward"]
   demoLogProbabilities = data["Solver"]["Demonstration Log Probability"]
-  bckLogProbabilities = data["Solver"]["Background Feature Reward"]
+  bckFeatureRewards = data["Solver"]["Background Feature Reward"]
   bckLogProbabilities = data["Solver"]["Background Log Probability"]
   maxEntropyObjective = data["Solver"]["Max Entropy Objective"]
   maxEntropyObjective = data["Solver"]["Log Partition Function History"]

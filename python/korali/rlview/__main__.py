@@ -58,7 +58,7 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
             returns = np.array(r["Solver"]["Training"]["Reward History"])
 
         if (r["Problem"]["Agents Per Environment"] > 1) and not showAgents:
-            returns = np.mean(returns, axis=0)
+            returns = np.mean(returns, axis=1)
             returns = np.reshape(returns, (1,-1))
 
         returns = np.reshape(returns, (numResults,-1))

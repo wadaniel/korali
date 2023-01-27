@@ -1061,7 +1061,8 @@ std::vector<float> __className__::evaluateTrajectoryLogProbability(const std::ve
   {
     std::vector<policy_t> policy(effectiveBatchSize);
     std::vector<std::vector<std::vector<float>>> stateBatch(effectiveBatchSize);
-    for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+    const size_t batchSize = std::min(_miniBatchSize, states.size()-t);
+    for (size_t b = 0; b < batchSize; ++b)
     {
       for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
         stateBatch[b * numAgents + a] = {states[t + b][a]};
@@ -1069,7 +1070,7 @@ std::vector<float> __className__::evaluateTrajectoryLogProbability(const std::ve
 
     runPolicy(stateBatch, policy);
 
-    for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+    for (size_t b = 0; b < batchSize; ++b)
     {
       if (_policyDistribution == "Normal")
         for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
@@ -1108,6 +1109,8 @@ std::vector<float> __className__::evaluateTrajectoryLogProbabilityWithObservedPo
           {
             evaluation[d] += _observationsApproximatorWeights[d][j + 1] * states[t][a][j];
           }
+          if (evaluation[d] > _actionUpperBounds[d]) evaluation[d] = _actionUpperBounds[d];
+          if (evaluation[d] < _actionLowerBounds[d]) evaluation[d] = _actionLowerBounds[d];
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
           trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d]);
@@ -1128,6 +1131,8 @@ std::vector<float> __className__::evaluateTrajectoryLogProbabilityWithObservedPo
             evaluation[d] += _observationsApproximatorWeights[d][2 * j + 1] * states[t][a][j];
             evaluation[d] += _observationsApproximatorWeights[d][2 * j + 2] * std::pow(states[t][a][j], 2.);
           }
+          if (evaluation[d] > _actionUpperBounds[d]) evaluation[d] = _actionUpperBounds[d];
+          if (evaluation[d] < _actionLowerBounds[d]) evaluation[d] = _actionLowerBounds[d];
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
           trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d]);

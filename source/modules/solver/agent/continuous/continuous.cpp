@@ -229,6 +229,8 @@ void Continuous::initializeAgent()
             {
               approx += _observationsApproximatorWeights[k][j + 1] * _problem->_observationsStates[t][i][a][j];
             }
+            if (approx < _actionLowerBounds[k]) approx = _actionLowerBounds[k];
+            if (approx > _actionUpperBounds[k]) approx = _actionUpperBounds[k];
             squaredErrors[k] += std::pow(_problem->_observationsActions[t][i][a][k] - approx, 2.);
           }
       }
@@ -250,6 +252,8 @@ void Continuous::initializeAgent()
               approx += _observationsApproximatorWeights[k][2 * j + 1] * _problem->_observationsStates[t][i][a][j];
               approx += _observationsApproximatorWeights[k][2 * j + 2] * std::pow(_problem->_observationsStates[t][i][a][j], 2.);
             }
+            if (approx < _actionLowerBounds[k]) approx = _actionLowerBounds[k];
+            if (approx > _actionUpperBounds[k]) approx = _actionUpperBounds[k];
             squaredErrors[k] += std::pow((float)_problem->_observationsActions[t][i][a][k] - approx, 2.);
           }
       }
@@ -1119,7 +1123,10 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbabilityWithObservedPolic
           if (evaluation[d] < _actionLowerBounds[d]) evaluation[d] = _actionLowerBounds[d];
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
-          trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d]);
+          trajectoryLogProbability[a] +=
+          clippedNormalLogDensity(actions[t][a][d], evaluation[d],
+          _observationsApproximatorSigmas[d], _actionLowerBounds[d],
+          _actionUpperBounds[d]);
       }
     }
   else if (_demonstrationPolicy == "Quadratic")

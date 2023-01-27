@@ -1067,7 +1067,8 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
   {
     std::vector<policy_t> policy(effectiveBatchSize);
     std::vector<std::vector<std::vector<float>>> stateBatch(effectiveBatchSize);
-    for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+    const size_t batchSize = std::min(_miniBatchSize, states.size()-t);
+    for (size_t b = 0; b < batchSize; ++b)
     {
       for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
         stateBatch[b * numAgents + a] = {states[t + b][a]};
@@ -1075,7 +1076,7 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
 
     runPolicy(stateBatch, policy);
 
-    for (size_t b = 0; b < _miniBatchSize && ((t + b) < states.size()); ++b)
+    for (size_t b = 0; b < batchSize; ++b)
     {
       if (_policyDistribution == "Normal")
         for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)

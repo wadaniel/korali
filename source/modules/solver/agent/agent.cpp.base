@@ -1136,6 +1136,15 @@ void __className__::attendWorker(size_t workerId)
         }
       }
 
+      // TODO: non-cooperative and multi policy case
+      if (_trainingLastReward[0] > _trainingBestReward[0])
+      {
+        _trainingBestPolicies["Policy Hyperparameters"][0] = _workers[workerId]["Policy Hyperparameters"][0];
+        _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
+            
+      }
+ 
+
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
       _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);

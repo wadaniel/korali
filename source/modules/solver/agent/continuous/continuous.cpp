@@ -1114,6 +1114,8 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbabilityWithObservedPolic
           {
             evaluation[d] += _observationsApproximatorWeights[d][j + 1] * states[t][a][j];
           }
+          if (evaluation[d] > _actionUpperBounds[d]) evaluation[d] = _actionUpperBounds[d];
+          if (evaluation[d] < _actionLowerBounds[d]) evaluation[d] = _actionLowerBounds[d];
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
           trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d]);
@@ -1134,6 +1136,8 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbabilityWithObservedPolic
             evaluation[d] += _observationsApproximatorWeights[d][2 * j + 1] * states[t][a][j];
             evaluation[d] += _observationsApproximatorWeights[d][2 * j + 2] * std::pow(states[t][a][j], 2.);
           }
+          if (evaluation[d] > _actionUpperBounds[d]) evaluation[d] = _actionUpperBounds[d];
+          if (evaluation[d] < _actionLowerBounds[d]) evaluation[d] = _actionLowerBounds[d];
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
           trajectoryLogProbability[a] += normalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d]);

@@ -1071,7 +1071,7 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbability(const std::vecto
   {
     std::vector<policy_t> policy(effectiveBatchSize);
     std::vector<std::vector<std::vector<float>>> stateBatch(effectiveBatchSize);
-    const size_t batchSize = std::min(_miniBatchSize, states.size()-t);
+    const size_t batchSize = std::min(_miniBatchSize, states.size() - t);
     for (size_t b = 0; b < batchSize; ++b)
     {
       for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
@@ -1124,9 +1124,7 @@ std::vector<float> Continuous::evaluateTrajectoryLogProbabilityWithObservedPolic
         }
         for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
           trajectoryLogProbability[a] +=
-          clippedNormalLogDensity(actions[t][a][d], evaluation[d],
-          _observationsApproximatorSigmas[d], _actionLowerBounds[d],
-          _actionUpperBounds[d]);
+            clippedNormalLogDensity(actions[t][a][d], evaluation[d], _observationsApproximatorSigmas[d], _actionLowerBounds[d], _actionUpperBounds[d]);
       }
     }
   else if (_demonstrationPolicy == "Quadratic")

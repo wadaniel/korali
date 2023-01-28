@@ -1145,9 +1145,7 @@ void Agent::attendWorker(size_t workerId)
       {
         _trainingBestPolicies["Policy Hyperparameters"][0] = _workers[workerId]["Policy Hyperparameters"][0];
         _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
-            
       }
- 
 
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
@@ -1173,6 +1171,7 @@ void Agent::attendWorker(size_t workerId)
           _testingBestEpisodeId = episodeId;
           for (size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
             _testingBestPolicies["Policy Hyperparameters"][d] = _workers[workerId]["Policy Hyperparameters"][d];
+          _testingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
         }
       }
 
@@ -2305,6 +2304,13 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Testing", "Best Policies");
  }
 
+ if (isDefined(js, "Testing", "Best Reward Params"))
+ {
+ _testingBestRewardParams = js["Testing"]["Best Reward Params"].get<knlohmann::json>();
+
+   eraseValue(js, "Testing", "Best Reward Params");
+ }
+
  if (isDefined(js, "Experience Replay", "Off Policy", "Count"))
  {
  try { _experienceReplayOffPolicyCount = js["Experience Replay"]["Off Policy"]["Count"].get<std::vector<size_t>>();
@@ -3036,6 +3042,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Testing"]["Average Reward"] = _testingAverageReward;
    js["Testing"]["Best Average Reward"] = _testingBestAverageReward;
    js["Testing"]["Best Policies"] = _testingBestPolicies;
+   js["Testing"]["Best Reward Params"] = _testingBestRewardParams;
    js["Experience Replay"]["Off Policy"]["Count"] = _experienceReplayOffPolicyCount;
    js["Experience Replay"]["Off Policy"]["Ratio"] = _experienceReplayOffPolicyRatio;
    js["Experience Replay"]["Off Policy"]["Current Cutoff"] = _experienceReplayOffPolicyCurrentCutoff;

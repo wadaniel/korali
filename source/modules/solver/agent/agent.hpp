@@ -353,6 +353,10 @@ class Agent : public Solver
   */
    knlohmann::json _testingBestPolicies;
   /**
+  * @brief [Internal Use] Stores the best testing policies configuration found so far.
+  */
+   knlohmann::json _testingBestRewardParams;
+  /**
   * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
    std::vector<size_t> _experienceReplayOffPolicyCount;

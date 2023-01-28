@@ -1141,9 +1141,7 @@ void __className__::attendWorker(size_t workerId)
       {
         _trainingBestPolicies["Policy Hyperparameters"][0] = _workers[workerId]["Policy Hyperparameters"][0];
         _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
-            
       }
- 
 
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
@@ -1169,6 +1167,7 @@ void __className__::attendWorker(size_t workerId)
           _testingBestEpisodeId = episodeId;
           for (size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
             _testingBestPolicies["Policy Hyperparameters"][d] = _workers[workerId]["Policy Hyperparameters"][d];
+          _testingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
         }
       }
 

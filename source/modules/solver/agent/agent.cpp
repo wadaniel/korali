@@ -1915,6 +1915,9 @@ void Agent::serializeExperienceReplay()
   // Serialize the optimizer
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->getConfiguration(stateJson["Optimizer"][p]);
+  
+  // Serialize the reward function
+  _rewardFunctionLearner->_optimizer->getConfiguration(stateJson["Reward Function"]);
 
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
@@ -2022,6 +2025,11 @@ void Agent::deserializeExperienceReplay()
   // Deserialize the optimizer
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
+  
+  // Deserialize the optimizer
+  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+    _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
+
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

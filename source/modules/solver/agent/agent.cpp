@@ -2026,9 +2026,8 @@ void Agent::deserializeExperienceReplay()
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
   
-  // Deserialize the optimizer
-  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-    _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
+  // Deserialize the reward function
+  _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
 
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling

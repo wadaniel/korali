@@ -1,9 +1,11 @@
-run=20000
+run=3000
 
-#export ENV="HalfCheetah-v4"
-export ENV="Swimmer-v4"
+export ENV="HalfCheetah-v4"
+#export ENV="Swimmer-v4"
+#export ENV="Hopper-v4"
+#export ENV="Walker2d-v4"
+export POL="Quadratic"
 #export POL="Linear"
-export POL="Linear"
 export EXP=5000000
 export DAT=100
 

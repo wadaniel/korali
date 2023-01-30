@@ -725,8 +725,8 @@ void __className__::updateRewardFunction()
     for (size_t a = 0; a < _problem->_agentsPerEnvironment; ++a)
     {
       // For statistics
-      float bckLogP = 0.;
-      float demoLogP = 0.;
+      float bckLogP = -Inf;
+      float demoLogP = -Inf;
       float cumDemoReward = 0.;
       float cumFeatureReward = 0.;
 
@@ -783,6 +783,7 @@ void __className__::updateRewardFunction()
         {
           for (size_t i = 0; i < _demonstrationBatchSize; ++i)
           {
+            // set demonstration probabilities from demonstration policy
             demonstrationTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[demIdx][0][a];
             if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][i]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
             demoLogP = safeLogPlus(demoLogP, demonstrationTrajectoryLogProbabilities[n][i]);
@@ -791,6 +792,7 @@ void __className__::updateRewardFunction()
           for (size_t m = 0; m < _backgroundBatchSize; ++m)
           {
             const size_t bckIdx = randomBackgroundIndexes[m];
+            // set demonstration probabilities from background policies
             demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m] = _demonstrationTrajectoryLogProbabilities[demIdx][bckIdx + 1][a];
             if (std::isfinite(demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]) == false) KORALI_LOG_ERROR("Demonstration trajectory log probability is not finite");
             demoLogP = safeLogPlus(demoLogP, demonstrationTrajectoryLogProbabilities[n][_demonstrationBatchSize + m]);
@@ -897,49 +899,28 @@ void __className__::updateRewardFunction()
         }
 
         // Preparation for calculation of log partition function with log-sum-exp trick
-        float maxExp = -Inf;
-        float maxExpEss = -Inf;
+        float w = -Inf;
+        float w2 = -Inf;
+
         for (size_t m = 0; m < _backgroundBatchSize; ++m)
         {
           const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
-          if (exp > maxExp) maxExp = exp;
-          if (backgroundBatchLogImportanceWeights[m] > maxExpEss) maxExpEss = backgroundBatchLogImportanceWeights[m];
+          w = safeLogPlus(w, exp);
+          w2 = safeLogPlus(w2, 2*exp);
         }
 
         for (size_t n = 0; n < _demonstrationBatchSize; ++n)
         {
           const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
-          if (exp > maxExp) maxExp = exp;
-          if (demonstrationBatchLogImportanceWeights[n] > maxExpEss) maxExpEss = demonstrationBatchLogImportanceWeights[n];
-        }
-
-        float sumExpNoMax = 0.0;
-        float sumExpNoMaxEss = 0.0;
-        float sum2ExpNoMaxEss = 0.0;
-
-        for (size_t m = 0; m < _backgroundBatchSize; ++m)
-        {
-          const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
-          sumExpNoMax += std::exp(exp - maxExp);
-          sumExpNoMaxEss += std::exp(backgroundBatchLogImportanceWeights[m] - maxExpEss);
-          sum2ExpNoMaxEss += std::exp(2. * backgroundBatchLogImportanceWeights[m] - 2. * maxExpEss);
-        }
-
-        for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-        {
-          const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
-          sumExpNoMax += std::exp(exp - maxExp);
-          sumExpNoMaxEss += std::exp(demonstrationBatchLogImportanceWeights[n] - maxExpEss);
-          sum2ExpNoMaxEss += std::exp(2. * demonstrationBatchLogImportanceWeights[n] - 2. * maxExpEss);
+          w = safeLogPlus(w, exp);
+          w2 = safeLogPlus(w2, 2*exp);
         }
 
         // Calculate log of partition function
-        _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)totalBatchSize);
+        _logPartitionFunction = w - std::log((float) totalBatchSize);
 
         // Calculate Effective Sample Size
-        const float lEss1 = 2. * (std::log(sumExpNoMaxEss) + maxExpEss);
-        const float lEss2 = std::log(sum2ExpNoMaxEss) + 2 * maxExpEss;
-        const float ess = std::exp(lEss1 - lEss2);
+        const float ess = std::exp(2*w - w2);
 
         // Calculate gradient of loglikelihood (contribution from partition function & background batch)
         const float invTotalBatchSize = 1. / (float)totalBatchSize;

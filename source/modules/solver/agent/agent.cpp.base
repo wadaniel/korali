@@ -471,7 +471,8 @@ void __className__::testingGeneration()
     testingAgents[workerId]["Sample Id"] = _testingSampleIds[workerId];
     testingAgents[workerId]["Module"] = "Problem";
     testingAgents[workerId]["Operation"] = "Run Testing Episode";
-    testingAgents[workerId]["Policy Hyperparameters"] = _testingCurrentPolicies;
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+       testingAgents[workerId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[workerId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
     testingAgents[workerId]["Feature Rescaling"]["Means"] = _featureRescalingMeans;

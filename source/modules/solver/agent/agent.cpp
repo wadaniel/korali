@@ -475,7 +475,8 @@ void Agent::testingGeneration()
     testingAgents[workerId]["Sample Id"] = _testingSampleIds[workerId];
     testingAgents[workerId]["Module"] = "Problem";
     testingAgents[workerId]["Operation"] = "Run Testing Episode";
-    testingAgents[workerId]["Policy Hyperparameters"] = _testingCurrentPolicies;
+    for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
+       testingAgents[workerId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[workerId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
     testingAgents[workerId]["Feature Rescaling"]["Means"] = _featureRescalingMeans;
@@ -2026,9 +2027,8 @@ void Agent::deserializeExperienceReplay()
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
   
-  // Deserialize the optimizer
-  for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-    _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
+  // Deserialize the reward function
+  _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
 
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling

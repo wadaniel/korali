@@ -938,7 +938,8 @@ void Agent::updateRewardFunction()
 #pragma omp parallel for
           for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
           {
-            _maxEntropyGradient[k] -= _demonstrationBatchSize * mult * gradientCumulativeRewardFunctionBackgroundBatch[m][k];
+            _maxEntropyGradient[k] -= _demonstrationBatchSize * mult *
+            gradientCumulativeRewardFunctionBackgroundBatch[m][k] / (float)_problem->_agentsPerEnvironment;
           }
         }
 

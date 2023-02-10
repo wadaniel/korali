@@ -1025,8 +1025,7 @@ void __className__::rescaleStates()
       if (std::isfinite(_stateRescalingMeans[a][d]) == false) _stateRescalingMeans[a][d] = 0.0f;
 
       _stateRescalingSigmas[a][d] = std::sqrt(squaredSumStates[a][d] / (float)_stateBuffer.size() - _stateRescalingMeans[a][d] * _stateRescalingMeans[a][d]);
-      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) _stateRescalingSigmas[a][d] = 1.0f;
-      if (_stateRescalingSigmas[a][d] <= 1e-9) _stateRescalingSigmas[a][d] = 1.0f;
+      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("State sdev not finite. Cannot scale state.");
 
       _k->_logger->logInfo("Detailed", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[a][d], _stateRescalingSigmas[a][d]);
     }

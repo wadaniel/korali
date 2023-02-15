@@ -53,6 +53,7 @@
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/designer/designer.hpp"
+#include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
 #include "solver/integrator/montecarlo/MonteCarlo.hpp"
 #include "solver/integrator/quadrature/Quadrature.hpp"
@@ -166,6 +167,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   
   // Solver modules
   if (iCompare(moduleType, "Designer")) module = new korali::solver::Designer();
+  if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator/MonteCarlo")) module = new korali::solver::integrator::MonteCarlo();
   if (iCompare(moduleType, "Integrator/Quadrature")) module = new korali::solver::integrator::Quadrature();
   if (iCompare(moduleType, "DeepSupervisor")) module = new korali::solver::DeepSupervisor();

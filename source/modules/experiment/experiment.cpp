@@ -104,8 +104,6 @@ void Experiment::run()
     if (isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
   }
 
-  auto t1 = std::chrono::system_clock::now();
-
   // Finalizing experiment
   _currentGeneration--;
   _isFinished = true;

@@ -115,7 +115,9 @@ void Agent::initialize()
     // Rescaling information
     _stateRescalingMeans = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 0.0f));
     _stateRescalingSigmas = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 1.0f));
+    _rewardRescalingMean = 0.;
     _rewardRescalingSigma = 1.;
+    _rewardRescalingSumRewards = 0.;
     _rewardRescalingSumSquaredRewards = 0.;
 
     // If not given, get agent's initial policy
@@ -492,7 +494,14 @@ void Agent::processEpisode(knlohmann::json &episode)
       if (_rewardBufferContiguous.size() >= _experienceReplayMaximumSize * numAgents)
       {
         for (size_t a = 0; a < numAgents; a++)
+        {
           _rewardRescalingSumSquaredRewards -= _rewardBufferContiguous[a] * _rewardBufferContiguous[a];
+        }
+      }
+      else
+      {
+        for (size_t a = 0; a < numAgents; a++)
+           _rewardRescalingSumRewards += reward[a];
       }
       for (size_t a = 0; a < numAgents; a++)
       {
@@ -689,7 +698,10 @@ void Agent::processEpisode(knlohmann::json &episode)
 
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
+  {
+    _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardBufferContiguous.size();
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) - _rewardRescalingMean*_rewardRescalingMean);
+  }
 }
 
 std::vector<std::pair<size_t, size_t>> Agent::generateMiniBatch()
@@ -1644,12 +1656,28 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Experience Count");
  }
 
+ if (isDefined(js, "Reward", "Rescaling", "Mean"))
+ {
+ try { _rewardRescalingMean = js["Reward"]["Rescaling"]["Mean"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Mean']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Mean");
+ }
+
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
  {
  try { _rewardRescalingSigma = js["Reward"]["Rescaling"]["Sigma"].get<float>();
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sigma']\n%s", e.what()); } 
    eraseValue(js, "Reward", "Rescaling", "Sigma");
+ }
+
+ if (isDefined(js, "Reward", "Rescaling", "Sum Rewards"))
+ {
+ try { _rewardRescalingSumRewards = js["Reward"]["Rescaling"]["Sum Rewards"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sum Rewards']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Sum Rewards");
  }
 
  if (isDefined(js, "Reward", "Rescaling", "Sum Squared Rewards"))
@@ -2064,7 +2092,9 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Policy Update Count"] = _policyUpdateCount;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
+   js["Reward"]["Rescaling"]["Mean"] = _rewardRescalingMean;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
+   js["Reward"]["Rescaling"]["Sum Rewards"] = _rewardRescalingSumRewards;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;
    js["State Rescaling"]["Sigmas"] = _stateRescalingSigmas;

@@ -111,7 +111,9 @@ void __className__::initialize()
     // Rescaling information
     _stateRescalingMeans = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 0.0f));
     _stateRescalingSigmas = std::vector<std::vector<float>>(numAgents, std::vector<float>(_problem->_stateVectorSize, 1.0f));
+    _rewardRescalingMean = 0.;
     _rewardRescalingSigma = 1.;
+    _rewardRescalingSumRewards = 0.;
     _rewardRescalingSumSquaredRewards = 0.;
 
     // If not given, get agent's initial policy
@@ -693,7 +695,8 @@ void __className__::processEpisode(knlohmann::json &episode)
   // Update reward rescaling sigma
   if (_rewardRescalingEnabled)
   {
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) + 1e-9);
+    _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardBufferContiguous.size();
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) - _rewardRescalingMean*_rewardRescalingMean);
   }
 }
 

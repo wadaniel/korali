@@ -325,9 +325,17 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
+  * @brief [Internal Use] Contains the mean of the rewards during exploration phase. They will be shifted by this value in order to normalize the reward distribution in the RM.
+  */
+   float _rewardRescalingMean;
+  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingSigma;
+  /**
+  * @brief [Internal Use] Sum of rewards in experience replay during exploration phase.
+  */
+   float _rewardRescalingSumRewards;
   /**
   * @brief [Internal Use] Sum of squared rewards in experience replay.
   */

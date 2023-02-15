@@ -501,7 +501,7 @@ void Agent::processEpisode(knlohmann::json &episode)
       else
       {
         for (size_t a = 0; a < numAgents; a++)
-           _rewardRescalingSumRewards += reward[a];
+          _rewardRescalingSumRewards += reward[a];
       }
       for (size_t a = 0; a < numAgents; a++)
       {
@@ -700,7 +700,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   if (_rewardRescalingEnabled)
   {
     _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardBufferContiguous.size();
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) - _rewardRescalingMean*_rewardRescalingMean);
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) - _rewardRescalingMean * _rewardRescalingMean);
   }
 }
 

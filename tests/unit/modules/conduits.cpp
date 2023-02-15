@@ -58,7 +58,7 @@ namespace
 
   // Broadcasting message
   knlohmann::json message;
-  message["Conduit Action"] == "Terminate";
+  message["Conduit Action"] = "Terminate";
   ASSERT_NO_THROW(conduit->broadcastMessageToWorkers(message));
 
   _currentConduit = NULL;

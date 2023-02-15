@@ -495,7 +495,7 @@ void Agent::processEpisode(knlohmann::json &episode)
       {
         for (size_t a = 0; a < numAgents; a++)
         {
-          _rewardRescalingSumSquaredRewards -= _rewardBufferContiguous[a] * _rewardBufferContiguous[a];
+          _rewardRescalingSumSquaredRewards += (_rewardBufferContiguous[a] - _rewardRescalingMean) * (_rewardBufferContiguous[a] - _rewardRescalingMean);
         }
       }
       else
@@ -503,9 +503,10 @@ void Agent::processEpisode(knlohmann::json &episode)
         for (size_t a = 0; a < numAgents; a++)
           _rewardRescalingSumRewards += reward[a];
       }
+
       for (size_t a = 0; a < numAgents; a++)
       {
-        _rewardRescalingSumSquaredRewards += reward[a] * reward[a];
+        _rewardRescalingSumSquaredRewards += (reward[a] - _rewardRescalingMean) * (reward[a] - _rewardRescalingMean);
       }
     }
 
@@ -700,7 +701,7 @@ void Agent::processEpisode(knlohmann::json &episode)
   if (_rewardRescalingEnabled)
   {
     _rewardRescalingMean = _rewardRescalingSumRewards / (float)_rewardBufferContiguous.size();
-    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / ((float)_rewardBufferContiguous.size()) - _rewardRescalingMean * _rewardRescalingMean);
+    _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards / (float)_rewardBufferContiguous.size());
   }
 }
 

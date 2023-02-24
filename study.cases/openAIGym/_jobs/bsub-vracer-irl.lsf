@@ -16,7 +16,7 @@ cd ..
 export OMP_NUM_THREADS=12
 source settings_irl.sh
 
-BASE="${SCRATCH}/gcl_marl/${RUN}"
+BASE="${SCRATCH}/gcl_marl_feb/${RUN}"
 DIR="${BASE}/_result_irl_${ENV}_${RUN}/"
 
 mkdir ${DIR} -p

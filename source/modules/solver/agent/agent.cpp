@@ -1029,7 +1029,7 @@ void Agent::rescaleStates()
       if (std::isfinite(_stateRescalingMeans[a][d]) == false) _stateRescalingMeans[a][d] = 0.0f;
 
       _stateRescalingSigmas[a][d] = std::sqrt(squaredSumStates[a][d] / (float)_stateBuffer.size() - _stateRescalingMeans[a][d] * _stateRescalingMeans[a][d]);
-      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("State sdev not finite. Cannot scale state.");
+      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("State sdev not finite. Cannot scale state %s of agent no %zu.", _k->_variables[d]->_name, a);
 
       _k->_logger->logInfo("Detailed", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[a][d], _stateRescalingSigmas[a][d]);
     }
@@ -1064,7 +1064,7 @@ void Agent::rescaleFeatures()
       if (std::isfinite(_featureRescalingMeans[a][d]) == false) KORALI_LOG_ERROR("Feature mean not finite. Cannot shift features.");
 
       _featureRescalingSigmas[a][d] = std::sqrt(squaredSumFeatures[a][d] / (float)_featureBuffer.size() - _featureRescalingMeans[a][d] * _featureRescalingMeans[a][d]);
-      if (std::isfinite(_featureRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("Feature sdev not finite. Cannot scale features.");
+      if (std::isfinite(_featureRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("Feature sdev not finite. Cannot scale feature %zu of agent no %zu.", d, a);
 
       _k->_logger->logInfo("Detailed", " + Feature [%zu]: N(%f, %f)\n", d, _featureRescalingMeans[a][d], _featureRescalingSigmas[a][d]);
     }

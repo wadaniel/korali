@@ -294,7 +294,6 @@ if __name__ == '__main__':
       help='Run without graphics (for testing purpose)',
       action='store_true',
       required=False)
-    
     args = parser.parse_args()
 
     ### Validating arguments

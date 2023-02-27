@@ -21,20 +21,20 @@ def initEnvironment(e, envName, excludePositions, moviePath = ''):
   env = gym.make(envName, exclude_current_positions_from_observation=excludePositions)
  
  # Handling special cases
- 
+
  if (envName == 'Humanoid-v2'):
   env = HumanoidWrapper(env)
-  
+
  if (envName == 'HumanoidStandup-v2'):
   env = HumanoidWrapper(env)
-  
+
  if (envName == 'Ant-v2'):
   env = AntWrapper(env)
-  
+
  # Re-wrapping if saving a movie
  if (moviePath != ''):
   env = gym.wrappers.Monitor(env, moviePath, force=True)
- 
+
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env, excludePositions)

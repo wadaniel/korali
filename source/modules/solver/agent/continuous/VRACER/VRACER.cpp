@@ -35,7 +35,6 @@ void VRACER::initializeAgent()
   _criticPolicyProblem.resize(_problem->_policiesPerEnvironment);
 
   _effectiveMinibatchSize = _miniBatchSize * _problem->_agentsPerEnvironment;
-
   if (_multiAgentRelationship == "Competition")
     _effectiveMinibatchSize = _miniBatchSize;
 

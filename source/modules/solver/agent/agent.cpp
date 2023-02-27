@@ -24,6 +24,9 @@ void Agent::initialize()
 
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
+  
+  // Formatting reward history for each agent
+  _trainingRewardHistory.resize(numAgents);
 
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
@@ -47,6 +50,7 @@ void Agent::initialize()
   // Initializing random seed for the shuffle operation
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
+  
   // If not set, using heurisitc for maximum size
   if (_experienceReplayMaximumSize == 0)
     _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -163,7 +167,6 @@ void Agent::initialize()
         deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
-  _sessionRunningTime = 0.0;
   _sessionSerializationTime = 0.0;
   _sessionWorkerComputationTime = 0.0;
   _sessionWorkerCommunicationTime = 0.0;
@@ -283,10 +286,7 @@ void Agent::runGeneration()
 
 void Agent::trainingGeneration()
 {
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Setting generation-specific timers
-  _generationRunningTime = 0.0;
   _generationSerializationTime = 0.0;
   _generationWorkerComputationTime = 0.0;
   _generationWorkerCommunicationTime = 0.0;
@@ -430,11 +430,6 @@ void Agent::trainingGeneration()
         if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
           serializeExperienceReplay();
 
-  // Measuring generation time
-  auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
   /*********************************************************************
    * Updating statistics/bookkeeping
    *********************************************************************/
@@ -487,8 +482,8 @@ void Agent::testingGeneration()
 
   KORALI_WAITALL(testingAgents);
 
-  for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
-    _testingReward[workerId] = testingAgents[workerId]["Testing Reward"].get<float>();
+  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+    _testingReward[agentId] = KORALI_GET(float, testingAgents[agentId], "Testing Reward");
 }
 
 void Agent::updateBackgroundBatch(const size_t replacementIdx)
@@ -1120,7 +1115,10 @@ void Agent::attendWorker(size_t workerId)
           _trainingBestReward[a] = _trainingLastReward[a];
           _trainingBestEpisodeId[a] = episodeId;
         }
+        _trainingRewardHistory[a].push_back(_trainingLastReward[a]);
       }
+      // Storing bookkeeping information
+      _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
       // TODO: non-cooperative and multi policy case
       if (_trainingLastReward[0] > _trainingBestReward[0])
@@ -2011,7 +2009,6 @@ void Agent::deserializeExperienceReplay()
   // Deserialize the reward function
   _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
 
-
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
   _k->_logger->logInfo("Normal", "Took %fs to deserialize training state.\n", deserializationTime);
@@ -2086,7 +2083,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Policy Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Reward Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationRewardUpdateTime / 1.0e+9, _sessionRewardUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Trajectory Probability Update Time:    [%5.3fs] - [%3.3fs]\n", _generationTrajectoryLogProbabilityUpdateTime / 1.0e+9, _sessionTrajectoryLogProbabilityUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _k->_generationRunningTime / 1.0e+9, _k->_sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:         [%5.3fs]\n", _k->_resultSavingTime / 1.0e+9);
   }
 
@@ -2371,6 +2368,14 @@ void Agent::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Experience Count']\n%s", e.what()); } 
    eraseValue(js, "Experience Count");
+ }
+
+ if (isDefined(js, "Reward", "Rescaling", "Mean"))
+ {
+ try { _rewardRescalingMean = js["Reward"]["Rescaling"]["Mean"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Mean']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Mean");
  }
 
  if (isDefined(js, "Reward", "Rescaling", "Sigma"))
@@ -3041,6 +3046,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Policy Update Count"] = _policyUpdateCount;
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Experience Count"] = _experienceCount;
+   js["Reward"]["Rescaling"]["Mean"] = _rewardRescalingMean;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
    js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Log Partition Function"] = _logPartitionFunction;

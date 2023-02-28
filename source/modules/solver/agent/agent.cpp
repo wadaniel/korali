@@ -435,9 +435,8 @@ void Agent::trainingGeneration()
    *********************************************************************/
 
   // Updating average cumulative reward statistics
-  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
-  if (startEpisodeId < 0) startEpisodeId = 0;
+  const ssize_t startEpisodeId = _trainingAverageDepth > _trainingRewardHistory.size() ? 0 : _trainingRewardHistory.size() - _trainingAverageDepth;
+  const ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
 
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
   _trainingAverageFeatureReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
@@ -1115,7 +1114,6 @@ void Agent::attendWorker(size_t workerId)
           _trainingBestReward[a] = _trainingLastReward[a];
           _trainingBestEpisodeId[a] = episodeId;
         }
-        _trainingRewardHistory[a].push_back(_trainingLastReward[a]);
       }
       // Storing bookkeeping information
       _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());

@@ -25,9 +25,6 @@ void Agent::initialize()
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
   
-  // Formatting reward history for each agent
-  _trainingRewardHistory.resize(numAgents);
-
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);

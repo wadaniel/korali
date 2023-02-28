@@ -35,7 +35,7 @@ jobs:
       useMPI4Py:
         type: string
         default: 'false'        
-    resource_class: xlarge
+    resource_class: large
     executor: << parameters.image >>  
     working_directory: ~/korali
     steps:

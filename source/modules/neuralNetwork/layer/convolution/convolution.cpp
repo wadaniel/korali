@@ -283,14 +283,11 @@ void Convolution::setHyperparameters(const float *hyperparameters)
 
 void Convolution::getHyperparameters(float *hyperparameters)
 {
-  size_t IC = _prevLayer->_outputChannels;
-  size_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
-    read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+    read_from_dnnl_memory(&hyperparameters[OC * IC * KH * KW], _biasMem);
   }
 #endif
 }

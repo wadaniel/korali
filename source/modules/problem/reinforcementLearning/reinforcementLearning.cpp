@@ -55,6 +55,8 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+  if ((_policiesPerEnvironment != _agentsPerEnvironment) && (_policiesPerEnvironment != 1))
+    KORALI_LOG_ERROR("Number of Policies: %lu is neither 1 nor %lu.\n", _policiesPerEnvironment, _agentsPerEnvironment);
 
   // Validating observations
   _numberObservedTrajectories = _observationsStates.size();
@@ -377,6 +379,10 @@ void ReinforcementLearning::initializeEnvironment(Sample &worker)
   // Then, we reset the state sequence for time-dependent learners
   _agent->resetTimeSequence();
 
+  // Define state rescaling variables
+  _stateRescalingMeans = worker["State Rescaling"]["Means"].get<std::vector<std::vector<float>>>();
+  _stateRescalingSdevs = worker["State Rescaling"]["Standard Deviations"].get<std::vector<std::vector<float>>>();
+
   // Appending any user-defined settings
   worker["Custom Settings"] = _customSettings;
 
@@ -502,7 +508,6 @@ void ReinforcementLearning::runEnvironment(Sample &worker)
   if (worker["Reward"].is_array() == false) KORALI_LOG_ERROR("Agent reward variable returned by the environment is not a vector.\n");
   if (worker["Reward"].size() != _agentsPerEnvironment) KORALI_LOG_ERROR("Agents reward vector returned with the wrong size: %lu, expected: %lu.\n", worker["Reward"].size(), _agentsPerEnvironment);
 
-  // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
     if (std::isfinite(worker["Reward"][i].get<float>()) == false) KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, worker["Reward"][i].get<float>());
 

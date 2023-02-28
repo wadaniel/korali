@@ -393,6 +393,10 @@ class Agent : public Solver
   */
    size_t _experienceCount;
   /**
+  * @brief [Internal Use] Contains the mean of the rewards during exploration phase. They will be shifted by this value in order to normalize the reward distribution in the RM.
+  */
+   float _rewardRescalingMean;
+  /**
   * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingSigma;
@@ -528,6 +532,10 @@ class Agent : public Solver
 
   /**
    * @brief Features given by the environment to calculate the reward
+   */
+  std::vector<float> features;
+
+  /**
    * @brief Pointer to training the actor network
    */
   std::vector<solver::DeepSupervisor *> _criticPolicyLearner;
@@ -540,7 +548,7 @@ class Agent : public Solver
   /**
    * @brief Pointer to actor's experiment problem
    */
-  std::vector<float> features;
+  
   std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
 
   /**
@@ -585,7 +593,6 @@ class Agent : public Solver
 
   /**
    * @brief Stores the observed features at the given state
-   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
    */
   cBuffer<std::vector<std::vector<float>>> _featureBuffer;
 
@@ -702,7 +709,6 @@ class Agent : public Solver
 
   /**
    * @brief [Profiling] Measures the amount of time taken since launch
-   * @brief [Profiling] Measures the amount of time taken by the generation
    */
   double _sessionRunningTime;
 
@@ -754,11 +760,6 @@ class Agent : public Solver
   /****************************************************************************************************
    * Generation-wise Profiling Timers
    ***************************************************************************************************/
-
-  /**
-   * @brief [Profiling] Measures the amount of time taken by the generation
-   */
-  double _generationRunningTime;
 
   /**
    * @brief [Profiling] Measures the amount of time taken by ER serialization
@@ -839,7 +840,6 @@ class Agent : public Solver
 
   /**
    * @brief Generates an experience mini batch from the replay memory
-   * @return A vector of pairs with the indexes to the experiences and agents in the mini batch
    */
   std::vector<std::pair<size_t, size_t>> generateMiniBatch();
 

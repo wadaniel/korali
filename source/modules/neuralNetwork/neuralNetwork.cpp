@@ -423,8 +423,6 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
   if (hyperparameters.size() != _hyperparameterCount)
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
 
-  auto params = std::vector<float>(hyperparameters.begin(), hyperparameters.end());
-
   size_t layerCount = _pipelines[0][0]._layerVector.size();
 
   for (size_t i = 0; i < layerCount; i++)

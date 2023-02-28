@@ -20,7 +20,7 @@ void __className__::initialize()
 
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
-
+  
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
@@ -43,6 +43,7 @@ void __className__::initialize()
   // Initializing random seed for the shuffle operation
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
+  
   // If not set, using heurisitc for maximum size
   if (_experienceReplayMaximumSize == 0)
     _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -159,7 +160,6 @@ void __className__::initialize()
         deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
-  _sessionRunningTime = 0.0;
   _sessionSerializationTime = 0.0;
   _sessionWorkerComputationTime = 0.0;
   _sessionWorkerCommunicationTime = 0.0;
@@ -279,10 +279,7 @@ void __className__::runGeneration()
 
 void __className__::trainingGeneration()
 {
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Setting generation-specific timers
-  _generationRunningTime = 0.0;
   _generationSerializationTime = 0.0;
   _generationWorkerComputationTime = 0.0;
   _generationWorkerCommunicationTime = 0.0;
@@ -426,19 +423,13 @@ void __className__::trainingGeneration()
         if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
           serializeExperienceReplay();
 
-  // Measuring generation time
-  auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
   /*********************************************************************
    * Updating statistics/bookkeeping
    *********************************************************************/
 
   // Updating average cumulative reward statistics
-  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
-  if (startEpisodeId < 0) startEpisodeId = 0;
+  const ssize_t startEpisodeId = _trainingAverageDepth > _trainingRewardHistory.size() ? 0 : _trainingRewardHistory.size() - _trainingAverageDepth;
+  const ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
 
   _trainingAverageReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
   _trainingAverageFeatureReward = std::vector<float>(_problem->_agentsPerEnvironment, 0.0f);
@@ -483,8 +474,8 @@ void __className__::testingGeneration()
 
   KORALI_WAITALL(testingAgents);
 
-  for (size_t workerId = 0; workerId < _testingSampleIds.size(); workerId++)
-    _testingReward[workerId] = testingAgents[workerId]["Testing Reward"].get<float>();
+  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+    _testingReward[agentId] = KORALI_GET(float, testingAgents[agentId], "Testing Reward");
 }
 
 void __className__::updateBackgroundBatch(const size_t replacementIdx)
@@ -1025,7 +1016,7 @@ void __className__::rescaleStates()
       if (std::isfinite(_stateRescalingMeans[a][d]) == false) _stateRescalingMeans[a][d] = 0.0f;
 
       _stateRescalingSigmas[a][d] = std::sqrt(squaredSumStates[a][d] / (float)_stateBuffer.size() - _stateRescalingMeans[a][d] * _stateRescalingMeans[a][d]);
-      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("State sdev not finite. Cannot scale state.");
+      if (std::isfinite(_stateRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("State sdev not finite. Cannot scale state %s of agent no %zu.", _k->_variables[d]->_name, a);
 
       _k->_logger->logInfo("Detailed", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[a][d], _stateRescalingSigmas[a][d]);
     }
@@ -1060,7 +1051,7 @@ void __className__::rescaleFeatures()
       if (std::isfinite(_featureRescalingMeans[a][d]) == false) KORALI_LOG_ERROR("Feature mean not finite. Cannot shift features.");
 
       _featureRescalingSigmas[a][d] = std::sqrt(squaredSumFeatures[a][d] / (float)_featureBuffer.size() - _featureRescalingMeans[a][d] * _featureRescalingMeans[a][d]);
-      if (std::isfinite(_featureRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("Feature sdev not finite. Cannot scale features.");
+      if (std::isfinite(_featureRescalingSigmas[a][d]) == false) KORALI_LOG_ERROR("Feature sdev not finite. Cannot scale feature %zu of agent no %zu.", d, a);
 
       _k->_logger->logInfo("Detailed", " + Feature [%zu]: N(%f, %f)\n", d, _featureRescalingMeans[a][d], _featureRescalingSigmas[a][d]);
     }
@@ -1117,6 +1108,8 @@ void __className__::attendWorker(size_t workerId)
           _trainingBestEpisodeId[a] = episodeId;
         }
       }
+      // Storing bookkeeping information
+      _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
 
       // TODO: non-cooperative and multi policy case
       if (_trainingLastReward[0] > _trainingBestReward[0])
@@ -2007,7 +2000,6 @@ void __className__::deserializeExperienceReplay()
   // Deserialize the reward function
   _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
 
-
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
   _k->_logger->logInfo("Normal", "Took %fs to deserialize training state.\n", deserializationTime);
@@ -2082,7 +2074,7 @@ void __className__::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Policy Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Reward Update Time:                    [%5.3fs] - [%3.3fs]\n", _generationRewardUpdateTime / 1.0e+9, _sessionRewardUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Trajectory Probability Update Time:    [%5.3fs] - [%3.3fs]\n", _generationTrajectoryLogProbabilityUpdateTime / 1.0e+9, _sessionTrajectoryLogProbabilityUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                          [%5.3fs] - [%3.3fs]\n", _k->_generationRunningTime / 1.0e+9, _k->_sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:         [%5.3fs]\n", _k->_resultSavingTime / 1.0e+9);
   }
 

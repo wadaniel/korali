@@ -17,7 +17,8 @@ parser.add_argument('--bbs', help='Background Batch Size.', required=False, defa
 parser.add_argument('--bss', help='Background Sample Size.', required=False, default=100, type=int)
 parser.add_argument('--pol', help='Demonstration Policy (Constant, Linear or Quadratic).', required=False, default="Linear", type=str)
 parser.add_argument('--exp', help='Number of expriences.', required=False, default=1000000, type=int)
-parser.add_argument('--dat', help='Number of observed trajectories used.', type=int, required=False, default=100)
+parser.add_argument('--dat', help='Number of observed trajectories used.',\
+    type=int, required=False, default=50)
 parser.add_argument('--run', help='Run number, used for output.', type=int, required=False, default=0)
 
 args = parser.parse_args()

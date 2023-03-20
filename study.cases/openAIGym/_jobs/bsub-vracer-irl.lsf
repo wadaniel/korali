@@ -6,6 +6,7 @@
 #BSUB -e openai-vracer-irl-%J.err
 #BSUB -n 12
 #BSUB -N wadaniel@ethz.ch
+#bsub -R "rusage[mem=4096]"
 
 source /cluster/apps/local/env2lmod.sh
 module purge

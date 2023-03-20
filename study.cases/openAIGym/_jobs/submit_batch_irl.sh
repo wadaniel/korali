@@ -1,4 +1,4 @@
-run=0
+run=1
 
 #export ENV="HalfCheetah-v4"
 #export ENV="Swimmer-v4"
@@ -24,7 +24,6 @@ do
                 export EBRU=$EU
                 export RNN=$R
                 bsub < bsub-vracer-irl.lsf
-                exit
             done
         done
     done

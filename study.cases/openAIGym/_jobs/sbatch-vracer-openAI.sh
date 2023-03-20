@@ -13,7 +13,7 @@ cat > run.sh <<EOF
 #SBATCH --job-name="OpenAI_VRACER_$ENV"
 #SBATCH --output=OpenAI_$ENV_%j.out
 #SBATCH --error=OpenAI_$ENV_err_%j.out
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
@@ -41,8 +41,11 @@ OMP_NUM_THREADS=12 python3 run-vracer.py --env "$ENV" --dis "$DIS" --l2 $L2 --op
 
 resdir=\$(ls -d _result_vracer_*)
 DISNW="\$(echo -e "${DIS}" | tr -d '[:space:]')"
-figureName=vracer_${ENV}_\${DISNW}_${L2}_${OPT}_${LR}.png
-python3 -m korali.rlview --dir \$resdir --output \$figureName
+figureName1=vracer_irl_${ENV}.png
+python3 -m korali.rlview --dir \$resdir --output \$figureName1
+python3 -m korali.rlview --dir \$resdir --output \$figureName1
+figureName1=vracer_irl_${ENV}.png
+python3 -m korali.plot --dir \$resdir --output \$figureName2
 
 popd
 

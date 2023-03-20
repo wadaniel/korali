@@ -150,6 +150,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Sof
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Experiences"] = args.exp
+e["Solver"]["Termination Criteria"]["Max Running Time"] = 84000
 
 ### Setting file output configuration
 

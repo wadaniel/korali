@@ -15,19 +15,16 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 
-RUNPATH=$SCRATCH/openai_irl_march/$ENV/$SLURM_JOB_ID
 mkdir -p $RUNPATH
 
 pushd ..
-
-export RUN=-1
-cat run-vracer-irl.py
+export OMP_NUM_THREADS=12 
 source settings_irl.sh
 
-cp run-vracer-irl.py $RUNPATH
-cp settings_irl.sh $RUNPATH
-cp -r _model/ $RUNPATH
-cp observations*${ENV}* $RUNPATH
+RUNPATH=$SCRATCH/openai_irl_march/$ENV/$SLURM_JOB_ID
+DIR="${RUNPATH}/_result_irl_${ENV}_${RUN}/"
+
+cat run-vracer-irl.py
 
 touch "${RUNPATH}/run.config"
 echo ENV    ${ENV} >> "${RUNPATH}/run.config"
@@ -40,18 +37,25 @@ echo RNN    ${RNN} >> "${RUNPATH}/run.config"
 echo POL    ${POL} >> "${RUNPATH}/run.config"
 echo RUN    ${RUN} >> "${RUNPATH}/run.config"
 
+cp run-vracer-irl.py $RUNPATH
+cp settings_irl.sh $RUNPATH
+cp -r _model/ $RUNPATH
+cp observations*${ENV}* $RUNPATH
+
 popd
 
 pushd $RUNPATH
 
-OMP_NUM_THREADS=12 python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --pol ${POL} --run ${RUN} 
+python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --pol ${POL} --run ${RUN} 
 
-DIR="${BASE}/_result_irl_${ENV}_${RUN}/"
+popd
+
 python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
 python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png" --showObservations --showCI 0.8
 python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward --showObservations --showCI 0.8
 
-
-popd
-
 date
+
+code=$?
+
+exit $code

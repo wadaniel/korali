@@ -33,10 +33,10 @@ echo POL    ${POL} >> "${DIR}/run.config"
 echo DAT    ${DAT} >> "${DIR}/run.config"
 echo RUN    ${RUN} >> "${DIR}/run.config"
 
-cp -r _model ${BASE}
 cp -r run-vracer-irl.py ${BASE}
-cp observations*${ENV}* ${BASE}
 cp -r settings_irl.sh ${BASE}
+cp -r _model ${BASE}
+cp observations*${ENV}* ${BASE}
 
 pushd .
 cd ${BASE}
@@ -48,6 +48,8 @@ popd
 python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
 python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png" --showObservations --showCI 0.8
 python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward --showObservations --showCI 0.8
+
+date 
 
 code=$?
 

@@ -3,12 +3,14 @@
 #SBATCH --job-name="openai_irl"
 #SBATCH --output=openai_irl_%j.out
 #SBATCH --error=openai_irl_err_%j.out
-#SBATCH --time=24:00:00
+##SBATCH --time=24:00:00
+#SBATCH --time=00:30:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1
-#SBATCH --partition=normal
+##SBATCH --partition=normal
+#SBATCH --partition=debug
 #SBATCH --constraint=gpu
 #SBATCH --account=s1160
 #SBATCH --mail-user=wadaniel@ethz.ch

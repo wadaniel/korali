@@ -46,13 +46,11 @@ pushd $RUNPATH
 
 OMP_NUM_THREADS=12 python3 run-vracer-irl.py --env ${ENV} --ebru ${EBRU} --dbs ${DBS} --bbs ${BBS} --bss ${BSS} --exp ${EXP} --rnn ${RNN} --pol ${POL} --run ${RUN} 
 
-resdir=$(ls -d _result_irl_*)
-figureName1=vracer_${ENV}_${RUN}-irl.png
-python3 -m korali.rlview --dir $resdir --output $figureName1
-figureName2=vracer_${ENV}_${RUN}-firl.png
-python3 -m korali.rlview --dir $resdir --output $figureName2 --featureReward
-figureName3=vracer_${ENV}_${RUN}.png
-python3 -m korali.plot --dir $resdir --output $figureName3
+DIR="${BASE}/_result_irl_${ENV}_${RUN}/"
+python3 -m korali.plot --dir $DIR --out "${ENV}_${RUN}.png"
+python3 -m korali.rlview --dir $DIR --out "irl-${ENV}_${RUN}.png" --showObservations --showCI 0.8
+python3 -m korali.rlview --dir $DIR --out "firl-${ENV}_${RUN}.png" --featureReward --showObservations --showCI 0.8
+
 
 popd
 

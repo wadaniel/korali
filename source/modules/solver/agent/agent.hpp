@@ -548,7 +548,7 @@ class Agent : public Solver
   /**
    * @brief Pointer to actor's experiment problem
    */
-  
+
   std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
 
   /**

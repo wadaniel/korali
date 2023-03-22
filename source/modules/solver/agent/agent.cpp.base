@@ -20,7 +20,7 @@ void __className__::initialize()
 
   // Getting number of agents
   const size_t numAgents = _problem->_agentsPerEnvironment;
-  
+
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
@@ -43,7 +43,7 @@ void __className__::initialize()
   // Initializing random seed for the shuffle operation
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
-  
+
   // If not set, using heurisitc for maximum size
   if (_experienceReplayMaximumSize == 0)
     _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -463,7 +463,7 @@ void __className__::testingGeneration()
     testingAgents[workerId]["Module"] = "Problem";
     testingAgents[workerId]["Operation"] = "Run Testing Episode";
     for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
-       testingAgents[workerId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
+      testingAgents[workerId]["Policy Hyperparameters"][p] = _testingCurrentPolicies["Policy Hyperparameters"][p];
     testingAgents[workerId]["State Rescaling"]["Means"] = _stateRescalingMeans;
     testingAgents[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
     testingAgents[workerId]["Feature Rescaling"]["Means"] = _featureRescalingMeans;
@@ -897,21 +897,21 @@ void __className__::updateRewardFunction()
         {
           const float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
           w = safeLogPlus(w, exp);
-          w2 = safeLogPlus(w2, 2*exp);
+          w2 = safeLogPlus(w2, 2 * exp);
         }
 
         for (size_t n = 0; n < _demonstrationBatchSize; ++n)
         {
           const float exp = demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
           w = safeLogPlus(w, exp);
-          w2 = safeLogPlus(w2, 2*exp);
+          w2 = safeLogPlus(w2, 2 * exp);
         }
 
         // Calculate log of partition function
-        _logPartitionFunction = w - std::log((float) totalBatchSize);
+        _logPartitionFunction = w - std::log((float)totalBatchSize);
 
         // Calculate Effective Sample Size
-        const float ess = std::exp(2*w - w2);
+        const float ess = std::exp(2 * w - w2);
 
         // Calculate gradient of loglikelihood (contribution from partition function & background batch)
         const float invTotalBatchSize = 1. / (float)totalBatchSize;
@@ -926,7 +926,7 @@ void __className__::updateRewardFunction()
           for (size_t k = 0; k < _maxEntropyGradient.size(); ++k)
           {
             _maxEntropyGradient[k] -= _demonstrationBatchSize * mult *
-            gradientCumulativeRewardFunctionBackgroundBatch[m][k] / (float)_problem->_agentsPerEnvironment;
+                                      gradientCumulativeRewardFunctionBackgroundBatch[m][k] / (float)_problem->_agentsPerEnvironment;
           }
         }
 
@@ -1098,7 +1098,7 @@ void __className__::attendWorker(size_t workerId)
 
       // Getting the training reward of the latest episodes
       _trainingLastReward = KORALI_GET(std::vector<float>, _workers[workerId], "Training Rewards");
-      
+
       // TODO: non-cooperative and multi policy case
       if (_trainingLastReward[0] > _trainingBestReward[0])
       {
@@ -1887,7 +1887,7 @@ void __className__::serializeExperienceReplay()
   // Serialize the optimizer
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->getConfiguration(stateJson["Optimizer"][p]);
-  
+
   // Serialize the reward function
   _rewardFunctionLearner->_optimizer->getConfiguration(stateJson["Reward Function"]);
 
@@ -1997,7 +1997,7 @@ void __className__::deserializeExperienceReplay()
   // Deserialize the optimizer
   for (size_t p = 0; p < _problem->_policiesPerEnvironment; p++)
     _criticPolicyLearner[p]->_optimizer->setConfiguration(stateJson["Optimizer"][p]);
-  
+
   // Deserialize the reward function
   _rewardFunctionLearner->_optimizer->setConfiguration(stateJson["Reward Function"]);
 

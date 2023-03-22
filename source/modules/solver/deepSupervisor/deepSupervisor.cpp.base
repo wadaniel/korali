@@ -102,6 +102,13 @@ void __className__::initialize()
     _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
 
+  if (_hyperparameters.size() > 0)
+  {
+    printf("[korali] Setting %zu NN hyperparameters\n", _hyperparameters.size());
+    _optimizer->_currentValue = _hyperparameters;
+    _neuralNetwork->setHyperparameters(_hyperparameters);
+  }
+
   // Setting current loss
   _currentLoss = 0.0f;
 }

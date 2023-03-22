@@ -78,6 +78,10 @@ class DeepSupervisor : public Solver
   */
    size_t _batchConcurrency;
   /**
+  * @brief The hyperparameter of the neural network.
+  */
+   std::vector<float> _hyperparameters;
+  /**
   * @brief [Internal Use] The output of the neural network if running on testing mode.
   */
    std::vector<std::vector<float>> _evaluation;

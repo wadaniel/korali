@@ -101,7 +101,7 @@ class __className__ : public __parentClassName__
   /**
    * @brief Pointer to actor's experiment problem
    */
-  
+
   std::vector<problem::SupervisedLearning *> _criticPolicyProblem;
 
   /**

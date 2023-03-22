@@ -106,6 +106,13 @@ void DeepSupervisor::initialize()
     _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
 
+  if (_hyperparameters.size() > 0)
+  {
+    printf("[korali] Setting %zu NN hyperparameters\n", _hyperparameters.size());
+    _optimizer->_currentValue = _hyperparameters;
+    _neuralNetwork->setHyperparameters(_hyperparameters);
+  }
+
   // Setting current loss
   _currentLoss = 0.0f;
 }
@@ -617,6 +624,15 @@ void DeepSupervisor::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Batch Concurrency'] required by deepSupervisor.\n"); 
 
+ if (isDefined(js, "Hyperparameters"))
+ {
+ try { _hyperparameters = js["Hyperparameters"].get<std::vector<float>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ deepSupervisor ] \n + Key:    ['Hyperparameters']\n%s", e.what()); } 
+   eraseValue(js, "Hyperparameters");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Hyperparameters'] required by deepSupervisor.\n"); 
+
  if (isDefined(js, "Termination Criteria", "Target Loss"))
  {
  try { _targetLoss = js["Termination Criteria"]["Target Loss"].get<float>();
@@ -651,6 +667,7 @@ void DeepSupervisor::getConfiguration(knlohmann::json& js)
    js["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
    js["Output Weights Scaling"] = _outputWeightsScaling;
    js["Batch Concurrency"] = _batchConcurrency;
+   js["Hyperparameters"] = _hyperparameters;
    js["Termination Criteria"]["Target Loss"] = _targetLoss;
    js["Evaluation"] = _evaluation;
    js["Current Loss"] = _currentLoss;

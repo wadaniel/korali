@@ -17,7 +17,7 @@ cd ..
 export OMP_NUM_THREADS=12
 source settings_irl.sh
 
-BASE="${SCRATCH}/gcl_marl_march/${RUN}"
+BASE="${SCRATCH}/openAI_marl_march/${RUN}"
 DIR="${BASE}/_result_irl_${ENV}_${RUN}/"
 
 mkdir ${DIR} -p

@@ -1,4 +1,4 @@
-run=0
+run=1
 
 #export ENV="HalfCheetah-v4"
 export ENV="Swimmer-v4"

@@ -1102,6 +1102,13 @@ void Agent::attendWorker(size_t workerId)
 
       // Getting the training reward of the latest episodes
       _trainingLastReward = KORALI_GET(std::vector<float>, _workers[workerId], "Training Rewards");
+      
+      // TODO: non-cooperative and multi policy case
+      if (_trainingLastReward[0] > _trainingBestReward[0])
+      {
+        _trainingBestPolicies["Hyperparameters"] = _workers[workerId]["Policy Hyperparameters"][0];
+        _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
+      }
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
       for (size_t a = 0; a < _problem->_agentsPerEnvironment; a++)
@@ -1112,15 +1119,9 @@ void Agent::attendWorker(size_t workerId)
           _trainingBestEpisodeId[a] = episodeId;
         }
       }
+
       // Storing bookkeeping information
       _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
-
-      // TODO: non-cooperative and multi policy case
-      if (_trainingLastReward[0] > _trainingBestReward[0])
-      {
-        _trainingBestPolicies["Policy Hyperparameters"][0] = _workers[workerId]["Policy Hyperparameters"][0];
-        _trainingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
-      }
 
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
@@ -1145,7 +1146,7 @@ void Agent::attendWorker(size_t workerId)
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = episodeId;
           for (size_t d = 0; d < _problem->_policiesPerEnvironment; ++d)
-            _testingBestPolicies["Policy Hyperparameters"][d] = _workers[workerId]["Policy Hyperparameters"][d];
+            _testingBestPolicies["Hyperparameters"][d] = _workers[workerId]["Policy Hyperparameters"][d];
           _testingBestRewardParams["Hyperparameters"] = _rewardFunctionLearner->_neuralNetwork->getHyperparameters();
         }
       }

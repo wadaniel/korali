@@ -315,6 +315,7 @@ if __name__ == '__main__':
     for run in range(len(results)):
         plotRewardHistory(ax, results[run], args.averageDepth, args.showCI, args.showCumulativeRewards, args.showObservations, args.featureReward, args.showAgents, args.dir[run])
 
+    """
     ax.set_ylabel('Cumulative Reward')
     if args.showObservations:
         ax.set_xlabel('# Observations')
@@ -323,6 +324,7 @@ if __name__ == '__main__':
     ax.set_title('Korali RL History Viewer')
     if args.showLegend:
         ax.legend()
+    """
 
     if args.maxEpisodes < math.inf:
         ax.set_xlim([0, args.maxEpisodes])

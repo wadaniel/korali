@@ -20,9 +20,7 @@ do
             export DBS=$D
             export BBS=$B
             export EBRU=$EU
-            #bsub < bsub-vracer-irl.lsf
-            sbatch openAIGym_VRACER_IRL.sbatch
-            exit
+            bsub < bsub-vracer-irl.lsf
         done
     done
 done

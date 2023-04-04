@@ -1,4 +1,4 @@
-run=1
+run=10
 
 #export ENV="HalfCheetah-v4"
 export ENV="Swimmer-v4"
@@ -7,9 +7,11 @@ export ENV="Swimmer-v4"
 #export POL="Quadratic"
 export POL="Linear"
 export EXP=5000000
+export BSS=500
 export DAT=100
+export RNN=8
 
-for EU in 5000
+for EU in 1000 #5000
 do
     for D in 4 16
     do 

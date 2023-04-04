@@ -17,6 +17,7 @@ def plot(genList, **kwargs):
   data = genList[lastGen]
   numAgents = data["Problem"]["Agents Per Environment"]
 
+  backgroundBatchSize = data["Solver"]["Background Batch Size"]
   erStartSize = data["Solver"]["Experience Replay"]["Start Size"]
   expHistory = data["Solver"]["Training"]["Experience History"]
   offpHistory = data["Solver"]["Experience Replay"]["Off Policy"]["History"]
@@ -48,14 +49,18 @@ def plot(genList, **kwargs):
   fig, ax = plt.subplots(2, 2, num='Korali Results', figsize=(8, 8))
   ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoFeatureRewards), endpoint=True)
   
+  oranges = plt.cm.Oranges(np.linspace(0, 1, numAgents))
+  blues = plt.cm.Blues(np.linspace(0, 1, numAgents))
+  
   #ax[0,0].plot(cumExpHistory, offpHistory)
   #ax[0,0].plot(ex, bckZ, c='r')
   #ax[0,0].plot(ex, demZ, c='b')
   ax[0,0].plot(ex, ess, linewidth=1)
   ax[0,1].plot(ex, maxEntropyObjective, linewidth=1)
-  ax[1,0].plot(ex, demoFeatureRewards, c='b', linewidth=1)
-  ax[1,0].plot(ex, bckFeatureRewards, c='r', linewidth=1)
-  ax[1,1].plot(ex, demoLogProbabilities, c='b', linewidth=1)
-  ax[1,1].plot(ex, bckLogProbabilities, c='r', linewidth=1)
+  for i in range(numAgents):
+    ax[1,0].plot(ex, demoFeatureRewards[:,i], c=oranges[i], linewidth=1)
+    ax[1,1].plot(ex, demoLogProbabilities[:,i], c=oranges[i], linewidth=1)
+    ax[1,0].plot(ex, bckFeatureRewards[:,i], c=blues[i], linewidth=1)
+    ax[1,1].plot(ex, bckLogProbabilities[:,i], c=blues[i], linewidth=1)
 
   #plt.suptitle('AGENTDiagnostics', fontweight='bold', fontsize=12)

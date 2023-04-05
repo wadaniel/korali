@@ -26,6 +26,7 @@ void Agent::initialize()
 
   // Formatting reward history for each agent
   _trainingRewardHistory.resize(numAgents);
+  _trainingDiscountedRewardHistory.resize(numAgents);
 
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
@@ -471,8 +472,9 @@ void Agent::processEpisode(knlohmann::json &episode)
   const size_t episodeId = episode["Sample Id"];
   const size_t numAgents = _problem->_agentsPerEnvironment;
 
-  // Storage for the episode's cumulative reward
-  std::vector<float> cumulativeReward(numAgents, 0.0f);
+  // Storage for the episode's discounted cumulative reward
+  float discountFactor = 1;
+  std::vector<float> discountedCumulativeReward(numAgents, 0.0);
 
   // Go over experiences in episode
   const size_t episodeExperienceCount = episode["Experiences"].size();
@@ -515,7 +517,7 @@ void Agent::processEpisode(knlohmann::json &episode)
 
     // Keeping statistics
     for (size_t a = 0; a < numAgents; a++)
-      cumulativeReward[a] += reward[a];
+      discountedCumulativeReward[a] += discountFactor * reward[a];
 
     // Checking and adding experience termination status and truncated state to replay memory
     termination_t termination;
@@ -640,7 +642,14 @@ void Agent::processEpisode(knlohmann::json &episode)
     for (size_t a = 0; a < numAgents; a++)
       _truncatedImportanceWeightBufferContiguous.add(1.0f);
     _productImportanceWeightBuffer.add(1.0f);
+
+    // Calculate running discount factor
+    discountFactor *= _discountFactor;
   }
+
+  // Storing discounted reward
+  for (size_t a = 0; a < numAgents; a++)
+    _trainingDiscountedRewardHistory[a].push_back(discountedCumulativeReward[a]);
 
   /*********************************************************************
    * Computing initial retrace value for the newly added experiences
@@ -1463,6 +1472,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Training", "Reward History");
  }
 
+ if (isDefined(js, "Training", "Discounted Reward History"))
+ {
+ try { _trainingDiscountedRewardHistory = js["Training"]["Discounted Reward History"].get<std::vector<std::vector<float>>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Training']['Discounted Reward History']\n%s", e.what()); } 
+   eraseValue(js, "Training", "Discounted Reward History");
+ }
+
  if (isDefined(js, "Training", "Experience History"))
  {
  try { _trainingExperienceHistory = js["Training"]["Experience History"].get<std::vector<size_t>>();
@@ -2049,6 +2066,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Action Upper Bounds"] = _actionUpperBounds;
    js["Current Episode"] = _currentEpisode;
    js["Training"]["Reward History"] = _trainingRewardHistory;
+   js["Training"]["Discounted Reward History"] = _trainingDiscountedRewardHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
    js["Testing"]["Average Reward History"] = _testingAverageRewardHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;

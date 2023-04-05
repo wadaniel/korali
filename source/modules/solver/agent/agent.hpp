@@ -229,6 +229,10 @@ class Agent : public Solver
   */
    std::vector<std::vector<float>> _trainingRewardHistory;
   /**
+  * @brief [Internal Use] Keeps a history of all training episode discounted rewards.
+  */
+   std::vector<std::vector<float>> _trainingDiscountedRewardHistory;
+  /**
   * @brief [Internal Use] Keeps a history of all training episode experience counts.
   */
    std::vector<size_t> _trainingExperienceHistory;

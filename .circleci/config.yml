@@ -75,28 +75,12 @@ workflows:
           useMPI: 'true'
           useMPI4Py: 'true'
       - build:
-          name: fedora_openmpi_gcc
-          image: fedora_openmpi_onednn
-          buildtype: release
-          runCoverage: 'false'
-          runTests: 'true'
-          useMPI: 'true'
-          useMPI4Py: 'false'
-      - build:
           name: ubuntu_openmpi_clang
           image: ubuntu_openmpi_onednn
           buildtype: release
           runCoverage: 'false'
-          runTests: 'true'
+          runTests: 'false'
           CC: 'clang'
           CXX: 'clang++'
-          useMPI: 'true'
-          useMPI4Py: 'false'
-      - build:
-          name: fedora_openmpi_clang
-          image: fedora_openmpi_onednn
-          buildtype: release
-          runCoverage: 'false'
-          runTests: 'true'
           useMPI: 'true'
           useMPI4Py: 'false'

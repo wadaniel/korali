@@ -13,7 +13,6 @@ def plot(genList, **kwargs):
     if genList[i]['Current Generation'] > lastGen:
       lastGen = genList[i]['Current Generation']
 
-
   data = genList[lastGen]
   numAgents = data["Problem"]["Agents Per Environment"]
 
@@ -23,6 +22,7 @@ def plot(genList, **kwargs):
   offpHistory = data["Solver"]["Experience Replay"]["Off Policy"]["History"]
   bckW = data["Solver"]["Background Batch Importance Weight"]
   demW = data["Solver"]["Demonstration Batch Importance Weight"]
+  experienceCount = data["Solver"]["Experience Count"]
   cumExpHistory = np.cumsum(expHistory)
   
   ess  = data["Solver"]["Effective Sample Size"]
@@ -47,7 +47,7 @@ def plot(genList, **kwargs):
   logPartitionFunction = np.reshape(logPartitionFunction, (-1,numAgents))
 
   fig, ax = plt.subplots(2, 2, num='Korali Results', figsize=(8, 8))
-  ex = np.linspace(erStartSize, cumExpHistory[-1], len(demoFeatureRewards), endpoint=True)
+  ex = np.linspace(erStartSize, experienceCount, len(demoFeatureRewards), endpoint=True)
   
   oranges = plt.cm.Oranges(np.linspace(0, 1, numAgents))
   blues = plt.cm.Blues(np.linspace(0, 1, numAgents))

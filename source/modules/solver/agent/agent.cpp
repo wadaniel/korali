@@ -1115,9 +1115,6 @@ void Agent::attendWorker(size_t workerId)
         }
       }
 
-      // Storing bookkeeping information
-      _trainingExperienceHistory.push_back(message["Episodes"]["Experiences"].size());
-
       // Record rewards
       _trainingRewardHistory.push_back(_trainingLastReward);
       _experienceReplayOffPolicyHistory.push_back(_experienceReplayOffPolicyRatio);

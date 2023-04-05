@@ -11,8 +11,8 @@ curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 # Check if name has .png ending
 def validateOutput(output):
-  if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg")):
-    print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(output))
+  if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg") or output.endswith(".pdf")):
+    print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png', '.pdf', or '.svg' suffix.".format(output))
     sys.exit(-1)
 
 

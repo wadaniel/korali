@@ -64,6 +64,7 @@ def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservat
         returns = np.reshape(returns, (numResults,-1))
 
         for _return in returns:
+
             # Load and save cumulative sum of observations
             observationHistory.append(np.cumsum(r["Solver"]["Training"]["Experience History"]))
 

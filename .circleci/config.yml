@@ -67,14 +67,6 @@ workflows:
   korali_release:
     jobs:
       - build:
-          name: ubuntu_openmpi_gcc
-          image: ubuntu_openmpi_onednn
-          buildtype: release
-          runCoverage: 'true'
-          runTests: 'false'
-          useMPI: 'true'
-          useMPI4Py: 'true'
-      - build:
           name: ubuntu_openmpi_clang
           image: ubuntu_openmpi_onednn
           buildtype: release

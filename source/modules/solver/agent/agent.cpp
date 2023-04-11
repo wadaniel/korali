@@ -305,6 +305,7 @@ void Agent::trainingGeneration()
         _workers[workerId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
         _workers[workerId]["Feature Rescaling"]["Means"] = _featureRescalingMeans;
         _workers[workerId]["Feature Rescaling"]["Standard Deviations"] = _featureRescalingSigmas;
+        // _workers[workerId]["Reward Hyperparameters"] = _rewardFunctionLearner->_optimizer->_currentValue;
 
         KORALI_START(_workers[workerId]);
 

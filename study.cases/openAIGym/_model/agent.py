@@ -31,7 +31,7 @@ def initEnvironment(e, envName, moviePath = ''):
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda s : environment(s, env)
- e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
+ e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
  e["Problem"]["Testing Frequency"] = 20
  e["Problem"]["Policy Testing Episodes"] = 10
 
@@ -67,10 +67,10 @@ def environment(s, env):
   printStep = False
 
  if oldEnv:
-  observation = env.reset( seed = 42 )
+  state = env.reset( seed = 42 )
  else:
-  observation, _ = env.reset( seed = 42 )
- s["State"] = observation.tolist()
+  state, _ = env.reset( seed = 42 )
+ s["State"] = state.tolist()
 
  step = 0
  done = False
@@ -84,13 +84,14 @@ def environment(s, env):
   # Getting new action
   s.update()
 
+  # Performing the action
+  action = s["Action"]
+  
   # Printing step information
   if (printStep):  print('[Korali] Frame ' + str(step), end = '')
   if (printStep):  print(' - State: ' + str(state) + ' - Action: ' + str(action))
 
-  # Performing the action
-  action = s["Action"]
-  
+  # Perform step in environment
   if oldEnv:
    state, reward, done, _ = env.step(action)
   else:

@@ -31,7 +31,7 @@ def initEnvironment(e, envName, moviePath = ''):
  ### Defining problem configuration for openAI Gym environments
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda s : environment(s, env)
- e["Problem"]["Custom Settings"]["Print Step Information"] = "Enabled"
+ e["Problem"]["Custom Settings"]["Print Step Information"] = "Disabled"
  e["Problem"]["Testing Frequency"] = 20
  e["Problem"]["Policy Testing Episodes"] = 10
 

@@ -84,6 +84,11 @@ void Output::initialize()
         _transformationVector[i] = t_sigmoid;
         isRecognized = true;
       }
+      if (_transformationMask[i] == "NegIExp")
+      {
+        _transformationVector[i] = t_negiexp;
+        isRecognized = true;
+      }
       if (isRecognized == false) KORALI_LOG_ERROR("Wrong transformation mask specified: %s for output variable %lu.\n", _transformationMask[i].c_str(), i);
     }
 }
@@ -153,6 +158,7 @@ void Output::forwardData(const size_t t)
       // Apply selected transformation now
       if (_transformationVector[j] == t_absolute) x = std::fabs(x);
       if (_transformationVector[j] == t_sigmoid) x = 1. / (1. + std::exp(-x));
+      if (_transformationVector[j] == t_negiexp) x = 1-std::exp(-x);
       if (_transformationVector[j] == t_softplus) x = 0.5 * (x + std::sqrt(1. + x * x));
       if (_transformationVector[j] == t_tanh) x = std::tanh(x);
 
@@ -213,6 +219,9 @@ void Output::backwardData(const size_t t)
 
       if (_transformationVector[j] == t_sigmoid)
         g = g * x * (1. - x);
+      
+      if (_transformationVector[j] == t_negiexp)
+        g = g * (1.- x);
 
       _dstOutputGradients[i * OC + j] = g;
     }

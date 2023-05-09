@@ -50,7 +50,13 @@ enum transformation_t
   /**
    * @brief Apply sigmoid mask
    */
-  t_sigmoid = 4
+  t_sigmoid = 4,
+
+  /**
+   * @brief Apply 1-exp(-x) mask
+   */
+  t_negiexp = 5
+
 };
 
 /**

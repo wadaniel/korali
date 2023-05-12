@@ -20,23 +20,3 @@ Korali is a high-performance framework for Bayesian UQ, optimization, and reinfo
 Korali provides a simple interface that allows users to easily describe statistical / deep learning problems and choose the algorithms to solve them. The framework can easily be extended to describe new problems or test new experimental algorithms on existing problems.
 
 For more information, read: S. Martin, D. Waelchli, G. Arampatzis, A. E. Economides and P. Karnakov, P. Koumoutsakos, "Korali: Efficient and Scalable Software Framework for Bayesian Uncertainty Quantification and Stochastic Optimization". arXiv 2005.13457. Zurich, Switzerland, March 2021. `[PDF] <https://arxiv.org/abs/2005.13457>`_.
-
-**Usage**
-
-Run with Docker: :code:`docker run -it cselab/korali:latest`
-
-Documentation: `https://korali.readthedocs.io/ <https://korali.readthedocs.io/>`_
-
-Website: `https://www.cse-lab.ethz.ch/korali/ <https://www.cse-lab.ethz.ch/korali/>`_ 
-
-**Contact us**
-
-The Korali Project is developed and maintained by
-
-* `Sergio Miguel Martin <https://www.cse-lab.ethz.ch/member/sergio-martin/>`_, martiser at ethz.ch
-* `Daniel Waelchli <https://www.cse-lab.ethz.ch/member/daniel-walchli/>`_, wadaniel at ethz.ch
-* `Georgios Arampatzis <https://www.cse-lab.ethz.ch/member/georgios-arampatzis/>`_, garampat at ethz.ch
-* `Pascal Weber <https://www.cse-lab.ethz.ch/member/pascal-weber/>`_, webepasc at ethz.ch
-
-Frequent contributors: Fabian Wermelinger, Lucas Amoudrouz, Ivica Kicic
-

@@ -9,14 +9,14 @@ This repository is a fork of the original project. Here, the RL algorithm was mo
 
 .. code-block:: bash
 
-   https://github.com/wadaniel/korali/tree/gcl-ma/source/modules/solver/agent/
-   https://github.com/wadaniel/korali/tree/gcl-ma/source/modules/problem/reinforcementLearning
+   ./source/modules/solver/agent/
+   ./source/modules/problem/reinforcementLearning
 
 IRL examples for the MuJoCo tasks can be found here:
 
 .. code-block:: bash
 
-    https://github.com/wadaniel/korali/tree/gcl-ma/study.cases/openAIGym
+    ./study.cases/openAIGym
 
 
 For more information, read: S. Martin, D. Waelchli, G. Arampatzis, A. E. Economides and P. Karnakov, P. Koumoutsakos, "Korali: Efficient and Scalable Software Framework for Bayesian Uncertainty Quantification and Stochastic Optimization". arXiv 2005.13457. Zurich, Switzerland, March 2021. `[PDF] <https://arxiv.org/abs/2005.13457>`_.

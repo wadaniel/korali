@@ -5,7 +5,6 @@
 #BSUB -o openai-vracer-irl-%J.out
 #BSUB -e openai-vracer-irl-%J.err
 #BSUB -n 12
-#BSUB -N wadaniel@ethz.ch
 #bsub -R "rusage[mem=8192]"
 
 source /cluster/apps/local/env2lmod.sh

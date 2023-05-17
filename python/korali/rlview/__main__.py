@@ -24,7 +24,6 @@ from korali.rlview.utils import get_figure
 
 ##################### Plotting Reward History
 def plotRewardHistory( ax, results, averageDepth, showCI, showData, showObservations, featureReward, showAgents, maxExp, dir ):
-    print("Exp changed")
 
     # get color
     color = next(ax._get_lines.prop_cycler)['color']
